@@ -2,11 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
 
 namespace WebCharts.Services.Models.Formulas
 {
@@ -1357,7 +1361,7 @@ namespace WebCharts.Services.Models.Formulas
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 SeriesFieldInfo info = this[i];
 
@@ -1387,7 +1391,7 @@ namespace WebCharts.Services.Models.Formulas
         /// <param name="seriesFields">The series fields list. The series name can be followed by the field names. For example: "Series1:Y,Series1:Y3,Series2:Close"</param>
         /// <param name="formulaFields">The formula fields list.</param>
         /// <returns></returns>
-        public static SeriesFieldList FromString(Chart chart, string seriesFields, IList<DataField> formulaFields)
+        public static SeriesFieldList FromString(ChartService chart, string seriesFields, IList<DataField> formulaFields)
         {
             SeriesFieldList result = new SeriesFieldList();
             if (String.IsNullOrEmpty(seriesFields))

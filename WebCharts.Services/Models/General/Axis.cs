@@ -11,100 +11,18 @@
 //
 
 
+using SkiaSharp;
 using System;
 using System.Collections;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Design;
-using System.Drawing.Text;
-using System.Drawing.Drawing2D;
-using System.Diagnostics.CodeAnalysis;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.Windows.Forms.DataVisualization.Charting.Data;
-using System.Windows.Forms.DataVisualization.Charting.ChartTypes;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
-using System.Windows.Forms.DataVisualization.Charting.Borders3D;
-using System.Windows.Forms.Design.DataVisualization.Charting;
+using System.Text;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Models.ChartTypes;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
 using WebCharts.Services.Models.Utilities;
-using SkiaSharp;
 
 namespace WebCharts.Services.Models.General
 {
-    using Point = System.Drawing.Point;
-
-    #region Axis name enumeration
-
-    /// <summary>
-    /// An enumeration of auto-fitting styles of the axis labels.
-    /// </summary>
-    [Flags]
-    public enum LabelAutoFitStyles
-    {
-        /// <summary>
-        /// No auto-fitting.
-        /// </summary>
-        None = 0,
-        /// <summary>
-        /// Allow font size increasing.
-        /// </summary>
-        IncreaseFont = 1,
-        /// <summary>
-        /// Allow font size decreasing.
-        /// </summary>
-        DecreaseFont = 2,
-        /// <summary>
-        /// Allow using staggered labels.
-        /// </summary>
-        StaggeredLabels = 4,
-        /// <summary>
-        /// Allow changing labels angle using values of 0, 30, 60 and 90 degrees.
-        /// </summary>
-        LabelsAngleStep30 = 8,
-        /// <summary>
-        /// Allow changing labels angle using values of 0, 45, 90 degrees.
-        /// </summary>
-        LabelsAngleStep45 = 16,
-        /// <summary>
-        /// Allow changing labels angle using values of 0 and 90 degrees.
-        /// </summary>
-        LabelsAngleStep90 = 32,
-        /// <summary>
-        /// Allow replacing spaces with the new line character.
-        /// </summary>
-        WordWrap = 64,
-    }
-
-    /// <summary>
-    /// An enumeration of axis names.
-    /// </summary>
-    public enum AxisName
-    {
-        /// <summary>
-        /// Primary X Axis.
-        /// </summary>
-
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "X")]
-        X = 0,
-        /// <summary>
-        /// Primary Y Axis.
-        /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Y")]
-        Y = 1,
-        /// <summary>
-        /// Secondary X Axis.
-        /// </summary>
-        X2 = 2,
-        /// <summary>
-        /// Secondary Y Axis.
-        /// </summary>
-        Y2 = 3
-    }
-
-    #endregion
-
     /// <summary>
     /// The Axis class gives information to the Common.Chart series 
     /// about positions in the Common.Chart area and keeps all of 
@@ -112,9 +30,8 @@ namespace WebCharts.Services.Models.General
     /// </summary>
     [
         SRDescription("DescriptionAttributeAxis_Axis"),
-        DefaultProperty("Enabled"),
     ]
-    public partial class Axis :  ChartNamedElement
+    public partial class Axis : ChartNamedElement
     {
         #region Axis fields
 
@@ -126,14 +43,14 @@ namespace WebCharts.Services.Models.General
         // This field synchronies Store and Reset temporary values
         private bool _storeValuesEnabled = true;
 
-        private FontCache _fontCache = new FontCache();
-        private Font  _titleFont;
-        private Color _titleForeColor = Color.Black;
+        private FontCache _fontCache = new();
+        private SKFont _titleFont;
+        private SKColor _titleForeColor = SKColors.Black;
         private StringAlignment _titleAlignment = StringAlignment.Center;
         private string _title = "";
         private int _lineWidth = 1;
         private ChartDashStyle _lineDashStyle = ChartDashStyle.Solid;
-        private Color _lineColor = Color.Black;
+        private SKColor _lineColor = SKColors.Black;
         private bool _isLabelAutoFit = true;
         private AxisArrowStyle _arrowStyle = AxisArrowStyle.None;
         private StripLinesCollection _stripLines = null;
@@ -160,7 +77,7 @@ namespace WebCharts.Services.Models.General
                                                             LabelAutoFitStyles.WordWrap;
 
         // Auto calculated font for labels
-        internal Font autoLabelFont = null;
+        internal SKFont autoLabelFont = null;
         internal int autoLabelAngle = -1000;
         internal int autoLabelOffset = -1;
 
@@ -215,7 +132,7 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Color used to draw isInterlaced strip lines for the axis.
         /// </summary>
-        private Color _interlacedColor = Color.Empty;
+        private SKColor _interlacedColor = SKColor.Empty;
 
         /// <summary>
         /// Axis interval offset.
@@ -240,23 +157,12 @@ namespace WebCharts.Services.Models.General
         /// <summary>
 		/// Minimum font size that can be used by the labels auto-fitting algorithm.
 		/// </summary>
-		internal int					labelAutoFitMinFontSize = 6;
-
-		/// <summary>
-		/// Maximum font size that can be used by the labels auto-fitting algorithm.
-		/// </summary>
-		internal int					labelAutoFitMaxFontSize = 10;
-
-		/// <summary>
-		/// Axis tooltip
-		/// </summary>
-		private	string					_toolTip = String.Empty;
+		internal int labelAutoFitMinFontSize = 6;
 
         /// <summary>
-        /// Axis HREF
+        /// Maximum font size that can be used by the labels auto-fitting algorithm.
         /// </summary>
-        private string _url = String.Empty;
-
+        internal int labelAutoFitMaxFontSize = 10;
 
         #endregion
 
@@ -277,7 +183,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="chartArea">The chart area the axis belongs to.</param>
         /// <param name="axisTypeName">The type of the axis.</param>
         public Axis(ChartArea chartArea, AxisName axisTypeName)
-            : base(chartArea, GetName(axisTypeName)) 
+            : base(chartArea, GetName(axisTypeName))
         {
             Initialize(axisTypeName);
         }
@@ -309,7 +215,7 @@ namespace WebCharts.Services.Models.General
                 scrollBar = new AxisScrollBar(this);
             }
 
-            this.axisType = axisTypeName;
+            axisType = axisTypeName;
 
             // Create grid & tick marks objects
             if (minorTickMark == null)
@@ -318,7 +224,7 @@ namespace WebCharts.Services.Models.General
             }
             if (majorTickMark == null)
             {
-                majorTickMark = new TickMark(this, true);
+                majorTickMark = new(this, true);
                 majorTickMark.Interval = double.NaN;
                 majorTickMark.IntervalOffset = double.NaN;
                 majorTickMark.IntervalType = DateTimeIntervalType.NotSet;
@@ -330,15 +236,15 @@ namespace WebCharts.Services.Models.General
             }
             if (majorGrid == null)
             {
-                majorGrid = new Grid(this, true);
+                majorGrid = new(this, true);
                 majorGrid.Interval = double.NaN;
                 majorGrid.IntervalOffset = double.NaN;
                 majorGrid.IntervalType = DateTimeIntervalType.NotSet;
                 majorGrid.IntervalOffsetType = DateTimeIntervalType.NotSet;
             }
-            if (this._stripLines == null)
+            if (_stripLines == null)
             {
-                this._stripLines = new StripLinesCollection(this);
+                _stripLines = new StripLinesCollection(this);
             }
 
             if (_titleFont == null)
@@ -353,20 +259,17 @@ namespace WebCharts.Services.Models.General
 #endif 
 
 
-            // Initialize axis scroll bar class
-            this.ScrollBar.Initialize();
-
 
             // Create collection of scale segments
-            if (this.scaleSegments == null)
+            if (scaleSegments == null)
             {
-                this.scaleSegments = new AxisScaleSegmentCollection(this);
+                scaleSegments = new AxisScaleSegmentCollection(this);
             }
 
             // Create scale break style
-            if (this.axisScaleBreakStyle == null)
+            if (axisScaleBreakStyle == null)
             {
-                this.axisScaleBreakStyle = new AxisScaleBreakStyle(this);
+                axisScaleBreakStyle = new AxisScaleBreakStyle(this);
             }
         }
 
@@ -377,9 +280,9 @@ namespace WebCharts.Services.Models.General
         /// <param name="axisTypeName">Axis type.</param>
         internal void Initialize(ChartArea chartArea, AxisName axisTypeName)
         {
-            this.Initialize(axisTypeName);
-            this.Parent = chartArea;
-            this.Name = GetName(axisTypeName);
+            Initialize(axisTypeName);
+            Parent = chartArea;
+            Name = GetName(axisTypeName);
         }
 
         /// <summary>
@@ -388,20 +291,16 @@ namespace WebCharts.Services.Models.General
         internal static string GetName(AxisName axisName)
         {
             // Set axis name.
-            // NOTE: Strings below should neber be localized. Name properties in the chart are never localized 
+            // NOTE: Strings below should never be localized. Name properties in the chart are never localized 
             // and represent consisten object name in all locales.
-            switch (axisName)
+            return axisName switch
             {
-                case (AxisName.X):
-                    return "X axis";
-                case (AxisName.Y):
-                    return "Y (Value) axis";
-                case (AxisName.X2):
-                    return "Secondary X axis";
-                case (AxisName.Y2):
-                    return "Secondary Y (Value) axis";
-            }
-            return null;
+                (AxisName.X) => "X axis",
+                (AxisName.Y) => "Y (Value) axis",
+                (AxisName.X2) => "Secondary X axis",
+                (AxisName.Y2) => "Secondary Y (Value) axis",
+                _ => null,
+            };
         }
 
         #endregion
@@ -419,21 +318,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeTitle"),
-        Bindable(true),
-        DefaultValue(TextOrientation.Auto),
         SRDescription("DescriptionAttribute_TextOrientation"),
-        NotifyParentPropertyAttribute(true),
         ]
         public TextOrientation TextOrientation
         {
             get
             {
-                return this._textOrientation;
+                return _textOrientation;
             }
             set
             {
-                this._textOrientation = value;
-                this.Invalidate();
+                _textOrientation = value;
+                Invalidate();
             }
         }
 
@@ -468,7 +364,7 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		[
 		SRCategory("CategoryAttributeSubAxes"),
-		Bindable(true),
+		
 		SRDescription("DescriptionAttributeSubAxes"),
 		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
         Editor(Editors.ChartCollectionEditor.Editor, Editors.ChartCollectionEditor.Base)
@@ -488,10 +384,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(false),
         SRDescription("DescriptionAttributeInterlaced"),
-        NotifyParentPropertyAttribute(true),
         ]
         public bool IsInterlaced
         {
@@ -502,7 +395,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _isInterlaced = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -511,14 +404,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeInterlacedColor"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color InterlacedColor
+        public SKColor InterlacedColor
         {
             get
             {
@@ -527,7 +415,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _interlacedColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -536,12 +424,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        Browsable(false),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeAxis_Name"),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
         public override string Name
         {
@@ -560,12 +443,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        Browsable(false),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeType"),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
         virtual public AxisName AxisName
         {
@@ -580,9 +458,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(AxisArrowStyle.None),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeArrows"),
         ]
         public AxisArrowStyle ArrowStyle
@@ -594,7 +469,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _arrowStyle = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -603,11 +478,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeGridTickMarks"),
-        Bindable(true),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeMajorGrid"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public Grid MajorGrid
         {
@@ -630,7 +501,7 @@ namespace WebCharts.Services.Models.General
                 if (!majorGrid.intervalOffsetTypeChanged)
                     majorGrid.IntervalOffsetType = DateTimeIntervalType.NotSet;
 
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -639,11 +510,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeGridTickMarks"),
-        Bindable(true),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeMinorGrid"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public Grid MinorGrid
         {
@@ -655,7 +522,7 @@ namespace WebCharts.Services.Models.General
             {
                 minorGrid = value;
                 minorGrid.Initialize(this, false);
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -664,11 +531,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeGridTickMarks"),
-        Bindable(true),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeMajorTickMark"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public TickMark MajorTickMark
         {
@@ -691,7 +554,7 @@ namespace WebCharts.Services.Models.General
                 if (!majorTickMark.intervalOffsetTypeChanged)
                     majorTickMark.IntervalOffsetType = DateTimeIntervalType.NotSet;
 
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -700,11 +563,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeGridTickMarks"),
-        Bindable(true),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeMinorTickMark"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public TickMark MinorTickMark
         {
@@ -716,7 +575,7 @@ namespace WebCharts.Services.Models.General
             {
                 minorTickMark = value;
                 minorTickMark.Initialize(this, false);
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -725,11 +584,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeLabels"),
-        Bindable(true),
-        DefaultValue(true),
         SRDescription("DescriptionAttributeLabelsAutoFit"),
-        NotifyParentPropertyAttribute(true),
-        RefreshPropertiesAttribute(RefreshProperties.All)
         ]
         public bool IsLabelAutoFit
         {
@@ -740,73 +595,65 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _isLabelAutoFit = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
 
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the minimum font size that can be used by 
         /// the label auto-fitting algorithm.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeLabels"),
-		Bindable(true),
-		DefaultValue(6),
-		SRDescription("DescriptionAttributeLabelsAutoFitMinFontSize"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All)
-		]
-		public int LabelAutoFitMinFontSize
-		{
-			get
-			{
-				return this.labelAutoFitMinFontSize;
-			}
-			set
-			{
-				// Font size cannot be less than 5
-				if(value < 5)
-				{
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeLabels"),
+        SRDescription("DescriptionAttributeLabelsAutoFitMinFontSize"),
+        ]
+        public int LabelAutoFitMinFontSize
+        {
+            get
+            {
+                return labelAutoFitMinFontSize;
+            }
+            set
+            {
+                // Font size cannot be less than 5
+                if (value < 5)
+                {
                     throw (new InvalidOperationException(SR.ExceptionAxisLabelsAutoFitMinFontSizeValueInvalid));
-				}
+                }
 
-				this.labelAutoFitMinFontSize = value;
-				this.Invalidate();
-			}
-		}
+                labelAutoFitMinFontSize = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the maximum font size that can be used by 
         /// the label auto-fitting algorithm.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeLabels"),
-		Bindable(true),
-		DefaultValue(10),
-		SRDescription("DescriptionAttributeLabelsAutoFitMaxFontSize"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All)
-		]
-		public int LabelAutoFitMaxFontSize
-		{
-			get
-			{
-				return this.labelAutoFitMaxFontSize;
-			}
-			set
-			{
-				// Font size cannot be less than 5
-				if(value < 5)
-				{
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeLabels"),
+        SRDescription("DescriptionAttributeLabelsAutoFitMaxFontSize"),
+        ]
+        public int LabelAutoFitMaxFontSize
+        {
+            get
+            {
+                return labelAutoFitMaxFontSize;
+            }
+            set
+            {
+                // Font size cannot be less than 5
+                if (value < 5)
+                {
                     throw (new InvalidOperationException(SR.ExceptionAxisLabelsAutoFitMaxFontSizeInvalid));
-				}
+                }
 
-				this.labelAutoFitMaxFontSize = value;
-				this.Invalidate();
-			}
-		}
+                labelAutoFitMaxFontSize = value;
+                Invalidate();
+            }
+        }
 
 
 
@@ -816,22 +663,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeLabels"),
-        Bindable(true),
-        DefaultValue(LabelAutoFitStyles.DecreaseFont | LabelAutoFitStyles.IncreaseFont | LabelAutoFitStyles.LabelsAngleStep30 | LabelAutoFitStyles.StaggeredLabels | LabelAutoFitStyles.WordWrap),
         SRDescription("DescriptionAttributeLabelsAutoFitStyle"),
-        NotifyParentPropertyAttribute(true),
-        Editor(typeof(FlagsEnumUITypeEditor), typeof(UITypeEditor))
         ]
         public LabelAutoFitStyles LabelAutoFitStyle
         {
             get
             {
-                return this._labelAutoFitStyle;
+                return _labelAutoFitStyle;
             }
             set
             {
-                this._labelAutoFitStyle = value;
-                this.Invalidate();
+                _labelAutoFitStyle = value;
+                Invalidate();
             }
         }
 
@@ -842,10 +685,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(true),
         SRDescription("DescriptionAttributeMarksNextToAxis"),
-        NotifyParentPropertyAttribute(true),
         ]
         virtual public bool IsMarksNextToAxis
         {
@@ -856,7 +696,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _isMarksNextToAxis = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -865,10 +705,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeTitle"),
-        Bindable(true),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeTitle6"),
-        NotifyParentPropertyAttribute(true),
         ]
         public string Title
         {
@@ -879,7 +716,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _title = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -888,14 +725,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeTitle"),
-        Bindable(true),
-        DefaultValue(typeof(Color), "Black"),
         SRDescription("DescriptionAttributeTitleColor"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color TitleForeColor
+        public SKColor TitleForeColor
         {
             get
             {
@@ -904,7 +736,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _titleForeColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -913,10 +745,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeTitle"),
-        Bindable(true),
-        DefaultValue(typeof(StringAlignment), "Center"),
         SRDescription("DescriptionAttributeTitleAlignment"),
-        NotifyParentPropertyAttribute(true),
         ]
         public StringAlignment TitleAlignment
         {
@@ -927,7 +756,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _titleAlignment = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -936,12 +765,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeTitle"),
-        Bindable(true),
-        DefaultValue(typeof(Font), "Microsoft Sans Serif, 8pt"),
         SRDescription("DescriptionAttributeTitleFont"),
-        NotifyParentPropertyAttribute(true),
         ]
-        public Font TitleFont
+        public SKFont TitleFont
         {
             get
             {
@@ -950,7 +776,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _titleFont = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -959,14 +785,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), "Black"),
         SRDescription("DescriptionAttributeLineColor"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color LineColor
+        public SKColor LineColor
         {
             get
             {
@@ -975,7 +796,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _lineColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -984,10 +805,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(1),
         SRDescription("DescriptionAttributeLineWidth"),
-        NotifyParentPropertyAttribute(true),
         ]
         public int LineWidth
         {
@@ -999,10 +817,10 @@ namespace WebCharts.Services.Models.General
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionAxisWidthIsNegative));
+                    throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAxisWidthIsNegative);
                 }
                 _lineWidth = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -1011,10 +829,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartDashStyle.Solid),
         SRDescription("DescriptionAttributeLineDashStyle"),
-        NotifyParentPropertyAttribute(true),
         ]
         public ChartDashStyle LineDashStyle
         {
@@ -1025,7 +840,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _lineDashStyle = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -1034,10 +849,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeStripLines"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        Editor(typeof(ChartCollectionEditor), typeof(UITypeEditor))
         ]
         public StripLinesCollection StripLines
         {
@@ -1056,49 +868,36 @@ namespace WebCharts.Services.Models.General
         /// </remarks>
         [
         SRCategory("CategoryAttributeLabels"),
-        DefaultValue(75f),
         SRDescription("DescriptionAttributeAxis_MaxAutoSize"),
         ]
         public float MaximumAutoSize
         {
             get
             {
-                return this._maximumAutoSize;
+                return _maximumAutoSize;
             }
             set
             {
                 if (value < 0f || value > 100f)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionValueMustBeInRange("MaximumAutoSize", "0", "100")));
+                    throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionValueMustBeInRange(nameof(MaximumAutoSize), "0", "100"));
                 }
-                this._maximumAutoSize = value;
-                this.Invalidate();
+                _maximumAutoSize = value;
+                Invalidate();
             }
         }
         #endregion
 
         #region	IMapAreaAttributes Properties implementation
 
-		/// <summary>
-		/// Tooltip of the axis.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeMapArea"),
-		Bindable(true),
-		SRDescription("DescriptionAttributeToolTip"),
-		DefaultValue(""),
-		]
-		public string ToolTip
-		{
-			set
-			{
-				this._toolTip = value;
-			}
-			get
-			{
-				return this._toolTip;
-			}
-		}
+        /// <summary>
+        /// Tooltip of the axis.
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeMapArea"),
+        SRDescription("DescriptionAttributeToolTip"),
+        ]
+        public string ToolTip { set; get; } = string.Empty;
 
         #endregion
 
@@ -1109,11 +908,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeInterval"),
-        Bindable(true),
-        DefaultValue(0.0),
         SRDescription("DescriptionAttributeInterval4"),
-        RefreshPropertiesAttribute(RefreshProperties.All),
-        TypeConverter(typeof(AxisIntervalValueConverter)),
         ]
         public double Interval
         {
@@ -1140,7 +935,7 @@ namespace WebCharts.Services.Models.General
                 minorTickMark.interval = tempMinorTickMarkInterval;
                 labelStyle.interval = tempLabelInterval;
 
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -1149,11 +944,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeInterval"),
-        Bindable(true),
-        DefaultValue(0.0),
         SRDescription("DescriptionAttributeIntervalOffset6"),
-        RefreshPropertiesAttribute(RefreshProperties.All),
-        TypeConverter(typeof(AxisIntervalValueConverter))
         ]
         public double IntervalOffset
         {
@@ -1173,7 +964,7 @@ namespace WebCharts.Services.Models.General
                     _intervalOffset = value;
                 }
 
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -1182,10 +973,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeInterval"),
-        Bindable(true),
-        DefaultValue(DateTimeIntervalType.Auto),
         SRDescription("DescriptionAttributeIntervalType4"),
-        RefreshPropertiesAttribute(RefreshProperties.All)
         ]
         public DateTimeIntervalType IntervalType
         {
@@ -1210,7 +998,7 @@ namespace WebCharts.Services.Models.General
                 majorTickMark.intervalType = tempTickMarkIntervalType;
                 labelStyle.intervalType = tempLabelIntervalType;
 
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -1219,10 +1007,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeInterval"),
-        Bindable(true),
-        DefaultValue(DateTimeIntervalType.Auto),
         SRDescription("DescriptionAttributeIntervalOffsetType4"),
-        RefreshPropertiesAttribute(RefreshProperties.All)
         ]
         public DateTimeIntervalType IntervalOffsetType
         {
@@ -1242,7 +1027,7 @@ namespace WebCharts.Services.Models.General
                     intervalOffsetType = value;
                 }
 
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -1259,7 +1044,7 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                TextOrientation currentTextOrientation = this.GetTextOrientation();
+                TextOrientation currentTextOrientation = GetTextOrientation();
                 return currentTextOrientation == TextOrientation.Rotated90 || currentTextOrientation == TextOrientation.Rotated270;
             }
         }
@@ -1271,19 +1056,19 @@ namespace WebCharts.Services.Models.General
         /// <returns>Current text orientation.</returns>
         private TextOrientation GetTextOrientation()
         {
-            if (this.TextOrientation == TextOrientation.Auto)
+            if (TextOrientation == TextOrientation.Auto)
             {
-                if (this.AxisPosition == AxisPosition.Left)
+                if (AxisPosition == AxisPosition.Left)
                 {
                     return TextOrientation.Rotated270;
                 }
-                else if (this.AxisPosition == AxisPosition.Right)
+                else if (AxisPosition == AxisPosition.Right)
                 {
                     return TextOrientation.Rotated90;
                 }
                 return TextOrientation.Horizontal;
             }
-            return this.TextOrientation;
+            return TextOrientation;
         }
 
         /// <summary>
@@ -1292,7 +1077,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="graph">Reference to the Chart Graphics object</param>
         internal void PrePaint(ChartGraphics graph)
         {
-            if (enabled != false)
+            if (enabled)
             {
                 // draw axis hot region
                 DrawAxisLineHotRegion(graph, true);
@@ -1333,21 +1118,19 @@ namespace WebCharts.Services.Models.General
             if (ChartArea != null && ChartArea.chartAreaIsCurcular)
             {
                 // Y circular axes
-                if (this.axisType == AxisName.Y && enabled != false)
+                if (axisType == AxisName.Y && enabled)
                 {
                     ICircularChartType chartType = ChartArea.GetCircularChartType();
                     if (chartType != null)
                     {
-                        Matrix oldMatrix = graph.Transform;
+                        SKMatrix oldMatrix = graph.Transform;
                         float[] axesLocation = chartType.GetYAxisLocations(ChartArea);
                         bool drawLabels = true;
                         foreach (float curentSector in axesLocation)
                         {
                             // Set graphics rotation matrix
-                            Matrix newMatrix = oldMatrix.Clone();
-                            newMatrix.RotateAt(
-                                curentSector,
-                                graph.GetAbsolutePoint(ChartArea.circularCenter));
+                            var p = graph.GetAbsolutePoint(ChartArea.circularCenter);
+                            var newMatrix = SKMatrix.CreateRotationDegrees(curentSector, p.X, p.Y);
                             graph.Transform = newMatrix;
 
                             // draw axis hot region
@@ -1396,7 +1179,7 @@ namespace WebCharts.Services.Models.General
                 }
 
                 // X circular axes
-                if (this.axisType == AxisName.X && enabled != false)
+                if (axisType == AxisName.X && enabled)
                 {
                     labelStyle.PaintCircular(graph);
                 }
@@ -1407,9 +1190,8 @@ namespace WebCharts.Services.Models.General
             }
 
             // If axis is disabled draw only Title
-            if (enabled != false)
+            if (enabled)
             {
-
                 // draw axis hot region
                 DrawAxisLineHotRegion(graph, false);
 
@@ -1426,7 +1208,7 @@ namespace WebCharts.Services.Models.General
                 labelStyle.Paint(graph, false);
 
                 // Scroll bar is supoorted only in 2D charts
-                if (ChartArea != null && ChartArea.Area3DStyle.Enable3D == false)
+                if (ChartArea != null && !ChartArea.Area3DStyle.Enable3D)
                 {
                     // Draw axis scroll bar
                     ScrollBar.Paint(graph);
@@ -1434,7 +1216,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Draw axis title
-            this.DrawAxisTitle(graph);
+            DrawAxisTitle(graph);
 
 #if SUBAXES
 			// Process all sub-axis
@@ -1448,25 +1230,25 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
 
             // Reset temp axis offset for side-by-side charts like column
-            this.ResetTempAxisOffset();
+            ResetTempAxisOffset();
         }
 
 
 
-		/// <summary>
-		/// Paint Axis element when segmented axis scale feature is used.
-		/// </summary>
-		/// <param name="graph">Reference to the Chart Graphics object</param>
-		internal void PaintOnSegmentedScalePassOne( ChartGraphics graph )
-		{
-			// If axis is disabled draw only Title
-			if( enabled != false )
-			{
-				// Paint Minor Tick Marks
-				minorTickMark.Paint( graph, false );
+        /// <summary>
+        /// Paint Axis element when segmented axis scale feature is used.
+        /// </summary>
+        /// <param name="graph">Reference to the Chart Graphics object</param>
+        internal void PaintOnSegmentedScalePassOne(ChartGraphics graph)
+        {
+            // If axis is disabled draw only Title
+            if (enabled)
+            {
+                // Paint Minor Tick Marks
+                minorTickMark.Paint(graph, false);
 
-				// Paint Major Tick Marks
-				majorTickMark.Paint( graph, false );
+                // Paint Major Tick Marks
+                majorTickMark.Paint(graph, false);
             }
 
 #if SUBAXES
@@ -1481,27 +1263,27 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
         }
 
-		/// <summary>
-		/// Paint Axis element when segmented axis scale feature is used.
-		/// </summary>
-		/// <param name="graph">Reference to the Chart Graphics object</param>
-		internal void PaintOnSegmentedScalePassTwo( ChartGraphics graph )
-		{
-			// If axis is disabled draw only Title
-			if( enabled != false )
-			{
-				// Draw axis line
-				DrawAxisLine( graph, false );
+        /// <summary>
+        /// Paint Axis element when segmented axis scale feature is used.
+        /// </summary>
+        /// <param name="graph">Reference to the Chart Graphics object</param>
+        internal void PaintOnSegmentedScalePassTwo(ChartGraphics graph)
+        {
+            // If axis is disabled draw only Title
+            if (enabled)
+            {
+                // Draw axis line
+                DrawAxisLine(graph, false);
 
-				// Paint Labels
-				labelStyle.Paint( graph, false);
-			}
+                // Paint Labels
+                labelStyle.Paint(graph, false);
+            }
 
-			// Draw axis title
-			this.DrawAxisTitle( graph );
-		
-			// Reset temp axis offset for side-by-side charts like column
-			this.ResetTempAxisOffset();
+            // Draw axis title
+            DrawAxisTitle(graph);
+
+            // Reset temp axis offset for side-by-side charts like column
+            ResetTempAxisOffset();
 
 #if SUBAXES
 			// Process all sub-axis
@@ -1515,20 +1297,20 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
 
         }
-				
+
         /// <summary>
         /// Draw axis title
         /// </summary>
         /// <param name="graph">Reference to the Chart Graphics object</param>
         private void DrawAxisTitle(ChartGraphics graph)
         {
-            if (!this.enabled)
+            if (!enabled)
                 return;
 
             // Draw axis title
-            if (this.Title.Length > 0)
+            if (Title.Length > 0)
             {
-                Matrix oldTransform = null;
+                SKMatrix oldTransform = SKMatrix.Empty;
 
                 // Draw title in 3D
                 if (ChartArea.Area3DStyle.Enable3D && !ChartArea.chartAreaIsCurcular)
@@ -1537,59 +1319,59 @@ namespace WebCharts.Services.Models.General
                     return;
                 }
 
-                string axisTitle = this.Title;
+                string axisTitle = Title;
 
                 //******************************************************
                 //** Check axis position
                 //******************************************************
-                float axisPosition = (float)this.GetAxisPosition();
-                if (this.AxisPosition == AxisPosition.Bottom)
+                float axisPosition = (float)GetAxisPosition();
+                if (AxisPosition == AxisPosition.Bottom)
                 {
-                    if (!this.GetIsMarksNextToAxis())
+                    if (!GetIsMarksNextToAxis())
                     {
                         axisPosition = ChartArea.PlotAreaPosition.Bottom;
                     }
                     axisPosition = ChartArea.PlotAreaPosition.Bottom - axisPosition;
                 }
-                else if (this.AxisPosition == AxisPosition.Top)
+                else if (AxisPosition == AxisPosition.Top)
                 {
-                    if (!this.GetIsMarksNextToAxis())
+                    if (!GetIsMarksNextToAxis())
                     {
                         axisPosition = ChartArea.PlotAreaPosition.Y;
                     }
-                    axisPosition = axisPosition - ChartArea.PlotAreaPosition.Y;
+                    axisPosition -= ChartArea.PlotAreaPosition.Y;
                 }
-                else if (this.AxisPosition == AxisPosition.Right)
+                else if (AxisPosition == AxisPosition.Right)
                 {
-                    if (!this.GetIsMarksNextToAxis())
+                    if (!GetIsMarksNextToAxis())
                     {
                         axisPosition = ChartArea.PlotAreaPosition.Right;
                     }
                     axisPosition = ChartArea.PlotAreaPosition.Right - axisPosition;
                 }
-                else if (this.AxisPosition == AxisPosition.Left)
+                else if (AxisPosition == AxisPosition.Left)
                 {
-                    if (!this.GetIsMarksNextToAxis())
+                    if (!GetIsMarksNextToAxis())
                     {
                         axisPosition = ChartArea.PlotAreaPosition.X;
                     }
-                    axisPosition = axisPosition - ChartArea.PlotAreaPosition.X;
+                    axisPosition -= ChartArea.PlotAreaPosition.X;
                 }
 
                 //******************************************************
                 //** Adjust axis elements size with axis position
                 //******************************************************
                 // Calculate total size of axis elements
-                float axisSize = this.markSize + this.labelSize;
+                float axisSize = markSize + labelSize;
                 axisSize -= axisPosition;
                 if (axisSize < 0)
                 {
                     axisSize = 0;
                 }
                 // Set title alignment
-                using (StringFormat format = new StringFormat())
+                using (StringFormat format = new())
                 {
-                    format.Alignment = this.TitleAlignment;
+                    format.Alignment = TitleAlignment;
                     format.Trimming = StringTrimming.EllipsisCharacter;
                     // VSTS #144398
                     // We need to have the StringFormatFlags set to FitBlackBox as othwerwise axis titles using Fonts like 
@@ -1599,24 +1381,24 @@ namespace WebCharts.Services.Models.General
 
                     // Calculate title rectangle
                     _titlePosition = ChartArea.PlotAreaPosition.ToSKRect();
-                    float titleSizeWithoutSpacing = this.titleSize - elementSpacing;
-                    if (this.AxisPosition == AxisPosition.Left)
+                    float titleSizeWithoutSpacing = titleSize - elementSpacing;
+                    if (AxisPosition == AxisPosition.Left)
                     {
-                        _titlePosition.X = ChartArea.PlotAreaPosition.X - titleSizeWithoutSpacing - axisSize;
-                        _titlePosition.Y = ChartArea.PlotAreaPosition.Y;
+                        _titlePosition.Left = ChartArea.PlotAreaPosition.X - titleSizeWithoutSpacing - axisSize;
+                        _titlePosition.Top = ChartArea.PlotAreaPosition.Y;
 
-                        if (!this.IsTextVertical)
+                        if (!IsTextVertical)
                         {
-                            SKSize axisTitleSize = new SKSize(titleSizeWithoutSpacing, ChartArea.PlotAreaPosition.Height);
-                            _titlePosition.Width = axisTitleSize.Width;
-                            _titlePosition.Height = axisTitleSize.Height;
+                            SKSize axisTitleSize = new(titleSizeWithoutSpacing, ChartArea.PlotAreaPosition.Height);
+                            _titlePosition.Right = _titlePosition.Left + axisTitleSize.Width;
+                            _titlePosition.Bottom = _titlePosition.Top + axisTitleSize.Height;
 
                             format.Alignment = StringAlignment.Center;
-                            if (this.TitleAlignment == StringAlignment.Far)
+                            if (TitleAlignment == StringAlignment.Far)
                             {
                                 format.LineAlignment = StringAlignment.Near;
                             }
-                            else if (this.TitleAlignment == StringAlignment.Near)
+                            else if (TitleAlignment == StringAlignment.Near)
                             {
                                 format.LineAlignment = StringAlignment.Far;
                             }
@@ -1630,36 +1412,35 @@ namespace WebCharts.Services.Models.General
                             SKSize axisTitleSize = graph.GetAbsoluteSize(new SKSize(titleSizeWithoutSpacing, ChartArea.PlotAreaPosition.Height));
                             axisTitleSize = graph.GetRelativeSize(new SKSize(axisTitleSize.Height, axisTitleSize.Width));
 
-							_titlePosition.Width = axisTitleSize.Width;
-							_titlePosition.Height = axisTitleSize.Height;
-
-                            _titlePosition.Y += ChartArea.PlotAreaPosition.Height / 2f - _titlePosition.Height / 2f;
-							_titlePosition.X += titleSizeWithoutSpacing / 2f - _titlePosition.Width / 2f;
+                            _titlePosition.Top += ChartArea.PlotAreaPosition.Height / 2f - _titlePosition.Height / 2f;
+                            _titlePosition.Left += titleSizeWithoutSpacing / 2f - _titlePosition.Width / 2f;
+                            _titlePosition.Right = _titlePosition.Left + axisTitleSize.Width;
+                            _titlePosition.Bottom = _titlePosition.Top + axisTitleSize.Height;
 
                             // Set graphics rotation transformation
-                            oldTransform = this.SetRotationTransformation(graph, _titlePosition);
+                            oldTransform = SetRotationTransformation(graph, _titlePosition);
 
                             // Set alignment
                             format.LineAlignment = StringAlignment.Center;
                         }
                     }
-                    else if (this.AxisPosition == AxisPosition.Right)
+                    else if (AxisPosition == AxisPosition.Right)
                     {
-                        _titlePosition.X = ChartArea.PlotAreaPosition.Right + axisSize;
-                        _titlePosition.Y = ChartArea.PlotAreaPosition.Y;
+                        _titlePosition.Left = ChartArea.PlotAreaPosition.Right + axisSize;
+                        _titlePosition.Top = ChartArea.PlotAreaPosition.Y;
 
-                        if (!this.IsTextVertical)
+                        if (!IsTextVertical)
                         {
-                            SKSize axisTitleSize = new SKSize(titleSizeWithoutSpacing, ChartArea.PlotAreaPosition.Height);
-                            _titlePosition.Width = axisTitleSize.Width;
-                            _titlePosition.Height = axisTitleSize.Height;
+                            SKSize axisTitleSize = new(titleSizeWithoutSpacing, ChartArea.PlotAreaPosition.Height);
+                            _titlePosition.Right = _titlePosition.Left + axisTitleSize.Width;
+                            _titlePosition.Bottom = _titlePosition.Top + axisTitleSize.Height;
 
                             format.Alignment = StringAlignment.Center;
-                            if (this.TitleAlignment == StringAlignment.Far)
+                            if (TitleAlignment == StringAlignment.Far)
                             {
                                 format.LineAlignment = StringAlignment.Near;
                             }
-                            else if (this.TitleAlignment == StringAlignment.Near)
+                            else if (TitleAlignment == StringAlignment.Near)
                             {
                                 format.LineAlignment = StringAlignment.Far;
                             }
@@ -1673,104 +1454,90 @@ namespace WebCharts.Services.Models.General
                             SKSize axisTitleSize = graph.GetAbsoluteSize(new SKSize(titleSizeWithoutSpacing, ChartArea.PlotAreaPosition.Height));
                             axisTitleSize = graph.GetRelativeSize(new SKSize(axisTitleSize.Height, axisTitleSize.Width));
 
-							_titlePosition.Width = axisTitleSize.Width;
-							_titlePosition.Height = axisTitleSize.Height;
-							
-                            _titlePosition.Y += ChartArea.PlotAreaPosition.Height / 2f - _titlePosition.Height / 2f;
-							_titlePosition.X += titleSizeWithoutSpacing / 2f - _titlePosition.Width / 2f;
+                            _titlePosition.Left += titleSizeWithoutSpacing / 2f - _titlePosition.Width / 2f;
+                            _titlePosition.Top += ChartArea.PlotAreaPosition.Height / 2f - _titlePosition.Height / 2f;
+                            _titlePosition.Right = _titlePosition.Left + axisTitleSize.Width;
+                            _titlePosition.Bottom = _titlePosition.Top + axisTitleSize.Height;
+
 
                             // Set graphics rotation transformation
-                            oldTransform = this.SetRotationTransformation(graph, _titlePosition);
+                            oldTransform = SetRotationTransformation(graph, _titlePosition);
 
                             // Set alignment
                             format.LineAlignment = StringAlignment.Center;
                         }
                     }
-                    else if (this.AxisPosition == AxisPosition.Top)
+                    else if (AxisPosition == AxisPosition.Top)
                     {
-                        _titlePosition.Y = ChartArea.PlotAreaPosition.Y - titleSizeWithoutSpacing - axisSize;
-                        _titlePosition.Height = titleSizeWithoutSpacing;
-                        _titlePosition.X = ChartArea.PlotAreaPosition.X;
-                        _titlePosition.Width = ChartArea.PlotAreaPosition.Width;
+                        _titlePosition.Top = ChartArea.PlotAreaPosition.Y - titleSizeWithoutSpacing - axisSize;
+                        _titlePosition.Bottom = _titlePosition.Top + titleSizeWithoutSpacing;
+                        _titlePosition.Left = ChartArea.PlotAreaPosition.X;
+                        _titlePosition.Right = _titlePosition.Left + ChartArea.PlotAreaPosition.Width;
 
-                        if (this.IsTextVertical)
+                        if (IsTextVertical)
                         {
                             // Set graphics rotation transformation
-                            oldTransform = this.SetRotationTransformation(graph, _titlePosition);
+                            oldTransform = SetRotationTransformation(graph, _titlePosition);
                         }
 
                         // Set alignment
                         format.LineAlignment = StringAlignment.Center;
                     }
-                    else if (this.AxisPosition == AxisPosition.Bottom)
+                    else if (AxisPosition == AxisPosition.Bottom)
                     {
-                        _titlePosition.Y = ChartArea.PlotAreaPosition.Bottom + axisSize;
-                        _titlePosition.Height = titleSizeWithoutSpacing;
-                        _titlePosition.X = ChartArea.PlotAreaPosition.X;
-                        _titlePosition.Width = ChartArea.PlotAreaPosition.Width;
+                        _titlePosition.Top = ChartArea.PlotAreaPosition.Bottom + axisSize;
+                        _titlePosition.Bottom = _titlePosition.Top + titleSizeWithoutSpacing;
+                        _titlePosition.Left = ChartArea.PlotAreaPosition.X;
+                        _titlePosition.Right = _titlePosition.Left + ChartArea.PlotAreaPosition.Width;
 
-                        if (this.IsTextVertical)
+                        if (IsTextVertical)
                         {
                             // Set graphics rotation transformation
-                            oldTransform = this.SetRotationTransformation(graph, _titlePosition);
+                            oldTransform = SetRotationTransformation(graph, _titlePosition);
                         }
 
                         // Set alignment
                         format.LineAlignment = StringAlignment.Center;
                     }
-
-#if DEBUG
-                    // TESTING CODE: Shows labels rectangle position.
-					//				SKRect rr = graph.GetAbsoluteRectangle(_titlePosition);
-					//				graph.DrawRectangle(Pens.Blue, rr.X, rr.Y, rr.Width, rr.Height);
-#endif // DEBUG
 
                     // Draw title
-                    using (Brush brush = new SolidBrush(this.TitleForeColor))
-                    {
-                        graph.DrawStringRel(
-                            axisTitle.Replace("\\n", "\n"),
-                            this.TitleFont,
-                            brush,
-                            _titlePosition,
-                            format,
-                            this.GetTextOrientation());
-                    }
+                    using SKPaint brush = new() { Color = TitleForeColor };
+                    graph.DrawStringRel(
+                        axisTitle.Replace("\\n", "\n"),
+                        TitleFont,
+                        brush,
+                        _titlePosition,
+                        format,
+                        GetTextOrientation());
                 }
 
                 // Process selection regions
-                if (this.Common.ProcessModeRegions)
+                if (Common.ProcessModeRegions)
                 {
                     // NOTE: Solves Issue #4423
                     // Transform title position coordinates using curent Graphics matrix
                     SKRect transformedTitlePosition = graph.GetAbsoluteRectangle(_titlePosition);
-                    SKPoint[] rectPoints = new SKPoint[] { 
-						new SKPoint(transformedTitlePosition.X, transformedTitlePosition.Y),
-						new SKPoint(transformedTitlePosition.Right, transformedTitlePosition.Bottom) };
+                    SKPoint[] rectPoints = new SKPoint[] {
+                        new SKPoint(transformedTitlePosition.Left, transformedTitlePosition.Top),
+                        new SKPoint(transformedTitlePosition.Right, transformedTitlePosition.Bottom) };
                     graph.Transform.TransformPoints(rectPoints);
                     transformedTitlePosition = new SKRect(
                         rectPoints[0].X,
                         rectPoints[0].Y,
                         rectPoints[1].X - rectPoints[0].X,
                         rectPoints[1].Y - rectPoints[0].Y);
-                    if (transformedTitlePosition.Width < 0)
+                    if (transformedTitlePosition.Width < 0 || transformedTitlePosition.Height < 0)
                     {
-                        transformedTitlePosition.Width = Math.Abs(transformedTitlePosition.Width);
-                        transformedTitlePosition.X -= transformedTitlePosition.Width;
-                    }
-                    if (transformedTitlePosition.Height < 0)
-                    {
-                        transformedTitlePosition.Height = Math.Abs(transformedTitlePosition.Height);
-                        transformedTitlePosition.Y -= transformedTitlePosition.Height;
+                        transformedTitlePosition = transformedTitlePosition.Standardized;
                     }
 
                     // Add hot region 
-                    this.Common.HotRegionsList.AddHotRegion(
+                    Common.HotRegionsList.AddHotRegion(
                         transformedTitlePosition, this, ChartElementType.AxisTitle, false, false);
                 }
 
                 // Restore old transformation
-                if (oldTransform != null)
+                if (oldTransform != SKMatrix.Empty)
                 {
                     graph.Transform = oldTransform;
                 }
@@ -1784,25 +1551,25 @@ namespace WebCharts.Services.Models.General
         /// <param name="graph">Chart graphics to apply transformation for.</param>
         /// <param name="titlePosition">Title position.</param>
         /// <returns>Old graphics transformation matrix.</returns>
-        private Matrix SetRotationTransformation(ChartGraphics graph, SKRect titlePosition)
+        private SKMatrix SetRotationTransformation(ChartGraphics graph, SKRect titlePosition)
         {
             // Save old graphics transformation
-            Matrix oldTransform = graph.Transform.Clone();
+            SKMatrix oldTransform = graph.Transform;
 
             // Rotate left tile 90 degrees at center
             SKPoint center = SKPoint.Empty;
-            center.X = titlePosition.X + titlePosition.Width / 2F;
-            center.Y = titlePosition.Y + titlePosition.Height / 2F;
+            center.X = titlePosition.Left + titlePosition.Width / 2F;
+            center.Y = titlePosition.Top + titlePosition.Height / 2F;
 
             // Create and set new transformation matrix
-            float angle = (this.GetTextOrientation() == TextOrientation.Rotated90) ? 90f : -90f;
-            Matrix newMatrix = graph.Transform.Clone();
-            newMatrix.RotateAt(angle, graph.GetAbsolutePoint(center));
+            float angle = (GetTextOrientation() == TextOrientation.Rotated90) ? 90f : -90f;
+            var p = graph.GetAbsolutePoint(center);
+            SKMatrix newMatrix = SKMatrix.CreateRotationDegrees(angle, p.X, p.Y);
             graph.Transform = newMatrix;
 
             return oldTransform;
         }
-            
+
 
         /// <summary>
         /// Draws a radial line in circular Common.Chart area.
@@ -1816,7 +1583,7 @@ namespace WebCharts.Services.Models.General
         internal void DrawRadialLine(
             object obj,
             ChartGraphics graph,
-            Color color,
+            SKColor color,
             int width,
             ChartDashStyle style,
             double position)
@@ -1830,13 +1597,13 @@ namespace WebCharts.Services.Models.General
             {
                 if (rect.Width > rect.Height)
                 {
-                    rect.X += (rect.Width - rect.Height) / 2f;
-                    rect.Width = rect.Height;
+                    rect.Left += (rect.Width - rect.Height) / 2f;
+                    rect.Right = rect.Left + rect.Height;
                 }
                 else
                 {
-                    rect.Y += (rect.Height - rect.Width) / 2f;
-                    rect.Height = rect.Width;
+                    rect.Top += (rect.Height - rect.Width) / 2f;
+                    rect.Bottom = rect.Top + rect.Width;
                 }
             }
 
@@ -1844,57 +1611,50 @@ namespace WebCharts.Services.Models.General
             float angle = ChartArea.CircularPositionToAngle(position);
 
             // Set clipping region to the polygon
-            Region oldRegion = null;
+            SKRegion oldRegion = null;
             if (ChartArea.CircularUsePolygons)
             {
                 oldRegion = graph.Clip;
-                graph.Clip = new Region(graph.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber));
+                graph.Clip = new SKRegion(graph.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber));
             }
 
             // Get center point
             SKPoint centerPoint = graph.GetAbsolutePoint(ChartArea.circularCenter);
 
             // Set graphics rotation matrix
-            Matrix oldMatrix = graph.Transform;
-            Matrix newMatrix = oldMatrix.Clone();
-            newMatrix.RotateAt(
-                angle,
-                centerPoint);
+            SKMatrix oldMatrix = graph.Transform;
+            SKMatrix newMatrix = SKMatrix.CreateRotationDegrees(angle, centerPoint.X, centerPoint.Y);
             graph.Transform = newMatrix;
 
             // Draw Line
-            SKPoint endPoint = new SKPoint(rect.X + rect.Width / 2f, rect.Y);
+            SKPoint endPoint = new(rect.Left + rect.Width / 2f, rect.Top);
             graph.DrawLineAbs(color, width, style, centerPoint, endPoint);
 
             // Process selection regions
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions)
             {
-                using (SKPath path = new SKPath())
+                using SKPath path = new();
+                path.AddLine(centerPoint, endPoint);
+                path.Transform(newMatrix);
+                try
                 {
-                    path.AddLine(centerPoint, endPoint);
-                    path.Transform(newMatrix);
-                    try
-                    {
-                        using (Pen pen = new Pen(Color.Black, width + 2))
-                        {
-                            path.Widen(pen);
-                            this.Common.HotRegionsList.AddHotRegion(path, false, ChartElementType.Gridlines, obj);
-                        }
-                    }
-                    catch (OutOfMemoryException)
-                    {
-                        // SKPath.Widen incorrectly throws OutOfMemoryException
-                        // catching here and reacting by not widening
-                    }
-                    catch (ArgumentException)
-                    {
-                    }
+                    using SKPaint pen = new() { Color = SKColors.Black, StrokeWidth = width + 2 };
+                    //path.Widen(pen)
+                    Common.HotRegionsList.AddHotRegion(path, false, ChartElementType.Gridlines, obj);
+                }
+                catch (OutOfMemoryException)
+                {
+                    // SKPath.Widen incorrectly throws OutOfMemoryException
+                    // catching here and reacting by not widening
+                }
+                catch (ArgumentException)
+                {
+                    // Do nothing
                 }
             }
 
             // Restore graphics
             graph.Transform = oldMatrix;
-            newMatrix.Dispose();
 
             // Restore clip region
             if (ChartArea.CircularUsePolygons)
@@ -1916,7 +1676,7 @@ namespace WebCharts.Services.Models.General
         internal void DrawCircularLine(
             object obj,
             ChartGraphics graph,
-            Color color,
+            SKColor color,
             int width,
             ChartDashStyle style,
             float position
@@ -1931,13 +1691,13 @@ namespace WebCharts.Services.Models.General
             {
                 if (rect.Width > rect.Height)
                 {
-                    rect.X += (rect.Width - rect.Height) / 2f;
-                    rect.Width = rect.Height;
+                    rect.Left += (rect.Width - rect.Height) / 2f;
+                    rect.Right = rect.Left + rect.Height;
                 }
                 else
                 {
-                    rect.Y += (rect.Height - rect.Width) / 2f;
-                    rect.Height = rect.Width;
+                    rect.Top += (rect.Height - rect.Width) / 2f;
+                    rect.Bottom = rect.Top + rect.Width;
                 }
             }
 
@@ -1947,8 +1707,8 @@ namespace WebCharts.Services.Models.General
             rect.Inflate(-rectInflate, -rectInflate);
 
             // Create circle pen
-            Pen circlePen = new Pen(color, width);
-            circlePen.DashStyle = graph.GetPenStyle(style);
+            using SKPaint circlePen = new() { Color = color, StrokeWidth = width };
+            circlePen.PathEffect = ChartGraphics.GetPenStyle(style, width);
 
             // Draw circle
             if (ChartArea.CircularUsePolygons)
@@ -1962,39 +1722,36 @@ namespace WebCharts.Services.Models.General
             }
 
             // Process selection regions
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions && rect.Width >= 1f && rect.Height > 1)
             {
-                // Bounding rectangle must be more than 1 pixel by 1 pixel
-                if (rect.Width >= 1f && rect.Height > 1)
+                SKPath path = null;
+                try
                 {
-                    SKPath path = null;
-                    try
+                    if (ChartArea.CircularUsePolygons)
                     {
-                        if (ChartArea.CircularUsePolygons)
-                        {
-                            path = graph.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber);
-                        }
-                        else
-                        {
-                            path = new SKPath();
-                            path.AddEllipse(rect);
-                        }
-                        circlePen.Width += 2;
-                        path.Widen(circlePen);
-                        this.Common.HotRegionsList.AddHotRegion(path, false, ChartElementType.Gridlines, obj);
+                        path = graph.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber);
                     }
-                    catch (OutOfMemoryException)
+                    else
                     {
-                        // SKPath.Widen incorrectly throws OutOfMemoryException
-                        // catching here and reacting by not widening
+                        path = new SKPath();
+                        path.AddOval(rect);
                     }
-                    catch (ArgumentException)
-                    {
-                    }
-                    finally
-                    {
-                        path.Dispose();
-                    }
+                    circlePen.StrokeWidth += 2;
+                    //path.Widen(circlePen)
+                    Common.HotRegionsList.AddHotRegion(path, false, ChartElementType.Gridlines, obj);
+                }
+                catch (OutOfMemoryException)
+                {
+                    // SKPath.Widen incorrectly throws OutOfMemoryException
+                    // catching here and reacting by not widening
+                }
+                catch (ArgumentException)
+                {
+                    // Do nothing
+                }
+                finally
+                {
+                    path.Dispose();
                 }
             }
 
@@ -2007,239 +1764,234 @@ namespace WebCharts.Services.Models.General
         private void DrawAxis3DTitle(ChartGraphics graph)
         {
             // Do not draw title if axis is not enabled
-            if (!this.enabled)
+            if (!enabled)
             {
                 return;
             }
 
-            string axisTitle = this.Title;
+            string axisTitle = Title;
 
             // Draw axis title
             SKPoint rotationCenter = SKPoint.Empty;
             int angle = 0;
 
             // Set title alignment
-            using (StringFormat format = new StringFormat())
+            using StringFormat format = new();
+            format.Alignment = TitleAlignment;
+            format.Trimming = StringTrimming.EllipsisCharacter;
+            format.FormatFlags |= StringFormatFlags.LineLimit;
+
+            // Measure title size for non-centered aligment
+            SKSize realTitleSize = graph.MeasureString(axisTitle.Replace("\\n", "\n"), TitleFont, new SKSize(10000f, 10000f), format, GetTextOrientation());
+            SKSize axisTitleSize = SKSize.Empty;
+            if (format.Alignment != StringAlignment.Center)
             {
-                format.Alignment = this.TitleAlignment;
-                format.Trimming = StringTrimming.EllipsisCharacter;
-                format.FormatFlags |= StringFormatFlags.LineLimit;
-
-                // Measure title size for non-centered aligment
-                SKSize realTitleSize = graph.MeasureString(axisTitle.Replace("\\n", "\n"), this.TitleFont, new SKSize(10000f, 10000f), format, this.GetTextOrientation());
-                SKSize axisTitleSize = SKSize.Empty;
-                if (format.Alignment != StringAlignment.Center)
+                axisTitleSize = realTitleSize;
+                if (IsTextVertical)
                 {
-                    axisTitleSize = realTitleSize;
-                    if (this.IsTextVertical)
-                    {
-                        // Switch height and width for vertical axis
-                        float tempValue = axisTitleSize.Height;
-                        axisTitleSize.Height = axisTitleSize.Width;
-                        axisTitleSize.Width = tempValue;
-                    }
-
-                    // Get relative size
-                    axisTitleSize = graph.GetRelativeSize(axisTitleSize);
-
-                    // Change format aligment for the reversed mode
-                    if (ChartArea.ReverseSeriesOrder)
-                    {
-                        if (format.Alignment == StringAlignment.Near)
-                        {
-                            format.Alignment = StringAlignment.Far;
-                        }
-                        else
-                        {
-                            format.Alignment = StringAlignment.Near;
-                        }
-                    }
+                    // Switch height and width for vertical axis
+                    float tempValue = axisTitleSize.Height;
+                    axisTitleSize.Height = axisTitleSize.Width;
+                    axisTitleSize.Width = tempValue;
                 }
 
-                // Set text rotation angle based on the text orientation
-                if (this.GetTextOrientation() == TextOrientation.Rotated90)
-                {
-                    angle = 90;
-                }
-                else if (this.GetTextOrientation() == TextOrientation.Rotated270)
-                {
-                    angle = -90;
-                }
+                // Get relative size
+                axisTitleSize = graph.GetRelativeSize(axisTitleSize);
 
-                // Calculate title center point on the axis 
-                if (this.AxisPosition == AxisPosition.Left)
+                // Change format aligment for the reversed mode
+                if (ChartArea.ReverseSeriesOrder)
                 {
-                    rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X, ChartArea.PlotAreaPosition.Y + ChartArea.PlotAreaPosition.Height / 2f);
                     if (format.Alignment == StringAlignment.Near)
                     {
-                        rotationCenter.Y = ChartArea.PlotAreaPosition.Bottom - axisTitleSize.Height / 2f;
+                        format.Alignment = StringAlignment.Far;
                     }
-                    else if (format.Alignment == StringAlignment.Far)
+                    else
                     {
-                        rotationCenter.Y = ChartArea.PlotAreaPosition.Y + axisTitleSize.Height / 2f;
+                        format.Alignment = StringAlignment.Near;
                     }
                 }
-                else if (this.AxisPosition == AxisPosition.Right)
+            }
+
+            // Set text rotation angle based on the text orientation
+            if (GetTextOrientation() == TextOrientation.Rotated90)
+            {
+                angle = 90;
+            }
+            else if (GetTextOrientation() == TextOrientation.Rotated270)
+            {
+                angle = -90;
+            }
+
+            // Calculate title center point on the axis 
+            if (AxisPosition == AxisPosition.Left)
+            {
+                rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X, ChartArea.PlotAreaPosition.Y + ChartArea.PlotAreaPosition.Height / 2f);
+                if (format.Alignment == StringAlignment.Near)
                 {
-                    rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.Right, ChartArea.PlotAreaPosition.Y + ChartArea.PlotAreaPosition.Height / 2f);
-                    if (format.Alignment == StringAlignment.Near)
-                    {
-                        rotationCenter.Y = ChartArea.PlotAreaPosition.Bottom - axisTitleSize.Height / 2f;
-                    }
-                    else if (format.Alignment == StringAlignment.Far)
-                    {
-                        rotationCenter.Y = ChartArea.PlotAreaPosition.Y + axisTitleSize.Height / 2f;
-                    }
+                    rotationCenter.Y = ChartArea.PlotAreaPosition.Bottom - axisTitleSize.Height / 2f;
                 }
-                else if (this.AxisPosition == AxisPosition.Top)
+                else if (format.Alignment == StringAlignment.Far)
                 {
-                    rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X + ChartArea.PlotAreaPosition.Width / 2f, ChartArea.PlotAreaPosition.Y);
-                    if (format.Alignment == StringAlignment.Near)
-                    {
-                        rotationCenter.X = ChartArea.PlotAreaPosition.X + axisTitleSize.Width / 2f;
-                    }
-                    else if (format.Alignment == StringAlignment.Far)
-                    {
-                        rotationCenter.X = ChartArea.PlotAreaPosition.Right - axisTitleSize.Width / 2f;
-                    }
+                    rotationCenter.Y = ChartArea.PlotAreaPosition.Y + axisTitleSize.Height / 2f;
                 }
-                else if (this.AxisPosition == AxisPosition.Bottom)
+            }
+            else if (AxisPosition == AxisPosition.Right)
+            {
+                rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.Right, ChartArea.PlotAreaPosition.Y + ChartArea.PlotAreaPosition.Height / 2f);
+                if (format.Alignment == StringAlignment.Near)
                 {
-                    rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X + ChartArea.PlotAreaPosition.Width / 2f, ChartArea.PlotAreaPosition.Bottom);
-                    if (format.Alignment == StringAlignment.Near)
-                    {
-                        rotationCenter.X = ChartArea.PlotAreaPosition.X + axisTitleSize.Width / 2f;
-                    }
-                    else if (format.Alignment == StringAlignment.Far)
-                    {
-                        rotationCenter.X = ChartArea.PlotAreaPosition.Right - axisTitleSize.Width / 2f;
-                    }
+                    rotationCenter.Y = ChartArea.PlotAreaPosition.Bottom - axisTitleSize.Height / 2f;
                 }
-
-                // Transform center of title coordinates and calculate axis angle
-                bool isOnEdge = false;
-                float zPosition = this.GetMarksZPosition(out isOnEdge);
-                Point3D[] rotationCenterPoints = null;
-                float angleAxis = 0;
-                if (this.AxisPosition == AxisPosition.Top || this.AxisPosition == AxisPosition.Bottom)
+                else if (format.Alignment == StringAlignment.Far)
                 {
-                    rotationCenterPoints = new Point3D[] { 
-					new Point3D(rotationCenter.X, rotationCenter.Y, zPosition),
-					new Point3D(rotationCenter.X - 20f, rotationCenter.Y, zPosition) };
+                    rotationCenter.Y = ChartArea.PlotAreaPosition.Y + axisTitleSize.Height / 2f;
+                }
+            }
+            else if (AxisPosition == AxisPosition.Top)
+            {
+                rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X + ChartArea.PlotAreaPosition.Width / 2f, ChartArea.PlotAreaPosition.Y);
+                if (format.Alignment == StringAlignment.Near)
+                {
+                    rotationCenter.X = ChartArea.PlotAreaPosition.X + axisTitleSize.Width / 2f;
+                }
+                else if (format.Alignment == StringAlignment.Far)
+                {
+                    rotationCenter.X = ChartArea.PlotAreaPosition.Right - axisTitleSize.Width / 2f;
+                }
+            }
+            else if (AxisPosition == AxisPosition.Bottom)
+            {
+                rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X + ChartArea.PlotAreaPosition.Width / 2f, ChartArea.PlotAreaPosition.Bottom);
+                if (format.Alignment == StringAlignment.Near)
+                {
+                    rotationCenter.X = ChartArea.PlotAreaPosition.X + axisTitleSize.Width / 2f;
+                }
+                else if (format.Alignment == StringAlignment.Far)
+                {
+                    rotationCenter.X = ChartArea.PlotAreaPosition.Right - axisTitleSize.Width / 2f;
+                }
+            }
 
-                    // Transform coordinates of text rotation point
-                    ChartArea.matrix3D.TransformPoints(rotationCenterPoints);
-                    rotationCenter = rotationCenterPoints[0].SKPoint;
+            // Transform center of title coordinates and calculate axis angle
+            float zPosition = GetMarksZPosition(out bool isOnEdge);
+            Point3D[] rotationCenterPoints = null;
+            float angleAxis = 0;
+            if (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom)
+            {
+                rotationCenterPoints = new Point3D[] {
+                    new Point3D(rotationCenter.X, rotationCenter.Y, zPosition),
+                    new Point3D(rotationCenter.X - 20f, rotationCenter.Y, zPosition) };
 
-                    // Get absolute coordinates 
-                    rotationCenterPoints[0].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[0].SKPoint);
-                    rotationCenterPoints[1].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[1].SKPoint);
+                // Transform coordinates of text rotation point
+                ChartArea.matrix3D.TransformPoints(rotationCenterPoints);
+                rotationCenter = rotationCenterPoints[0].SKPoint;
 
-                    // Calculate X axis angle
-                    angleAxis = (float)Math.Atan(
-                        (rotationCenterPoints[1].Y - rotationCenterPoints[0].Y) /
-                        (rotationCenterPoints[1].X - rotationCenterPoints[0].X));
+                // Get absolute coordinates 
+                rotationCenterPoints[0].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[0].SKPoint);
+                rotationCenterPoints[1].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[1].SKPoint);
+
+                // Calculate X axis angle
+                angleAxis = (float)Math.Atan(
+                    (rotationCenterPoints[1].Y - rotationCenterPoints[0].Y) /
+                    (rotationCenterPoints[1].X - rotationCenterPoints[0].X));
+            }
+            else
+            {
+                rotationCenterPoints = new Point3D[] {
+                    new Point3D(rotationCenter.X, rotationCenter.Y, zPosition),
+                    new Point3D(rotationCenter.X, rotationCenter.Y - 20f, zPosition) };
+
+                // Transform coordinates of text rotation point
+                ChartArea.matrix3D.TransformPoints(rotationCenterPoints);
+                rotationCenter = rotationCenterPoints[0].SKPoint;
+
+                // Get absolute coordinates 
+                rotationCenterPoints[0].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[0].SKPoint);
+                rotationCenterPoints[1].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[1].SKPoint);
+
+                // Calculate Y axis angle
+                if (rotationCenterPoints[1].Y != rotationCenterPoints[0].Y)
+                {
+                    angleAxis = -(float)Math.Atan(
+                        (rotationCenterPoints[1].X - rotationCenterPoints[0].X) /
+                        (rotationCenterPoints[1].Y - rotationCenterPoints[0].Y));
+                }
+            }
+            angle += (int)Math.Round(angleAxis * 180f / (float)Math.PI);
+
+
+            // Calculate title center offset from the axis line
+            float offset = labelSize + markSize + titleSize / 2f;
+            float dX = 0f, dY = 0f;
+
+
+            // Adjust center of title with labels, marker and title size
+            if (AxisPosition == AxisPosition.Left)
+            {
+                dX = (float)(offset * Math.Cos(angleAxis));
+                rotationCenter.X -= dX;
+            }
+            else if (AxisPosition == AxisPosition.Right)
+            {
+                dX = (float)(offset * Math.Cos(angleAxis));
+                rotationCenter.X += dX;
+            }
+            else if (AxisPosition == AxisPosition.Top)
+            {
+                dY = (float)(offset * Math.Cos(angleAxis));
+                dX = (float)(offset * Math.Sin(angleAxis));
+                rotationCenter.Y -= dY;
+                if (dY > 0)
+                {
+                    rotationCenter.X += dX;
                 }
                 else
                 {
-                    rotationCenterPoints = new Point3D[] { 
-					new Point3D(rotationCenter.X, rotationCenter.Y, zPosition),
-					new Point3D(rotationCenter.X, rotationCenter.Y - 20f, zPosition) };
-
-                    // Transform coordinates of text rotation point
-                    ChartArea.matrix3D.TransformPoints(rotationCenterPoints);
-                    rotationCenter = rotationCenterPoints[0].SKPoint;
-
-                    // Get absolute coordinates 
-                    rotationCenterPoints[0].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[0].SKPoint);
-                    rotationCenterPoints[1].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[1].SKPoint);
-
-                    // Calculate Y axis angle
-                    if (rotationCenterPoints[1].Y != rotationCenterPoints[0].Y)
-                    {
-                        angleAxis = -(float)Math.Atan(
-                            (rotationCenterPoints[1].X - rotationCenterPoints[0].X) /
-                            (rotationCenterPoints[1].Y - rotationCenterPoints[0].Y));
-                    }
-                }
-                angle += (int)Math.Round(angleAxis * 180f / (float)Math.PI);
-
-
-                // Calculate title center offset from the axis line
-                float offset = this.labelSize + this.markSize + this.titleSize / 2f;
-                float dX = 0f, dY = 0f;
-
-
-                // Adjust center of title with labels, marker and title size
-                if (this.AxisPosition == AxisPosition.Left)
-                {
-                    dX = (float)(offset * Math.Cos(angleAxis));
                     rotationCenter.X -= dX;
                 }
-                else if (this.AxisPosition == AxisPosition.Right)
+            }
+            else if (AxisPosition == AxisPosition.Bottom)
+            {
+                dY = (float)(offset * Math.Cos(angleAxis));
+                dX = (float)(offset * Math.Sin(angleAxis));
+                rotationCenter.Y += dY;
+                if (dY > 0)
                 {
-                    dX = (float)(offset * Math.Cos(angleAxis));
+                    rotationCenter.X -= dX;
+                }
+                else
+                {
                     rotationCenter.X += dX;
                 }
-                else if (this.AxisPosition == AxisPosition.Top)
-                {
-                    dY = (float)(offset * Math.Cos(angleAxis));
-                    dX = (float)(offset * Math.Sin(angleAxis));
-                    rotationCenter.Y -= dY;
-                    if (dY > 0)
-                    {
-                        rotationCenter.X += dX;
-                    }
-                    else
-                    {
-                        rotationCenter.X -= dX;
-                    }
-                }
-                else if (this.AxisPosition == AxisPosition.Bottom)
-                {
-                    dY = (float)(offset * Math.Cos(angleAxis));
-                    dX = (float)(offset * Math.Sin(angleAxis));
-                    rotationCenter.Y += dY;
-                    if (dY > 0)
-                    {
-                        rotationCenter.X -= dX;
-                    }
-                    else
-                    {
-                        rotationCenter.X += dX;
-                    }
-                }
+            }
 
-                // Always align text in the center
-                format.LineAlignment = StringAlignment.Center;
-                format.Alignment = StringAlignment.Center;
-                // SQL VSTS Fix #259954, Dev10: 591135 Windows 7 crashes on empty transformation.
-                if (rotationCenter.IsEmpty || float.IsNaN(rotationCenter.X) || float.IsNaN(rotationCenter.Y))
-                {
-                    return;
-                }
+            // Always align text in the center
+            format.LineAlignment = StringAlignment.Center;
+            format.Alignment = StringAlignment.Center;
+            // SQL VSTS Fix #259954, Dev10: 591135 Windows 7 crashes on empty transformation.
+            if (rotationCenter.IsEmpty || float.IsNaN(rotationCenter.X) || float.IsNaN(rotationCenter.Y))
+            {
+                return;
+            }
 
-                // Draw 3D title
-                using (Brush brush = new SolidBrush(this.TitleForeColor))
-                {
-                    graph.DrawStringRel(
-                        axisTitle.Replace("\\n", "\n"),
-                        this.TitleFont,
-                        brush,
-                        rotationCenter,
-                        format,
-                        angle,
-                        this.GetTextOrientation());
-                }
+            // Draw 3D title
+            using (SKPaint brush = new() { Color = TitleForeColor })
+            {
+                graph.DrawStringRel(
+                    axisTitle.Replace("\\n", "\n"),
+                    TitleFont,
+                    brush,
+                    rotationCenter,
+                    format,
+                    angle,
+                    GetTextOrientation());
+            }
 
-                // Add hot region
-                if (Common.ProcessModeRegions)
-                {
-                    using (SKPath hotPath = graph.GetTranformedTextRectPath(rotationCenter, realTitleSize, angle))
-                    {
-                        this.Common.HotRegionsList.AddHotRegion(hotPath, false, ChartElementType.AxisTitle, this);
-                    }
-                }
+            // Add hot region
+            if (Common.ProcessModeRegions)
+            {
+                using SKPath hotPath = graph.GetTranformedTextRectPath(rotationCenter, realTitleSize, angle);
+                Common.HotRegionsList.AddHotRegion(hotPath, false, ChartElementType.AxisTitle, this);
             }
         }
 
@@ -2252,8 +2004,8 @@ namespace WebCharts.Services.Models.General
         {
             Axis opositeAxis;
             ArrowOrientation arrowOrientation = ArrowOrientation.Top;
-            SKPoint first = Point.Empty;
-            SKPoint second = Point.Empty;
+            SKPoint first = SKPoint.Empty;
+            SKPoint second = SKPoint.Empty;
 
             // Set the position of axis
             switch (AxisPosition)
@@ -2319,42 +2071,24 @@ namespace WebCharts.Services.Models.General
                 first.Y = PlotAreaPosition.Y + PlotAreaPosition.Height / 2f;
             }
 
-            
+
             if (Common.ProcessModePaint)
             {
                 if (!ChartArea.Area3DStyle.Enable3D || ChartArea.chartAreaIsCurcular)
                 {
-
-					// Start Svg/Flash Selection mode
-					graph.StartHotRegion( this._url, _toolTip );
-
-                    // Draw the line
                     graph.DrawLineRel(_lineColor, _lineWidth, _lineDashStyle, first, second);
-
-					// End Svg/Flash Selection mode
-					graph.EndHotRegion( );
 
                     // Opposite axis. Arrow uses this axis to find 
                     // a shift from Common.Chart area border. This shift 
                     // depend on Tick mark size.
-                    switch (arrowOrientation)
+                    opositeAxis = arrowOrientation switch
                     {
-                        case ArrowOrientation.Left:
-                            opositeAxis = ChartArea.AxisX;
-                            break;
-                        case ArrowOrientation.Right:
-                            opositeAxis = ChartArea.AxisX2;
-                            break;
-                        case ArrowOrientation.Top:
-                            opositeAxis = ChartArea.AxisY2;
-                            break;
-                        case ArrowOrientation.Bottom:
-                            opositeAxis = ChartArea.AxisY;
-                            break;
-                        default:
-                            opositeAxis = ChartArea.AxisX;
-                            break;
-                    }
+                        ArrowOrientation.Left => ChartArea.AxisX,
+                        ArrowOrientation.Right => ChartArea.AxisX2,
+                        ArrowOrientation.Top => ChartArea.AxisY2,
+                        ArrowOrientation.Bottom => ChartArea.AxisY,
+                        _ => ChartArea.AxisX,
+                    };
 
                     // Draw arrow
                     SKPoint arrowPosition;
@@ -2368,7 +2102,7 @@ namespace WebCharts.Services.Models.General
                 }
                 else
                 {
-                    Draw3DAxisLine(graph, first, second, (this.AxisPosition == AxisPosition.Top || this.AxisPosition == AxisPosition.Bottom), backElements);
+                    Draw3DAxisLine(graph, first, second, (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom), backElements);
                 }
             }
 
@@ -2382,19 +2116,15 @@ namespace WebCharts.Services.Models.General
         /// <param name="backElements">set to <c>true</c> if we draw back elements.</param>
         private void DrawAxisLineHotRegion(ChartGraphics graph, bool backElements)
         {
-            if (Common.ProcessModeRegions)
+            //VSTS #229835: During the 3D rendering the axis is drawn twice: 
+            //1. In PrePaint() both axis and backelements (labels) are drawn.
+            //2. In Paint() the axis is redrawn without labels and as a result it creates a second hot region which covered the labels' hotregions. 
+            //In order to avoid this we have to suppress the hotregion drawing in the Paint using the backElements flag (it's false during the Paint)
+            //The circular charts and 2D charts are drawn only once in Paint() so we draw the hot regions.
+            if (Common.ProcessModeRegions && (backElements || !ChartArea.Area3DStyle.Enable3D || ChartArea.chartAreaIsCurcular))
             {
-                //VSTS #229835: During the 3D rendering the axis is drawn twice: 
-                //1. In PrePaint() both axis and backelements (labels) are drawn.
-                //2. In Paint() the axis is redrawn without labels and as a result it creates a second hot region which covered the labels' hotregions. 
-                //In order to avoid this we have to suppress the hotregion drawing in the Paint using the backElements flag (it's false during the Paint)
-                //The circular charts and 2D charts are drawn only once in Paint() so we draw the hot regions.
-                if (backElements || !ChartArea.Area3DStyle.Enable3D || ChartArea.chartAreaIsCurcular)
-                {
-                    DrawAxisLineHotRegion(graph);
-                }
+                DrawAxisLineHotRegion(graph);
             }
-
         }
 
         /// <summary>
@@ -2403,113 +2133,110 @@ namespace WebCharts.Services.Models.General
         /// <param name="graph">The chart graphics instance.</param>
         private void DrawAxisLineHotRegion(ChartGraphics graph)
         {
-            using (SKPath path = new SKPath())
+            using SKPath path = new();
+            // Find the topLeft(first) and bottomRight(second) points of the hotregion rectangle
+            SKPoint first = SKPoint.Empty;
+            SKPoint second = SKPoint.Empty;
+            float axisPosition = (float)GetAxisPosition();
+
+            switch (AxisPosition)
             {
-                // Find the topLeft(first) and bottomRight(second) points of the hotregion rectangle
-                SKPoint first = SKPoint.Empty;
-                SKPoint second = SKPoint.Empty;
-                float axisPosition = (float)GetAxisPosition();
+                case AxisPosition.Left:
+                    first.X = axisPosition - (labelSize + markSize);
+                    first.Y = PlotAreaPosition.Y;
+                    second.X = axisPosition;
+                    second.Y = PlotAreaPosition.Bottom;
+                    break;
 
-                switch (this.AxisPosition)
-                {
-                    case AxisPosition.Left:
-                        first.X = axisPosition - (labelSize + markSize);
-                        first.Y = PlotAreaPosition.Y;
-                        second.X = axisPosition;
-                        second.Y = PlotAreaPosition.Bottom;
-                        break;
+                case AxisPosition.Right:
+                    first.X = axisPosition;
+                    first.Y = PlotAreaPosition.Y;
+                    second.X = axisPosition + labelSize + markSize;
+                    second.Y = PlotAreaPosition.Bottom;
+                    break;
 
-                    case AxisPosition.Right:
-                        first.X = axisPosition;
-                        first.Y = PlotAreaPosition.Y;
-                        second.X = axisPosition + labelSize + markSize;
-                        second.Y = PlotAreaPosition.Bottom;
-                        break;
+                case AxisPosition.Bottom:
+                    first.X = PlotAreaPosition.X;
+                    first.Y = axisPosition;
+                    second.X = PlotAreaPosition.Right;
+                    second.Y = axisPosition + labelSize + markSize;
+                    break;
 
-                    case AxisPosition.Bottom:
-                        first.X = PlotAreaPosition.X;
-                        first.Y = axisPosition;
-                        second.X = PlotAreaPosition.Right;
-                        second.Y = axisPosition + labelSize + markSize;
-                        break;
+                case AxisPosition.Top:
+                    first.X = PlotAreaPosition.X;
+                    first.Y = axisPosition - (labelSize + markSize);
+                    second.X = PlotAreaPosition.Right;
+                    second.Y = axisPosition;
+                    break;
+            }
 
-                    case AxisPosition.Top:
-                        first.X = PlotAreaPosition.X;
-                        first.Y = axisPosition - (labelSize + markSize);
-                        second.X = PlotAreaPosition.Right;
-                        second.Y = axisPosition;
-                        break;
-                }
+            // Update axis line position for circular area
+            if (ChartArea.chartAreaIsCurcular)
+            {
+                second.Y = PlotAreaPosition.Y + PlotAreaPosition.Height / 2f;
+            }
 
-                // Update axis line position for circular area
-                if (ChartArea.chartAreaIsCurcular)
-                {
-                    second.Y = PlotAreaPosition.Y + PlotAreaPosition.Height / 2f;
-                }
-                
-                // Create rectangle and inflate it
-                SKRect rect = new SKRect(first.X, first.Y, second.X - first.X, second.Y - first.Y);
-                SKSize size = graph.GetRelativeSize(new SKSize(3, 3));
+            // Create rectangle and inflate it
+            SKRect rect = new(first.X, first.Y, second.X - first.X, second.Y - first.Y);
+            SKSize size = graph.GetRelativeSize(new SKSize(3, 3));
 
-                if (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom)
-                {
-                    rect.Inflate(2, size.Height);
-                }
-                else
-                {
-                    rect.Inflate(size.Width, 2);
-                }
+            if (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom)
+            {
+                rect.Inflate(2, size.Height);
+            }
+            else
+            {
+                rect.Inflate(size.Width, 2);
+            }
 
-                // Get the rectangle points
-                SKPoint[] points = new SKPoint[] {
+            // Get the rectangle points
+            SKPoint[] points = new SKPoint[] {
                     new SKPoint(rect.Left, rect.Top),
-                    new SKPoint(rect.Right, rect.Top), 
-                    new SKPoint(rect.Right, rect.Bottom), 
+                    new SKPoint(rect.Right, rect.Top),
+                    new SKPoint(rect.Right, rect.Bottom),
                     new SKPoint(rect.Left, rect.Bottom)};
 
-                // If we are dealing with the 3D - transform the rectangle
-                if (ChartArea.Area3DStyle.Enable3D && !ChartArea.chartAreaIsCurcular)
-                {
-                    Boolean axisOnEdge = false;
-                    float zPositon = GetMarksZPosition(out axisOnEdge);
+            // If we are dealing with the 3D - transform the rectangle
+            if (ChartArea.Area3DStyle.Enable3D && !ChartArea.chartAreaIsCurcular)
+            {
+                float zPositon = GetMarksZPosition(out _);
 
-                    // Convert points to 3D
-                    Point3D[] points3D = new Point3D[points.Length];
-                    for (int i = 0; i < points.Length; i++)
-                    {
-                        points3D[i] = new Point3D(points[i].X, points[i].Y, zPositon);
-                    }
-
-                    // Transform
-                    ChartArea.matrix3D.TransformPoints(points3D);
-
-                    // Convert to 2D
-                    for (int i = 0; i < points3D.Length; i++)
-                    {
-                        points[i] = points3D[i].SKPoint;
-                    }
-                }
-
-                // Transform points to absolute cooordinates
+                // Convert points to 3D
+                Point3D[] points3D = new Point3D[points.Length];
                 for (int i = 0; i < points.Length; i++)
                 {
-                    points[i] = graph.GetAbsolutePoint(points[i]);
+                    points3D[i] = new Point3D(points[i].X, points[i].Y, zPositon);
                 }
 
-                // Add the points to the path
-                path.AddPolygon(points);
+                // Transform
+                ChartArea.matrix3D.TransformPoints(points3D);
 
-				Common.HotRegionsList.AddHotRegion( 
-					graph, 
-					path, 
-					false, 
-					this._toolTip,
-					string.Empty,
-					string.Empty,
-					string.Empty,
-					this,
-					ChartElementType.Axis);
+                // Convert to 2D
+                for (int i = 0; i < points3D.Length; i++)
+                {
+                    points[i] = points3D[i].SKPoint;
+                }
             }
+
+            // Transform points to absolute cooordinates
+            for (int i = 0; i < points.Length; i++)
+            {
+                points[i] = graph.GetAbsolutePoint(points[i]);
+            }
+
+            // Add the points to the path
+            path.AddPoly(points);
+
+            Common.HotRegionsList.AddHotRegion(
+                graph,
+                path,
+                false,
+                ToolTip,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                this,
+                ChartElementType.Axis);
         }
 
 
@@ -2530,15 +2257,15 @@ namespace WebCharts.Services.Models.General
             )
         {
             // Check if axis is positioned on the plot area adge
-            bool onEdge = this.IsAxisOnAreaEdge;
+            bool onEdge = IsAxisOnAreaEdge;
 
             // Check if axis tick marks are drawn inside plotting area
             bool tickMarksOnEdge = onEdge;
             if (tickMarksOnEdge &&
-                this.MajorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis ||
-                this.MajorTickMark.TickMarkStyle == TickMarkStyle.InsideArea ||
-                this.MinorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis ||
-                this.MinorTickMark.TickMarkStyle == TickMarkStyle.InsideArea)
+                MajorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis ||
+                MajorTickMark.TickMarkStyle == TickMarkStyle.InsideArea ||
+                MinorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis ||
+                MinorTickMark.TickMarkStyle == TickMarkStyle.InsideArea)
             {
                 tickMarksOnEdge = false;
             }
@@ -2547,7 +2274,7 @@ namespace WebCharts.Services.Models.General
             if ((horizontal && point1.X > point2.X) ||
                 (!horizontal && point1.Y > point2.Y))
             {
-                SKPoint tempPoint = new SKPoint(point1.X, point1.Y);
+                SKPoint tempPoint = new(point1.X, point1.Y);
                 point1.X = point2.X;
                 point1.Y = point2.Y;
                 point2 = tempPoint;
@@ -2555,13 +2282,9 @@ namespace WebCharts.Services.Models.General
 
             // Check if the front/back wall is on the top drawing layer
             float zPositon = ChartArea.IsMainSceneWallOnFront() ? ChartArea.areaSceneDepth : 0f;
-            SurfaceNames surfName = ChartArea.IsMainSceneWallOnFront() ? SurfaceNames.Front : SurfaceNames.Back;
+            _ = ChartArea.IsMainSceneWallOnFront() ? SurfaceNames.Front : SurfaceNames.Back;
             if (ChartArea.ShouldDrawOnSurface(SurfaceNames.Back, backElements, tickMarksOnEdge))
             {
-
-				// Start Svg Selection mode
-				graph.StartHotRegion( this._url, _toolTip );
-
                 // Draw axis line on the back/front wall
                 graph.Draw3DLine(
                     ChartArea.matrix3D,
@@ -2572,104 +2295,67 @@ namespace WebCharts.Services.Models.General
                     this,
                     ChartElementType.Nothing
                     );
-
-				// End Svg Selection mode
-				graph.EndHotRegion();
-
             }
 
             // Check if the back wall is on the top drawing layer
             zPositon = ChartArea.IsMainSceneWallOnFront() ? 0f : ChartArea.areaSceneDepth;
-            surfName = ChartArea.IsMainSceneWallOnFront() ? SurfaceNames.Back : SurfaceNames.Front;
-            if (ChartArea.ShouldDrawOnSurface(surfName, backElements, tickMarksOnEdge))
+            SurfaceNames surfName = ChartArea.IsMainSceneWallOnFront() ? SurfaceNames.Back : SurfaceNames.Front;
+            // Draw axis line on the front wall
+            if (ChartArea.ShouldDrawOnSurface(surfName, backElements, tickMarksOnEdge) && (!onEdge ||
+                    (AxisPosition == AxisPosition.Bottom && ChartArea.IsBottomSceneWallVisible()) ||
+                    (AxisPosition == AxisPosition.Left && ChartArea.IsSideSceneWallOnLeft()) ||
+                    (AxisPosition == AxisPosition.Right && !ChartArea.IsSideSceneWallOnLeft())))
             {
-                // Draw axis line on the front wall
-                if (!onEdge ||
-                    (this.AxisPosition == AxisPosition.Bottom && ChartArea.IsBottomSceneWallVisible()) ||
-                    (this.AxisPosition == AxisPosition.Left && ChartArea.IsSideSceneWallOnLeft()) ||
-                    (this.AxisPosition == AxisPosition.Right && !ChartArea.IsSideSceneWallOnLeft()))
-                {
-
-					// Start Svg Selection mode
-					graph.StartHotRegion( this._url, _toolTip );
-
-                    graph.Draw3DLine(
-                        ChartArea.matrix3D,
-                        _lineColor, _lineWidth, _lineDashStyle,
-                        new Point3D(point1.X, point1.Y, zPositon),
-                        new Point3D(point2.X, point2.Y, zPositon),
-                        Common,
-                        this,
-                        ChartElementType.Nothing
-                        );
-
-					// End Svg Selection mode
-					graph.EndHotRegion();
-
-                }
+                graph.Draw3DLine(
+                    ChartArea.matrix3D,
+                    _lineColor, _lineWidth, _lineDashStyle,
+                    new Point3D(point1.X, point1.Y, zPositon),
+                    new Point3D(point2.X, point2.Y, zPositon),
+                    Common,
+                    this,
+                    ChartElementType.Nothing
+                    );
             }
 
             // Check if the left/top wall is on the top drawing layer
-            SurfaceNames surfaceName = (this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? SurfaceNames.Top : SurfaceNames.Left;
-            if (ChartArea.ShouldDrawOnSurface(surfaceName, backElements, tickMarksOnEdge))
+            SurfaceNames surfaceName = (AxisPosition == AxisPosition.Left || AxisPosition == AxisPosition.Right) ? SurfaceNames.Top : SurfaceNames.Left;
+            // Draw axis line on the left/top side walls
+            if (ChartArea.ShouldDrawOnSurface(surfaceName, backElements, tickMarksOnEdge) && (!onEdge ||
+                    (AxisPosition == AxisPosition.Bottom && (ChartArea.IsBottomSceneWallVisible() || ChartArea.IsSideSceneWallOnLeft())) ||
+                    (AxisPosition == AxisPosition.Left && ChartArea.IsSideSceneWallOnLeft()) ||
+                    (AxisPosition == AxisPosition.Right && !ChartArea.IsSideSceneWallOnLeft()) ||
+                    (AxisPosition == AxisPosition.Top && ChartArea.IsSideSceneWallOnLeft())))
             {
-                // Draw axis line on the left/top side walls
-                if (!onEdge ||
-                    (this.AxisPosition == AxisPosition.Bottom && (ChartArea.IsBottomSceneWallVisible() || ChartArea.IsSideSceneWallOnLeft())) ||
-                    (this.AxisPosition == AxisPosition.Left && ChartArea.IsSideSceneWallOnLeft()) ||
-                    (this.AxisPosition == AxisPosition.Right && !ChartArea.IsSideSceneWallOnLeft()) ||
-                    (this.AxisPosition == AxisPosition.Top && ChartArea.IsSideSceneWallOnLeft()))
-                {
-
-					// Start Svg Selection mode
-					graph.StartHotRegion( this._url, _toolTip );
-
-                    graph.Draw3DLine(
-                        ChartArea.matrix3D,
-                        _lineColor, _lineWidth, _lineDashStyle,
-                        new Point3D(point1.X, point1.Y, ChartArea.areaSceneDepth),
-                        new Point3D(point1.X, point1.Y, 0f),
-                        Common,
-                        this,
-                        ChartElementType.Nothing
-                    );
-
-					// End Svg Selection mode
-					graph.EndHotRegion( );
-
-                }
+                graph.Draw3DLine(
+                    ChartArea.matrix3D,
+                    _lineColor, _lineWidth, _lineDashStyle,
+                    new Point3D(point1.X, point1.Y, ChartArea.areaSceneDepth),
+                    new Point3D(point1.X, point1.Y, 0f),
+                    Common,
+                    this,
+                    ChartElementType.Nothing
+                );
             }
 
             // Check if the right/bottom wall is on the top drawing layer
-            surfaceName = (this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? SurfaceNames.Bottom : SurfaceNames.Right;
-            if (ChartArea.ShouldDrawOnSurface(surfaceName, backElements, tickMarksOnEdge))
+            surfaceName = (AxisPosition == AxisPosition.Left || AxisPosition == AxisPosition.Right) ? SurfaceNames.Bottom : SurfaceNames.Right;
+            if (ChartArea.ShouldDrawOnSurface(surfaceName, backElements, tickMarksOnEdge) &&
+                (!onEdge ||
+                    (AxisPosition == AxisPosition.Bottom && (ChartArea.IsBottomSceneWallVisible() || !ChartArea.IsSideSceneWallOnLeft())) ||
+                    (AxisPosition == AxisPosition.Left && (ChartArea.IsSideSceneWallOnLeft() || ChartArea.IsBottomSceneWallVisible())) ||
+                    (AxisPosition == AxisPosition.Right && (!ChartArea.IsSideSceneWallOnLeft() || ChartArea.IsBottomSceneWallVisible())) ||
+                    (AxisPosition == AxisPosition.Top && !ChartArea.IsSideSceneWallOnLeft()))
+)
             {
-                // Draw axis line on the bottom/right side walls
-                if (!onEdge ||
-                    (this.AxisPosition == AxisPosition.Bottom && (ChartArea.IsBottomSceneWallVisible() || !ChartArea.IsSideSceneWallOnLeft())) ||
-                    (this.AxisPosition == AxisPosition.Left && (ChartArea.IsSideSceneWallOnLeft() || ChartArea.IsBottomSceneWallVisible())) ||
-                    (this.AxisPosition == AxisPosition.Right && (!ChartArea.IsSideSceneWallOnLeft() || ChartArea.IsBottomSceneWallVisible())) ||
-                    (this.AxisPosition == AxisPosition.Top && !ChartArea.IsSideSceneWallOnLeft())
-                    )
-                {
-
-					// Start Svg Selection mode
-					graph.StartHotRegion( this._url, _toolTip );
-
-                    graph.Draw3DLine(
-                        ChartArea.matrix3D,
-                        _lineColor, _lineWidth, _lineDashStyle,
-                        new Point3D(point2.X, point2.Y, ChartArea.areaSceneDepth),
-                        new Point3D(point2.X, point2.Y, 0f),
-                        Common,
-                        this,
-                        ChartElementType.Nothing
-                        );
-
-					// End Svg Selection mode
-					graph.EndHotRegion();
-
-                }
+                graph.Draw3DLine(
+                    ChartArea.matrix3D,
+                    _lineColor, _lineWidth, _lineDashStyle,
+                    new Point3D(point2.X, point2.Y, ChartArea.areaSceneDepth),
+                    new Point3D(point2.X, point2.Y, 0f),
+                    Common,
+                    this,
+                    ChartElementType.Nothing
+                    );
             }
 
         }
@@ -2681,26 +2367,26 @@ namespace WebCharts.Services.Models.General
         /// <returns>Marks Z position.</returns>
         internal float GetMarksZPosition(out bool axisOnEdge)
         {
-            axisOnEdge = this.IsAxisOnAreaEdge;
-            if (!this.GetIsMarksNextToAxis())
+            axisOnEdge = IsAxisOnAreaEdge;
+            if (!GetIsMarksNextToAxis())
             {
                 // Marks are forced to be on the area edge
                 axisOnEdge = true;
             }
             float wallZPosition = 0f;
-            if (this.AxisPosition == AxisPosition.Bottom && (ChartArea.IsBottomSceneWallVisible() || !axisOnEdge))
+            if (AxisPosition == AxisPosition.Bottom && (ChartArea.IsBottomSceneWallVisible() || !axisOnEdge))
             {
                 wallZPosition = ChartArea.areaSceneDepth;
             }
-            if (this.AxisPosition == AxisPosition.Left && (ChartArea.IsSideSceneWallOnLeft() || !axisOnEdge))
+            if (AxisPosition == AxisPosition.Left && (ChartArea.IsSideSceneWallOnLeft() || !axisOnEdge))
             {
                 wallZPosition = ChartArea.areaSceneDepth;
             }
-            if (this.AxisPosition == AxisPosition.Right && (!ChartArea.IsSideSceneWallOnLeft() || !axisOnEdge))
+            if (AxisPosition == AxisPosition.Right && (!ChartArea.IsSideSceneWallOnLeft() || !axisOnEdge))
             {
                 wallZPosition = ChartArea.areaSceneDepth;
             }
-            if (this.AxisPosition == AxisPosition.Top && !axisOnEdge)
+            if (AxisPosition == AxisPosition.Top && !axisOnEdge)
             {
                 wallZPosition = ChartArea.areaSceneDepth;
             }
@@ -2721,10 +2407,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="graph">Reference to the Chart Graphics object</param>
         internal void PaintGrids(ChartGraphics graph)
         {
-            object obj;
-
-            PaintGrids(graph, out obj);
-
+            PaintGrids(graph, out _);
         }
 
         /// <summary>
@@ -2750,7 +2433,7 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
 
             // Axis is disabled
-            if (enabled == false)
+            if (!enabled)
                 return;
 
             // Paint Minor grid lines
@@ -2767,8 +2450,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="drawLinesOnly">Indicates if Lines or Stripes should be drawn.</param>
         internal void PaintStrips(ChartGraphics graph, bool drawLinesOnly)
         {
-            object obj;
-            PaintStrips(graph, false, 0, 0, out obj, drawLinesOnly);
+            PaintStrips(graph, false, 0, 0, out _, drawLinesOnly);
         }
 
         /// <summary>
@@ -2781,9 +2463,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="y">Y coordinate</param>
         /// <param name="obj">Returns selected grid object</param>
         /// <param name="drawLinesOnly">Indicates if Lines or Stripes should be drawn.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "y"),
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "x"), 
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "selectionMode")]
         internal void PaintStrips(ChartGraphics graph, bool selectionMode, int x, int y, out object obj, bool drawLinesOnly)
         {
             obj = null;
@@ -2800,23 +2479,23 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
 
             // Axis is disabled
-            if (enabled == false)
+            if (!enabled)
                 return;
 
             // Add axis isInterlaced strip lines into the collection
             bool interlacedStripAdded = AddInterlacedStrip();
 
             // Draw axis strips and lines
-            foreach (StripLine strip in this.StripLines)
+            foreach (StripLine strip in StripLines)
             {
-                strip.Paint(graph, this.Common, drawLinesOnly);
+                strip.Paint(graph, Common, drawLinesOnly);
             }
 
             // Remove axis isInterlaced strip line from the collection after drawing
             if (interlacedStripAdded)
             {
                 // Remove isInterlaced strips which always is the first strip line
-                this.StripLines.RemoveAt(0);
+                StripLines.RemoveAt(0);
             }
 
         }
@@ -2828,79 +2507,79 @@ namespace WebCharts.Services.Models.General
         private bool AddInterlacedStrip()
         {
             bool addStrip = false;
-            if (this.IsInterlaced)
+            if (IsInterlaced)
             {
-                StripLine stripLine = new StripLine();
+                StripLine stripLine = new();
                 stripLine.interlaced = true;
                 // VSTS fix of 164115 IsInterlaced StripLines with no border are rendered with black border, regression of VSTS 136763
-                stripLine.BorderColor = Color.Empty;
+                stripLine.BorderColor = SKColor.Empty;
 
                 // Get interval from grid lines, tick marks or labels
-                if (this.MajorGrid.Enabled && this.MajorGrid.GetInterval() != 0.0)
+                if (MajorGrid.Enabled && MajorGrid.GetInterval() != 0.0)
                 {
                     addStrip = true;
-                    stripLine.Interval = this.MajorGrid.GetInterval() * 2.0;
-                    stripLine.IntervalType = this.MajorGrid.GetIntervalType();
-                    stripLine.IntervalOffset = this.MajorGrid.GetIntervalOffset();
-                    stripLine.IntervalOffsetType = this.MajorGrid.GetIntervalOffsetType();
-                    stripLine.StripWidth = this.MajorGrid.GetInterval();
-                    stripLine.StripWidthType = this.MajorGrid.GetIntervalType();
+                    stripLine.Interval = MajorGrid.GetInterval() * 2.0;
+                    stripLine.IntervalType = MajorGrid.GetIntervalType();
+                    stripLine.IntervalOffset = MajorGrid.GetIntervalOffset();
+                    stripLine.IntervalOffsetType = MajorGrid.GetIntervalOffsetType();
+                    stripLine.StripWidth = MajorGrid.GetInterval();
+                    stripLine.StripWidthType = MajorGrid.GetIntervalType();
                 }
-                else if (this.MajorTickMark.Enabled && this.MajorTickMark.GetInterval() != 0.0)
+                else if (MajorTickMark.Enabled && MajorTickMark.GetInterval() != 0.0)
                 {
                     addStrip = true;
-                    stripLine.Interval = this.MajorTickMark.GetInterval() * 2.0;
-                    stripLine.IntervalType = this.MajorTickMark.GetIntervalType();
-                    stripLine.IntervalOffset = this.MajorTickMark.GetIntervalOffset();
-                    stripLine.IntervalOffsetType = this.MajorTickMark.GetIntervalOffsetType();
-                    stripLine.StripWidth = this.MajorTickMark.GetInterval();
-                    stripLine.StripWidthType = this.MajorTickMark.GetIntervalType();
+                    stripLine.Interval = MajorTickMark.GetInterval() * 2.0;
+                    stripLine.IntervalType = MajorTickMark.GetIntervalType();
+                    stripLine.IntervalOffset = MajorTickMark.GetIntervalOffset();
+                    stripLine.IntervalOffsetType = MajorTickMark.GetIntervalOffsetType();
+                    stripLine.StripWidth = MajorTickMark.GetInterval();
+                    stripLine.StripWidthType = MajorTickMark.GetIntervalType();
                 }
-                else if (this.LabelStyle.Enabled && this.LabelStyle.GetInterval() != 0.0)
+                else if (LabelStyle.Enabled && LabelStyle.GetInterval() != 0.0)
                 {
                     addStrip = true;
-                    stripLine.Interval = this.LabelStyle.GetInterval() * 2.0;
-                    stripLine.IntervalType = this.LabelStyle.GetIntervalType();
-                    stripLine.IntervalOffset = this.LabelStyle.GetIntervalOffset();
-                    stripLine.IntervalOffsetType = this.LabelStyle.GetIntervalOffsetType();
-                    stripLine.StripWidth = this.LabelStyle.GetInterval();
-                    stripLine.StripWidthType = this.LabelStyle.GetIntervalType();
+                    stripLine.Interval = LabelStyle.GetInterval() * 2.0;
+                    stripLine.IntervalType = LabelStyle.GetIntervalType();
+                    stripLine.IntervalOffset = LabelStyle.GetIntervalOffset();
+                    stripLine.IntervalOffsetType = LabelStyle.GetIntervalOffsetType();
+                    stripLine.StripWidth = LabelStyle.GetInterval();
+                    stripLine.StripWidthType = LabelStyle.GetIntervalType();
                 }
 
                 // Insert item into the strips collection
                 if (addStrip)
                 {
                     // Define stip color
-                    if (this.InterlacedColor != Color.Empty)
+                    if (InterlacedColor != SKColor.Empty)
                     {
-                        stripLine.BackColor = this.InterlacedColor;
+                        stripLine.BackColor = InterlacedColor;
                     }
                     else
                     {
                         // If isInterlaced strips color is not set - use darker color of the area
-                        if (ChartArea.BackColor == Color.Empty)
+                        if (ChartArea.BackColor == SKColor.Empty)
                         {
-                            stripLine.BackColor = (ChartArea.Area3DStyle.Enable3D) ? Color.DarkGray : Color.LightGray;
+                            stripLine.BackColor = (ChartArea.Area3DStyle.Enable3D) ? SKColors.DarkGray : SKColors.LightGray;
                         }
-                        else if (ChartArea.BackColor == Color.Transparent)
+                        else if (ChartArea.BackColor == SKColors.Transparent)
                         {
-                            if (Common.Chart.BackColor != Color.Transparent && Common.Chart.BackColor != Color.Black)
+                            if (Common.Chart.BackColor != SKColors.Transparent && Common.Chart.BackColor != SKColors.Black)
                             {
-                                stripLine.BackColor = ChartGraphics.GetGradientColor(Common.Chart.BackColor, Color.Black, 0.2);
+                                stripLine.BackColor = ChartGraphics.GetGradientColor(Common.Chart.BackColor, SKColors.Black, 0.2);
                             }
                             else
                             {
-                                stripLine.BackColor = Color.LightGray;
+                                stripLine.BackColor = SKColors.LightGray;
                             }
                         }
                         else
                         {
-                            stripLine.BackColor = ChartGraphics.GetGradientColor(ChartArea.BackColor, Color.Black, 0.2);
+                            stripLine.BackColor = ChartGraphics.GetGradientColor(ChartArea.BackColor, SKColors.Black, 0.2);
                         }
                     }
 
                     // Insert strip
-                    this.StripLines.Insert(0, stripLine);
+                    StripLines.Insert(0, stripLine);
                 }
             }
 
@@ -2919,7 +2598,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public void RoundAxisValues()
         {
-            this.roundedXValues = true;
+            roundedXValues = true;
         }
 
         /// <summary>
@@ -2982,7 +2661,7 @@ namespace WebCharts.Services.Models.General
                 tempLabelIntervalType = labelStyle.intervalType;
 
                 // Remember original ScaleView Position
-                this._originalViewPosition = this.ScaleView.Position;
+                _originalViewPosition = ScaleView.Position;
 
                 // This field synchronies the Storing and 
                 // resetting of temporary values
@@ -3014,14 +2693,6 @@ namespace WebCharts.Services.Models.General
         {
             // Paint mode is finished
             paintMode = false;
-
-			if(Common.Chart == null)
-			{
-            }
-			if(Common.Chart != null && Common.Chart.Site != null && Common.Chart.Site.DesignMode)
-			{
-				ResetAutoValues();
-			}
 
             // Reset back original custom labels
             if (tempLabels != null)
@@ -3074,12 +2745,9 @@ namespace WebCharts.Services.Models.General
             labelStyle.intervalType = tempLabelIntervalType;
 
             // Restore original ScaleView Position
-            if (Common.Chart != null)
+            if (Common.Chart != null && !Common.Chart.serializing)
             {
-                if (!Common.Chart.serializing)
-                {
-                    this.ScaleView.Position = this._originalViewPosition;
-                }
+                ScaleView.Position = _originalViewPosition;
             }
 
             // This field synchronies the Storing and 
@@ -3128,7 +2796,7 @@ namespace WebCharts.Services.Models.General
 
             // Disable Common.Chart invalidation
             bool oldDisableInvalidates = Common.Chart.disableInvalidates;
-			Common.Chart.disableInvalidates = true;
+            Common.Chart.disableInvalidates = true;
 
             // Set Common.Chart area position
             PlotAreaPosition = chartAreaPosition;
@@ -3139,46 +2807,46 @@ namespace WebCharts.Services.Models.General
             //******************************************************
             //** Calculate axis title size
             //******************************************************
-            this.titleSize = 0F;
-            if (this.Title.Length > 0)
+            titleSize = 0F;
+            if (Title.Length > 0)
             {
                 // Measure axis title
-                SKSize titleStringSize = chartGraph.MeasureStringRel(this.Title.Replace("\\n", "\n"), this.TitleFont, new SKSize(10000f, 10000f), StringFormat.GenericTypographic, this.GetTextOrientation());
+                SKSize titleStringSize = chartGraph.MeasureStringRel(Title.Replace("\\n", "\n"), TitleFont, new SKSize(10000f, 10000f), StringFormat.GenericTypographic, GetTextOrientation());
 
                 // Switch Width & Heigth for vertical axes
                 // If axis is horizontal
                 float maxTitlesize = 0;
-                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                 {
-                    maxTitlesize = (plotArea.Height / 100F) * (Axis.maxAxisTitleSize / axesNumber);
-                    if (this.IsTextVertical)
+                    maxTitlesize = (plotArea.Height / 100F) * (maxAxisTitleSize / axesNumber);
+                    if (IsTextVertical)
                     {
-                        this.titleSize = Math.Min(titleStringSize.Width, maxTitlesize);
+                        titleSize = Math.Min(titleStringSize.Width, maxTitlesize);
                     }
                     else
                     {
-                        this.titleSize = Math.Min(titleStringSize.Height, maxTitlesize);
+                        titleSize = Math.Min(titleStringSize.Height, maxTitlesize);
                     }
                 }
                 // If axis is vertical
                 else
                 {
-					titleStringSize = chartGraph.GetAbsoluteSize(titleStringSize);
-					titleStringSize = chartGraph.GetRelativeSize(new SKSize(titleStringSize.Height, titleStringSize.Width));
-					maxTitlesize = (plotArea.Width / 100F) * (Axis.maxAxisTitleSize / axesNumber);
-                    if (this.IsTextVertical)
+                    titleStringSize = chartGraph.GetAbsoluteSize(titleStringSize);
+                    titleStringSize = chartGraph.GetRelativeSize(new SKSize(titleStringSize.Height, titleStringSize.Width));
+                    maxTitlesize = (plotArea.Width / 100F) * (Axis.maxAxisTitleSize / axesNumber);
+                    if (IsTextVertical)
                     {
-						this.titleSize = Math.Min(titleStringSize.Width, maxTitlesize);
+                        titleSize = Math.Min(titleStringSize.Width, maxTitlesize);
                     }
                     else
                     {
-                        this.titleSize = Math.Min(titleStringSize.Height, maxTitlesize);
+                        titleSize = Math.Min(titleStringSize.Height, maxTitlesize);
                     }
                 }
             }
-            if (this.titleSize > 0)
+            if (titleSize > 0)
             {
-                this.titleSize += elementSpacing;
+                titleSize += elementSpacing;
             }
 
             //*********************************************************
@@ -3188,12 +2856,12 @@ namespace WebCharts.Services.Models.General
             SKSize arrowSizePrimary = SKSize.Empty;
             SKSize arrowSizeSecondary = SKSize.Empty;
             ArrowOrientation arrowOrientation = ArrowOrientation.Bottom;
-            if (this.axisType == AxisName.X || this.axisType == AxisName.X2)
+            if (axisType == AxisName.X || axisType == AxisName.X2)
             {
                 if (ChartArea.AxisY.ArrowStyle != AxisArrowStyle.None)
                 {
                     arrowSizePrimary = ChartArea.AxisY.GetArrowSize(out arrowOrientation);
-                    if (!IsArrowInAxis(arrowOrientation, this.AxisPosition))
+                    if (!IsArrowInAxis(arrowOrientation, AxisPosition))
                     {
                         arrowSizePrimary = SKSize.Empty;
                     }
@@ -3202,7 +2870,7 @@ namespace WebCharts.Services.Models.General
                 if (ChartArea.AxisY2.ArrowStyle != AxisArrowStyle.None)
                 {
                     arrowSizeSecondary = ChartArea.AxisY2.GetArrowSize(out arrowOrientation);
-                    if (!IsArrowInAxis(arrowOrientation, this.AxisPosition))
+                    if (!IsArrowInAxis(arrowOrientation, AxisPosition))
                     {
                         arrowSizeSecondary = SKSize.Empty;
                     }
@@ -3213,7 +2881,7 @@ namespace WebCharts.Services.Models.General
                 if (ChartArea.AxisX.ArrowStyle != AxisArrowStyle.None)
                 {
                     arrowSizePrimary = ChartArea.AxisX.GetArrowSize(out arrowOrientation);
-                    if (!IsArrowInAxis(arrowOrientation, this.AxisPosition))
+                    if (!IsArrowInAxis(arrowOrientation, AxisPosition))
                     {
                         arrowSizePrimary = SKSize.Empty;
                     }
@@ -3222,7 +2890,7 @@ namespace WebCharts.Services.Models.General
                 if (ChartArea.AxisX2.ArrowStyle != AxisArrowStyle.None)
                 {
                     arrowSizeSecondary = ChartArea.AxisX2.GetArrowSize(out arrowOrientation);
-                    if (!IsArrowInAxis(arrowOrientation, this.AxisPosition))
+                    if (!IsArrowInAxis(arrowOrientation, AxisPosition))
                     {
                         arrowSizeSecondary = SKSize.Empty;
                     }
@@ -3230,7 +2898,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // If axis is horizontal
-            if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+            if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
             {
                 arrowSize = Math.Max(arrowSizePrimary.Height, arrowSizeSecondary.Height);
             }
@@ -3244,76 +2912,60 @@ namespace WebCharts.Services.Models.General
             //** Calculate axis tick marks, axis thickness, arrow size
             //** and scroll bar size
             //*********************************************************
-            this.markSize = 0F;
+            markSize = 0F;
 
             // Get major and minor tick marks sizes
             float majorTickSize = 0;
-            if (this.MajorTickMark.Enabled && this.MajorTickMark.TickMarkStyle != TickMarkStyle.None)
+            if (MajorTickMark.Enabled && MajorTickMark.TickMarkStyle != TickMarkStyle.None)
             {
-                if (this.MajorTickMark.TickMarkStyle == TickMarkStyle.InsideArea)
+                if (MajorTickMark.TickMarkStyle == TickMarkStyle.InsideArea)
                 {
                     majorTickSize = 0F;
                 }
-                else if (this.MajorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis)
+                else if (MajorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis)
                 {
-                    majorTickSize = this.MajorTickMark.Size / 2F;
+                    majorTickSize = MajorTickMark.Size / 2F;
                 }
-                else if (this.MajorTickMark.TickMarkStyle == TickMarkStyle.OutsideArea)
+                else if (MajorTickMark.TickMarkStyle == TickMarkStyle.OutsideArea)
                 {
-                    majorTickSize = this.MajorTickMark.Size;
+                    majorTickSize = MajorTickMark.Size;
                 }
             }
 
             float minorTickSize = 0;
-            if (this.MinorTickMark.Enabled && this.MinorTickMark.TickMarkStyle != TickMarkStyle.None && this.MinorTickMark.GetInterval() != 0)
+            if (MinorTickMark.Enabled && MinorTickMark.TickMarkStyle != TickMarkStyle.None && MinorTickMark.GetInterval() != 0)
             {
-                if (this.MinorTickMark.TickMarkStyle == TickMarkStyle.InsideArea)
+                if (MinorTickMark.TickMarkStyle == TickMarkStyle.InsideArea)
                 {
                     minorTickSize = 0F;
                 }
-                else if (this.MinorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis)
+                else if (MinorTickMark.TickMarkStyle == TickMarkStyle.AcrossAxis)
                 {
-                    minorTickSize = this.MinorTickMark.Size / 2F;
+                    minorTickSize = MinorTickMark.Size / 2F;
                 }
-                else if (this.MinorTickMark.TickMarkStyle == TickMarkStyle.OutsideArea)
+                else if (MinorTickMark.TickMarkStyle == TickMarkStyle.OutsideArea)
                 {
-                    minorTickSize = this.MinorTickMark.Size;
+                    minorTickSize = MinorTickMark.Size;
                 }
             }
 
-            this.markSize += (float)Math.Max(majorTickSize, minorTickSize);
+            markSize += Math.Max(majorTickSize, minorTickSize);
 
 
             // Add axis line size
-            SKSize borderSize = chartGraph.GetRelativeSize(new SKSize(this.LineWidth, this.LineWidth));
+            SKSize borderSize = chartGraph.GetRelativeSize(new SKSize(LineWidth, LineWidth));
 
             // If axis is horizontal
-            if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+            if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
             {
-                this.markSize += borderSize.Height / 2f;
-                this.markSize = Math.Min(this.markSize, (plotArea.Height / 100F) * (Axis.maxAxisMarkSize / axesNumber));
+                markSize += borderSize.Height / 2f;
+                markSize = Math.Min(markSize, (plotArea.Height / 100F) * (Axis.maxAxisMarkSize / axesNumber));
             }
             // If axis is vertical
             else
             {
-                this.markSize += borderSize.Width / 2f;
-                this.markSize = Math.Min(this.markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber));
-            }
-
-            // Add axis scroll bar size (if it's visible)
-            this.scrollBarSize = 0f;
-
-            if (this.ScrollBar.IsVisible &&
-                (this.IsAxisOnAreaEdge || !this.IsMarksNextToAxis))
-            {
-                if (this.ScrollBar.IsPositionedInside)
-                {
-                    this.markSize += (float)this.ScrollBar.GetScrollBarRelativeSize();
-                }
-                else
-                {
-                    this.scrollBarSize = (float)this.ScrollBar.GetScrollBarRelativeSize();
-                }
+                markSize += borderSize.Width / 2f;
+                markSize = Math.Min(markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber));
             }
 
 
@@ -3323,30 +2975,30 @@ namespace WebCharts.Services.Models.General
             //*********************************************************
             if (ChartArea.Area3DStyle.Enable3D &&
                 !ChartArea.chartAreaIsCurcular &&
-                ChartArea.BackColor != Color.Transparent &&
+                ChartArea.BackColor != SKColors.Transparent &&
                 ChartArea.Area3DStyle.WallWidth > 0)
             {
                 SKSize areaWallSize = chartGraph.GetRelativeSize(new SKSize(ChartArea.Area3DStyle.WallWidth, ChartArea.Area3DStyle.WallWidth));
-                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                 {
-                    this.markSize += areaWallSize.Height;
+                    markSize += areaWallSize.Height;
                 }
                 else
                 {
-                    this.markSize += areaWallSize.Width;
+                    markSize += areaWallSize.Width;
                 }
 
                 // Ignore Max marks size for the 3D wall size.
-                //this.markSize = Math.Min(this.markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber));
+                //this.markSize = Math.Min(this.markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber))
             }
 
             //*********************************************************
             //** Adjust title size and mark size using arrow size
             //*********************************************************
-            if (arrowSize > (this.markSize + this.scrollBarSize + this.titleSize))
+            if (arrowSize > (markSize + scrollBarSize + titleSize))
             {
-                this.markSize = Math.Max(this.markSize, arrowSize - (this.markSize + this.scrollBarSize + this.titleSize));
-                this.markSize = Math.Min(this.markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber));
+                markSize = Math.Max(markSize, arrowSize - (markSize + scrollBarSize + titleSize));
+                markSize = Math.Min(markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber));
             }
 
             //*********************************************************
@@ -3356,26 +3008,26 @@ namespace WebCharts.Services.Models.General
 
             if (!autoPlotPosition)
             {
-                if (this.GetIsMarksNextToAxis())
+                if (GetIsMarksNextToAxis())
                 {
-                    if (this.AxisPosition == AxisPosition.Top)
+                    if (AxisPosition == AxisPosition.Top)
                         maxLabelSize = (float)GetAxisPosition() - ChartArea.Position.Y;
-                    else if (this.AxisPosition == AxisPosition.Bottom)
+                    else if (AxisPosition == AxisPosition.Bottom)
                         maxLabelSize = ChartArea.Position.Bottom - (float)GetAxisPosition();
-                    if (this.AxisPosition == AxisPosition.Left)
+                    if (AxisPosition == AxisPosition.Left)
                         maxLabelSize = (float)GetAxisPosition() - ChartArea.Position.X;
-                    else if (this.AxisPosition == AxisPosition.Right)
+                    else if (AxisPosition == AxisPosition.Right)
                         maxLabelSize = ChartArea.Position.Right - (float)GetAxisPosition();
                 }
                 else
                 {
-                    if (this.AxisPosition == AxisPosition.Top)
-                        maxLabelSize = plotArea.Y - ChartArea.Position.Y;
-                    else if (this.AxisPosition == AxisPosition.Bottom)
+                    if (AxisPosition == AxisPosition.Top)
+                        maxLabelSize = plotArea.Top - ChartArea.Position.Y;
+                    else if (AxisPosition == AxisPosition.Bottom)
                         maxLabelSize = ChartArea.Position.Bottom - plotArea.Bottom;
-                    if (this.AxisPosition == AxisPosition.Left)
-                        maxLabelSize = plotArea.X - ChartArea.Position.X;
-                    else if (this.AxisPosition == AxisPosition.Right)
+                    if (AxisPosition == AxisPosition.Left)
+                        maxLabelSize = plotArea.Left - ChartArea.Position.X;
+                    else if (AxisPosition == AxisPosition.Right)
                         maxLabelSize = ChartArea.Position.Right - plotArea.Right;
                 }
 
@@ -3383,7 +3035,7 @@ namespace WebCharts.Services.Models.General
             }
             else
             {
-                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                     maxLabelSize = plotArea.Height * (_maximumAutoSize / 100f);
                 else
                     maxLabelSize = plotArea.Width * (_maximumAutoSize / 100f);
@@ -3398,44 +3050,42 @@ namespace WebCharts.Services.Models.General
 
 
 
-			// Make sure the variable interval mode is enabled and
-			// no custom label interval used.
-			if( this.Enabled != AxisEnabled.False &&
-				this.LabelStyle.Enabled &&
-				this.IsVariableLabelCountModeEnabled() )
-			{
-				// Increase font by several points when height of the font is the most important
-				// dimension. Use original size whenwidth is the most important size.
-				float extraSize = 3f;
-				if( (this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) && 
-					(this.LabelStyle.Angle == 90 || this.LabelStyle.Angle == -90) )
-				{
-					extraSize = 0f;
-				}
-				if( (this.AxisPosition == AxisPosition.Top || this.AxisPosition == AxisPosition.Bottom) && 
-					(this.LabelStyle.Angle == 180 || this.LabelStyle.Angle == 0) )
-				{
-					extraSize = 0f;
-				}
+            // Make sure the variable interval mode is enabled and
+            // no custom label interval used.
+            if (Enabled != AxisEnabled.False &&
+                LabelStyle.Enabled &&
+                IsVariableLabelCountModeEnabled())
+            {
+                // Increase font by several points when height of the font is the most important
+                // dimension. Use original size whenwidth is the most important size.
+                float extraSize = 3f;
+                if ((AxisPosition == AxisPosition.Left || AxisPosition == AxisPosition.Right) &&
+                    (LabelStyle.Angle == 90 || LabelStyle.Angle == -90))
+                {
+                    extraSize = 0f;
+                }
+                if ((AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom) &&
+                    (LabelStyle.Angle == 180 || LabelStyle.Angle == 0))
+                {
+                    extraSize = 0f;
+                }
 
-				// If 3D Common.Chart is used make the measurements with font several point larger
-				if(ChartArea.Area3DStyle.Enable3D)
-				{
-					extraSize += 1f;
-				}
+                // If 3D Common.Chart is used make the measurements with font several point larger
+                if (ChartArea.Area3DStyle.Enable3D)
+                {
+                    extraSize += 1f;
+                }
 
-				this.autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(this.LabelStyle.Font.FontFamily, 
-					this.LabelStyle.Font.Size + extraSize, 
-					this.LabelStyle.Font.Style, 
-					GraphicsUnit.Point);
+                autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(LabelStyle.Font.Typeface.FamilyName,
+                    LabelStyle.Font.Size + extraSize, LabelStyle.Font.Typeface.FontStyle);
 
-				// Reset angle and stagged flag used in the auto-fitting algorithm
-				this.autoLabelAngle = this.LabelStyle.Angle;
-				this.autoLabelOffset = (this.LabelStyle.IsStaggered) ? 1 : 0;
+                // Reset angle and stagged flag used in the auto-fitting algorithm
+                autoLabelAngle = LabelStyle.Angle;
+                autoLabelOffset = (LabelStyle.IsStaggered) ? 1 : 0;
 
-				// Adjust interval
-				this.AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, false);
-			}
+                // Adjust interval
+                AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, false);
+            }
 
 
 
@@ -3449,8 +3099,8 @@ namespace WebCharts.Services.Models.General
             autoLabelOffset = -1;
 
             // For circular Common.Chart area process auto-fitting for Y Axis only
-            if (this.IsLabelAutoFit &&
-                this.LabelAutoFitStyle != LabelAutoFitStyles.None &&
+            if (IsLabelAutoFit &&
+                LabelAutoFitStyle != LabelAutoFitStyles.None &&
                 !ChartArea.chartAreaIsCurcular)
             {
                 bool fitDone = false;
@@ -3464,30 +3114,28 @@ namespace WebCharts.Services.Models.General
                 CustomLabelsCollection originalLabels = null;
 
                 // Pick up maximum font size
-                float size = 8f;
-				size = (float)Math.Max(this.LabelAutoFitMaxFontSize, this.LabelAutoFitMinFontSize);
-				_minLabelFontSize = Math.Min(this.LabelAutoFitMinFontSize, this.LabelAutoFitMaxFontSize);
-				_aveLabelFontSize = _minLabelFontSize + Math.Abs(size - _minLabelFontSize)/2f;
+                float size = Math.Max(LabelAutoFitMaxFontSize, LabelAutoFitMinFontSize);
+                _minLabelFontSize = Math.Min(LabelAutoFitMinFontSize, LabelAutoFitMaxFontSize);
+                _aveLabelFontSize = _minLabelFontSize + Math.Abs(size - _minLabelFontSize) / 2f;
 
 
                 // Check if common font size should be used
                 if (ChartArea.IsSameFontSKSizeorAllAxes)
                 {
-                    size = (float)Math.Min(size, ChartArea.axesAutoFontSize);
+                    size = Math.Min(size, ChartArea.axesAutoFontSize);
                 }
 
                 //Set new font
-                autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(this.LabelStyle.Font.FontFamily,
+                autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(LabelStyle.Font.Typeface.FamilyName,
                     size,
-                    this.LabelStyle.Font.Style,
-					GraphicsUnit.Point
+                    LabelStyle.Font.Typeface.FontStyle
                 );
 
                 // Check if we allowed to increase font size while auto-fitting
-                if ((this.LabelAutoFitStyle & LabelAutoFitStyles.IncreaseFont) != LabelAutoFitStyles.IncreaseFont)
+                if ((LabelAutoFitStyle & LabelAutoFitStyles.IncreaseFont) != LabelAutoFitStyles.IncreaseFont)
                 {
                     // Use axis labels font as starting point
-                    autoLabelFont = this.LabelStyle.Font;
+                    autoLabelFont = LabelStyle.Font;
                 }
 
                 // Loop while labels do not fit
@@ -3500,7 +3148,7 @@ namespace WebCharts.Services.Models.General
 
                     // Check if grouping labels fit should be checked
                     bool checkLabelsFirstRowOnly = true;
-                    if ((this.LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
+                    if ((LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
                     {
                         // Only check grouping labels if we can reduce fonts size
                         checkLabelsFirstRowOnly = false;
@@ -3509,7 +3157,7 @@ namespace WebCharts.Services.Models.General
                     // Check labels fit
                     fitDone = CheckLabelsFit(
                         chartGraph,
-                        this.markSize + this.scrollBarSize + this.titleSize + spacer,
+                        markSize + scrollBarSize + titleSize + spacer,
                         autoPlotPosition,
                         checkLabelsFirstRowOnly,
                         false);
@@ -3520,31 +3168,32 @@ namespace WebCharts.Services.Models.General
                     if (!fitDone)
                     {
                         // If font is bigger than average try to make it smaller
-                        if (autoLabelFont.SizeInPoints >= _aveLabelFontSize &&
-                            (this.LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
+                        if (autoLabelFont.Size >= _aveLabelFontSize &&
+                            (LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
                         {
+
+
                             //Clean up the old font
                             autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                                autoLabelFont.FontFamily,
-                                autoLabelFont.SizeInPoints - 0.5f,
-                                autoLabelFont.Style,
-                                GraphicsUnit.Point);
+                                autoLabelFont.Typeface.FamilyName,
+                                autoLabelFont.Size - 0.5f,
+                                autoLabelFont.Typeface.FontStyle);
                         }
 
-                            // Try to use offset labels (2D charts and non-circular arae only!!!)
+                        // Try to use offset labels (2D charts and non-circular arae only!!!)
                         else if (!ChartArea.Area3DStyle.Enable3D &&
                             !ChartArea.chartAreaIsCurcular &&
                             originalLabels == null &&
                             autoLabelAngle == 0 &&
                             autoLabelOffset == 0 &&
-                            (this.LabelAutoFitStyle & LabelAutoFitStyles.StaggeredLabels) == LabelAutoFitStyles.StaggeredLabels)
+                            (LabelAutoFitStyle & LabelAutoFitStyles.StaggeredLabels) == LabelAutoFitStyles.StaggeredLabels)
                         {
                             autoLabelOffset = 1;
                         }
 
-                            // Try to insert new line characters in labels text
+                        // Try to insert new line characters in labels text
                         else if (!noWordWrap &&
-                            (this.LabelAutoFitStyle & LabelAutoFitStyles.WordWrap) == LabelAutoFitStyles.WordWrap)
+                            (LabelAutoFitStyle & LabelAutoFitStyles.WordWrap) == LabelAutoFitStyles.WordWrap)
                         {
                             bool changed = false;
                             autoLabelOffset = 0;
@@ -3554,14 +3203,14 @@ namespace WebCharts.Services.Models.General
                             {
                                 // Copy current labels collection
                                 originalLabels = new CustomLabelsCollection(this);
-                                foreach (CustomLabel label in this.CustomLabels)
+                                foreach (CustomLabel label in CustomLabels)
                                 {
                                     originalLabels.Add(label.Clone());
                                 }
                             }
 
                             // Try to insert new line character into the longest label
-                            changed = WordWrapLongestLabel(this.CustomLabels);
+                            changed = WordWrapLongestLabel(CustomLabels);
 
                             // Word wrapping do not solve the labels overlapping issue
                             if (!changed)
@@ -3571,23 +3220,23 @@ namespace WebCharts.Services.Models.General
                                 // Restore original labels
                                 if (originalLabels != null)
                                 {
-                                    this.CustomLabels.Clear();
+                                    CustomLabels.Clear();
                                     foreach (CustomLabel label in originalLabels)
                                     {
-                                        this.CustomLabels.Add(label.Clone());
+                                        CustomLabels.Add(label.Clone());
                                     }
 
                                     originalLabels = null;
                                 }
 
-                                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                                 {
                                     if ((spacer == 0 ||
                                         spacer == 30f ||
                                         spacer == 20f) &&
-                                        ((this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30 ||
-                                        (this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45 ||
-                                        (this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90))
+                                        ((LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30 ||
+                                        (LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45 ||
+                                        (LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90))
                                     {
                                         // Try to use 90 degrees angle
                                         autoLabelAngle = 90;
@@ -3625,55 +3274,54 @@ namespace WebCharts.Services.Models.General
                             }
                         }
 
-                            // Try to change font angle
+                        // Try to change font angle
                         else if (autoLabelAngle != 90 &&
-                            ((this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30 ||
-                            (this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45 ||
-                            (this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90))
+                            ((LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30 ||
+                            (LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45 ||
+                            (LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90))
                         {
                             spacer = 0f;
                             autoLabelOffset = 0;
 
-                            if ((this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30)
+                            if ((LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30)
                             {
                                 // Increase angle by 45 degrees in 2D and 45 in 3D
                                 autoLabelAngle += (ChartArea.Area3DStyle.Enable3D) ? 45 : 30;
                             }
-                            else if ((this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45)
+                            else if ((LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45)
                             {
                                 // Increase angle by 45 degrees
                                 autoLabelAngle += 45;
                             }
-                            else if ((this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90)
+                            else if ((LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90)
                             {
                                 // Increase angle by 90 degrees
                                 autoLabelAngle += 90;
                             }
                         }
 
-                            // Try to reduce font again
-                        else if (autoLabelFont.SizeInPoints > _minLabelFontSize &&
-                            (this.LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
+                        // Try to reduce font again
+                        else if (autoLabelFont.Size > _minLabelFontSize &&
+                            (LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
                         {
                             //Clean up the old font
                             autoLabelAngle = 0;
                             autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                                autoLabelFont.FontFamily,
-                                autoLabelFont.SizeInPoints - 0.5f,
-                                autoLabelFont.Style,
-                                GraphicsUnit.Point);
+                                autoLabelFont.Typeface.FamilyName,
+                                autoLabelFont.Size - 0.5f,
+                                autoLabelFont.Typeface.FontStyle);
                         }
 
-                            // Failed to fit
+                        // Failed to fit
                         else
                         {
                             // Use last font
-                            if ((this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30 ||
-                                (this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45 ||
-                                (this.LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90)
+                            if ((LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep30) == LabelAutoFitStyles.LabelsAngleStep30 ||
+                                (LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep45) == LabelAutoFitStyles.LabelsAngleStep45 ||
+                                (LabelAutoFitStyle & LabelAutoFitStyles.LabelsAngleStep90) == LabelAutoFitStyles.LabelsAngleStep90)
                             {
                                 // Reset angle
-                                if (this.AxisPosition == AxisPosition.Top || this.AxisPosition == AxisPosition.Bottom)
+                                if (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom)
                                 {
                                     autoLabelAngle = 90;
                                 }
@@ -3682,7 +3330,7 @@ namespace WebCharts.Services.Models.General
                                     autoLabelAngle = 0;
                                 }
                             }
-                            if ((this.LabelAutoFitStyle & LabelAutoFitStyles.StaggeredLabels) == LabelAutoFitStyles.StaggeredLabels)
+                            if ((LabelAutoFitStyle & LabelAutoFitStyles.StaggeredLabels) == LabelAutoFitStyles.StaggeredLabels)
                             {
                                 // Reset offset labels
                                 autoLabelOffset = 0;
@@ -3692,75 +3340,62 @@ namespace WebCharts.Services.Models.General
                     }
                     else if (ChartArea.Area3DStyle.Enable3D &&
                         !ChartArea.chartAreaIsCurcular &&
-                        autoLabelFont.SizeInPoints > _minLabelFontSize)
+                        autoLabelFont.Size > _minLabelFontSize)
                     {
                         // Reduce auto-fit font by 1 for the 3D charts
                         autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                            autoLabelFont.FontFamily,
-                            autoLabelFont.SizeInPoints - 0.5f,
-                            autoLabelFont.Style,
-                            GraphicsUnit.Point);
+                            autoLabelFont.Typeface.FamilyName,
+                            autoLabelFont.Size - 0.5f,
+                            autoLabelFont.Typeface.FontStyle);
                     }
                 }
 
-				// Change the auto-fit angle for top and bottom axes from 90 to -90
-				if(this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
-				{
-					if(autoLabelAngle == 90)
-					{
-						autoLabelAngle = -90;
-					}
-				}
+                // Change the auto-fit angle for top and bottom axes from 90 to -90
+                if ((AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top) && autoLabelAngle == 90)
+                {
+                    autoLabelAngle = -90;
+                }
             }
 
             //*********************************************************
             //** Calculate overall labels size
             //*********************************************************
-            this.labelSize = 0;
+            labelSize = 0;
 
             // if labels are not enabled their size needs to remain zero
-            if (this.LabelStyle.Enabled)
+            if (LabelStyle.Enabled)
             {
                 //******************************************************
                 //** Calculate axis second labels row size
                 //******************************************************
-                this.labelSize = (maxAxisElementsSize) - this.markSize - this.scrollBarSize - this.titleSize;
-                if (this.labelSize > 0)
+                labelSize = (maxAxisElementsSize) - markSize - scrollBarSize - titleSize;
+                if (labelSize > 0)
                 {
-                    this.groupingLabelSizes = GetRequiredGroupLabelSize(chartGraph, (maxLabelSize / 100F) * maxAxisLabelRow2Size);
-                    this.totlaGroupingLabelsSize = GetGroupLablesToatalSize();
+                    groupingLabelSizes = GetRequiredGroupLabelSize(chartGraph, (maxLabelSize / 100F) * maxAxisLabelRow2Size);
+                    totlaGroupingLabelsSize = GetGroupLablesToatalSize();
                 }
 
                 //******************************************************
                 //** Calculate axis labels size
                 //******************************************************
-                this.labelSize -= this.totlaGroupingLabelsSize;
-                if (this.labelSize > 0)
+                labelSize -= totlaGroupingLabelsSize;
+                if (labelSize > 0)
                 {
-                    // If axis is horizontal
-                    if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
-                    {
-                        this.labelSize = elementSpacing + GetRequiredLabelSize(chartGraph,
-                            (maxLabelSize / 100F) * (maxAxisElementsSize - this.markSize - this.scrollBarSize - this.titleSize), out this.unRotatedLabelSize);
-                    }
-                    // If axis is horizontal
-                    else
-                    {
-                        this.labelSize = elementSpacing + GetRequiredLabelSize(chartGraph,
-                            (maxLabelSize / 100F) * (maxAxisElementsSize - this.markSize - this.scrollBarSize - this.titleSize), out this.unRotatedLabelSize);
-                    }
+                    labelSize = elementSpacing + GetRequiredLabelSize(chartGraph,
+                        (maxLabelSize / 100F) * (maxAxisElementsSize - markSize - scrollBarSize - titleSize), out unRotatedLabelSize);
 
-                    if (!this.LabelStyle.Enabled)
+
+                    if (!LabelStyle.Enabled)
                     {
-                        this.labelSize -= elementSpacing;
+                        labelSize -= elementSpacing;
                     }
                 }
                 else
                 {
-                    this.labelSize = 0;
+                    labelSize = 0;
                 }
 
-                this.labelSize += this.totlaGroupingLabelsSize;
+                labelSize += totlaGroupingLabelsSize;
             }
 
 #if SUBAXES
@@ -3782,626 +3417,623 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
 
             // Restore previous invalidation flag
-			Common.Chart.disableInvalidates = oldDisableInvalidates;
+            Common.Chart.disableInvalidates = oldDisableInvalidates;
         }
 
-		/// <summary>
-		/// Calculates axis interval so that labels will fit most efficiently.
-		/// </summary>
-		/// <param name="chartGraph">Chart graphics.</param>
-		/// <param name="autoPlotPosition">True if plot position is auto calculated.</param>
-		/// <param name="onlyIncreaseInterval">True if interval should only be increased.</param>
-		private void AdjustIntervalToFitLabels(ChartGraphics chartGraph, bool autoPlotPosition, bool onlyIncreaseInterval)
-		{
-			// Calculates axis interval so that labels will fit most efficiently.
-			if(this.ScaleSegments.Count == 0)
-			{
-				this.AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, null, onlyIncreaseInterval);
-			}
-			else
-			{
-				// Allow values to go outside the segment boundary
-				this.ScaleSegments.AllowOutOfScaleValues = true;
+        /// <summary>
+        /// Calculates axis interval so that labels will fit most efficiently.
+        /// </summary>
+        /// <param name="chartGraph">Chart graphics.</param>
+        /// <param name="autoPlotPosition">True if plot position is auto calculated.</param>
+        /// <param name="onlyIncreaseInterval">True if interval should only be increased.</param>
+        private void AdjustIntervalToFitLabels(ChartGraphics chartGraph, bool autoPlotPosition, bool onlyIncreaseInterval)
+        {
+            // Calculates axis interval so that labels will fit most efficiently.
+            if (ScaleSegments.Count == 0)
+            {
+                AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, null, onlyIncreaseInterval);
+            }
+            else
+            {
+                // Allow values to go outside the segment boundary
+                ScaleSegments.AllowOutOfScaleValues = true;
 
-				// Adjust interval of each segment first
-				foreach(AxisScaleSegment axisScaleSegment in this.ScaleSegments)
-				{
-					this.AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, axisScaleSegment, onlyIncreaseInterval);
-				}
+                // Adjust interval of each segment first
+                foreach (AxisScaleSegment axisScaleSegment in ScaleSegments)
+                {
+                    AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, axisScaleSegment, onlyIncreaseInterval);
+                }
 
-				// Fill labels using new segment intervals
-				bool removeLabels = true;
-				int segmentIndex = 0;
-				ArrayList removedLabels = new ArrayList();
-				ArrayList removedLabelsIndexes = new ArrayList();
-				foreach(AxisScaleSegment scaleSegment in this.ScaleSegments)
-				{
-					scaleSegment.SetTempAxisScaleAndInterval();
-					this.FillLabels(removeLabels);
-					removeLabels = false;
-					scaleSegment.RestoreAxisScaleAndInterval();
+                // Fill labels using new segment intervals
+                bool removeLabels = true;
+                int segmentIndex = 0;
+                ArrayList removedLabels = new();
+                ArrayList removedLabelsIndexes = new();
+                foreach (AxisScaleSegment scaleSegment in ScaleSegments)
+                {
+                    scaleSegment.SetTempAxisScaleAndInterval();
+                    FillLabels(removeLabels);
+                    removeLabels = false;
+                    scaleSegment.RestoreAxisScaleAndInterval();
 
-					// Remove last label of all segmenst except of the last
-					if(segmentIndex < this.ScaleSegments.Count - 1 &&
-						this.CustomLabels.Count > 0)
-					{
-						// Remove label and save it in the list
-						removedLabels.Add(this.CustomLabels[this.CustomLabels.Count - 1]);
-						removedLabelsIndexes.Add(this.CustomLabels.Count - 1);
-						this.CustomLabels.RemoveAt(this.CustomLabels.Count - 1);
-					}
+                    // Remove last label of all segmenst except of the last
+                    if (segmentIndex < ScaleSegments.Count - 1 &&
+                        CustomLabels.Count > 0)
+                    {
+                        // Remove label and save it in the list
+                        removedLabels.Add(CustomLabels[^1]);
+                        removedLabelsIndexes.Add(CustomLabels.Count - 1);
+                        CustomLabels.RemoveAt(CustomLabels.Count - 1);
+                    }
 
-					++segmentIndex;
-				}
+                    ++segmentIndex;
+                }
 
-				// Check all previously removed last labels of each segment if there 
-				// is enough space to fit them
-				int reInsertedLabelsCount = 0;
-				int labelIndex = 0;
-				foreach(CustomLabel label in removedLabels)
-				{
-					// Re-insert the label
-					int labelInsertIndex = (int)removedLabelsIndexes[labelIndex] + reInsertedLabelsCount;
-					if(labelIndex < this.CustomLabels.Count)
-					{
-						this.CustomLabels.Insert(labelInsertIndex, label);
-					}
-					else
-					{
-						this.CustomLabels.Add(label);
-					}
+                // Check all previously removed last labels of each segment if there 
+                // is enough space to fit them
+                int reInsertedLabelsCount = 0;
+                int labelIndex = 0;
+                foreach (CustomLabel label in removedLabels)
+                {
+                    // Re-insert the label
+                    int labelInsertIndex = (int)removedLabelsIndexes[labelIndex] + reInsertedLabelsCount;
+                    if (labelIndex < CustomLabels.Count)
+                    {
+                        CustomLabels.Insert(labelInsertIndex, label);
+                    }
+                    else
+                    {
+                        CustomLabels.Add(label);
+                    }
 
-					// Check labels fit. Only horizontal or vertical fit is checked depending 
-					// on the axis orientation.
-					ArrayList labelPositions = new ArrayList();
-					bool fitDone = CheckLabelsFit(
-						chartGraph, 
-						this.markSize + this.scrollBarSize + this.titleSize, 
-						autoPlotPosition,
-						true,
-						false,
-						(this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? false : true,
-						(this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? true : false,
-						labelPositions);
+                    // Check labels fit. Only horizontal or vertical fit is checked depending 
+                    // on the axis orientation.
+                    ArrayList labelPositions = new();
+                    bool fitDone = CheckLabelsFit(
+                        chartGraph,
+                        markSize + scrollBarSize + titleSize,
+                        autoPlotPosition,
+                        true,
+                        false,
+                        AxisPosition != AxisPosition.Left && AxisPosition != AxisPosition.Right,
+                        AxisPosition == AxisPosition.Left || AxisPosition == AxisPosition.Right,
+                        labelPositions);
 
-					// If labels fit check if any of the label positions overlap
-					if(fitDone)
-					{
-						for(int index = 0; fitDone && index < labelPositions.Count; index++)
-						{
-							SKRect rect1 = (SKRect)labelPositions[index];
-							for(int index2 = index + 1; fitDone && index2 < labelPositions.Count; index2++)
-							{
-								SKRect rect2 = (SKRect)labelPositions[index2];
-								if(rect1.IntersectsWith(rect2))
-								{
-									fitDone = false;
-								}
-							}
-						}
-					}
+                    // If labels fit check if any of the label positions overlap
+                    if (fitDone)
+                    {
+                        for (int index = 0; fitDone && index < labelPositions.Count; index++)
+                        {
+                            SKRect rect1 = (SKRect)labelPositions[index];
+                            for (int index2 = index + 1; fitDone && index2 < labelPositions.Count; index2++)
+                            {
+                                SKRect rect2 = (SKRect)labelPositions[index2];
+                                if (rect1.IntersectsWith(rect2))
+                                {
+                                    fitDone = false;
+                                }
+                            }
+                        }
+                    }
 
-					// If labels do not fit or overlapp - remove completly
-					if(!fitDone)
-					{
-						this.CustomLabels.RemoveAt(labelInsertIndex);
-					}
-					else
-					{
-						++reInsertedLabelsCount;
-					}
+                    // If labels do not fit or overlapp - remove completly
+                    if (!fitDone)
+                    {
+                        CustomLabels.RemoveAt(labelInsertIndex);
+                    }
+                    else
+                    {
+                        ++reInsertedLabelsCount;
+                    }
 
-					++labelIndex;
-				}
+                    ++labelIndex;
+                }
 
-				// Make sure now values are rounded on segment boundary
-				this.ScaleSegments.AllowOutOfScaleValues = false;
-			}
-		}
+                // Make sure now values are rounded on segment boundary
+                ScaleSegments.AllowOutOfScaleValues = false;
+            }
+        }
 
-		/// <summary>
-		/// Checks if variable count labels mode is enabled.
-		/// </summary>
-		/// <returns>True if variable count labels mode is enabled.</returns>
-		private bool IsVariableLabelCountModeEnabled()
-		{
-			// Make sure the variable interval mode is enabled and
-			// no custom label interval used.
-			if( (this.IntervalAutoMode == IntervalAutoMode.VariableCount || this.ScaleSegments.Count > 0) &&
-				!this.IsLogarithmic &&
-				(this.tempLabelInterval <= 0.0 || (double.IsNaN(this.tempLabelInterval) && this.Interval <= 0.0)) )
-			{
-				// This feature is not supported for charts that do not
-				// require X and Y axes (Pie, Radar, ...)
-				if(!ChartArea.requireAxes)
-				{
-					return false;
-				}
-                // This feature is not supported if the axis doesn't have data range 
-                if (Double.IsNaN(this.minimum) || Double.IsNaN(this.maximum))
+        /// <summary>
+        /// Checks if variable count labels mode is enabled.
+        /// </summary>
+        /// <returns>True if variable count labels mode is enabled.</returns>
+        private bool IsVariableLabelCountModeEnabled()
+        {
+            // Make sure the variable interval mode is enabled and
+            // no custom label interval used.
+            if ((IntervalAutoMode == IntervalAutoMode.VariableCount || ScaleSegments.Count > 0) &&
+                !IsLogarithmic &&
+                (tempLabelInterval <= 0.0 || (double.IsNaN(tempLabelInterval) && Interval <= 0.0)))
+            {
+                // This feature is not supported for charts that do not
+                // require X and Y axes (Pie, Radar, ...)
+                if (!ChartArea.requireAxes)
                 {
                     return false;
                 }
-				// Check if custom labels are used in the first row
-				bool customLabels = false;
-				foreach(CustomLabel label in this.CustomLabels)
-				{
-					if(label.customLabel && label.RowIndex == 0)
-					{
-						customLabels = true;
-						break;
-					}
-				}
+                // This feature is not supported if the axis doesn't have data range 
+                if (Double.IsNaN(minimum) || Double.IsNaN(maximum))
+                {
+                    return false;
+                }
+                // Check if custom labels are used in the first row
+                bool customLabels = false;
+                foreach (CustomLabel label in CustomLabels)
+                {
+                    if (label.customLabel && label.RowIndex == 0)
+                    {
+                        customLabels = true;
+                        break;
+                    }
+                }
 
-				// Proceed only if no custom labels are used in the first row
-				if(!customLabels)
-				{
-					return true;
-				}
-			}
+                // Proceed only if no custom labels are used in the first row
+                if (!customLabels)
+                {
+                    return true;
+                }
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		/// <summary>
-		/// Calculates axis interval so that labels will fit most efficiently.
-		/// </summary>
-		/// <param name="chartGraph">Chart graphics.</param>
-		/// <param name="autoPlotPosition">True if plot position is auto calculated.</param>
-		/// <param name="axisScaleSegment">Axis scale segment to process.</param>
-		/// <param name="onlyIncreaseInterval">True if interval should only be increased.</param>
-		private void AdjustIntervalToFitLabels(
-			ChartGraphics chartGraph, 
-			bool autoPlotPosition, 
-			AxisScaleSegment axisScaleSegment,
-			bool onlyIncreaseInterval)
-		{
-			// Re-fill the labels just for the scale segment provided
-			if(axisScaleSegment != null)
-			{
-				// Re-fill new axis labels
-				if(this.tempLabels != null)
-				{
-					this.CustomLabels.Clear();
-					foreach( CustomLabel label in this.tempLabels )
-					{
-						this.CustomLabels.Add(label.Clone());
-					}
-				}
+        /// <summary>
+        /// Calculates axis interval so that labels will fit most efficiently.
+        /// </summary>
+        /// <param name="chartGraph">Chart graphics.</param>
+        /// <param name="autoPlotPosition">True if plot position is auto calculated.</param>
+        /// <param name="axisScaleSegment">Axis scale segment to process.</param>
+        /// <param name="onlyIncreaseInterval">True if interval should only be increased.</param>
+        private void AdjustIntervalToFitLabels(
+            ChartGraphics chartGraph,
+            bool autoPlotPosition,
+            AxisScaleSegment axisScaleSegment,
+            bool onlyIncreaseInterval)
+        {
+            // Re-fill the labels just for the scale segment provided
+            if (axisScaleSegment != null)
+            {
+                // Re-fill new axis labels
+                if (tempLabels != null)
+                {
+                    CustomLabels.Clear();
+                    foreach (CustomLabel label in tempLabels)
+                    {
+                        CustomLabels.Add(label.Clone());
+                    }
+                }
 
-				// Fill labels just for the segment
-				axisScaleSegment.SetTempAxisScaleAndInterval();
-				this.FillLabels( true );
-				axisScaleSegment.RestoreAxisScaleAndInterval();
-			}
+                // Fill labels just for the segment
+                axisScaleSegment.SetTempAxisScaleAndInterval();
+                FillLabels(true);
+                axisScaleSegment.RestoreAxisScaleAndInterval();
+            }
 
-			// Calculate minimum interval size
-			double minIntervalSzie = double.NaN;
-			ArrayList axisSeries = AxisScaleBreakStyle.GetAxisSeries(this);
-			foreach(Series series in axisSeries)
-			{
-				if(this.axisType == AxisName.X || this.axisType == AxisName.X2)
-				{
-					if(ChartHelper.IndexedSeries(series))
-					{
-						minIntervalSzie = 1.0;
-					}
-					else if(series.XValueType == ChartValueType.String || 
-						series.XValueType == ChartValueType.Int32 || 
-						series.XValueType == ChartValueType.UInt32 || 
-						series.XValueType == ChartValueType.UInt64 ||
-						series.XValueType == ChartValueType.Int64 )
-					{
-						minIntervalSzie = 1.0;
-					}
-				}
-				else
-				{
-					if(series.YValueType == ChartValueType.String || 
-						series.YValueType == ChartValueType.Int32 || 
-						series.YValueType == ChartValueType.UInt32 || 
-						series.YValueType == ChartValueType.UInt64 ||
-						series.YValueType == ChartValueType.Int64 )
-					{
-						minIntervalSzie = 1.0;
-					}
-				}
-			}
+            // Calculate minimum interval size
+            double minIntervalSzie = double.NaN;
+            ArrayList axisSeries = AxisScaleBreakStyle.GetAxisSeries(this);
+            foreach (Series series in axisSeries)
+            {
+                if (axisType == AxisName.X || axisType == AxisName.X2)
+                {
+                    if (ChartHelper.IndexedSeries(series))
+                    {
+                        minIntervalSzie = 1.0;
+                    }
+                    else if (series.XValueType == ChartValueType.String ||
+                        series.XValueType == ChartValueType.Int32 ||
+                        series.XValueType == ChartValueType.UInt32 ||
+                        series.XValueType == ChartValueType.UInt64 ||
+                        series.XValueType == ChartValueType.Int64)
+                    {
+                        minIntervalSzie = 1.0;
+                    }
+                }
+                else
+                {
+                    if (series.YValueType == ChartValueType.String ||
+                        series.YValueType == ChartValueType.Int32 ||
+                        series.YValueType == ChartValueType.UInt32 ||
+                        series.YValueType == ChartValueType.UInt64 ||
+                        series.YValueType == ChartValueType.Int64)
+                    {
+                        minIntervalSzie = 1.0;
+                    }
+                }
+            }
 
 
-			// Iterate while interval is not found
-			bool firstIteration = true;
-			bool increaseNumberOfLabels = true;
-			double currentInterval = (axisScaleSegment == null) ? this.labelStyle.GetInterval() : axisScaleSegment.Interval;
-			DateTimeIntervalType currentIntervalType = (axisScaleSegment == null) ? this.labelStyle.GetIntervalType() : axisScaleSegment.IntervalType;
-			DateTimeIntervalType lastFitIntervalType = currentIntervalType;
-			double lastFitInterval = currentInterval;
-			ArrayList lastFitLabels = new ArrayList();
-			bool intervalFound = false;
-			int iterationNumber = 0;
-			while(!intervalFound && iterationNumber <= 1000)
-			{
-				bool fillNewLabels = true;
+            // Iterate while interval is not found
+            bool firstIteration = true;
+            bool increaseNumberOfLabels = true;
+            double currentInterval = (axisScaleSegment == null) ? labelStyle.GetInterval() : axisScaleSegment.Interval;
+            DateTimeIntervalType currentIntervalType = (axisScaleSegment == null) ? labelStyle.GetIntervalType() : axisScaleSegment.IntervalType;
+            DateTimeIntervalType lastFitIntervalType = currentIntervalType;
+            double lastFitInterval = currentInterval;
+            ArrayList lastFitLabels = new();
+            bool intervalFound = false;
+            int iterationNumber = 0;
+            while (!intervalFound && iterationNumber <= 1000)
+            {
+                bool fillNewLabels = true;
 #if DEBUG
-				if(iterationNumber >= 999)
-				{
+                if (iterationNumber >= 999)
+                {
                     throw (new InvalidOperationException(SR.ExceptionAxisDynamicIntervalCalculationFailed));
-				}
+                }
 #endif // DEBUG
 
-				// Check labels fit. Only horizontal or vertical fit is checked depending 
-				// on the axis orientation.
-				bool fitDone = CheckLabelsFit(
-					chartGraph, 
-					this.markSize + this.scrollBarSize + this.titleSize, 
-					autoPlotPosition,
-					true,
-					false,
-					(this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? false : true,
-					(this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? true : false,
-					null);
+                // Check labels fit. Only horizontal or vertical fit is checked depending 
+                // on the axis orientation.
+                bool fitDone = CheckLabelsFit(
+                    chartGraph,
+                    markSize + scrollBarSize + titleSize,
+                    autoPlotPosition,
+                    true,
+                    false,
+                    AxisPosition != AxisPosition.Left && AxisPosition != AxisPosition.Right,
+                    AxisPosition == AxisPosition.Left || AxisPosition == AxisPosition.Right,
+                    null);
 
-				// Check if we need to increase or reduce number of labels
-				if(firstIteration)
-				{
-					firstIteration = false;
-					increaseNumberOfLabels = (fitDone) ? true : false;
+                // Check if we need to increase or reduce number of labels
+                if (firstIteration)
+                {
+                    firstIteration = false;
+                    increaseNumberOfLabels = fitDone;
 
-					// Check if we can decrease the interva;
-					if(onlyIncreaseInterval && increaseNumberOfLabels)
-					{
-						intervalFound = true;
-						continue;
-					}
-				}
+                    // Check if we can decrease the interval
+                    if (onlyIncreaseInterval && increaseNumberOfLabels)
+                    {
+                        intervalFound = true;
+                        continue;
+                    }
+                }
 
-				// Find new interval. Value 0.0 means that interval cannot be
-				// reduced/increased any more and current interval should be used
-				double newInterval = 0.0;
-				DateTimeIntervalType newIntervalType = DateTimeIntervalType.Number;
-				if(increaseNumberOfLabels)
-				{
-					if(fitDone)
-					{
-						// Make a copy of last interval and labels collection that previously fit
-						lastFitInterval = currentInterval;
-						lastFitIntervalType = currentIntervalType;
-						lastFitLabels.Clear();
-						foreach(CustomLabel label in this.CustomLabels)
-						{
-							lastFitLabels.Add(label);
-						}
+                // Find new interval. Value 0.0 means that interval cannot be
+                // reduced/increased any more and current interval should be used
+                double newInterval = 0.0;
+                DateTimeIntervalType newIntervalType = DateTimeIntervalType.Number;
+                if (increaseNumberOfLabels)
+                {
+                    if (fitDone)
+                    {
+                        // Make a copy of last interval and labels collection that previously fit
+                        lastFitInterval = currentInterval;
+                        lastFitIntervalType = currentIntervalType;
+                        lastFitLabels.Clear();
+                        foreach (CustomLabel label in CustomLabels)
+                        {
+                            lastFitLabels.Add(label);
+                        }
 
-						newIntervalType = currentIntervalType;
-						newInterval = this.ReduceLabelInterval(
-							currentInterval, 
-							minIntervalSzie, 
-							ref newIntervalType);
-					}
-					else
-					{
-						newInterval = lastFitInterval;
-						newIntervalType = lastFitIntervalType;
-						intervalFound = true;
+                        newIntervalType = currentIntervalType;
+                        newInterval = ReduceLabelInterval(
+                            currentInterval,
+                            minIntervalSzie,
+                            ref newIntervalType);
+                    }
+                    else
+                    {
+                        newInterval = lastFitInterval;
+                        newIntervalType = lastFitIntervalType;
+                        intervalFound = true;
 
-						// Reuse previously saved labels
-						fillNewLabels = false;
-						this.CustomLabels.Clear();
-						foreach(CustomLabel label in lastFitLabels)
-						{
-							this.CustomLabels.Add(label);
-						}
+                        // Reuse previously saved labels
+                        fillNewLabels = false;
+                        CustomLabels.Clear();
+                        foreach (CustomLabel label in lastFitLabels)
+                        {
+                            CustomLabels.Add(label);
+                        }
 
-					}
-				}
-				else
-				{
-					if(!fitDone && this.CustomLabels.Count > 1)
-					{
-						newIntervalType = currentIntervalType;
-						newInterval = this.IncreaseLabelInterval(
-							currentInterval, 
-							ref newIntervalType);
-					}
-					else
-					{
-						intervalFound = true;
-					}
-				}
+                    }
+                }
+                else
+                {
+                    if (!fitDone && CustomLabels.Count > 1)
+                    {
+                        newIntervalType = currentIntervalType;
+                        newInterval = IncreaseLabelInterval(
+                            currentInterval,
+                            ref newIntervalType);
+                    }
+                    else
+                    {
+                        intervalFound = true;
+                    }
+                }
 
-				// Set new interval
-				if(newInterval != 0.0)
-				{
-					currentInterval = newInterval;
-					currentIntervalType = newIntervalType;
+                // Set new interval
+                if (newInterval != 0.0)
+                {
+                    currentInterval = newInterval;
+                    currentIntervalType = newIntervalType;
 
-					if(axisScaleSegment == null)
-					{
-						this.SetIntervalAndType(newInterval, newIntervalType);
-					}
-					else
-					{
-						axisScaleSegment.Interval = newInterval;
-						axisScaleSegment.IntervalType = newIntervalType;
-					}
+                    if (axisScaleSegment == null)
+                    {
+                        SetIntervalAndType(newInterval, newIntervalType);
+                    }
+                    else
+                    {
+                        axisScaleSegment.Interval = newInterval;
+                        axisScaleSegment.IntervalType = newIntervalType;
+                    }
 
-					// Re-fill new axis labels
-					if(fillNewLabels)
-					{
-						if(this.tempLabels != null)
-						{
-							this.CustomLabels.Clear();
-							foreach( CustomLabel label in this.tempLabels )
-							{
-								CustomLabels.Add(label.Clone());
-							}
-						}
-					
-						if(axisScaleSegment == null)
-						{
-							this.FillLabels(true);
-						}
-						else
-						{
-							axisScaleSegment.SetTempAxisScaleAndInterval();
-							this.FillLabels( true );
-							axisScaleSegment.RestoreAxisScaleAndInterval();
-						}
-					}
-				}
-				else
-				{
-					intervalFound = true;
-				}
-			
-				++iterationNumber;
-			}
-		}
+                    // Re-fill new axis labels
+                    if (fillNewLabels)
+                    {
+                        if (tempLabels != null)
+                        {
+                            CustomLabels.Clear();
+                            foreach (CustomLabel label in tempLabels)
+                            {
+                                CustomLabels.Add(label.Clone());
+                            }
+                        }
 
-		/// <summary>
-		/// Reduces current label interval, so that more labels can fit.
-		/// </summary>
-		/// <param name="oldInterval">An interval to reduce.</param>
-		/// <param name="minInterval">Minimum interval size.</param>
+                        if (axisScaleSegment == null)
+                        {
+                            FillLabels(true);
+                        }
+                        else
+                        {
+                            axisScaleSegment.SetTempAxisScaleAndInterval();
+                            FillLabels(true);
+                            axisScaleSegment.RestoreAxisScaleAndInterval();
+                        }
+                    }
+                }
+                else
+                {
+                    intervalFound = true;
+                }
+
+                ++iterationNumber;
+            }
+        }
+
+        /// <summary>
+        /// Reduces current label interval, so that more labels can fit.
+        /// </summary>
+        /// <param name="oldInterval">An interval to reduce.</param>
+        /// <param name="minInterval">Minimum interval size.</param>
         /// <param name="axisIntervalType">Interval type.</param>
-		/// <returns>New interval or 0.0 if interval cannot be reduced.</returns>
-		private double ReduceLabelInterval(
-			double oldInterval, 
-			double minInterval,
-			ref DateTimeIntervalType axisIntervalType)
-		{
-			double newInterval = oldInterval;
+        /// <returns>New interval or 0.0 if interval cannot be reduced.</returns>
+        private double ReduceLabelInterval(
+            double oldInterval,
+            double minInterval,
+            ref DateTimeIntervalType axisIntervalType)
+        {
+            double newInterval = oldInterval;
 
-			// Calculate rounded interval value
-			double range = this.maximum - this.minimum;
-			int iterationIndex = 0;
-			if( axisIntervalType == DateTimeIntervalType.Auto ||
-				axisIntervalType == DateTimeIntervalType.NotSet ||
-				axisIntervalType == DateTimeIntervalType.Number)
-			{
-				// Process numeric scale
-				double devider = 2.0;
-				do
-				{
+            // Calculate rounded interval value
+            double range = maximum - minimum;
+            int iterationIndex = 0;
+            if (axisIntervalType == DateTimeIntervalType.Auto ||
+                axisIntervalType == DateTimeIntervalType.NotSet ||
+                axisIntervalType == DateTimeIntervalType.Number)
+            {
+                // Process numeric scale
+                double devider = 2.0;
+                do
+                {
 #if DEBUG
-					if(iterationIndex >= 99)
-					{
+                    if (iterationIndex >= 99)
+                    {
                         throw (new InvalidOperationException(SR.ExceptionAxisIntervalDecreasingFailed));
-					}
+                    }
 #endif // DEBUG
 
-					newInterval = CalcInterval( range / (range / (newInterval / devider)) );
-					if(newInterval == oldInterval)
-					{
-						devider *= 2.0;
-					}
+                    newInterval = CalcInterval(range / (range / (newInterval / devider)));
+                    if (newInterval == oldInterval)
+                    {
+                        devider *= 2.0;
+                    }
 
-					++iterationIndex;
-				} while(newInterval == oldInterval && iterationIndex <= 100);
-			}
-			else
-			{
-				// Process date scale
-				if(oldInterval > 1.0 || oldInterval < 1.0)
-				{
-					if( axisIntervalType == DateTimeIntervalType.Minutes || 
-						axisIntervalType == DateTimeIntervalType.Seconds)
-					{
-						if(oldInterval >= 60)
-						{
-							newInterval = Math.Round(oldInterval / 2.0);
-						}
-						else if(oldInterval >= 30.0)
-						{
-							newInterval = 15.0;
-						}
-						else if(oldInterval >= 15.0)
-						{
-							newInterval = 5.0;
-						}
-						else if(oldInterval >= 5.0)
-						{
-							newInterval = 1.0;
-						}
-					}
-					else
-					{
-						newInterval = Math.Round(oldInterval / 2.0);
-					}
-					if(newInterval < 1.0)
-					{
-						newInterval = 1.0;
-					}
-				}
-				if(oldInterval == 1.0)
-				{
-					if(axisIntervalType == DateTimeIntervalType.Years)
-					{
-						newInterval = 6.0;
-						axisIntervalType = DateTimeIntervalType.Months;
-					}
-					else if(axisIntervalType == DateTimeIntervalType.Months)
-					{
-						newInterval = 2.0;
-						axisIntervalType = DateTimeIntervalType.Weeks;
-					}
-					else if(axisIntervalType == DateTimeIntervalType.Weeks)
-					{
-						newInterval = 2.0;
-						axisIntervalType = DateTimeIntervalType.Days;
-					}
-					else if(axisIntervalType == DateTimeIntervalType.Days)
-					{
-						newInterval = 12.0;
-						axisIntervalType = DateTimeIntervalType.Hours;
-					}
-					else if(axisIntervalType == DateTimeIntervalType.Hours)
-					{
-						newInterval = 30.0;
-						axisIntervalType = DateTimeIntervalType.Minutes;
-					}
-					else if(axisIntervalType == DateTimeIntervalType.Minutes)
-					{
-						newInterval = 30.0;
-						axisIntervalType = DateTimeIntervalType.Seconds;
-					}
-					else if(axisIntervalType == DateTimeIntervalType.Seconds)
-					{
-						newInterval = 100.0;
-						axisIntervalType = DateTimeIntervalType.Milliseconds;
-					}
-				}
-			}
+                    ++iterationIndex;
+                } while (newInterval == oldInterval && iterationIndex <= 100);
+            }
+            else
+            {
+                // Process date scale
+                if (oldInterval > 1.0 || oldInterval < 1.0)
+                {
+                    if (axisIntervalType == DateTimeIntervalType.Minutes ||
+                        axisIntervalType == DateTimeIntervalType.Seconds)
+                    {
+                        if (oldInterval >= 60)
+                        {
+                            newInterval = Math.Round(oldInterval / 2.0);
+                        }
+                        else if (oldInterval >= 30.0)
+                        {
+                            newInterval = 15.0;
+                        }
+                        else if (oldInterval >= 15.0)
+                        {
+                            newInterval = 5.0;
+                        }
+                        else if (oldInterval >= 5.0)
+                        {
+                            newInterval = 1.0;
+                        }
+                    }
+                    else
+                    {
+                        newInterval = Math.Round(oldInterval / 2.0);
+                    }
+                    if (newInterval < 1.0)
+                    {
+                        newInterval = 1.0;
+                    }
+                }
+                if (oldInterval == 1.0)
+                {
+                    if (axisIntervalType == DateTimeIntervalType.Years)
+                    {
+                        newInterval = 6.0;
+                        axisIntervalType = DateTimeIntervalType.Months;
+                    }
+                    else if (axisIntervalType == DateTimeIntervalType.Months)
+                    {
+                        newInterval = 2.0;
+                        axisIntervalType = DateTimeIntervalType.Weeks;
+                    }
+                    else if (axisIntervalType == DateTimeIntervalType.Weeks)
+                    {
+                        newInterval = 2.0;
+                        axisIntervalType = DateTimeIntervalType.Days;
+                    }
+                    else if (axisIntervalType == DateTimeIntervalType.Days)
+                    {
+                        newInterval = 12.0;
+                        axisIntervalType = DateTimeIntervalType.Hours;
+                    }
+                    else if (axisIntervalType == DateTimeIntervalType.Hours)
+                    {
+                        newInterval = 30.0;
+                        axisIntervalType = DateTimeIntervalType.Minutes;
+                    }
+                    else if (axisIntervalType == DateTimeIntervalType.Minutes)
+                    {
+                        newInterval = 30.0;
+                        axisIntervalType = DateTimeIntervalType.Seconds;
+                    }
+                    else if (axisIntervalType == DateTimeIntervalType.Seconds)
+                    {
+                        newInterval = 100.0;
+                        axisIntervalType = DateTimeIntervalType.Milliseconds;
+                    }
+                }
+            }
 
 
-			// Make sure interal is not less than min interval specified
-			if(!double.IsNaN(minInterval) && newInterval < minInterval)
-			{
-				newInterval = 0.0;
-			}
+            // Make sure interal is not less than min interval specified
+            if (!double.IsNaN(minInterval) && newInterval < minInterval)
+            {
+                newInterval = 0.0;
+            }
 
-			return newInterval;
-		}
+            return newInterval;
+        }
 
-		/// <summary>
-		/// Increases current label interval, so that less labels fit.
-		/// </summary>
-		/// <param name="oldInterval">An interval to increase.</param>
+        /// <summary>
+        /// Increases current label interval, so that less labels fit.
+        /// </summary>
+        /// <param name="oldInterval">An interval to increase.</param>
         /// <param name="axisIntervalType">Interval type.</param>
-		/// <returns>New interval or 0.0 if interval cannot be increased.</returns>
-		private double IncreaseLabelInterval(
-			double oldInterval,  
-			ref DateTimeIntervalType axisIntervalType)
-		{
-			double newInterval = oldInterval;
-			
-			// Calculate rounded interval value
-			double range = this.maximum - this.minimum;
-			int iterationIndex = 0;
-			if( axisIntervalType == DateTimeIntervalType.Auto ||
-				axisIntervalType == DateTimeIntervalType.NotSet ||
-				axisIntervalType == DateTimeIntervalType.Number)
-			{
-				// Process numeric scale
-				double devider = 2.0;
-				do
-				{
+        /// <returns>New interval or 0.0 if interval cannot be increased.</returns>
+        private double IncreaseLabelInterval(
+            double oldInterval,
+            ref DateTimeIntervalType axisIntervalType)
+        {
+            double newInterval = oldInterval;
+
+            // Calculate rounded interval value
+            double range = maximum - minimum;
+            int iterationIndex = 0;
+            if (axisIntervalType == DateTimeIntervalType.Auto ||
+                axisIntervalType == DateTimeIntervalType.NotSet ||
+                axisIntervalType == DateTimeIntervalType.Number)
+            {
+                // Process numeric scale
+                double devider = 2.0;
+                do
+                {
 #if DEBUG
-					if(iterationIndex >= 99)
-					{
+                    if (iterationIndex >= 99)
+                    {
                         throw (new InvalidOperationException(SR.ExceptionAxisIntervalIncreasingFailed));
-					}
+                    }
 #endif // DEBUG
 
-					newInterval = CalcInterval( range / (range / (newInterval * devider)) );
-					if(newInterval == oldInterval)
-					{
-						devider *= 2.0;
-					}
-					++iterationIndex;
-				} while(newInterval == oldInterval && iterationIndex <= 100);
-			}
-			else
-			{
-				// Process date scale
-				newInterval = oldInterval * 2.0;
-				if(axisIntervalType == DateTimeIntervalType.Years)
-				{
-					// Do nothing for years
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Months)
-				{
-					if(newInterval >= 12.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Years;
-					}
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Weeks)
-				{
-					if(newInterval >= 4.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Months;
-					}
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Days)
-				{
-					if(newInterval >= 7.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Weeks;
-					}
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Hours)
-				{
-					if(newInterval >= 60.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Days;
-					}
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Minutes)
-				{
-					if(newInterval >= 60.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Hours;
-					}
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Seconds)
-				{
-					if(newInterval >= 60.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Minutes;
-					}
-				}
-				else if(axisIntervalType == DateTimeIntervalType.Milliseconds)
-				{
-					if(newInterval >= 1000.0)
-					{
-						newInterval = 1.0;
-						axisIntervalType = DateTimeIntervalType.Seconds;
-					}
-				}
-			}
+                    newInterval = CalcInterval(range / (range / (newInterval * devider)));
+                    if (newInterval == oldInterval)
+                    {
+                        devider *= 2.0;
+                    }
+                    ++iterationIndex;
+                } while (newInterval == oldInterval && iterationIndex <= 100);
+            }
+            else
+            {
+                // Process date scale
+                newInterval = oldInterval * 2.0;
+                if (axisIntervalType == DateTimeIntervalType.Years)
+                {
+                    // Do nothing for years
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Months)
+                {
+                    if (newInterval >= 12.0)
+                    {
+                        newInterval = 1.0;
+                        axisIntervalType = DateTimeIntervalType.Years;
+                    }
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Weeks)
+                {
+                    if (newInterval >= 4.0)
+                    {
+                        newInterval = 1.0;
+                        axisIntervalType = DateTimeIntervalType.Months;
+                    }
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Days)
+                {
+                    if (newInterval >= 7.0)
+                    {
+                        newInterval = 1.0;
+                        axisIntervalType = DateTimeIntervalType.Weeks;
+                    }
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Hours)
+                {
+                    if (newInterval >= 60.0)
+                    {
+                        newInterval = 1.0;
+                        axisIntervalType = DateTimeIntervalType.Days;
+                    }
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Minutes)
+                {
+                    if (newInterval >= 60.0)
+                    {
+                        newInterval = 1.0;
+                        axisIntervalType = DateTimeIntervalType.Hours;
+                    }
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Seconds)
+                {
+                    if (newInterval >= 60.0)
+                    {
+                        newInterval = 1.0;
+                        axisIntervalType = DateTimeIntervalType.Minutes;
+                    }
+                }
+                else if (axisIntervalType == DateTimeIntervalType.Milliseconds && newInterval >= 1000.0)
+                {
+                    newInterval = 1.0;
+                    axisIntervalType = DateTimeIntervalType.Seconds;
+                }
+            }
 
-			return newInterval;
-		}
+            return newInterval;
+        }
 
         /// <summary>
         /// Finds the longest labels with the space and inserts the new line character.
         /// </summary>
         /// <param name="labels">Labels collection.</param>
         /// <returns>True if collection was modified.</returns>
-        private bool WordWrapLongestLabel(CustomLabelsCollection labels)
+        private static bool WordWrapLongestLabel(CustomLabelsCollection labels)
         {
             bool changed = false;
 
             // Each label may contain several lines of text.
             // Create a list that contains an array of text for each label.
-            ArrayList labelTextRows = new ArrayList(labels.Count);
+            ArrayList labelTextRows = new(labels.Count);
             foreach (CustomLabel label in labels)
             {
                 labelTextRows.Add(label.Text.Split('\n'));
@@ -4436,9 +4068,9 @@ namespace WebCharts.Services.Models.General
                     if (newText[(newText.Length) / 2 - index] == ' ')
                     {
                         newText =
-                            newText.Substring(0, (newText.Length) / 2 - index) +
+                            newText.Substring(0, newText.Length / 2 - index) +
                             "\n" +
-                            newText.Substring((newText.Length) / 2 - index + 1);
+                            newText[(newText.Length / 2 - index + 1)..];
                         changed = true;
                     }
                     else if (newText[(newText.Length) / 2 + index] == ' ')
@@ -4446,7 +4078,7 @@ namespace WebCharts.Services.Models.General
                         newText =
                             newText.Substring(0, (newText.Length) / 2 + index) +
                             "\n" +
-                            newText.Substring((newText.Length) / 2 + index + 1);
+                            newText[(newText.Length / 2 + index + 1)..];
                         changed = true;
                     }
 
@@ -4462,15 +4094,16 @@ namespace WebCharts.Services.Models.General
                 {
                     // Construct label text from multiple rows separated by "\n"
                     CustomLabel label = labels[longestLabelIndex];
-                    label.Text = string.Empty;
+                    var sb = new StringBuilder();
                     for (int rowIndex = 0; rowIndex < ((string[])labelTextRows[longestLabelIndex]).Length; rowIndex++)
                     {
                         if (rowIndex > 0)
                         {
-                            label.Text += "\n";
+                            sb.Append('\n');
                         }
-                        label.Text += ((string[])labelTextRows[longestLabelIndex])[rowIndex];
+                        sb.Append(((string[])labelTextRows[longestLabelIndex])[rowIndex]);
                     }
+                    label.Text = sb.ToString();
                 }
             }
 
@@ -4495,28 +4128,27 @@ namespace WebCharts.Services.Models.General
             float labelsSizeEstimate)
         {
             // X axis settings defines if auto-fit font should be calculated
-            if (!this.IsLabelAutoFit ||
-                this.LabelAutoFitStyle == LabelAutoFitStyles.None ||
-                !this.LabelStyle.Enabled)
+            if (!IsLabelAutoFit ||
+                LabelAutoFitStyle == LabelAutoFitStyles.None ||
+                !LabelStyle.Enabled)
             {
                 return;
             }
 
-			// Set minimum font size
-			_minLabelFontSize = Math.Min(this.LabelAutoFitMinFontSize, this.LabelAutoFitMaxFontSize);
+            // Set minimum font size
+            _minLabelFontSize = Math.Min(LabelAutoFitMinFontSize, LabelAutoFitMaxFontSize);
 
             // Create new auto-fit font
-            this.autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                this.LabelStyle.Font.FontFamily,
-				Math.Max(this.LabelAutoFitMaxFontSize, this.LabelAutoFitMinFontSize),
-                this.LabelStyle.Font.Style,
-				GraphicsUnit.Point);
+            autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
+                LabelStyle.Font.Typeface.FamilyName,
+                Math.Max(LabelAutoFitMaxFontSize, LabelAutoFitMinFontSize),
+                LabelStyle.Font.Typeface.FontStyle);
 
             // Check if we allowed to increase font size while auto-fitting
-            if ((this.LabelAutoFitStyle & LabelAutoFitStyles.IncreaseFont) != LabelAutoFitStyles.IncreaseFont)
+            if ((LabelAutoFitStyle & LabelAutoFitStyles.IncreaseFont) != LabelAutoFitStyles.IncreaseFont)
             {
                 // Use axis labels font as starting point
-                this.autoLabelFont = this.LabelStyle.Font;
+                autoLabelFont = LabelStyle.Font;
             }
 
             // Loop while labels do not fit
@@ -4540,14 +4172,13 @@ namespace WebCharts.Services.Models.General
                 if (!fitDone)
                 {
                     // Try to reduce font size
-                    if (autoLabelFont.SizeInPoints > _minLabelFontSize &&
-                        (this.LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
+                    if (autoLabelFont.Size > _minLabelFontSize &&
+                        (LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
                     {
                         autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                            autoLabelFont.FontFamily, 
-                            autoLabelFont.SizeInPoints - 1, 
-                            autoLabelFont.Style, 
-                            GraphicsUnit.Point);
+                            autoLabelFont.Typeface.FamilyName,
+                            autoLabelFont.Size - 1,
+                            autoLabelFont.Typeface.FontStyle);
 
                     }
 
@@ -4587,7 +4218,7 @@ namespace WebCharts.Services.Models.General
             SKPoint areaCenterAbs = graph.GetAbsolutePoint(ChartArea.circularCenter);
 
             // Get absolute markers size and spacing
-            float spacing = graph.GetAbsolutePoint(new SKPoint(0, this.markSize + Axis.elementSpacing)).Y;
+            float spacing = graph.GetAbsolutePoint(new SKPoint(0, markSize + Axis.elementSpacing)).Y;
 
             //*****************************************************************
             //** Loop through all axis labels
@@ -4601,7 +4232,7 @@ namespace WebCharts.Services.Models.General
                 //*****************************************************************
                 SKSize textSize = graph.MeasureString(
                     axis.Title.Replace("\\n", "\n"),
-                    this.autoLabelFont);
+                    autoLabelFont);
 
                 //*****************************************************************
                 //** Get circular style label position.
@@ -4622,7 +4253,7 @@ namespace WebCharts.Services.Models.General
                     //*****************************************************************
 
                     // Get radius of plot area
-                    float plotAreaRadius = areaCenterAbs.Y - plotAreaRectAbs.Y;
+                    float plotAreaRadius = areaCenterAbs.Y - plotAreaRectAbs.Top;
                     plotAreaRadius -= labelsSizeEstimate;
                     plotAreaRadius += spacing;
 
@@ -4632,14 +4263,11 @@ namespace WebCharts.Services.Models.General
                     leftSideAngle = axis.AxisPosition - leftSideAngle;
 
                     // Check if label overlap the previous label
-                    if (!float.IsNaN(prevLabelSideAngle))
+                    if (!float.IsNaN(prevLabelSideAngle) && prevLabelSideAngle > leftSideAngle)
                     {
-                        if (prevLabelSideAngle > leftSideAngle)
-                        {
-                            // Labels overlap
-                            labelsFit = false;
-                            break;
-                        }
+                        // Labels overlap
+                        labelsFit = false;
+                        break;
                     }
 
                     // Remember label side angle
@@ -4651,14 +4279,13 @@ namespace WebCharts.Services.Models.General
                     //*****************************************************************
 
                     // Find the most outside point of the label
-                    SKPoint outsidePoint = new SKPoint(areaCenterAbs.X, plotAreaRectAbs.Y);
+                    SKPoint outsidePoint = new(areaCenterAbs.X, plotAreaRectAbs.Top);
                     outsidePoint.Y += labelsSizeEstimate;
                     outsidePoint.Y -= textSize.Height;
                     outsidePoint.Y -= spacing;
 
                     SKPoint[] rotatedPoint = new SKPoint[] { outsidePoint };
-                    Matrix newMatrix = new Matrix();
-                    newMatrix.RotateAt(axis.AxisPosition, areaCenterAbs);
+                    SKMatrix newMatrix = SKMatrix.CreateRotationDegrees(axis.AxisPosition, areaCenterAbs.X, areaCenterAbs.Y);
                     newMatrix.TransformPoints(rotatedPoint);
 
                     // Check if rotated point is inside Common.Chart area
@@ -4684,28 +4311,27 @@ namespace WebCharts.Services.Models.General
                     }
 
                     // Get label rotated position
-                    SKPoint[] labelPosition = new SKPoint[] { new SKPoint(areaCenterAbs.X, plotAreaRectAbs.Y) };
+                    SKPoint[] labelPosition = new SKPoint[] { new SKPoint(areaCenterAbs.X, plotAreaRectAbs.Top) };
                     labelPosition[0].Y += labelsSizeEstimate;
                     labelPosition[0].Y -= spacing;
-                    Matrix newMatrix = new Matrix();
-                    newMatrix.RotateAt(textAngle, areaCenterAbs);
+                    SKMatrix newMatrix = SKMatrix.CreateRotationDegrees(axis.AxisPosition, areaCenterAbs.X, areaCenterAbs.Y);
                     newMatrix.TransformPoints(labelPosition);
 
                     // Calculate label position
-                    SKRect curLabelPosition = new SKRect(
+                    SKRect curLabelPosition = new(
                         labelPosition[0].X,
                         labelPosition[0].Y - textSize.Height / 2f,
                         textSize.Width,
                         textSize.Height);
                     if (textAngle < 5f)
                     {
-                        curLabelPosition.X = labelPosition[0].X - textSize.Width / 2f;
-                        curLabelPosition.Y = labelPosition[0].Y - textSize.Height;
+                        curLabelPosition.Left = labelPosition[0].X - textSize.Width / 2f;
+                        curLabelPosition.Top = labelPosition[0].Y - textSize.Height;
                     }
                     if (textAngle > 175f)
                     {
-                        curLabelPosition.X = labelPosition[0].X - textSize.Width / 2f;
-                        curLabelPosition.Y = labelPosition[0].Y;
+                        curLabelPosition.Left = labelPosition[0].X - textSize.Width / 2f;
+                        curLabelPosition.Top = labelPosition[0].Y;
                     }
 
                     // Decrease label rectangle
@@ -4766,46 +4392,46 @@ namespace WebCharts.Services.Models.General
 
 
 
-			// Make sure the variable interval mode is enabled
-			if( this.Enabled != AxisEnabled.False &&
-				this.LabelStyle.Enabled &&
-				this.IsVariableLabelCountModeEnabled() )
-			{
-				// Set font for labels fitting
-				if(this.autoLabelFont == null) 
-				{
-					this.autoLabelFont = this.LabelStyle.Font;
-				}
+            // Make sure the variable interval mode is enabled
+            if (Enabled != AxisEnabled.False &&
+                LabelStyle.Enabled &&
+                IsVariableLabelCountModeEnabled())
+            {
+                // Set font for labels fitting
+                if (autoLabelFont == null)
+                {
+                    autoLabelFont = LabelStyle.Font;
+                }
 
-				// Reset angle and stagged flag used in the auto-fitting algorithm
-				if(this.autoLabelAngle < 0)
-				{
-					this.autoLabelAngle = this.LabelStyle.Angle;
-				}
-				if(this.autoLabelOffset < 0)
-				{
-					this.autoLabelOffset = (this.LabelStyle.IsStaggered) ? 1 : 0;
-				}
+                // Reset angle and stagged flag used in the auto-fitting algorithm
+                if (autoLabelAngle < 0)
+                {
+                    autoLabelAngle = LabelStyle.Angle;
+                }
+                if (autoLabelOffset < 0)
+                {
+                    autoLabelOffset = (LabelStyle.IsStaggered) ? 1 : 0;
+                }
 
-				// Check labels fit
-				bool fitDone = CheckLabelsFit(
-					chartGraph, 
-					this.markSize + this.scrollBarSize + this.titleSize, 
-					autoPlotPosition,
-					true,
-					true,
-					(this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? false : true,
-					(this.AxisPosition == AxisPosition.Left || this.AxisPosition == AxisPosition.Right) ? true : false,
-					null);
+                // Check labels fit
+                bool fitDone = CheckLabelsFit(
+                    chartGraph,
+                    markSize + scrollBarSize + titleSize,
+                    autoPlotPosition,
+                    true,
+                    true,
+                    AxisPosition != AxisPosition.Left && AxisPosition != AxisPosition.Right,
+                    AxisPosition == AxisPosition.Left || AxisPosition == AxisPosition.Right,
+                    null);
 
-				// If there is a problem fitting labels try to reduce number of labels by
-				// increasing of the interval.
-				if(!fitDone)
-				{
-					// Adjust interval
-					this.AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, true);
-				}
-			}
+                // If there is a problem fitting labels try to reduce number of labels by
+                // increasing of the interval.
+                if (!fitDone)
+                {
+                    // Adjust interval
+                    AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, true);
+                }
+            }
 
 
 
@@ -4815,15 +4441,15 @@ namespace WebCharts.Services.Models.General
             //******************************************************
 
             totlaGroupingLabelsSizeAdjustment = 0f;
-            if (this.IsLabelAutoFit &&
-                this.LabelAutoFitStyle != LabelAutoFitStyles.None &&
-                this.Enabled != AxisEnabled.False)
+            if (IsLabelAutoFit &&
+                LabelAutoFitStyle != LabelAutoFitStyles.None &&
+                Enabled != AxisEnabled.False)
             {
                 bool fitDone = false;
 
                 if (autoLabelFont == null)
                 {
-                    autoLabelFont = this.LabelStyle.Font;
+                    autoLabelFont = LabelStyle.Font;
                 }
 
                 // Loop while labels do not fit
@@ -4835,7 +4461,7 @@ namespace WebCharts.Services.Models.General
                     //******************************************************
                     fitDone = CheckLabelsFit(
                         chartGraph,
-                        this.markSize + this.scrollBarSize + this.titleSize,
+                        markSize + scrollBarSize + titleSize,
                         autoPlotPosition,
                         true,
                         true);
@@ -4846,7 +4472,7 @@ namespace WebCharts.Services.Models.General
                     if (!fitDone)
                     {
                         // Try to reduce font
-                        if (autoLabelFont.SizeInPoints > _minLabelFontSize)
+                        if (autoLabelFont.Size > _minLabelFontSize)
                         {
                             // Reduce auto fit font
                             if (ChartArea != null && ChartArea.IsSameFontSKSizeorAllAxes)
@@ -4857,20 +4483,18 @@ namespace WebCharts.Services.Models.General
                                     if (currentAxis.enabled && currentAxis.IsLabelAutoFit && currentAxis.autoLabelFont != null)
                                     {
                                         currentAxis.autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                                            currentAxis.autoLabelFont.FontFamily,
-                                            autoLabelFont.SizeInPoints - 1,
-                                            currentAxis.autoLabelFont.Style,
-                                            GraphicsUnit.Point);
+                                            currentAxis.autoLabelFont.Typeface.FamilyName,
+                                            autoLabelFont.Size - 1,
+                                            currentAxis.autoLabelFont.Typeface.FontStyle);
                                     }
                                 }
                             }
-                            else if ((this.LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
+                            else if ((LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
                             {
                                 autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
-                                    autoLabelFont.FontFamily,
-                                    autoLabelFont.SizeInPoints - 1,
-                                    autoLabelFont.Style,
-                                    GraphicsUnit.Point);
+                                    autoLabelFont.Typeface.FamilyName,
+                                    autoLabelFont.Size - 1,
+                                    autoLabelFont.Typeface.FontStyle);
                             }
                             else
                             {
@@ -4886,7 +4510,7 @@ namespace WebCharts.Services.Models.General
                     }
                 }
 
-                this.totlaGroupingLabelsSizeAdjustment = oldLabelSecondRowSize - totlaGroupingLabelsSize;
+                totlaGroupingLabelsSizeAdjustment = oldLabelSecondRowSize - totlaGroupingLabelsSize;
             }
         }
 
@@ -4898,9 +4522,9 @@ namespace WebCharts.Services.Models.General
         internal double GetLogValue(double yValue)
         {
             // Check if axis is logarithmic
-            if (this.IsLogarithmic)
+            if (IsLogarithmic)
             {
-                yValue = Math.Log(yValue, this.logarithmBase);
+                yValue = Math.Log(yValue, logarithmBase);
             }
 
             return yValue;
@@ -4922,7 +4546,7 @@ namespace WebCharts.Services.Models.General
             bool checkLabelsFirstRowOnly,
             bool secondPass)
         {
-            return this.CheckLabelsFit(
+            return CheckLabelsFit(
                 chartGraph,
                 otherElementsSize,
                 autoPlotPosition,
@@ -4962,7 +4586,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Label string drawing format			
-            using (StringFormat format = new StringFormat())
+            using (StringFormat format = new())
             {
                 format.FormatFlags |= StringFormatFlags.LineLimit;
                 format.Trimming = StringTrimming.EllipsisCharacter;
@@ -4974,40 +4598,40 @@ namespace WebCharts.Services.Models.General
                 float maxLabelSize = 0;
                 if (!autoPlotPosition)
                 {
-                    if (this.GetIsMarksNextToAxis())
+                    if (GetIsMarksNextToAxis())
                     {
-                        if (this.AxisPosition == AxisPosition.Top)
+                        if (AxisPosition == AxisPosition.Top)
                             maxLabelSize = (float)GetAxisPosition() - ChartArea.Position.Y;
-                        else if (this.AxisPosition == AxisPosition.Bottom)
+                        else if (AxisPosition == AxisPosition.Bottom)
                             maxLabelSize = ChartArea.Position.Bottom - (float)GetAxisPosition();
-                        if (this.AxisPosition == AxisPosition.Left)
+                        if (AxisPosition == AxisPosition.Left)
                             maxLabelSize = (float)GetAxisPosition() - ChartArea.Position.X;
-                        else if (this.AxisPosition == AxisPosition.Right)
+                        else if (AxisPosition == AxisPosition.Right)
                             maxLabelSize = ChartArea.Position.Right - (float)GetAxisPosition();
                     }
                     else
                     {
-                        if (this.AxisPosition == AxisPosition.Top)
-                            maxLabelSize = this.PlotAreaPosition.Y - ChartArea.Position.Y;
-                        else if (this.AxisPosition == AxisPosition.Bottom)
-                            maxLabelSize = ChartArea.Position.Bottom - this.PlotAreaPosition.Bottom;
-                        if (this.AxisPosition == AxisPosition.Left)
-                            maxLabelSize = this.PlotAreaPosition.X - ChartArea.Position.X;
-                        else if (this.AxisPosition == AxisPosition.Right)
-                            maxLabelSize = ChartArea.Position.Right - this.PlotAreaPosition.Right;
+                        if (AxisPosition == AxisPosition.Top)
+                            maxLabelSize = PlotAreaPosition.Y - ChartArea.Position.Y;
+                        else if (AxisPosition == AxisPosition.Bottom)
+                            maxLabelSize = ChartArea.Position.Bottom - PlotAreaPosition.Bottom;
+                        if (AxisPosition == AxisPosition.Left)
+                            maxLabelSize = PlotAreaPosition.X - ChartArea.Position.X;
+                        else if (AxisPosition == AxisPosition.Right)
+                            maxLabelSize = ChartArea.Position.Right - PlotAreaPosition.Right;
                     }
                     maxLabelSize *= 2F;
                 }
                 else
                 {
-                    if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                    if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                         maxLabelSize = ChartArea.Position.Height;
                     else
                         maxLabelSize = ChartArea.Position.Width;
                 }
 
                 // Loop through all grouping labels (all except first row)
-                this.totlaGroupingLabelsSize = 0;
+                totlaGroupingLabelsSize = 0;
 
 
                 // Get number of groups
@@ -5025,13 +4649,13 @@ namespace WebCharts.Services.Models.General
                         groupingLabelSizes[groupLevelIndex - 1] = 0f;
 
                         // Loop through all labels in the level
-                        foreach (CustomLabel label in this.CustomLabels)
+                        foreach (CustomLabel label in CustomLabels)
                         {
                             // Skip if label middle point is outside current scaleView
                             if (label.RowIndex == 0)
                             {
                                 double middlePoint = (label.FromPosition + label.ToPosition) / 2.0;
-                                if (middlePoint < this.ViewMinimum || middlePoint > this.ViewMaximum)
+                                if (middlePoint < ViewMinimum || middlePoint > ViewMaximum)
                                 {
                                     continue;
                                 }
@@ -5040,19 +4664,20 @@ namespace WebCharts.Services.Models.General
                             if (label.RowIndex == groupLevelIndex)
                             {
                                 // Calculate label rect
-                                double fromPosition = this.GetLinearPosition(label.FromPosition);
-                                double toPosition = this.GetLinearPosition(label.ToPosition);
-                                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                                double fromPosition = GetLinearPosition(label.FromPosition);
+                                double toPosition = GetLinearPosition(label.ToPosition);
+                                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                                 {
-                                    rect.Height = (maxLabelSize / 100F) * maxAxisLabelRow2Size / groupLabelLevelCount;
-                                    rect.X = (float)Math.Min(fromPosition, toPosition);
-                                    rect.Width = (float)Math.Max(fromPosition, toPosition) - rect.X;
+                                    var h = (maxLabelSize / 100F) * maxAxisLabelRow2Size / groupLabelLevelCount;
+                                    rect.Left = (float)Math.Min(fromPosition, toPosition);
+                                    rect.Size = new((float)Math.Max(fromPosition, toPosition) - rect.Left, h);
                                 }
                                 else
                                 {
-                                    rect.Width = (maxLabelSize / 100F) * maxAxisLabelRow2Size / groupLabelLevelCount;
-                                    rect.Y = (float)Math.Min(fromPosition, toPosition);
-                                    rect.Height = (float)Math.Max(fromPosition, toPosition) - rect.Y;
+                                    var w = (maxLabelSize / 100F) * maxAxisLabelRow2Size / groupLabelLevelCount;
+                                    rect.Top = (float)Math.Min(fromPosition, toPosition);
+                                    var h = (float)Math.Max(fromPosition, toPosition) - rect.Top;
+                                    rect.Size = new(w, h);
                                 }
 
                                 // Measure string
@@ -5061,9 +4686,9 @@ namespace WebCharts.Services.Models.General
                                 // Add image size
                                 if (label.Image.Length > 0)
                                 {
-                                    SKSize imageAbsSize = new SKSize();
+                                    SKSize imageAbsSize = new();
 
-                                    if (this.Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                                    if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
                                     {
                                         SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
                                         axisLabelSize.Width += imageRelSize.Width;
@@ -5081,15 +4706,15 @@ namespace WebCharts.Services.Models.General
                                 }
 
                                 // Calculate max height of the second row of labels
-                                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                                 {
-                                    groupingLabelSizes[groupLevelIndex - 1] = (float)Math.Max(groupingLabelSizes[groupLevelIndex - 1], axisLabelSize.Height);
+                                    groupingLabelSizes[groupLevelIndex - 1] = Math.Max(groupingLabelSizes[groupLevelIndex - 1], axisLabelSize.Height);
                                 }
                                 else
                                 {
                                     axisLabelSize.Width = chartGraph.GetAbsoluteSize(new SKSize(axisLabelSize.Height, axisLabelSize.Height)).Height;
                                     axisLabelSize.Width = chartGraph.GetRelativeSize(new SKSize(axisLabelSize.Width, axisLabelSize.Width)).Width;
-                                    groupingLabelSizes[groupLevelIndex - 1] = (float)Math.Max(groupingLabelSizes[groupLevelIndex - 1], axisLabelSize.Width);
+                                    groupingLabelSizes[groupLevelIndex - 1] = Math.Max(groupingLabelSizes[groupLevelIndex - 1], axisLabelSize.Width);
                                 }
 
                                 // Check if string fits
@@ -5107,7 +4732,7 @@ namespace WebCharts.Services.Models.General
                         }
                     }
 
-                    this.totlaGroupingLabelsSize = this.GetGroupLablesToatalSize();
+                    totlaGroupingLabelsSize = GetGroupLablesToatalSize();
                     if (!fitResult && !checkLabelsFirstRowOnly)
                     {
                         return false;
@@ -5118,13 +4743,13 @@ namespace WebCharts.Services.Models.General
                 // Loop through all labels in the first row
                 float angle = autoLabelAngle;
                 int labelIndex = 0;
-                foreach (CustomLabel label in this.CustomLabels)
+                foreach (CustomLabel label in CustomLabels)
                 {
                     // Skip if label middle point is outside current scaleView
                     if (label.RowIndex == 0)
                     {
                         double middlePoint = (label.FromPosition + label.ToPosition) / 2.0;
-                        if (middlePoint < this.ViewMinimum || middlePoint > this.ViewMaximum)
+                        if (middlePoint < ViewMinimum || middlePoint > ViewMaximum)
                         {
                             continue;
                         }
@@ -5136,58 +4761,57 @@ namespace WebCharts.Services.Models.General
                         // Force which scale segment to use when calculating label position
                         if (labelPositions != null)
                         {
-                            this.ScaleSegments.EnforceSegment(this.ScaleSegments.FindScaleSegmentForAxisValue((label.FromPosition + label.ToPosition) / 2.0));
+                            ScaleSegments.EnforceSegment(ScaleSegments.FindScaleSegmentForAxisValue((label.FromPosition + label.ToPosition) / 2.0));
                         }
 
 
                         // Set label From and To coordinates
-                        double fromPosition = this.GetLinearPosition(label.FromPosition);
-                        double toPosition = this.GetLinearPosition(label.ToPosition);
+                        double fromPosition = GetLinearPosition(label.FromPosition);
+                        double toPosition = GetLinearPosition(label.ToPosition);
 
 
                         // Reset scale segment to use when calculating label position
                         if (labelPositions != null)
                         {
-                            this.ScaleSegments.EnforceSegment(null);
+                            ScaleSegments.EnforceSegment(null);
                         }
 
 
                         // Calculate single label position
-                        rect.X = this.PlotAreaPosition.X;
-                        rect.Y = (float)Math.Min(fromPosition, toPosition);
-                        rect.Height = (float)Math.Max(fromPosition, toPosition) - rect.Y;
+                        rect.Left = PlotAreaPosition.X;
+                        rect.Top = (float)Math.Min(fromPosition, toPosition);
+                        rect.Size = new(rect.Width, (float)Math.Max(fromPosition, toPosition) - rect.Top);
 
                         float maxElementSize = maxAxisElementsSize;
-                        if (maxAxisElementsSize - this.totlaGroupingLabelsSize > 55)
+                        if (maxAxisElementsSize - totlaGroupingLabelsSize > 55)
                         {
-                            maxElementSize = 55 + this.totlaGroupingLabelsSize;
+                            maxElementSize = 55 + totlaGroupingLabelsSize;
                         }
-                        if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                        if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                         {
-                            rect.Width = (maxLabelSize / 100F) *
-                                (maxElementSize - this.totlaGroupingLabelsSize - otherElementsSize - elementSpacing);
+                            rect.Size = new((maxLabelSize / 100F) *
+                                (maxElementSize - totlaGroupingLabelsSize - otherElementsSize - elementSpacing),
+                                rect.Height);
                         }
                         else
                         {
-                            rect.Width = (maxLabelSize / 100F) *
-                                (maxElementSize - this.totlaGroupingLabelsSize - otherElementsSize - elementSpacing);
+                            rect.Size = new((maxLabelSize / 100F) *
+                                (maxElementSize - totlaGroupingLabelsSize - otherElementsSize - elementSpacing),
+                                rect.Height);
                         }
 
                         // Adjust label From/To position if labels are displayed with offset
                         if (autoLabelOffset == 1)
                         {
-                            rect.Y -= rect.Height / 2F;
-                            rect.Height *= 2F;
-                            rect.Width /= 2F;
+                            rect.Top -= rect.Height / 2F;
+                            rect.Size = new(rect.Width / 2F, rect.Height * 2F);
                         }
 
                         // If horizontal axis
-                        if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                        if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                         {
                             // Switch rectangle sizes
-                            float val = rect.Height;
-                            rect.Height = rect.Width;
-                            rect.Width = val;
+                            rect.Size = new(rect.Height, rect.Width);
 
                             // Set vertical font for measuring
                             if (angle != 0)
@@ -5232,9 +4856,9 @@ namespace WebCharts.Services.Models.General
                         // Add image size
                         if (label.Image.Length > 0)
                         {
-                            SKSize imageAbsSize = new SKSize();
+                            SKSize imageAbsSize = new();
 
-                            if(this.Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                            if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
                             {
                                 SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
                                 if ((format.FormatFlags & StringFormatFlags.DirectionVertical) == StringFormatFlags.DirectionVertical)
@@ -5266,9 +4890,9 @@ namespace WebCharts.Services.Models.General
                         if (angle != 0)
                         {
                             // Decrease label rectangle width by 3%
-                            rect.Width *= 0.97f;
+                            rect.Size = new(rect.Width * 0.97f, rect.Height);
 
-                            if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                            if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                             {
                                 width = (float)Math.Cos((Math.Abs(angle)) / 180F * Math.PI) * axisLabelSize.Height;
                                 width += (float)Math.Sin((Math.Abs(angle)) / 180F * Math.PI) * axisLabelSize.Width;
@@ -5292,15 +4916,15 @@ namespace WebCharts.Services.Models.General
                             SKRect labelPosition = rect;
                             if (angle == 0F || angle == 90F || angle == -90F)
                             {
-                                if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                                if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                                 {
-                                    labelPosition.X = labelPosition.X + labelPosition.Width / 2f - width / 2f;
-                                    labelPosition.Width = width;
+                                    labelPosition.Left = labelPosition.Left + labelPosition.Width / 2f - width / 2f;
+                                    labelPosition.Size = new(width, labelPosition.Height);
                                 }
                                 else
                                 {
-                                    labelPosition.Y = labelPosition.Y + labelPosition.Height / 2f - height / 2f;
-                                    labelPosition.Height = height;
+                                    labelPosition.Top = labelPosition.Top + labelPosition.Height / 2f - height / 2f;
+                                    labelPosition.Size = new(labelPosition.Width, height);
                                 }
                             }
                             labelPositions.Add(labelPosition);
@@ -5331,7 +4955,7 @@ namespace WebCharts.Services.Models.General
                         }
                         else
                         {
-                            if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                            if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                             {
                                 if (width >= rect.Width * 2F && checkWidth)
                                 {
@@ -5373,12 +4997,12 @@ namespace WebCharts.Services.Models.General
         {
             float resultRotatedSize = 0F;
             resultSize = 0F;
-            float angle = (autoLabelAngle < -90) ? this.LabelStyle.Angle : autoLabelAngle;
+            float angle = (autoLabelAngle < -90) ? LabelStyle.Angle : autoLabelAngle;
             labelNearOffset = float.MaxValue;
             labelFarOffset = float.MinValue;
 
             // Label string drawing format			
-            using (StringFormat format = new StringFormat())
+            using (StringFormat format = new())
             {
                 format.FormatFlags |= StringFormatFlags.LineLimit;
                 format.Trimming = StringTrimming.EllipsisCharacter;
@@ -5387,13 +5011,13 @@ namespace WebCharts.Services.Models.General
                 SKRect rectLabels = ChartArea.Position.ToSKRect();
 
                 // Loop through all labels in the first row
-                foreach (CustomLabel label in this.CustomLabels)
+                foreach (CustomLabel label in CustomLabels)
                 {
                     // Skip if label middle point is outside current scaleView
                     if (label.RowIndex == 0)
                     {
                         decimal middlePoint = (decimal)(label.FromPosition + label.ToPosition) / (decimal)2.0;
-                        if (middlePoint < (decimal)this.ViewMinimum || middlePoint > (decimal)this.ViewMaximum)
+                        if (middlePoint < (decimal)ViewMinimum || middlePoint > (decimal)ViewMaximum)
                         {
                             continue;
                         }
@@ -5402,28 +5026,27 @@ namespace WebCharts.Services.Models.General
                     {
                         // Calculate single label position
                         SKRect rect = rectLabels;
-                        rect.Width = maxLabelSize;
 
                         // Set label From and To coordinates
-                        double fromPosition = this.GetLinearPosition(label.FromPosition);
-                        double toPosition = this.GetLinearPosition(label.ToPosition);
-                        rect.Y = (float)Math.Min(fromPosition, toPosition);
-                        rect.Height = (float)Math.Max(fromPosition, toPosition) - rect.Y;
+                        double fromPosition = GetLinearPosition(label.FromPosition);
+                        double toPosition = GetLinearPosition(label.ToPosition);
+                        rect.Top = (float)Math.Min(fromPosition, toPosition);
+                        rect.Size = new SKSize(maxLabelSize, (float)Math.Max(fromPosition, toPosition) - rect.Top);
 
                         // Adjust label From/To position if labels are displayed with offset
-                        if ((autoLabelOffset == -1) ? this.LabelStyle.IsStaggered : (autoLabelOffset == 1))
+                        if ((autoLabelOffset == -1) ? LabelStyle.IsStaggered : (autoLabelOffset == 1))
                         {
-                            rect.Y -= rect.Height / 2F;
-                            rect.Height *= 2F;
+                            var h = rect.Height;
+                            rect.Top -= rect.Height / 2F;
+                            rect.Size = new(rect.Width, h * 2F);
                         }
 
                         // If horizontal axis
-                        if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                        if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                         {
                             // Switch rectangle sizes
                             float val = rect.Height;
-                            rect.Height = rect.Width;
-                            rect.Width = val;
+                            rect.Size = new SKSize(val, rect.Width);
 
                             // Set vertical font for measuring
                             if (angle != 0)
@@ -5442,10 +5065,9 @@ namespace WebCharts.Services.Models.General
                         }
 
                         // Measure label text size
-                        rect.Width = (float)Math.Ceiling(rect.Width);
-                        rect.Height = (float)Math.Ceiling(rect.Height);
+                        rect.Size = new((float)Math.Ceiling(rect.Width), (float)Math.Ceiling(rect.Height));
                         SKSize axisLabelSize = chartGraph.MeasureStringRel(label.Text.Replace("\\n", "\n"),
-                            (autoLabelFont != null) ? autoLabelFont : this.LabelStyle.Font,
+                            autoLabelFont ?? LabelStyle.Font,
                             rect.Size,
                             format);
 
@@ -5456,7 +5078,7 @@ namespace WebCharts.Services.Models.General
                             // Measure string without the LineLimit flag
                             format.FormatFlags ^= StringFormatFlags.LineLimit;
                             axisLabelSize = chartGraph.MeasureStringRel(label.Text.Replace("\\n", "\n"),
-                                (autoLabelFont != null) ? autoLabelFont : this.LabelStyle.Font,
+                                autoLabelFont ?? LabelStyle.Font,
                                 rect.Size,
                                 format);
                             format.FormatFlags |= StringFormatFlags.LineLimit;
@@ -5466,12 +5088,12 @@ namespace WebCharts.Services.Models.General
                         // Add image size
                         if (label.Image.Length > 0)
                         {
-                            SKSize imageAbsSize = new SKSize();
+                            SKSize imageAbsSize = new();
 
-                            if (this.Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                            if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
                             {
                                 SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
-                                
+
                                 if ((format.FormatFlags & StringFormatFlags.DirectionVertical) == StringFormatFlags.DirectionVertical)
                                 {
                                     axisLabelSize.Height += imageRelSize.Height;
@@ -5514,7 +5136,7 @@ namespace WebCharts.Services.Models.General
 
 
                         // If axis is horizontal
-                        if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                        if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                         {
                             if (angle == 90 || angle == -90 || angle == 0)
                             {
@@ -5581,7 +5203,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Adjust results if labels are displayed with offset
-            if ((autoLabelOffset == -1) ? this.LabelStyle.IsStaggered : (autoLabelOffset == 1))
+            if ((autoLabelOffset == -1) ? LabelStyle.IsStaggered : (autoLabelOffset == 1))
             {
                 resultSize *= 2F;
                 resultRotatedSize *= 2F;
@@ -5612,9 +5234,9 @@ namespace WebCharts.Services.Models.General
         internal float GetGroupLablesToatalSize()
         {
             float size = 0f;
-            if (this.groupingLabelSizes != null && this.groupingLabelSizes.Length > 0)
+            if (groupingLabelSizes != null && groupingLabelSizes.Length > 0)
             {
-                foreach (float val in this.groupingLabelSizes)
+                foreach (float val in groupingLabelSizes)
                 {
                     size += val;
                 }
@@ -5630,7 +5252,7 @@ namespace WebCharts.Services.Models.General
         internal int GetGroupLabelLevelCount()
         {
             int groupLabelLevel = 0;
-            foreach (CustomLabel label in this.CustomLabels)
+            foreach (CustomLabel label in CustomLabels)
             {
                 if (label.RowIndex > 0)
                 {
@@ -5666,13 +5288,13 @@ namespace WebCharts.Services.Models.General
                     resultSize[groupLevelIndex - 1] = 0f;
 
                     // Loop through all labels in the level
-                    foreach (CustomLabel label in this.CustomLabels)
+                    foreach (CustomLabel label in CustomLabels)
                     {
                         // Skip if label middle point is outside current scaleView
                         if (label.RowIndex == 0)
                         {
                             double middlePoint = (label.FromPosition + label.ToPosition) / 2.0;
-                            if (middlePoint < this.ViewMinimum || middlePoint > this.ViewMaximum)
+                            if (middlePoint < ViewMinimum || middlePoint > ViewMaximum)
                             {
                                 continue;
                             }
@@ -5681,37 +5303,37 @@ namespace WebCharts.Services.Models.General
                         if (label.RowIndex == groupLevelIndex)
                         {
                             // Measure label text size
-                            SKSize axisLabelSize = chartGraph.MeasureStringRel(label.Text.Replace("\\n", "\n"), (autoLabelFont != null) ? autoLabelFont : this.LabelStyle.Font);
+                            SKSize axisLabelSize = chartGraph.MeasureStringRel(label.Text.Replace("\\n", "\n"), autoLabelFont ?? LabelStyle.Font);
                             axisLabelSize.Width = (float)Math.Ceiling(axisLabelSize.Width);
                             axisLabelSize.Height = (float)Math.Ceiling(axisLabelSize.Height);
 
 
-							// Add image size
-							if(label.Image.Length > 0)
-							{
-                                SKSize imageAbsSize = new SKSize();
+                            // Add image size
+                            if (label.Image.Length > 0)
+                            {
+                                SKSize imageAbsSize = new();
 
-                                if(this.Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
-								{
-									SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
-									axisLabelSize.Width += imageRelSize.Width;
-									axisLabelSize.Height = Math.Max(axisLabelSize.Height, imageRelSize.Height);
-								}
-							}
+                                if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                                {
+                                    SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
+                                    axisLabelSize.Width += imageRelSize.Width;
+                                    axisLabelSize.Height = Math.Max(axisLabelSize.Height, imageRelSize.Height);
+                                }
+                            }
 
-							// Add extra spacing for the box marking of the label
-							if(label.LabelMark == LabelMarkStyle.Box)
-							{
-								// Get relative size from pixels and add it to the label size
-								SKSize	spacerSize = chartGraph.GetRelativeSize(new SKSize(4, 4));
-								axisLabelSize.Width += spacerSize.Width;
-								axisLabelSize.Height += spacerSize.Height;
-							}
+                            // Add extra spacing for the box marking of the label
+                            if (label.LabelMark == LabelMarkStyle.Box)
+                            {
+                                // Get relative size from pixels and add it to the label size
+                                SKSize spacerSize = chartGraph.GetRelativeSize(new SKSize(4, 4));
+                                axisLabelSize.Width += spacerSize.Width;
+                                axisLabelSize.Height += spacerSize.Height;
+                            }
 
 
 
                             // If axis is horizontal
-                            if (this.AxisPosition == AxisPosition.Bottom || this.AxisPosition == AxisPosition.Top)
+                            if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                             {
                                 resultSize[groupLevelIndex - 1] = Math.Max(resultSize[groupLevelIndex - 1], axisLabelSize.Height);
                             }
@@ -5721,14 +5343,6 @@ namespace WebCharts.Services.Models.General
                                 axisLabelSize.Width = chartGraph.GetAbsoluteSize(new SKSize(axisLabelSize.Height, axisLabelSize.Height)).Height;
                                 axisLabelSize.Width = chartGraph.GetRelativeSize(new SKSize(axisLabelSize.Width, axisLabelSize.Width)).Width;
                                 resultSize[groupLevelIndex - 1] = Math.Max(resultSize[groupLevelIndex - 1], axisLabelSize.Width);
-                            }
-
-                            // Check if we exceed the maximum value
-                            if (resultSize[groupLevelIndex - 1] > maxLabelSize / groupLabelLevelCount)
-                            {
-                                // NOTE: Group Labels size limitations are removed !!!
-                                //	resultSize[groupLevelIndex - 1] = maxLabelSize / groupLabelLevelCount;
-                                //	break;
                             }
                         }
                     }
@@ -5748,7 +5362,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         /// <param name="subAxisName">Sub axis name or empty string to get the main axis.</param>
         /// <returns>Main or sub axis of the main axis.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "subAxisName")]
         internal Axis GetSubAxis(string subAxisName)
         {
 #if SUBAXES
@@ -5775,24 +5388,24 @@ namespace WebCharts.Services.Models.General
             {
                 return true;
             }
-            return this.IsMarksNextToAxis;
+            return IsMarksNextToAxis;
         }
 
-		/// <summary>
-		/// Gets axis auto interval type.
-		/// </summary>
-		/// <returns>Axis interval type.</returns>
-		internal DateTimeIntervalType GetAxisIntervalType()
-		{
-			if(InternalIntervalType == DateTimeIntervalType.Auto)
-			{
-				if(GetAxisValuesType() == ChartValueType.DateTime ||
-					GetAxisValuesType() == ChartValueType.Date ||
-					GetAxisValuesType() == ChartValueType.Time ||
+        /// <summary>
+        /// Gets axis auto interval type.
+        /// </summary>
+        /// <returns>Axis interval type.</returns>
+        internal DateTimeIntervalType GetAxisIntervalType()
+        {
+            if (InternalIntervalType == DateTimeIntervalType.Auto)
+            {
+                if (GetAxisValuesType() == ChartValueType.DateTime ||
+                    GetAxisValuesType() == ChartValueType.Date ||
+                    GetAxisValuesType() == ChartValueType.Time ||
                     GetAxisValuesType() == ChartValueType.DateTimeOffset)
-				{
-					return DateTimeIntervalType.Years;
-				}
+                {
+                    return DateTimeIntervalType.Years;
+                }
 
                 return DateTimeIntervalType.Number;
             }
@@ -5809,9 +5422,9 @@ namespace WebCharts.Services.Models.General
             ChartValueType type = ChartValueType.Double;
 
             // Check all series in this Common.Chart area attached to this axis
-            if (this.Common != null && this.Common.DataManager.Series != null && ChartArea != null)
+            if (Common != null && Common.DataManager.Series != null && ChartArea != null)
             {
-                foreach (Series series in this.Common.DataManager.Series)
+                foreach (Series series in Common.DataManager.Series)
                 {
                     bool seriesAttached = false;
 
@@ -5819,52 +5432,32 @@ namespace WebCharts.Services.Models.General
                     if (series.ChartArea == ChartArea.Name && series.IsVisible())
                     {
                         // Check if axis type of series match
-                        if (this.axisType == AxisName.X && series.XAxisType == AxisType.Primary)
+                        if (axisType == AxisName.X && series.XAxisType == AxisType.Primary)
                         {
-#if SUBAXES
-							if(((Axis)this).SubAxisName == series.XSubAxisName)
-#endif // SUBAXES
-                            {
-                                seriesAttached = true;
-                            }
+                            seriesAttached = true;
                         }
-                        else if (this.axisType == AxisName.X2 && series.XAxisType == AxisType.Secondary)
+                        else if (axisType == AxisName.X2 && series.XAxisType == AxisType.Secondary)
                         {
-#if SUBAXES
-							if(((Axis)this).SubAxisName == series.XSubAxisName)
-#endif // SUBAXES
-                            {
-                                seriesAttached = true;
-                            }
+                            seriesAttached = true;
                         }
-                        else if (this.axisType == AxisName.Y && series.YAxisType == AxisType.Primary)
+                        else if (axisType == AxisName.Y && series.YAxisType == AxisType.Primary)
                         {
-#if SUBAXES
-							if(((Axis)this).SubAxisName == series.YSubAxisName)
-#endif // SUBAXES
-                            {
-                                seriesAttached = true;
-                            }
+                            seriesAttached = true;
                         }
-                        else if (this.axisType == AxisName.Y2 && series.YAxisType == AxisType.Secondary)
+                        else if (axisType == AxisName.Y2 && series.YAxisType == AxisType.Secondary)
                         {
-#if SUBAXES
-							if(((Axis)this).SubAxisName == series.YSubAxisName)
-#endif // SUBAXES
-                            {
-                                seriesAttached = true;
-                            }
+                            seriesAttached = true;
                         }
                     }
 
                     // If series attached to this axes
                     if (seriesAttached)
                     {
-                        if (this.axisType == AxisName.X || this.axisType == AxisName.X2)
+                        if (axisType == AxisName.X || axisType == AxisName.X2)
                         {
                             type = series.XValueType;
                         }
-                        else if (this.axisType == AxisName.Y || this.axisType == AxisName.Y2)
+                        else if (axisType == AxisName.Y || axisType == AxisName.Y2)
                         {
                             type = series.YValueType;
                         }
@@ -5882,7 +5475,6 @@ namespace WebCharts.Services.Models.General
         /// <returns>Size of arrow</returns>
         internal SKSize GetArrowSize(out ArrowOrientation arrowOrientation)
         {
-            Axis opositeAxis;
             double size;
             double sizeOpposite;
             arrowOrientation = ArrowOrientation.Top;
@@ -5924,27 +5516,14 @@ namespace WebCharts.Services.Models.General
                     break;
             }
 
-            // Opposite axis. Arrow uses this axis to find 
-            // a shift from Common.Chart area border. This shift 
-            // depend on Tick mark size.
-            switch (arrowOrientation)
+            Axis opositeAxis = arrowOrientation switch
             {
-                case ArrowOrientation.Left:
-                    opositeAxis = ChartArea.AxisX;
-                    break;
-                case ArrowOrientation.Right:
-                    opositeAxis = ChartArea.AxisX2;
-                    break;
-                case ArrowOrientation.Top:
-                    opositeAxis = ChartArea.AxisY2;
-                    break;
-                case ArrowOrientation.Bottom:
-                    opositeAxis = ChartArea.AxisY;
-                    break;
-                default:
-                    opositeAxis = ChartArea.AxisX;
-                    break;
-            }
+                ArrowOrientation.Left => ChartArea.AxisX,
+                ArrowOrientation.Right => ChartArea.AxisX2,
+                ArrowOrientation.Top => ChartArea.AxisY2,
+                ArrowOrientation.Bottom => ChartArea.AxisY,
+                _ => ChartArea.AxisX,
+            };
 
             // Arrow size has to have the same shape when width and height 
             // are changed. When the picture is resized, width of the Common.Chart 
@@ -5992,7 +5571,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="arrowOrientation">Arrow orientation.</param>
         /// <param name="axisPosition">Axis position.</param>
         /// <returns>True if arrow will be drawn in axis space</returns>
-        private bool IsArrowInAxis(ArrowOrientation arrowOrientation, AxisPosition axisPosition)
+        private static bool IsArrowInAxis(ArrowOrientation arrowOrientation, AxisPosition axisPosition)
         {
             if (axisPosition == AxisPosition.Top && arrowOrientation == ArrowOrientation.Top)
                 return true;
@@ -6045,19 +5624,19 @@ namespace WebCharts.Services.Models.General
             get
             {
                 double edgePosition = 0;
-                if (this.AxisPosition == AxisPosition.Bottom)
+                if (AxisPosition == AxisPosition.Bottom)
                 {
                     edgePosition = PlotAreaPosition.Bottom;
                 }
-                else if (this.AxisPosition == AxisPosition.Left)
+                else if (AxisPosition == AxisPosition.Left)
                 {
                     edgePosition = PlotAreaPosition.X;
                 }
-                else if (this.AxisPosition == AxisPosition.Right)
+                else if (AxisPosition == AxisPosition.Right)
                 {
                     edgePosition = PlotAreaPosition.Right;
                 }
-                else if (this.AxisPosition == AxisPosition.Top)
+                else if (AxisPosition == AxisPosition.Top)
                 {
                     edgePosition = PlotAreaPosition.Y;
                 }
@@ -6154,15 +5733,14 @@ namespace WebCharts.Services.Models.General
         internal double GetAxisProjectionAngle()
         {
             // Get Z position
-            bool axisOnEdge;
-            float zPosition = GetMarksZPosition(out axisOnEdge);
+            float zPosition = GetMarksZPosition(out _);
 
             // Get axis position
             float axisPosition = (float)GetAxisPosition();
 
             // Create two points on the sides of the axis
             Point3D[] axisPoints = new Point3D[2];
-            if (this.AxisPosition == AxisPosition.Top || this.AxisPosition == AxisPosition.Bottom)
+            if (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom)
             {
                 axisPoints[0] = new Point3D(0f, axisPosition, zPosition);
                 axisPoints[1] = new Point3D(100f, axisPosition, zPosition);
@@ -6183,8 +5761,8 @@ namespace WebCharts.Services.Models.General
             axisPoints[1].Y = (float)Math.Round(axisPoints[1].Y, 4);
 
             // Calculate angle
-            double angle = 0.0;
-            if (this.AxisPosition == AxisPosition.Top || this.AxisPosition == AxisPosition.Bottom)
+            double angle;
+            if (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom)
             {
                 angle = Math.Atan((axisPoints[1].Y - axisPoints[0].Y) / (axisPoints[1].X - axisPoints[0].X));
             }
@@ -6236,10 +5814,10 @@ namespace WebCharts.Services.Models.General
                     tempLabels.Dispose();
                     tempLabels = null;
                 }
-                if (this.scrollBar != null)
+                if (scrollBar != null)
                 {
-                    this.scrollBar.Dispose();
-                    this.scrollBar = null;
+                    scrollBar.Dispose();
+                    scrollBar = null;
                 }
             }
             base.Dispose(disposing);

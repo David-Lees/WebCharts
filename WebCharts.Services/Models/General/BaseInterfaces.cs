@@ -12,7 +12,7 @@ namespace WebCharts.Services.Models.General
     /// <summary>
     /// IChartElement is implemented by both ChartElements and ChartElementCollection to provide a unified access to Parent/Common elements. 
     /// </summary>
-    internal interface IChartElement
+    public interface IChartElement
     {
         //Properties
         IChartElement Parent { get; set; }

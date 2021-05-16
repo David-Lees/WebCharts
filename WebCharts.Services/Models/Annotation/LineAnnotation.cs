@@ -14,7 +14,7 @@ using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     /// <summary>
     /// <b>LineAnnotation</b> is a class that represents a line annotation.
@@ -43,7 +43,7 @@ namespace WebCharts.Services.Models.Annotation
         public LineAnnotation()
             : base()
         {
-            this.anchorAlignment = ContentAlignment.TopLeft;
+            anchorAlignment = ContentAlignment.TopLeft;
         }
 
         #endregion
@@ -469,19 +469,16 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> object, used to paint an annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> owner control.
+        /// Reference to the <see cref="ChartService"/> owner control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
-            SKPoint secondPoint = new SKPoint(firstPoint.X + size.Width, firstPoint.Y + size.Height);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out SKPoint anchorPoint);
+            SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
-            SKRect selectionRect = new SKRect(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
+            SKRect selectionRect = new(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
 
             // Adjust coordinates
             AdjustLineCoordinates(ref firstPoint, ref secondPoint, ref selectionRect);
@@ -495,28 +492,28 @@ namespace WebCharts.Services.Models.Annotation
                 return;
             }
 
+            // TODO: this
+#if false
             // Set line caps
             bool capChanged = false;
-            LineCap oldStartCap = LineCap.Flat;
-            LineCap oldEndCap = LineCap.Flat;
-            if (this._startCap != LineAnchorCapStyle.None ||
-                this._endCap != LineAnchorCapStyle.None)
+            SKStrokeCap oldCap = SKStrokeCap.Butt;
+            if (_startCap != LineAnchorCapStyle.None ||
+                _endCap != LineAnchorCapStyle.None)
             {
                 capChanged = true;
-                oldStartCap = graphics.Pen.StartCap;
-                oldEndCap = graphics.Pen.EndCap;
+                oldCap = graphics.Pen.StrokeCap;
 
                 // Apply anchor cap settings
-                if (this._startCap == LineAnchorCapStyle.Arrow)
+                if (_startCap == LineAnchorCapStyle.Arrow)
                 {
                     // Adjust arrow size for small line width
-                    if (this.LineWidth < 4)
+                    if (LineWidth < 4)
                     {
-                        int adjustment = 3 - this.LineWidth;
-                        graphics.Pen.StartCap = LineCap.Custom;
+                        int adjustment = 3 - LineWidth;
+                        graphics.Pen.StrokeCap = LineCap.Custom;
                         graphics.Pen.CustomStartCap = new AdjustableArrowCap(
-                            this.LineWidth + adjustment,
-                            this.LineWidth + adjustment,
+                            LineWidth + adjustment,
+                            LineWidth + adjustment,
                             true);
                     }
                     else
@@ -524,60 +521,61 @@ namespace WebCharts.Services.Models.Annotation
                         graphics.Pen.StartCap = LineCap.ArrowAnchor;
                     }
                 }
-                else if (this._startCap == LineAnchorCapStyle.Diamond)
+                else if (_startCap == LineAnchorCapStyle.Diamond)
                 {
                     graphics.Pen.StartCap = LineCap.DiamondAnchor;
                 }
-                else if (this._startCap == LineAnchorCapStyle.Round)
+                else if (_startCap == LineAnchorCapStyle.Round)
                 {
                     graphics.Pen.StartCap = LineCap.RoundAnchor;
                 }
-                else if (this._startCap == LineAnchorCapStyle.Square)
+                else if (_startCap == LineAnchorCapStyle.Square)
                 {
                     graphics.Pen.StartCap = LineCap.SquareAnchor;
                 }
-                if (this._endCap == LineAnchorCapStyle.Arrow)
+                if (_endCap == LineAnchorCapStyle.Arrow)
                 {
                     // Adjust arrow size for small line width
-                    if (this.LineWidth < 4)
+                    if (LineWidth < 4)
                     {
-                        int adjustment = 3 - this.LineWidth;
-                        graphics.Pen.EndCap = LineCap.Custom;
-                        graphics.Pen.CustomEndCap = new AdjustableArrowCap(
-                            this.LineWidth + adjustment,
-                            this.LineWidth + adjustment,
-                            true);
+                        int adjustment = 3 - LineWidth;
+                        graphics.Pen.StrokeCap = SKStrokeCap.Round;
+                        //    graphics.Pen.EndCap = LineCap.Custom;
+                        //    graphics.Pen.CustomEndCap = new AdjustableArrowCap(
+                        //        this.LineWidth + adjustment,
+                        //        this.LineWidth + adjustment,
+                        //        true);
                     }
                     else
                     {
-                        graphics.Pen.EndCap = LineCap.ArrowAnchor;
+                        graphics.Pen.StrokeCap = SKStrokeCap.Round;//LineCap.ArrowAnchor;
                     }
                 }
-                else if (this._endCap == LineAnchorCapStyle.Diamond)
+                else if (_endCap == LineAnchorCapStyle.Diamond)
                 {
                     graphics.Pen.EndCap = LineCap.DiamondAnchor;
                 }
-                else if (this._endCap == LineAnchorCapStyle.Round)
+                else if (_endCap == LineAnchorCapStyle.Round)
                 {
                     graphics.Pen.EndCap = LineCap.RoundAnchor;
                 }
-                else if (this._endCap == LineAnchorCapStyle.Square)
+                else if (_endCap == LineAnchorCapStyle.Square)
                 {
                     graphics.Pen.EndCap = LineCap.SquareAnchor;
                 }
             }
 
-            if (this.Common.ProcessModePaint)
+            if (Common.ProcessModePaint)
             {
                 // Draw line
                 graphics.DrawLineRel(
-                    this.LineColor,
-                    this.LineWidth,
-                    this.LineDashStyle,
+                    LineColor,
+                    LineWidth,
+                    LineDashStyle,
                     firstPoint,
                     secondPoint,
-                    this.ShadowColor,
-                    this.ShadowOffset);
+                    ShadowColor,
+                    ShadowOffset);
             }
 
             // Restore line caps
@@ -586,12 +584,12 @@ namespace WebCharts.Services.Models.Annotation
                 graphics.Pen.StartCap = oldStartCap;
                 graphics.Pen.EndCap = oldEndCap;
             }
-
+#endif
             // Paint selection handles
             PaintSelectionHandles(graphics, selectionRect, null);
         }
 
-        #endregion
+#endregion
     }
 
     /// <summary>
@@ -602,7 +600,7 @@ namespace WebCharts.Services.Models.Annotation
     ]
     public class VerticalLineAnnotation : LineAnnotation
     {
-        #region Construction and Initialization
+#region Construction and Initialization
 
         /// <summary>
         /// Default public constructor.
@@ -612,9 +610,9 @@ namespace WebCharts.Services.Models.Annotation
         {
         }
 
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Gets or sets an annotation's type name.
@@ -638,9 +636,9 @@ namespace WebCharts.Services.Models.Annotation
             }
         }
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Adjusts the two coordinates of the line.
@@ -658,7 +656,7 @@ namespace WebCharts.Services.Models.Annotation
             base.AdjustLineCoordinates(ref point1, ref point2, ref selectionRect);
         }
 
-        #region Content Size
+#region Content Size
 
         /// <summary>
         /// Gets text annotation content size based on the text and font.
@@ -669,9 +667,9 @@ namespace WebCharts.Services.Models.Annotation
             return new SKRect(float.NaN, float.NaN, 0f, float.NaN);
         }
 
-        #endregion // Content Size
+#endregion // Content Size
 
-        #endregion
+#endregion
     }
 
     /// <summary>
@@ -682,7 +680,7 @@ namespace WebCharts.Services.Models.Annotation
     ]
     public class HorizontalLineAnnotation : LineAnnotation
     {
-        #region Construction and Initialization
+#region Construction and Initialization
 
         /// <summary>
         /// Default public constructor.
@@ -692,9 +690,9 @@ namespace WebCharts.Services.Models.Annotation
         {
         }
 
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Gets or sets an annotation's type name.
@@ -718,9 +716,9 @@ namespace WebCharts.Services.Models.Annotation
             }
         }
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Adjusts the two coordinates of the line.
@@ -738,7 +736,7 @@ namespace WebCharts.Services.Models.Annotation
             base.AdjustLineCoordinates(ref point1, ref point2, ref selectionRect);
         }
 
-        #region Content Size
+#region Content Size
 
         /// <summary>
         /// Gets text annotation content size based on the text and font.
@@ -749,8 +747,8 @@ namespace WebCharts.Services.Models.Annotation
             return new SKRect(float.NaN, float.NaN, float.NaN, 0f);
         }
 
-        #endregion // Content Size
+#endregion // Content Size
 
-        #endregion
+#endregion
     }
 }

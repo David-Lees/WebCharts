@@ -14,8 +14,9 @@ using System;
 using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     #region Enumerations
 
@@ -107,9 +108,9 @@ namespace WebCharts.Services.Models.Annotation
             : base()
         {
             // Changing default values of properties
-            this.anchorOffsetX = 3.0;
-            this.anchorOffsetY = 3.0;
-            this.anchorAlignment = ContentAlignment.BottomLeft;
+            anchorOffsetX = 3.0;
+            anchorOffsetY = 3.0;
+            anchorAlignment = ContentAlignment.BottomLeft;
         }
 
         #endregion
@@ -137,7 +138,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _calloutStyle = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
 
                 // Reset content size to empty
                 contentSize = SKSize.Empty;
@@ -524,13 +525,13 @@ namespace WebCharts.Services.Models.Annotation
         internal override SKRect GetTextSpacing(out bool annotationRelative)
         {
             SKRect spacing = base.GetTextSpacing(out annotationRelative);
-            if (this._calloutStyle == CalloutStyle.Cloud ||
-                this._calloutStyle == CalloutStyle.Ellipse)
+            if (_calloutStyle == CalloutStyle.Cloud ||
+                _calloutStyle == CalloutStyle.Ellipse)
             {
                 spacing = new SKRect(4f, 4f, 4f, 4f);
                 annotationRelative = true;
             }
-            else if (this._calloutStyle == CalloutStyle.RoundedRectangle)
+            else if (_calloutStyle == CalloutStyle.RoundedRectangle)
             {
                 spacing = new SKRect(1f, 1f, 1f, 1f);
                 annotationRelative = true;
@@ -550,9 +551,9 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> used to paint annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> control.
+        /// Reference to the <see cref="ChartService"/> control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Get annotation position in relative coordinates
             SKPoint firstPoint = SKPoint.Empty;
@@ -590,9 +591,9 @@ namespace WebCharts.Services.Models.Annotation
 
             // Paint different style of callouts
             SKPath hotRegionPathAbs = null;
-            if (this.Common.ProcessModePaint)
+            if (Common.ProcessModePaint)
             {
-                switch (this._calloutStyle)
+                switch (_calloutStyle)
                 {
                     case (CalloutStyle.SimpleLine):
                         hotRegionPathAbs = DrawRectangleLineCallout(
@@ -687,7 +688,7 @@ namespace WebCharts.Services.Models.Annotation
                 // Add rounded rectangle shape
                 float radius = Math.Min(rectanglePositionAbs.Width, rectanglePositionAbs.Height);
                 radius /= 5f;
-                ellipsePath = this.CreateRoundedRectPath(rectanglePositionAbs, radius);
+                ellipsePath = CreateRoundedRectPath(rectanglePositionAbs, radius);
             }
 
             // Draw perspective polygons from anchoring point
@@ -733,20 +734,20 @@ namespace WebCharts.Services.Models.Annotation
             // Draw ellipse
             graphics.DrawPathAbs(
                 ellipsePath,
-                this.BackColor,
-                this.BackHatchStyle,
+                BackColor,
+                BackHatchStyle,
                 string.Empty,
                 ChartImageWrapMode.Scaled,
                 SKColor.Empty,
                 ChartImageAlignmentStyle.Center,
-                this.BackGradientStyle,
-                this.BackSecondaryColor,
-                this.LineColor,
-                this.LineWidth,
-                this.LineDashStyle,
+                BackGradientStyle,
+                BackSecondaryColor,
+                LineColor,
+                LineWidth,
+                LineDashStyle,
                 PenAlignment.Center,
-                this.ShadowOffset,
-                this.ShadowColor);
+                ShadowOffset,
+                ShadowColor);
 
             // Draw text 
             DrawText(graphics, rectanglePosition, true, false);
@@ -896,20 +897,20 @@ namespace WebCharts.Services.Models.Annotation
                     // Draw callout
                     graphics.DrawPathAbs(
                         hotRegion,
-                        this.BackColor,
-                        this.BackHatchStyle,
+                        BackColor,
+                        BackHatchStyle,
                         string.Empty,
                         ChartImageWrapMode.Scaled,
                         SKColor.Empty,
                         ChartImageAlignmentStyle.Center,
-                        this.BackGradientStyle,
-                        this.BackSecondaryColor,
-                        this.LineColor,
-                        this.LineWidth,
-                        this.LineDashStyle,
+                        BackGradientStyle,
+                        BackSecondaryColor,
+                        LineColor,
+                        LineWidth,
+                        LineDashStyle,
                         PenAlignment.Center,
-                        this.ShadowOffset,
-                        this.ShadowColor);
+                        ShadowOffset,
+                        ShadowColor);
 
                 }
             }
@@ -919,19 +920,19 @@ namespace WebCharts.Services.Models.Annotation
             {
                 graphics.FillRectangleRel(
                     rectanglePosition,
-                    this.BackColor,
-                    this.BackHatchStyle,
+                    BackColor,
+                    BackHatchStyle,
                     string.Empty,
                     ChartImageWrapMode.Scaled,
                     SKColor.Empty,
                     ChartImageAlignmentStyle.Center,
-                    this.BackGradientStyle,
-                    this.BackSecondaryColor,
-                    this.LineColor,
-                    this.LineWidth,
-                    this.LineDashStyle,
-                    this.ShadowColor,
-                    this.ShadowOffset,
+                    BackGradientStyle,
+                    BackSecondaryColor,
+                    LineColor,
+                    LineWidth,
+                    LineDashStyle,
+                    ShadowColor,
+                    ShadowOffset,
                     PenAlignment.Center);
 
                 // Get hot region
@@ -1037,41 +1038,39 @@ namespace WebCharts.Services.Models.Annotation
                     // Draw 3 smaller ellipses from anchor point to the cloud
                     for (int index = 0; index < 3; index++)
                     {
-                        using (SKPath path = new SKPath())
-                        {
-                            // Create ellipse path
-                            path.AddEllipse(
-                                ellipseLocation.X - ellipseSize.Width / 2f,
-                                ellipseLocation.Y - ellipseSize.Height / 2f,
-                                ellipseSize.Width,
-                                ellipseSize.Height);
+                        using SKPath path = new();
+                        // Create ellipse path
+                        path.AddOval(new SKRect(
+                            ellipseLocation.X - ellipseSize.Width / 2f,
+                            ellipseLocation.Y - ellipseSize.Height / 2f,
+                            ellipseLocation.X + ellipseSize.Width,
+                            ellipseLocation.Y + ellipseSize.Height));
 
-                            // Draw ellipse
-                            graphics.DrawPathAbs(
-                                path,
-                                this.BackColor,
-                                this.BackHatchStyle,
-                                String.Empty,
-                                ChartImageWrapMode.Scaled,
-                                Color.Empty,
-                                ChartImageAlignmentStyle.Center,
-                                this.BackGradientStyle,
-                                this.BackSecondaryColor,
-                                this.LineColor,
-                                1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
-                                this.LineDashStyle,
-                                PenAlignment.Center,
-                                this.ShadowOffset,
-                                this.ShadowColor);
+                        // Draw ellipse
+                        graphics.DrawPathAbs(
+                            path,
+                            BackColor,
+                            BackHatchStyle,
+                            string.Empty,
+                            ChartImageWrapMode.Scaled,
+                            SKColor.Empty,
+                            ChartImageAlignmentStyle.Center,
+                            BackGradientStyle,
+                            BackSecondaryColor,
+                            LineColor,
+                            1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
+                            LineDashStyle,
+                            PenAlignment.Center,
+                            ShadowOffset,
+                            ShadowColor);
 
-                            // Adjust ellipse size
-                            ellipseSize.Width *= 1.5f;
-                            ellipseSize.Height *= 1.5f;
+                        // Adjust ellipse size
+                        ellipseSize.Width *= 1.5f;
+                        ellipseSize.Height *= 1.5f;
 
-                            // Adjust next ellipse position
-                            ellipseLocation.X -= dxAbs / 3f + (index * (dxAbs / 10f));
-                            ellipseLocation.Y -= dyAbs / 3f + (index * (dyAbs / 10f));
-                        }
+                        // Adjust next ellipse position
+                        ellipseLocation.X -= dxAbs / 3f + (index * (dxAbs / 10f));
+                        ellipseLocation.Y -= dyAbs / 3f + (index * (dyAbs / 10f));
                     }
                 }
             }
@@ -1080,20 +1079,20 @@ namespace WebCharts.Services.Models.Annotation
             SKPath pathCloud = GetCloudPath(rectanglePositionAbs);
             graphics.DrawPathAbs(
                 pathCloud,
-                this.BackColor,
-                this.BackHatchStyle,
+                BackColor,
+                BackHatchStyle,
                 String.Empty,
                 ChartImageWrapMode.Scaled,
-                Color.Empty,
+                SKColor.Empty,
                 ChartImageAlignmentStyle.Center,
-                this.BackGradientStyle,
-                this.BackSecondaryColor,
-                this.LineColor,
+                BackGradientStyle,
+                BackSecondaryColor,
+                LineColor,
                 1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
-                this.LineDashStyle,
+                LineDashStyle,
                 PenAlignment.Center,
-                this.ShadowOffset,
-                this.ShadowColor);
+                ShadowOffset,
+                ShadowColor);
 
             // Draw cloud outline (Do not draw in SVG or Flash Animation)
             {
@@ -1101,17 +1100,17 @@ namespace WebCharts.Services.Models.Annotation
                 {
                     graphics.DrawPathAbs(
                         pathCloudOutline,
-                        this.BackColor,
-                        this.BackHatchStyle,
+                        BackColor,
+                        BackHatchStyle,
                         String.Empty,
                         ChartImageWrapMode.Scaled,
-                        Color.Empty,
+                        SKColor.Empty,
                         ChartImageAlignmentStyle.Center,
-                        this.BackGradientStyle,
-                        this.BackSecondaryColor,
-                        this.LineColor,
+                        BackGradientStyle,
+                        BackSecondaryColor,
+                        LineColor,
                         1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
-                        this.LineDashStyle,
+                        LineDashStyle,
                         PenAlignment.Center);
                 }
             }
@@ -1137,24 +1136,24 @@ namespace WebCharts.Services.Models.Annotation
             // Draw rectangle
             graphics.FillRectangleRel(
                 rectanglePosition,
-                this.BackColor,
-                this.BackHatchStyle,
+                BackColor,
+                BackHatchStyle,
                 String.Empty,
                 ChartImageWrapMode.Scaled,
-                Color.Empty,
+                SKColor.Empty,
                 ChartImageAlignmentStyle.Center,
-                this.BackGradientStyle,
-                this.BackSecondaryColor,
-                this.LineColor,
-                this.LineWidth,
-                this.LineDashStyle,
-                this.ShadowColor,
+                BackGradientStyle,
+                BackSecondaryColor,
+                LineColor,
+                LineWidth,
+                LineDashStyle,
+                ShadowColor,
                 0,  // Shadow is never drawn
                 PenAlignment.Center);
 
             // Create hot region path
-            SKPath hotRegion = new SKPath();
-            hotRegion.AddRectangle(graphics.GetAbsoluteRectangle(rectanglePosition));
+            SKPath hotRegion = new();
+            hotRegion.AddRect(graphics.GetAbsoluteRectangle(rectanglePosition));
 
             // Draw text 
             DrawText(graphics, rectanglePosition, false, false);
@@ -1167,8 +1166,8 @@ namespace WebCharts.Services.Models.Annotation
                 {
                     SKColor[] perspectivePathColors = new SKColor[2];
                     SKColor color = BackColor;
-                    perspectivePathColors[0] = graphics.GetBrightGradientColor(color, 0.6);
-                    perspectivePathColors[1] = graphics.GetBrightGradientColor(color, 0.8);
+                    perspectivePathColors[0] = ChartGraphics.GetBrightGradientColor(color, 0.6);
+                    perspectivePathColors[1] = ChartGraphics.GetBrightGradientColor(color, 0.8);
                     SKPath[] perspectivePaths = new SKPath[2];
                     using (perspectivePaths[0] = new SKPath())
                     {
@@ -1179,7 +1178,7 @@ namespace WebCharts.Services.Models.Annotation
                             SKPoint anchorPointAbs = graphics.GetAbsolutePoint(anchorPoint);
 
                             // Create paths of perspective
-                            if (anchorPoint.Y < rectanglePosition.Y)
+                            if (anchorPoint.Y < rectanglePosition.Top)
                             {
                                 SKPoint[] points1 = new SKPoint[3];
                                 points1[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
@@ -1198,7 +1197,7 @@ namespace WebCharts.Services.Models.Annotation
                                 {
                                     SKPoint[] points2 = new SKPoint[3];
                                     points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Y);
+                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
                                     points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
                                     perspectivePaths[1].AddPoly(points2);
                                 }
@@ -1222,7 +1221,7 @@ namespace WebCharts.Services.Models.Annotation
                                 {
                                     SKPoint[] points2 = new SKPoint[3];
                                     points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Y);
+                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
                                     points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
                                     perspectivePaths[1].AddPoly(points2);
                                 }
@@ -1233,7 +1232,7 @@ namespace WebCharts.Services.Models.Annotation
                                 {
                                     SKPoint[] points2 = new SKPoint[3];
                                     points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Y);
+                                    points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
                                     points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
                                     perspectivePaths[1].AddPoly(points2);
                                 }
@@ -1241,7 +1240,7 @@ namespace WebCharts.Services.Models.Annotation
                                 {
                                     SKPoint[] points2 = new SKPoint[3];
                                     points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Y);
+                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
                                     points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
                                     perspectivePaths[1].AddPoly(points2);
                                 }
@@ -1257,21 +1256,20 @@ namespace WebCharts.Services.Models.Annotation
                                     graphics.DrawPathAbs(
                                         path,
                                         perspectivePathColors[index],
-                                        this.BackHatchStyle,
+                                        BackHatchStyle,
                                         String.Empty,
                                         ChartImageWrapMode.Scaled,
                                         SKColor.Empty,
                                         ChartImageAlignmentStyle.Center,
-                                        this.BackGradientStyle,
-                                        this.BackSecondaryColor,
-                                        this.LineColor,
-                                        this.LineWidth,
-                                        this.LineDashStyle,
+                                        BackGradientStyle,
+                                        BackSecondaryColor,
+                                        LineColor,
+                                        LineWidth,
+                                        LineDashStyle,
                                         PenAlignment.Center);
 
                                     // Add area to hot region path
-                                    hotRegion.SetMarkers();
-                                    hotRegion.AddPath(path, false);
+                                    hotRegion.AddPath(path);
                                 }
                                 ++index;
                             }
@@ -1303,19 +1301,19 @@ namespace WebCharts.Services.Models.Annotation
                 // Draw rectangle
                 graphics.FillRectangleRel(
                     rectanglePosition,
-                    this.BackColor,
-                    this.BackHatchStyle,
+                    BackColor,
+                    BackHatchStyle,
                     String.Empty,
                     ChartImageWrapMode.Scaled,
                     SKColor.Empty,
                     ChartImageAlignmentStyle.Center,
-                    this.BackGradientStyle,
-                    this.BackSecondaryColor,
-                    this.LineColor,
-                    this.LineWidth,
-                    this.LineDashStyle,
-                    this.ShadowColor,
-                    this.ShadowOffset,
+                    BackGradientStyle,
+                    BackSecondaryColor,
+                    LineColor,
+                    LineWidth,
+                    LineDashStyle,
+                    ShadowColor,
+                    ShadowOffset,
                     PenAlignment.Center);
 
                 // Draw text 
@@ -1330,8 +1328,8 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             // Create hot region path
-            SKPath hotRegion = new SKPath();
-            hotRegion.AddRectangle(graphics.GetAbsoluteRectangle(rectanglePosition));
+            SKPath hotRegion = new();
+            hotRegion.AddRect(graphics.GetAbsoluteRectangle(rectanglePosition));
 
             // Define position of text underlying line
             SKPoint textLinePoint1 = new SKPoint(rectanglePosition.Left, rectanglePosition.Bottom);
@@ -1357,9 +1355,9 @@ namespace WebCharts.Services.Models.Annotation
                         lineSecondPoint.X = rectanglePosition.Left + rectanglePosition.Width / 2f;
                     }
 
-                    if (anchorPoint.Y < rectanglePosition.Y)
+                    if (anchorPoint.Y < rectanglePosition.Top)
                     {
-                        lineSecondPoint.Y = rectanglePosition.Y;
+                        lineSecondPoint.Y = rectanglePosition.Top;
                     }
                     else if (anchorPoint.Y > rectanglePosition.Bottom)
                     {
@@ -1367,29 +1365,31 @@ namespace WebCharts.Services.Models.Annotation
                     }
                     else
                     {
-                        lineSecondPoint.Y = rectanglePosition.Y + rectanglePosition.Height / 2f;
+                        lineSecondPoint.Y = rectanglePosition.Top + rectanglePosition.Height / 2f;
                     }
 
+                    //TODO: fix this
+#if false
                     // Set line caps
                     bool capChanged = false;
-                    LineCap oldStartCap = LineCap.Flat;
-                    if (this.CalloutAnchorCap != LineAnchorCapStyle.None)
+                    SKStrokeCap oldStartCap = SKStrokeCap.Butt;
+                    if (CalloutAnchorCap != LineAnchorCapStyle.None)
                     {
                         // Save old pen
                         capChanged = true;
-                        oldStartCap = graphics.Pen.StartCap;
+                        oldStartCap = graphics.Pen.StrokeCap;
 
                         // Apply anchor cap settings
-                        if (this.CalloutAnchorCap == LineAnchorCapStyle.Arrow)
+                        if (CalloutAnchorCap == LineAnchorCapStyle.Arrow)
                         {
                             // Adjust arrow size for small line width
-                            if (this.LineWidth < 4)
+                            if (LineWidth < 4)
                             {
-                                int adjustment = 3 - this.LineWidth;
-                                graphics.Pen.StartCap = LineCap.Custom;
+                                int adjustment = 3 - LineWidth;
+                                graphics.Pen.StrokeCap = LineCap.Custom;
                                 graphics.Pen.CustomStartCap = new AdjustableArrowCap(
-                                    this.LineWidth + adjustment,
-                                    this.LineWidth + adjustment,
+                                    LineWidth + adjustment,
+                                    LineWidth + adjustment,
                                     true);
                             }
                             else
@@ -1397,58 +1397,58 @@ namespace WebCharts.Services.Models.Annotation
                                 graphics.Pen.StartCap = LineCap.ArrowAnchor;
                             }
                         }
-                        else if (this.CalloutAnchorCap == LineAnchorCapStyle.Diamond)
+                        else if (CalloutAnchorCap == LineAnchorCapStyle.Diamond)
                         {
                             graphics.Pen.StartCap = LineCap.DiamondAnchor;
                         }
-                        else if (this.CalloutAnchorCap == LineAnchorCapStyle.Round)
+                        else if (CalloutAnchorCap == LineAnchorCapStyle.Round)
                         {
                             graphics.Pen.StartCap = LineCap.RoundAnchor;
                         }
-                        else if (this.CalloutAnchorCap == LineAnchorCapStyle.Square)
+                        else if (CalloutAnchorCap == LineAnchorCapStyle.Square)
                         {
                             graphics.Pen.StartCap = LineCap.SquareAnchor;
                         }
                     }
-
+#endif
                     // Draw callout line
                     graphics.DrawLineAbs(
-                        this.LineColor,
-                        this.LineWidth,
-                        this.LineDashStyle,
+                        LineColor,
+                        LineWidth,
+                        LineDashStyle,
                         graphics.GetAbsolutePoint(anchorPoint),
                         graphics.GetAbsolutePoint(lineSecondPoint),
-                        this.ShadowColor,
-                        this.ShadowOffset);
+                        ShadowColor,
+                        ShadowOffset);
 
                     // Create hot region path
-                    using (SKPath linePath = new SKPath())
+                    using (SKPath linePath = new())
                     {
                         linePath.AddLine(
                             graphics.GetAbsolutePoint(anchorPoint),
                             graphics.GetAbsolutePoint(lineSecondPoint));
 
-                        linePath.Widen(new Pen(Color.Black, this.LineWidth + 2));
-                        hotRegion.SetMarkers();
-                        hotRegion.AddPath(linePath, false);
+                        //linePath.Widen(new Pen(SKColors.Black, LineWidth + 2));
+                        //hotRegion.SetMarkers();
+                        hotRegion.AddPath(linePath);
                     }
 
-                    // Restore line caps
-                    if (capChanged)
-                    {
-                        graphics.Pen.StartCap = oldStartCap;
-                    }
+                    //// Restore line caps
+                    //if (capChanged)
+                    //{
+                    //    graphics.Pen.StartCap = oldStartCap;
+                    //}
 
                     // Adjust text underlying line position
-                    if (anchorPoint.Y < rectanglePosition.Y)
+                    if (anchorPoint.Y < rectanglePosition.Top)
                     {
-                        textLinePoint1.Y = rectanglePosition.Y;
-                        textLinePoint2.Y = rectanglePosition.Y;
+                        textLinePoint1.Y = rectanglePosition.Top;
+                        textLinePoint2.Y = rectanglePosition.Top;
                     }
-                    else if (anchorPoint.Y > rectanglePosition.Y &&
+                    else if (anchorPoint.Y > rectanglePosition.Top &&
                         anchorPoint.Y < rectanglePosition.Bottom)
                     {
-                        textLinePoint1.Y = rectanglePosition.Y;
+                        textLinePoint1.Y = rectanglePosition.Top;
                         textLinePoint2.Y = rectanglePosition.Bottom;
                         if (anchorPoint.X < rectanglePosition.Left)
                         {
@@ -1467,25 +1467,23 @@ namespace WebCharts.Services.Models.Annotation
                 if (!drawRectangle)
                 {
                     graphics.DrawLineAbs(
-                        this.LineColor,
-                        this.LineWidth,
-                        this.LineDashStyle,
+                        LineColor,
+                        LineWidth,
+                        LineDashStyle,
                         graphics.GetAbsolutePoint(textLinePoint1),
                         graphics.GetAbsolutePoint(textLinePoint2),
-                        this.ShadowColor,
-                        this.ShadowOffset);
+                        ShadowColor,
+                        ShadowOffset);
 
                     // Create hot region path
-                    using (SKPath linePath = new SKPath())
-                    {
-                        linePath.AddLine(
-                            graphics.GetAbsolutePoint(textLinePoint1),
-                            graphics.GetAbsolutePoint(textLinePoint2));
+                    using SKPath linePath = new();
+                    linePath.AddLine(
+                        graphics.GetAbsolutePoint(textLinePoint1),
+                        graphics.GetAbsolutePoint(textLinePoint2));
 
-                        linePath.Widen(new Pen(Color.Black, this.LineWidth + 2));
-                        hotRegion.SetMarkers();
-                        hotRegion.AddPath(linePath, false);
-                    }
+                    //linePath.Widen(new Pen(SKColors.Black, LineWidth + 2));
+                    //hotRegion.SetMarkers();
+                    hotRegion.AddPath(linePath);
 
                 }
             }
@@ -1529,7 +1527,8 @@ namespace WebCharts.Services.Models.Annotation
             resultPath.Transform(matrix);
             matrix = new SKMatrix();
             matrix.Translate(position.Left, position.Top);
-            matrix.Scale(position.Width / _cloudBounds.Width, position.Height / _cloudBounds.Height);
+            matrix.ScaleX = position.Width / _cloudBounds.Width;
+            matrix.ScaleY = position.Height / _cloudBounds.Height;
             resultPath.Transform(matrix);
 
             return resultPath;
@@ -1584,7 +1583,7 @@ namespace WebCharts.Services.Models.Annotation
                 _cloudPath.AddBezier(2014.1f, 1636.9f, 1832.8f, 1636.9f, 1685.9f, 1779.8f, 1685.9f, 1956f);
                 _cloudPath.AddBezier(1685.9f, 1956f, 1685.8f, 1970.4f, 1686.9f, 1984.8f, 1688.8f, 1999f);
 
-                _cloudPath.CloseAllFigures();
+                _cloudPath.Close();
 
 
                 // Create cloud outline path
@@ -1593,13 +1592,10 @@ namespace WebCharts.Services.Models.Annotation
                 _cloudOutlinePath.AddBezier(1604.4f, 2382.1f, 1636.8f, 2400.6f, 1673.6f, 2410.3f, 1711.2f, 2410.3f);
                 _cloudOutlinePath.AddBezier(1711.2f, 2410.3f, 1716.6f, 2410.3f, 1722.2f, 2410.2f, 1727.6f, 2409.8f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(1782.8f, 2724.2f, 1801.3f, 2722.2f, 1819.4f, 2717.7f, 1836.7f, 2711f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(2267.6f, 2797.2f, 2276.1f, 2818.4f, 2287f, 2838.7f, 2300f, 2857.6f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(2887.1f, 2772.5f, 2893.8f, 2750.9f, 2898.1f, 2728.7f, 2900f, 2706.3f);
 
                 // NOTE: This cloud segment overlaps text too much. Removed for now!
@@ -1607,24 +1603,17 @@ namespace WebCharts.Services.Models.Annotation
                 //cloudOutlinePath.AddBezier(3317.5f, 2544.8f, 3317.5f, 2544f, 3317.6f, 2543.3f, 3317.6f, 2542.6f);
                 //cloudOutlinePath.AddBezier(3317.6f, 2542.6f, 3317.6f, 2438.1f, 3256.1f, 2342.8f, 3159.5f, 2297f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(3460.5f, 2124.9f, 3491f, 2099.7f, 3515f, 2067.8f, 3530.9f, 2032f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(3365.3f, 1732.2f, 3365.3f, 1731.1f, 3365.4f, 1730.1f, 3365.4f, 1729f);
                 _cloudOutlinePath.AddBezier(3365.4f, 1729f, 3365.4f, 1715.3f, 3364.1f, 1701.7f, 3361.6f, 1688.3f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(2949.1f, 1580.9f, 2934.4f, 1597.8f, 2922.3f, 1616.6f, 2913.1f, 1636.9f);
-                _cloudOutlinePath.CloseFigure();
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(2590.9f, 1614.2f, 2583.1f, 1629.6f, 2577.2f, 1645.8f, 2573.4f, 1662.5f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(2243.3f, 1727.5f, 2224.2f, 1709.4f, 2203f, 1693.8f, 2180.1f, 1680.7f);
 
-                _cloudOutlinePath.StartFigure();
                 _cloudOutlinePath.AddBezier(1688.8f, 1999f, 1691.1f, 2015.7f, 1694.8f, 2032.2f, 1699.9f, 2048.3f);
 
                 _cloudOutlinePath.Close();
@@ -1734,21 +1723,21 @@ namespace WebCharts.Services.Models.Annotation
             // Create rounded rectangle path
             SKPath path = new SKPath();
             int segments = 10;
-            PathAddLineAsSegments(path, rect.X + cornerRadius, rect.Y, rect.Right - cornerRadius, rect.Y, segments);
+            PathAddLineAsSegments(path, rect.Left + cornerRadius, rect.Top, rect.Right - cornerRadius, rect.Top, segments);
 
-            path.AddArc(rect.Right - 2f * cornerRadius, rect.Y, 2f * cornerRadius, 2f * cornerRadius, 270, 90);
+            path.AddArc(new SKRect(rect.Right - 2f * cornerRadius, rect.Top, 2f * cornerRadius, 2f * cornerRadius), 270, 90);
 
-            PathAddLineAsSegments(path, rect.Right, rect.Y + cornerRadius, rect.Right, rect.Bottom - cornerRadius, segments);
+            PathAddLineAsSegments(path, rect.Right, rect.Top + cornerRadius, rect.Right, rect.Bottom - cornerRadius, segments);
 
-            path.AddArc(rect.Right - 2f * cornerRadius, rect.Bottom - 2f * cornerRadius, 2f * cornerRadius, 2f * cornerRadius, 0, 90);
+            path.AddArc(new SKRect(rect.Right - 2f * cornerRadius, rect.Bottom - 2f * cornerRadius, 2f * cornerRadius, 2f * cornerRadius), 0, 90);
 
-            PathAddLineAsSegments(path, rect.Right - cornerRadius, rect.Bottom, rect.X + cornerRadius, rect.Bottom, segments);
+            PathAddLineAsSegments(path, rect.Right - cornerRadius, rect.Bottom, rect.Left + cornerRadius, rect.Bottom, segments);
 
-            path.AddArc(rect.X, rect.Bottom - 2f * cornerRadius, 2f * cornerRadius, 2f * cornerRadius, 90, 90);
+            path.AddArc(new SKRect(rect.Left, rect.Bottom - 2f * cornerRadius, 2f * cornerRadius, 2f * cornerRadius), 90, 90);
 
-            PathAddLineAsSegments(path, rect.X, rect.Bottom - cornerRadius, rect.X, rect.Y + cornerRadius, segments);
+            PathAddLineAsSegments(path, rect.Left, rect.Bottom - cornerRadius, rect.Left, rect.Top + cornerRadius, segments);
 
-            path.AddArc(rect.X, rect.Y, 2f * cornerRadius, 2f * cornerRadius, 180, 90);
+            path.AddArc(new SKRect(rect.Left, rect.Top, 2f * cornerRadius, 2f * cornerRadius), 180, 90);
 
             return path;
         }

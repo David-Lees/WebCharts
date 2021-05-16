@@ -2,109 +2,34 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Smart Labels are used to avoid data point's labels 
-//				overlapping. SmartLabelStyle class is exposed from 
-//				the Series and Annotation classes and allows enabling 
-//              and adjusting of SmartLabelStyle algorithm. SmartLabelStyle class 
-//              exposes a set of helper utility methods and store 
+//  Purpose:	Smart Labels are used to avoid data point's labels
+//				overlapping. SmartLabelStyle class is exposed from
+//				the Series and Annotation classes and allows enabling
+//              and adjusting of SmartLabelStyle algorithm. SmartLabelStyle class
+//              exposes a set of helper utility methods and store
 //              information about labels in a chart area.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Annotations;
+using WebCharts.Services.Models.ChartTypes;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.General
 {
-    #region Enumerations
-
     /// <summary>
-    /// Line anchor cap style.
-    /// </summary>
-    [
-        SRDescription("DescriptionAttributeLineAnchorCapStyle_LineAnchorCapStyle")
-        ]
-    public enum LineAnchorCapStyle
-    {
-        /// <summary>
-        /// No line anchor cap.
-        /// </summary>
-        None,
-        /// <summary>
-        /// Arrow line anchor cap.
-        /// </summary>
-        Arrow,
-        /// <summary>
-        /// Diamond line anchor cap.
-        /// </summary>
-        Diamond,
-        /// <summary>
-        /// Square line anchor cap.
-        /// </summary>
-        Square,
-        /// <summary>
-        /// Round line anchor cap.
-        /// </summary>
-        Round
-    }
-
-    /// <summary>
-    /// Data point label callout style.
-    /// </summary>
-    [
-    SRDescription("DescriptionAttributeLabelCalloutStyle_LabelCalloutStyle")
-    ]
-    public enum LabelCalloutStyle
-    {
-        /// <summary>
-        /// Label connected with the marker using just a line.
-        /// </summary>
-        None,
-        /// <summary>
-        /// Label is undelined and connected with the marker using a line.
-        /// </summary>
-        Underlined,
-        /// <summary>
-        /// Box is drawn around the label and it's connected with the marker using a line.
-        /// </summary>
-        Box
-    }
-
-    /// <summary>
-    /// Data point label outside of the plotting area style.
-    /// </summary>
-    [
-    SRDescription("DescriptionAttributeLabelOutsidePlotAreaStyle_LabelOutsidePlotAreaStyle")
-    ]
-    public enum LabelOutsidePlotAreaStyle
-    {
-        /// <summary>
-        /// Labels can be positioned outside of the plotting area.
-        /// </summary>
-        Yes,
-        /// <summary>
-        /// Labels can not be positioned outside of the plotting area.
-        /// </summary>
-        No,
-        /// <summary>
-        /// Labels can be partially outside of the plotting area.
-        /// </summary>
-        Partial
-    }
-
-    #endregion
-
-    /// <summary>
-    /// SmartLabelStyle class is used to enable and configure the 
-    /// SmartLabelStyle algorithm for data point labels and annotations. 
-    /// In most of the cases it is enough just to enable the algorithm, 
-    /// but this class also contains properties which allow controlling 
-    /// how the labels are moved around to avoid collisions. Visual 
+    /// SmartLabelStyle class is used to enable and configure the
+    /// SmartLabelStyle algorithm for data point labels and annotations.
+    /// In most of the cases it is enough just to enable the algorithm,
+    /// but this class also contains properties which allow controlling
+    /// how the labels are moved around to avoid collisions. Visual
     /// appearance of callouts can also be set through this class.
     /// </summary>
     [
@@ -156,7 +81,7 @@ namespace WebCharts.Services.Models.General
         // Label callout line anchor cap.
         private LineAnchorCapStyle _calloutLineAnchorCapStyle = LineAnchorCapStyle.Arrow;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors and initialization
 
@@ -165,7 +90,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public SmartLabelStyle()
         {
-            this.chartElement = null;
+            chartElement = null;
         }
 
         /// <summary>
@@ -177,7 +102,7 @@ namespace WebCharts.Services.Models.General
             this.chartElement = chartElement;
         }
 
-        #endregion
+        #endregion Constructors and initialization
 
         #region Properties
 
@@ -454,7 +379,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -465,28 +390,26 @@ namespace WebCharts.Services.Models.General
         {
             if (chartElement != null)
             {
-                if (chartElement is Series)
+                if (chartElement is Series series)
                 {
-                    ((Series)chartElement).Invalidate(false, false);
+                    series.Invalidate(false, false);
                 }
-
-                else if (chartElement is Annotation)
+                else if (chartElement is Annotation annotation)
                 {
-                    ((Annotation)chartElement).Invalidate();
+                    annotation.Invalidate();
                 }
-
             }
         }
 
-        #endregion
+        #endregion Methods
     }
 
     /// <summary>
-    /// SmartLabelStyle class implements the SmartLabelStyle algorithm for the 
-    /// data series points. It keeps track of all labels drawn and 
-    /// detects their collisions. When labels collision is detected 
-    /// the algorithm tries to resolve it by repositioning the labels. 
-    /// If label can not be repositioned it maybe hidden depending on 
+    /// SmartLabelStyle class implements the SmartLabelStyle algorithm for the
+    /// data series points. It keeps track of all labels drawn and
+    /// detects their collisions. When labels collision is detected
+    /// the algorithm tries to resolve it by repositioning the labels.
+    /// If label can not be repositioned it maybe hidden depending on
     /// the current settings.
     /// </summary>
     [
@@ -505,7 +428,7 @@ namespace WebCharts.Services.Models.General
         // Number of positions in array for the markers
         internal int markersCount = 0;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors and initialization
 
@@ -516,7 +439,7 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion
+        #endregion Constructors and initialization
 
         #region Methods
 
@@ -550,6 +473,7 @@ namespace WebCharts.Services.Models.General
             SmartLabelStyle smartLabelStyle,
             SKPoint labelPosition,
             SKSize labelSize,
+            StringFormat format,
             SKPoint markerPosition,
             SKSize markerSize,
             LabelAlignmentStyles labelAlignment)
@@ -590,6 +514,7 @@ namespace WebCharts.Services.Models.General
             SmartLabelStyle smartLabelStyle,
             SKPoint labelPosition,
             SKSize labelSize,
+            StringFormat format,
             SKPoint markerPosition,
             SKSize markerSize,
             LabelAlignmentStyles labelAlignment,
@@ -598,14 +523,12 @@ namespace WebCharts.Services.Models.General
             // Check if SmartLabelStyle are enabled
             if (smartLabelStyle.Enabled)
             {
-                bool labelMovedAway = false;
-
                 // Add series markers positions to avoid their overlapping
-                bool rememberMarkersCount = (this.smartLabelsPositions.Count == 0);
+                bool rememberMarkersCount = (smartLabelsPositions.Count == 0);
                 AddMarkersPosition(common, area);
                 if (rememberMarkersCount)
                 {
-                    this.markersCount = this.smartLabelsPositions.Count;
+                    markersCount = smartLabelsPositions.Count;
                 }
 
                 // Check label collision
@@ -617,12 +540,11 @@ namespace WebCharts.Services.Models.General
                     labelPosition,
                     labelSize,
                     markerPosition,
-                    format,
                     labelAlignment,
                     checkCalloutLineOverlapping))
                 {
                     // Try to find a new position for the SmartLabelStyle
-                    labelMovedAway = FindNewPosition(
+                    bool labelMovedAway = FindNewPosition(
                         common,
                         graph,
                         area,
@@ -634,27 +556,24 @@ namespace WebCharts.Services.Models.General
                         ref labelAlignment,
                         checkCalloutLineOverlapping);
 
-                    // Draw label callout if label was moved away or 
+                    // Draw label callout if label was moved away or
                     // it's displayed in the corners of the marker
-                    if (labelMovedAway ||
+                    if ((labelMovedAway ||
                         (labelAlignment == LabelAlignmentStyles.BottomLeft ||
                         labelAlignment == LabelAlignmentStyles.BottomRight ||
                         labelAlignment == LabelAlignmentStyles.TopLeft ||
-                        labelAlignment == LabelAlignmentStyles.TopRight))
+                        labelAlignment == LabelAlignmentStyles.TopRight)) && !labelPosition.IsEmpty)
                     {
-                        if (!labelPosition.IsEmpty)
-                        {
-                            DrawCallout(
-                                common,
-                                graph,
-                                area,
-                                smartLabelStyle,
-                                labelPosition,
-                                labelSize,
-                                markerPosition,
-                                markerSize,
-                                labelAlignment);
-                        }
+                        DrawCallout(
+                            common,
+                            graph,
+                            area,
+                            smartLabelStyle,
+                            labelPosition,
+                            labelSize,
+                            markerPosition,
+                            markerSize,
+                            labelAlignment);
                     }
                 }
 
@@ -665,7 +584,6 @@ namespace WebCharts.Services.Models.General
             // Return label position
             return labelPosition;
         }
-
 
         /// <summary>
         /// Process single SmartLabelStyle by adjusting it's position in case of collision.
@@ -737,12 +655,14 @@ namespace WebCharts.Services.Models.General
                     // Check if this alignment is valid
                     if ((smartLabelStyle.MovingDirection & positions[positionIndex]) == positions[positionIndex])
                     {
+                        var format = new StringFormat();
                         // Calculate new position of the label
                         newLabelPosition = CalculatePosition(
                             positions[positionIndex],
                             markerPosition,
                             newMarkerSize,
-                            labelSize);
+                            labelSize,
+                            ref format);
 
                         // Check new position collision
                         if (!IsSmartLabelCollide(
@@ -757,7 +677,7 @@ namespace WebCharts.Services.Models.General
                             checkCalloutLineOverlapping))
                         {
                             positionFound = true;
-                            labelMovedAway = (labelMovement == 0f) ? false : true;
+                            labelMovedAway = labelMovement != 0f;
                             break;
                         }
                     }
@@ -776,14 +696,15 @@ namespace WebCharts.Services.Models.General
 #if DEBUG
             if (common.Chart.ShowDebugMarkings)
             {
+                var format = new StringFormat();
                 SKRect lp = GetLabelPosition(graph, labelPosition, labelSize, format, false);
                 if (positionFound)
                 {
-                    graph.Graphics.DrawRect(Pens.Green, Rectangle.Round(graph.GetAbsoluteRectangle(lp)));
+                    graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(lp).Round(), Pens.Green);
                 }
                 else
                 {
-                    graph.Graphics.DrawRect(new Pen(Color.Magenta, 3), Rectangle.Round(graph.GetAbsoluteRectangle(lp)));
+                    graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(lp).Round(), new SKPaint() { Style = SKPaintStyle.Stroke, Color = SKColors.Magenta, StrokeWidth = 3 });
                 }
             }
 #endif
@@ -792,7 +713,6 @@ namespace WebCharts.Services.Models.General
             {
                 labelPosition = SKPoint.Empty;
             }
-
 
             return (labelMovedAway && positionFound) ? true : false;
         }
@@ -824,34 +744,31 @@ namespace WebCharts.Services.Models.General
         {
             // Calculate label position rectangle
             SKRect labelRectAbs = graph.GetAbsoluteRectangle(
-                GetLabelPosition(graph, labelPosition, labelSize, format, true));
+                GetLabelPosition(graph, labelPosition, labelSize, new StringFormat(), true));
 
             // Create callout pen
-            Pen calloutPen = new Pen(smartLabelStyle.CalloutLineColor, smartLabelStyle.CalloutLineWidth);
-            calloutPen.DashStyle = graph.GetPenStyle(smartLabelStyle.CalloutLineDashStyle);
+            SKPaint calloutPen = new() { Color = smartLabelStyle.CalloutLineColor, StrokeWidth = smartLabelStyle.CalloutLineWidth };
+            calloutPen.PathEffect = ChartGraphics.GetPenStyle(smartLabelStyle.CalloutLineDashStyle, smartLabelStyle.CalloutLineWidth);
 
             // Draw callout frame
             if (smartLabelStyle.CalloutStyle == LabelCalloutStyle.Box)
             {
                 // Fill callout box around the label
-                if (smartLabelStyle.CalloutBackColor != Color.Transparent)
+                if (smartLabelStyle.CalloutBackColor != SKColors.Transparent)
                 {
-                    using (Brush calloutBrush = new SolidBrush(smartLabelStyle.CalloutBackColor))
-                    {
-                        graph.FillRectangle(calloutBrush, labelRectAbs);
-                    }
+                    using SKPaint calloutBrush = new() { Style = SKPaintStyle.Fill, Color = smartLabelStyle.CalloutBackColor };
+                    graph.FillRectangle(calloutBrush, labelRectAbs);
                 }
 
                 // Draw box border
-                graph.DrawRectangle(calloutPen, labelRectAbs.X, labelRectAbs.Y, labelRectAbs.Width, labelRectAbs.Height);
+                graph.DrawRectangle(calloutPen, labelRectAbs.Left, labelRectAbs.Top, labelRectAbs.Width, labelRectAbs.Height);
             }
-
             else if (smartLabelStyle.CalloutStyle == LabelCalloutStyle.Underlined)
             {
                 if (labelAlignment == LabelAlignmentStyles.Right)
                 {
                     // Draw line to the left of label's text
-                    graph.DrawLine(calloutPen, labelRectAbs.X, labelRectAbs.Top, labelRectAbs.X, labelRectAbs.Bottom);
+                    graph.DrawLine(calloutPen, labelRectAbs.Left, labelRectAbs.Top, labelRectAbs.Left, labelRectAbs.Bottom);
                 }
                 else if (labelAlignment == LabelAlignmentStyles.Left)
                 {
@@ -861,12 +778,12 @@ namespace WebCharts.Services.Models.General
                 else if (labelAlignment == LabelAlignmentStyles.Bottom)
                 {
                     // Draw line on top of the label's text
-                    graph.DrawLine(calloutPen, labelRectAbs.X, labelRectAbs.Top, labelRectAbs.Right, labelRectAbs.Top);
+                    graph.DrawLine(calloutPen, labelRectAbs.Left, labelRectAbs.Top, labelRectAbs.Right, labelRectAbs.Top);
                 }
                 else
                 {
                     // Draw line under the label's text
-                    graph.DrawLine(calloutPen, labelRectAbs.X, labelRectAbs.Bottom, labelRectAbs.Right, labelRectAbs.Bottom);
+                    graph.DrawLine(calloutPen, labelRectAbs.Left, labelRectAbs.Bottom, labelRectAbs.Right, labelRectAbs.Bottom);
                 }
             }
 
@@ -881,35 +798,13 @@ namespace WebCharts.Services.Models.General
                 connectorPosition.Y = labelRectAbs.Top;
             }
 
-            if (smartLabelStyle.CalloutStyle == LabelCalloutStyle.Underlined)
-            {
-                if (labelAlignment == LabelAlignmentStyles.TopLeft ||
+            if (smartLabelStyle.CalloutStyle == LabelCalloutStyle.Underlined &&
+                (labelAlignment == LabelAlignmentStyles.TopLeft ||
                     labelAlignment == LabelAlignmentStyles.TopRight ||
                     labelAlignment == LabelAlignmentStyles.BottomLeft ||
-                    labelAlignment == LabelAlignmentStyles.BottomRight)
-                {
-                    connectorPosition.Y = labelRectAbs.Bottom;
-                }
-            }
-
-            // Apply anchor cap settings
-            if (smartLabelStyle.CalloutLineAnchorCapStyle == LineAnchorCapStyle.Arrow)
+                    labelAlignment == LabelAlignmentStyles.BottomRight))
             {
-                //calloutPen.StartCap = LineCap.ArrowAnchor;
-                calloutPen.StartCap = LineCap.Custom;
-                calloutPen.CustomStartCap = new AdjustableArrowCap(calloutPen.Width + 2, calloutPen.Width + 3, true);
-            }
-            else if (smartLabelStyle.CalloutLineAnchorCapStyle == LineAnchorCapStyle.Diamond)
-            {
-                calloutPen.StartCap = LineCap.DiamondAnchor;
-            }
-            else if (smartLabelStyle.CalloutLineAnchorCapStyle == LineAnchorCapStyle.Round)
-            {
-                calloutPen.StartCap = LineCap.RoundAnchor;
-            }
-            else if (smartLabelStyle.CalloutLineAnchorCapStyle == LineAnchorCapStyle.Square)
-            {
-                calloutPen.StartCap = LineCap.SquareAnchor;
+                connectorPosition.Y = labelRectAbs.Bottom;
             }
 
             // Draw connection line between marker position and label
@@ -950,22 +845,21 @@ namespace WebCharts.Services.Models.General
             bool collisionDetected = false;
 
             // Calculate label position rectangle
-            SKRect labelPosition = GetLabelPosition(graph, position, size, format, false);
+            SKRect labelPosition = GetLabelPosition(graph, position, size, new StringFormat(), false);
 
             // Check if label goes outside of the chart picture
-            if (labelPosition.X < 0f || labelPosition.Y < 0f ||
+            if (labelPosition.Left < 0f || labelPosition.Top < 0f ||
                 labelPosition.Bottom > 100f || labelPosition.Right > 100f)
             {
 #if DEBUG
                 // DEBUG: Mark collided labels
                 if (graph != null && common != null && common.Chart != null && common.Chart.ShowDebugMarkings)
                 {
-                    graph.Graphics.DrawRectangle(Pens.Cyan, Rectangle.Round(graph.GetAbsoluteRectangle(labelPosition)));
+                    graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
                 }
 #endif
                 collisionDetected = true;
             }
-
 
             // Check if label is drawn outside of plotting area (collides with axis?).
             if (!collisionDetected && area != null)
@@ -975,41 +869,36 @@ namespace WebCharts.Services.Models.General
                     using (SKPath areaPath = new SKPath())
                     {
                         // Add circular shape of the area into the graphics path
-                        areaPath.AddEllipse(area.PlotAreaPosition.ToSKRect());
+                        areaPath.AddOval(area.PlotAreaPosition.ToSKRect());
 
                         if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.Partial)
                         {
-                            SKPoint centerPos = new SKPoint(
-                                labelPosition.X + labelPosition.Width / 2f,
-                                labelPosition.Y + labelPosition.Height / 2f);
-                            if (!areaPath.IsVisible(centerPos))
+                            if (!areaPath.Bounds.Contains(labelPosition.MidX, labelPosition.MidY))
                             {
                                 // DEBUG: Mark collided labels
 #if DEBUG
                                 if (graph != null && common.Chart.ShowDebugMarkings)
                                 {
-                                    graph.Graphics.DrawRectangle(Pens.Cyan, Rectangle.Round(graph.GetAbsoluteRectangle(labelPosition)));
+                                    graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
                                 }
 #endif
                                 collisionDetected = true;
                             }
                         }
-                        else if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.No)
+                        else if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.No &&
+                            (!areaPath.Bounds.Contains(labelPosition.Location) ||
+                                !areaPath.Bounds.Contains(new SKPoint(labelPosition.Right, labelPosition.Top)) ||
+                                !areaPath.Bounds.Contains(new SKPoint(labelPosition.Right, labelPosition.Bottom)) ||
+                                !areaPath.Bounds.Contains(new SKPoint(labelPosition.Left, labelPosition.Bottom))))
                         {
-                            if (!areaPath.IsVisible(labelPosition.Location) ||
-                                !areaPath.IsVisible(new SKPoint(labelPosition.Right, labelPosition.Y)) ||
-                                !areaPath.IsVisible(new SKPoint(labelPosition.Right, labelPosition.Bottom)) ||
-                                !areaPath.IsVisible(new SKPoint(labelPosition.X, labelPosition.Bottom)))
-                            {
-                                // DEBUG: Mark collided labels
+                            // DEBUG: Mark collided labels
 #if DEBUG
-                                if (graph != null && common.Chart.ShowDebugMarkings)
-                                {
-                                    graph.Graphics.DrawRectangle(Pens.Cyan, Rectangle.Round(graph.GetAbsoluteRectangle(labelPosition)));
-                                }
-#endif
-                                collisionDetected = true;
+                            if (graph != null && common.Chart.ShowDebugMarkings)
+                            {
+                                graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
                             }
+#endif
+                            collisionDetected = true;
                         }
                     }
                 }
@@ -1017,52 +906,49 @@ namespace WebCharts.Services.Models.General
                 {
                     if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.Partial)
                     {
-                        SKPoint centerPos = new SKPoint(
-                            labelPosition.X + labelPosition.Width / 2f,
-                            labelPosition.Y + labelPosition.Height / 2f);
+                        SKPoint centerPos = new(
+                            labelPosition.Left + labelPosition.Width / 2f,
+                            labelPosition.Top + labelPosition.Height / 2f);
                         if (!area.PlotAreaPosition.ToSKRect().Contains(centerPos))
                         {
                             // DEBUG: Mark collided labels
 #if DEBUG
                             if (graph != null && common.Chart.ShowDebugMarkings)
                             {
-                                graph.Graphics.DrawRectangle(Pens.Cyan, Rectangle.Round(graph.GetAbsoluteRectangle(labelPosition)));
+                                graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
                             }
 #endif
                             collisionDetected = true;
                         }
                     }
-                    else if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.No)
+                    else if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.No
+                        && !area.PlotAreaPosition.ToSKRect().Contains(labelPosition))
                     {
-                        if (!area.PlotAreaPosition.ToSKRect().Contains(labelPosition))
-                        {
-                            // DEBUG: Mark collided labels
+                        // DEBUG: Mark collided labels
 #if DEBUG
-                            if (graph != null && common.Chart.ShowDebugMarkings)
-                            {
-                                graph.Graphics.DrawRectangle(Pens.Cyan, Rectangle.Round(graph.GetAbsoluteRectangle(labelPosition)));
-                            }
-#endif
-                            collisionDetected = true;
+                        if (graph != null && common.Chart.ShowDebugMarkings)
+                        {
+                            graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
                         }
+#endif
+                        collisionDetected = true;
                     }
                 }
             }
 
             // Check if 1 collisuion is aceptable in case of cennter alignment
             bool allowOneCollision =
-                (labelAlignment == LabelAlignmentStyles.Center && !smartLabelStyle.IsMarkerOverlappingAllowed) ? true : false;
-            if (this.checkAllCollisions)
+                (labelAlignment == LabelAlignmentStyles.Center && !smartLabelStyle.IsMarkerOverlappingAllowed);
+            if (checkAllCollisions)
             {
                 allowOneCollision = false;
             }
 
-
             // Loop through all smart label positions
-            if (!collisionDetected && this.smartLabelsPositions != null)
+            if (!collisionDetected && smartLabelsPositions != null)
             {
                 int index = -1;
-                foreach (SKRect pos in this.smartLabelsPositions)
+                foreach (SKRect pos in smartLabelsPositions)
                 {
                     // Increase index
                     ++index;
@@ -1077,8 +963,8 @@ namespace WebCharts.Services.Models.General
                         index >= markersCount)
                     {
                         SKPoint labelCenter = new SKPoint(
-                            labelPosition.X + labelPosition.Width / 2f,
-                            labelPosition.Y + labelPosition.Height / 2f);
+                            labelPosition.Left + labelPosition.Width / 2f,
+                            labelPosition.Top + labelPosition.Height / 2f);
                         if (LineIntersectRectangle(pos, markerPosition, labelCenter))
                         {
                             collision = true;
@@ -1102,8 +988,8 @@ namespace WebCharts.Services.Models.General
                             common.ChartPicture.ChartGraph != null &&
                             common.Chart.ShowDebugMarkings)
                         {
-                            common.ChartPicture.ChartGraph.Graphics.DrawRectangle(Pens.Blue, Rectangle.Round(common.ChartPicture.ChartGraph.GetAbsoluteRectangle(pos)));
-                            common.ChartPicture.ChartGraph.Graphics.DrawRectangle(Pens.Red, Rectangle.Round(common.ChartPicture.ChartGraph.GetAbsoluteRectangle(labelPosition)));
+                            common.ChartPicture.ChartGraph.Graphics.DrawRect(common.ChartPicture.ChartGraph.GetAbsoluteRectangle(pos).Round(), Pens.Blue);
+                            common.ChartPicture.ChartGraph.Graphics.DrawRect(common.ChartPicture.ChartGraph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Red);
                         }
 #endif
                         collisionDetected = true;
@@ -1127,9 +1013,9 @@ namespace WebCharts.Services.Models.General
             // Check for horizontal line
             if (point1.X == point2.X)
             {
-                if (point1.X >= rect.X && point1.X <= rect.Right)
+                if (point1.X >= rect.Left && point1.X <= rect.Right)
                 {
-                    if (point1.Y < rect.Y && point2.Y < rect.Y)
+                    if (point1.Y < rect.Top && point2.Y < rect.Top)
                     {
                         return false;
                     }
@@ -1145,9 +1031,9 @@ namespace WebCharts.Services.Models.General
             // Check for vertical line
             if (point1.Y == point2.Y)
             {
-                if (point1.Y >= rect.Y && point1.Y <= rect.Bottom)
+                if (point1.Y >= rect.Top && point1.Y <= rect.Bottom)
                 {
-                    if (point1.X < rect.X && point2.X < rect.X)
+                    if (point1.X < rect.Left && point2.X < rect.Left)
                     {
                         return false;
                     }
@@ -1158,11 +1044,10 @@ namespace WebCharts.Services.Models.General
                     return true;
                 }
                 return false;
-
             }
 
             // Check if line completly outside rectangle
-            if (point1.X < rect.X && point2.X < rect.X)
+            if (point1.X < rect.Left && point2.X < rect.Left)
             {
                 return false;
             }
@@ -1170,7 +1055,7 @@ namespace WebCharts.Services.Models.General
             {
                 return false;
             }
-            else if (point1.Y < rect.Y && point2.Y < rect.Y)
+            else if (point1.Y < rect.Top && point2.Y < rect.Top)
             {
                 return false;
             }
@@ -1187,7 +1072,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Calculate intersection point of the line with each side of the rectangle
-            SKPoint intersection = CalloutAnnotation.GetIntersectionY(point1, point2, rect.Y);
+            SKPoint intersection = CalloutAnnotation.GetIntersectionY(point1, point2, rect.Top);
             if (rect.Contains(intersection))
             {
                 return true;
@@ -1197,7 +1082,7 @@ namespace WebCharts.Services.Models.General
             {
                 return true;
             }
-            intersection = CalloutAnnotation.GetIntersectionX(point1, point2, rect.X);
+            intersection = CalloutAnnotation.GetIntersectionX(point1, point2, rect.Left);
             if (rect.Contains(intersection))
             {
                 return true;
@@ -1221,7 +1106,7 @@ namespace WebCharts.Services.Models.General
             ChartArea area)
         {
             // Proceed only if there is no items in the list yet
-            if (this.smartLabelsPositions.Count == 0 && area != null)
+            if (smartLabelsPositions.Count == 0 && area != null)
             {
                 // Get chart types registry
                 ChartTypeRegistry registry = common.ChartTypeRegistry;
@@ -1238,11 +1123,9 @@ namespace WebCharts.Services.Models.General
                         IChartType chartType = registry.GetChartType(series.ChartTypeName);
 
                         // Add series markers positions into the list
-                        chartType.AddSmartLabelMarkerPositions(common, area, series, this.smartLabelsPositions);
+                        chartType.AddSmartLabelMarkerPositions(common, area, series, smartLabelsPositions);
                     }
                 }
-
-
 
                 // Make sure labels do not intersect with scale breaks
                 foreach (Axis currentAxis in area.Axes)
@@ -1258,19 +1141,16 @@ namespace WebCharts.Services.Models.General
                             breakPosition = common.graph.GetRelativeRectangle(breakPosition);
 
                             // Create array list if needed
-                            if (this.smartLabelsPositions == null)
+                            if (smartLabelsPositions == null)
                             {
-                                this.smartLabelsPositions = new ArrayList();
+                                smartLabelsPositions = new ArrayList();
                             }
 
                             // Add label position into the list
-                            this.smartLabelsPositions.Add(breakPosition);
-
+                            smartLabelsPositions.Add(breakPosition);
                         }
                     }
                 }
-
-
             }
         }
 
@@ -1290,13 +1170,13 @@ namespace WebCharts.Services.Models.General
             // Calculate label position rectangle
             SKRect labelPosition = GetLabelPosition(graph, position, size, format, false);
 
-            if (this.smartLabelsPositions == null)
+            if (smartLabelsPositions == null)
             {
-                this.smartLabelsPositions = new ArrayList();
+                smartLabelsPositions = new ArrayList();
             }
 
             // Add label position into the list
-            this.smartLabelsPositions.Add(labelPosition);
+            smartLabelsPositions.Add(labelPosition);
         }
 
         /// <summary>
@@ -1317,8 +1197,7 @@ namespace WebCharts.Services.Models.General
         {
             // Calculate label position rectangle
             SKRect labelPosition = SKRect.Empty;
-            labelPosition.Width = size.Width;
-            labelPosition.Height = size.Height;
+            labelPosition.Size = new(size.Width, size.Height);
 
             // Calculate pixel size in relative coordiantes
             SKSize pixelSize = SKSize.Empty;
@@ -1329,42 +1208,42 @@ namespace WebCharts.Services.Models.General
 
             if (format.Alignment == StringAlignment.Far)
             {
-                labelPosition.X = position.X - size.Width;
+                labelPosition.Left = position.X - size.Width;
                 if (adjustForDrawing && !pixelSize.IsEmpty)
                 {
-                    labelPosition.X -= 4f * pixelSize.Width;
-                    labelPosition.Width += 4f * pixelSize.Width;
+                    labelPosition.Left -= 4f * pixelSize.Width;
+                    labelPosition.Right += 4f * pixelSize.Width;
                 }
             }
             else if (format.Alignment == StringAlignment.Near)
             {
-                labelPosition.X = position.X;
+                labelPosition.Left = position.X;
                 if (adjustForDrawing && !pixelSize.IsEmpty)
                 {
-                    labelPosition.Width += 4f * pixelSize.Width;
+                    labelPosition.Right += 4f * pixelSize.Width;
                 }
             }
             else if (format.Alignment == StringAlignment.Center)
             {
-                labelPosition.X = position.X - size.Width / 2F;
+                labelPosition.Left = position.X - size.Width / 2F;
                 if (adjustForDrawing && !pixelSize.IsEmpty)
                 {
-                    labelPosition.X -= 2f * pixelSize.Width;
-                    labelPosition.Width += 4f * pixelSize.Width;
+                    labelPosition.Left -= 2f * pixelSize.Width;
+                    labelPosition.Right += 4f * pixelSize.Width;
                 }
             }
 
             if (format.LineAlignment == StringAlignment.Far)
             {
-                labelPosition.Y = position.Y - size.Height;
+                labelPosition.Top = position.Y - size.Height;
             }
             else if (format.LineAlignment == StringAlignment.Near)
             {
-                labelPosition.Y = position.Y;
+                labelPosition.Top = position.Y;
             }
             else if (format.LineAlignment == StringAlignment.Center)
             {
-                labelPosition.Y = position.Y - size.Height / 2F;
+                labelPosition.Top = position.Y - size.Height / 2F;
             }
 
             return labelPosition;
@@ -1396,40 +1275,48 @@ namespace WebCharts.Services.Models.General
                 case LabelAlignmentStyles.Center:
                     format.Alignment = StringAlignment.Center;
                     break;
+
                 case LabelAlignmentStyles.Bottom:
                     format.Alignment = StringAlignment.Center;
                     position.Y += sizeMarker.Height / 1.75F;
                     position.Y += SKSizeont.Height / 2F;
                     break;
+
                 case LabelAlignmentStyles.Top:
                     format.Alignment = StringAlignment.Center;
                     position.Y -= sizeMarker.Height / 1.75F;
                     position.Y -= SKSizeont.Height / 2F;
                     break;
+
                 case LabelAlignmentStyles.Left:
                     format.Alignment = StringAlignment.Far;
                     position.X -= sizeMarker.Height / 1.75F;
                     break;
+
                 case LabelAlignmentStyles.TopLeft:
                     format.Alignment = StringAlignment.Far;
                     position.X -= sizeMarker.Height / 1.75F;
                     position.Y -= sizeMarker.Height / 1.75F;
                     position.Y -= SKSizeont.Height / 2F;
                     break;
+
                 case LabelAlignmentStyles.BottomLeft:
                     format.Alignment = StringAlignment.Far;
                     position.X -= sizeMarker.Height / 1.75F;
                     position.Y += sizeMarker.Height / 1.75F;
                     position.Y += SKSizeont.Height / 2F;
                     break;
+
                 case LabelAlignmentStyles.Right:
                     position.X += sizeMarker.Height / 1.75F;
                     break;
+
                 case LabelAlignmentStyles.TopRight:
                     position.X += sizeMarker.Height / 1.75F;
                     position.Y -= sizeMarker.Height / 1.75F;
                     position.Y -= SKSizeont.Height / 2F;
                     break;
+
                 case LabelAlignmentStyles.BottomRight:
                     position.X += sizeMarker.Height / 1.75F;
                     position.Y += sizeMarker.Height / 1.75F;
@@ -1440,11 +1327,11 @@ namespace WebCharts.Services.Models.General
             return position;
         }
 
-        #endregion
+        #endregion Methods
     }
 
     /// <summary>
-    /// AnnotationSmartLabel class provides SmartLabelStyle functionality 
+    /// AnnotationSmartLabel class provides SmartLabelStyle functionality
     /// specific to the annotation objects.
     /// </summary>
     [
@@ -1461,7 +1348,7 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion
+        #endregion Constructors and initialization
 
         #region Methods
 
@@ -1479,7 +1366,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="labelAlignment">Label alignment.</param>
         /// <param name="checkCalloutLineOverlapping">Indicates that labels overlapping by callout line must be checked.</param>
         /// <returns>True if label collides.</returns>
-        override internal bool IsSmartLabelCollide(
+        internal bool IsSmartLabelCollide(
             CommonElements common,
             ChartGraphics graph,
             ChartArea area,
@@ -1507,7 +1394,6 @@ namespace WebCharts.Services.Models.General
                     position,
                     size,
                     markerPosition,
-                    format,
                     labelAlignment,
                     checkCalloutLineOverlapping))
                 {
@@ -1527,13 +1413,13 @@ namespace WebCharts.Services.Models.General
             // Check if 1 collisuion is aceptable in case of cennter alignment
             bool allowOneCollision =
                 (labelAlignment == LabelAlignmentStyles.Center && !smartLabelStyle.IsMarkerOverlappingAllowed) ? true : false;
-            if (this.checkAllCollisions)
+            if (checkAllCollisions)
             {
                 allowOneCollision = false;
             }
 
             // Check if label collide with other labels or markers.
-            foreach (SKRect pos in this.smartLabelsPositions)
+            foreach (SKRect pos in smartLabelsPositions)
             {
                 if (pos.IntersectsWith(labelPosition))
                 {
@@ -1548,8 +1434,8 @@ namespace WebCharts.Services.Models.General
 #if DEBUG
                     if (graph != null && common.Chart.ShowDebugMarkings)
                     {
-                        graph.Graphics.DrawRectangle(Pens.Blue, Rectangle.Round(graph.GetAbsoluteRectangle(pos)));
-                        graph.Graphics.DrawRectangle(Pens.Red, Rectangle.Round(graph.GetAbsoluteRectangle(labelPosition)));
+                        graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(pos).Round(), Pens.Blue);
+                        graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Red);
                     }
 #endif
                     collisionDetected = true;
@@ -1570,14 +1456,14 @@ namespace WebCharts.Services.Models.General
             ChartArea area)
         {
             // Proceed only if there is no items in the list yet
-            if (this.smartLabelsPositions.Count == 0 &&
+            if (smartLabelsPositions.Count == 0 &&
                 common != null &&
                 common.Chart != null)
             {
                 // Add annotations anchor points
                 foreach (Annotation annotation in common.Chart.Annotations)
                 {
-                    annotation.AddSmartLabelMarkerPositions(this.smartLabelsPositions);
+                    annotation.AddSmartLabelMarkerPositions(smartLabelsPositions);
                 }
             }
         }
@@ -1591,26 +1477,17 @@ namespace WebCharts.Services.Models.General
         /// <param name="smartLabelStyle">Smart labels style.</param>
         /// <param name="labelPosition">Original label position.</param>
         /// <param name="labelSize">Label text size.</param>
-        /// <param name="format">Label string format.</param>
         /// <param name="markerPosition">Marker position.</param>
         /// <param name="markerSize">Marker size.</param>
         /// <param name="labelAlignment">Label alignment.</param>
         /// <returns>Adjusted position of the label.</returns>
-        override internal void DrawCallout(
-            CommonElements common,
-            ChartGraphics graph,
-            ChartArea area,
-            SmartLabelStyle smartLabelStyle,
-            SKPoint labelPosition,
-            SKSize labelSize,
-            StringFormat format,
-            SKPoint markerPosition,
-            SKSize markerSize,
-            LabelAlignmentStyles labelAlignment)
+        internal override void DrawCallout(CommonElements common, ChartGraphics graph, ChartArea area,
+            SmartLabelStyle smartLabelStyle, SKPoint labelPosition, SKSize labelSize,
+            SKPoint markerPosition, SKSize markerSize, LabelAlignmentStyles labelAlignment)
         {
             // No callout is drawn for the annotations
         }
 
-        #endregion
+        #endregion Methods
     }
 }

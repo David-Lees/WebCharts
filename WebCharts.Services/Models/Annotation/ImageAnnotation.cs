@@ -14,8 +14,9 @@ using System;
 using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     /// <summary>
     /// <b>ImageAnnotation</b> is a class that represents an image annotation.
@@ -78,7 +79,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _imageName = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -102,7 +103,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _imageWrapMode = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -125,7 +126,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _imageTransparentColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -416,15 +417,12 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> object, used to paint the annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> owner control.
+        /// Reference to the <see cref="ChartService"/> owner control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out _);
             SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
@@ -452,45 +450,41 @@ namespace WebCharts.Services.Models.Annotation
                 return;
             }
 
-            if (this.Common.ProcessModePaint)
+            if (Common.ProcessModePaint)
             {
                 // Draw "empty" image at design time
-                if (this._imageName.Length == 0)
+                if (_imageName.Length == 0)
                 {
                     graphics.FillRectangleRel(
                         rectanglePosition,
-                        this.BackColor,
-                        this.BackHatchStyle,
-                        this._imageName,
-                        this._imageWrapMode,
-                        this._imageTransparentColor,
-                        GetImageAlignment(this.Alignment),
-                        this.BackGradientStyle,
-                        this.BackSecondaryColor,
-                        this.LineColor,
-                        this.LineWidth,
-                        this.LineDashStyle,
-                        this.ShadowColor,
-                        this.ShadowOffset,
+                        BackColor,
+                        BackHatchStyle,
+                        _imageName,
+                        _imageWrapMode,
+                        _imageTransparentColor,
+                        GetImageAlignment(Alignment),
+                        BackGradientStyle,
+                        BackSecondaryColor,
+                        LineColor,
+                        LineWidth,
+                        LineDashStyle,
+                        ShadowColor,
+                        ShadowOffset,
                         PenAlignment.Center);
 
                     // Draw text
-                    using (Brush textBrush = new SolidBrush(this.ForeColor))
-                    {
-                        using (StringFormat format = new StringFormat(StringFormat.GenericTypographic))
-                        {
-                            format.Alignment = StringAlignment.Center;
-                            format.LineAlignment = StringAlignment.Center;
-                            format.FormatFlags = StringFormatFlags.LineLimit;
-                            format.Trimming = StringTrimming.EllipsisCharacter;
-                            graphics.DrawStringRel(
-                                "(no image)",
-                                this.Font,
-                                textBrush,
-                                rectanglePosition,
-                                format);
-                        }
-                    }
+                    using SKPaint textBrush = new() { Style = SKPaintStyle.Fill, Color = ForeColor };
+                    using StringFormat format = new(StringFormat.GenericTypographic);
+                    format.Alignment = StringAlignment.Center;
+                    format.LineAlignment = StringAlignment.Center;
+                    format.FormatFlags = StringFormatFlags.LineLimit;
+                    format.Trimming = StringTrimming.EllipsisCharacter;
+                    graphics.DrawStringRel(
+                        "(no image)",
+                        Font,
+                        textBrush,
+                        rectanglePosition,
+                        format);
                 }
                 else
                 {
@@ -498,28 +492,28 @@ namespace WebCharts.Services.Models.Annotation
                     graphics.FillRectangleRel(
                         rectanglePosition,
                         SKColors.Transparent,
-                        this.BackHatchStyle,
-                        this._imageName,
-                        this._imageWrapMode,
-                        this._imageTransparentColor,
-                        GetImageAlignment(this.Alignment),
-                        this.BackGradientStyle,
+                        BackHatchStyle,
+                        _imageName,
+                        _imageWrapMode,
+                        _imageTransparentColor,
+                        GetImageAlignment(Alignment),
+                        BackGradientStyle,
                         SKColors.Transparent,
                         SKColors.Transparent,
                         0,
-                        this.LineDashStyle,
-                        this.ShadowColor,
-                        this.ShadowOffset,
+                        LineDashStyle,
+                        ShadowColor,
+                        ShadowOffset,
                         PenAlignment.Center);
                 }
             }
 
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions)
             {
                 // Add hot region
-                this.Common.HotRegionsList.AddHotRegion(
+                Common.HotRegionsList.AddHotRegion(
                     rectanglePosition,
-                    ReplaceKeywords(this.ToolTip),
+                    ReplaceKeywords(ToolTip),
                     String.Empty,
                     String.Empty,
                     String.Empty,
@@ -585,24 +579,24 @@ namespace WebCharts.Services.Models.Annotation
         override internal SKRect GetContentPosition()
         {
             // Check image size
-            if (this.Image.Length > 0)
+            if (Image.Length > 0)
             {
                 // Try loading image and getting its size
                 try
                 {
-                    if (this.Chart != null)
+                    if (Chart != null)
                     {
-                        ImageLoader imageLoader = this.Common.ImageLoader;
+                        ImageLoader imageLoader = Common.ImageLoader;
 
                         if (imageLoader != null)
                         {
-                            ChartGraphics chartGraphics = this.GetGraphics();
+                            ChartGraphics chartGraphics = GetGraphics();
 
                             if (chartGraphics != null)
                             {
-                                SKSize absSize = new SKSize();
+                                SKSize absSize = new();
 
-                                if (imageLoader.GetAdjustedImageSize(this.Image, chartGraphics.Graphics, ref absSize))
+                                if (imageLoader.GetAdjustedImageSize(Image, chartGraphics.Graphics, ref absSize))
                                 {
                                     SKSize imageSize = chartGraphics.GetRelativeSize(absSize);
                                     return new SKRect(float.NaN, float.NaN, imageSize.Width, imageSize.Height);

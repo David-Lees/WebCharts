@@ -20,6 +20,7 @@ using System.Collections;
 using System.IO;
 using System.Reflection;
 using System.Resources;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Interfaces;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.DataManager;
@@ -85,7 +86,7 @@ namespace WebCharts.Services.Models.ChartTypes
     /// and can be retrieved using Chart.GetService(typeof(ChartTypeRegistry)) 
     /// method.
     /// </summary>
-    internal class ChartTypeRegistry : IServiceProvider, IDisposable
+    internal class ChartTypeRegistry : IServiceProvider, IDisposable, IChartTypeRegistry
     {
         #region Fields
 
@@ -172,7 +173,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// <returns>Chart type object derived from IChartType.</returns>
         public IChartType GetChartType(SeriesChartType chartType)
         {
-            return this.GetChartType(Series.GetChartTypeName(chartType));
+            return GetChartType(Series.GetChartTypeName(chartType));
         }
 
         /// <summary>
@@ -210,7 +211,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Create chart images resource manager
                 if (_resourceManager == null)
                 {
-                    _resourceManager = new ResourceManager(typeof(Chart).Namespace + ".Design", Assembly.GetExecutingAssembly());
+                    _resourceManager = new ResourceManager(typeof(ChartService).Namespace + ".Design", Assembly.GetExecutingAssembly());
                 }
                 return _resourceManager;
             }
@@ -229,12 +230,12 @@ namespace WebCharts.Services.Models.ChartTypes
             if (disposing)
             {
                 // Dispose managed resource
-                foreach (string name in this._createdChartTypes.Keys)
+                foreach (string name in _createdChartTypes.Keys)
                 {
                     IChartType chartType = (IChartType)_createdChartTypes[name];
                     chartType.Dispose();
                 }
-                this._createdChartTypes.Clear();
+                _createdChartTypes.Clear();
             }
         }
 

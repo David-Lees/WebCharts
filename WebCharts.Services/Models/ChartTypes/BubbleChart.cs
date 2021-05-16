@@ -12,9 +12,13 @@
 //
 
 
-using System.Drawing;
+using SkiaSharp;
+using System;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -75,9 +79,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-        override public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+        override public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 
 		#endregion
@@ -138,18 +142,18 @@ namespace WebCharts.Services.Models.ChartTypes
 			string markerImage)
 		{
 			// Check required Y values number
-			if(point.YValues.Length < this.YValuesPerPoint)
+			if(point.YValues.Length < YValuesPerPoint)
 			{
-				throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(this.Name, this.YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
+				throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
 			}
 
 			// Marker size
-			SKSize size = new SKSize(markerSize, markerSize);
+			SKSize size = new(markerSize, markerSize);
             if (graph != null && graph.Graphics != null)
             {
                 // Marker size is in pixels and we do the mapping for higher DPIs
-                size.Width = markerSize * graph.Graphics.DpiX / 96;
-                size.Height = markerSize * graph.Graphics.DpiY / 96;
+                size.Width = markerSize;
+                size.Height = markerSize;
             }
 
 			// Check number of Y values for non empty points
@@ -181,7 +185,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				_maxAll = double.MinValue;
 				foreach( Series ser in common.DataManager.Series )
 				{
-					if( String.Compare( ser.ChartTypeName, this.Name, true, System.Globalization.CultureInfo.CurrentCulture) == 0 &&
+					if( String.Compare( ser.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) == 0 &&
 						ser.ChartArea == area.Name &&
 						ser.IsVisible())
 					{
@@ -236,16 +240,16 @@ namespace WebCharts.Services.Models.ChartTypes
 					double	maxSer = double.MinValue;
 					foreach( Series ser in common.DataManager.Series )
 					{
-						if( ser.ChartTypeName == this.Name && ser.ChartArea == area.Name && ser.IsVisible() )
+						if( ser.ChartTypeName == Name && ser.ChartArea == area.Name && ser.IsVisible() )
 						{
 							foreach(DataPoint point in ser.Points)
 							{
                                 if (!point.IsEmpty)
                                 {
                                     // Check required Y values number
-                                    if (point.YValues.Length < this.YValuesPerPoint)
+                                    if (point.YValues.Length < YValuesPerPoint)
                                     {
-                                        throw (new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(this.Name, this.YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
+                                        throw (new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
                                     }
 
                                     minSer = Math.Min(minSer, point.YValues[1]);
@@ -272,13 +276,13 @@ namespace WebCharts.Services.Models.ChartTypes
 				// Calculate scaling variables depending on the Min/Max values
 				if(_maxAll == _minAll)
 				{
-					this._valueScale = 1;
-					this._valueDiff = _minAll - (_maxBubleSize - _minBubleSize)/2f;
+					_valueScale = 1;
+					_valueDiff = _minAll - (_maxBubleSize - _minBubleSize)/2f;
 				}
 				else
 				{
-					this._valueScale = (_maxBubleSize - _minBubleSize) / (_maxAll - _minAll);
-					this._valueDiff = _minAll;
+					_valueScale = (_maxBubleSize - _minBubleSize) / (_maxAll - _minAll);
+					_valueDiff = _minAll;
 				}
 
 				_scaleDetected = true;
@@ -295,7 +299,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Return scaled value
-			return (float)((value - this._valueDiff) * this._valueScale) + _minBubleSize;
+			return (float)((value - _valueDiff) * _valueScale) + _minBubleSize;
 		}
 
 		/// <summary>

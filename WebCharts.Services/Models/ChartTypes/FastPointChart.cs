@@ -24,11 +24,16 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Collections;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -186,9 +191,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+		virtual public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 
 		#endregion
@@ -208,17 +213,17 @@ namespace WebCharts.Services.Models.ChartTypes
 			ChartArea area, 
 			Series seriesToDraw )
 		{	
-			this.Common = common;
-			this.Graph = graph;
+			Common = common;
+			Graph = graph;
 			if(area.Area3DStyle.Enable3D)
 			{
 				// Initialize variables
-				this.chartArea3DEnabled = true;
+				chartArea3DEnabled = true;
 				matrix3D = area.matrix3D;
 			}
 			else
 			{
-				this.chartArea3DEnabled = false;
+				chartArea3DEnabled = false;
 			}
 			
 			//************************************************************
@@ -227,7 +232,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			foreach( Series series in common.DataManager.Series )
 			{
 				// Process non empty series of the area with FastPoint chart type
-				if( String.Compare( series.ChartTypeName, this.Name, true, System.Globalization.CultureInfo.CurrentCulture ) != 0 
+				if( String.Compare( series.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture ) != 0 
 					|| series.ChartArea != area.Name || 
 					!series.IsVisible())
 				{
@@ -235,11 +240,10 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 
 				// Get 3D series depth and Z position
-				if(this.chartArea3DEnabled)
+				if(chartArea3DEnabled)
 				{
-					float seriesDepth;
-					area.GetSeriesZPositionAndDepth(series, out seriesDepth, out this.seriesZCoordinate);
-					this.seriesZCoordinate += seriesDepth/2.0f;
+                    area.GetSeriesZPositionAndDepth(series, out float seriesDepth, out seriesZCoordinate);
+                    seriesZCoordinate += seriesDepth/2.0f;
 				}
 
 				// Set active horizontal/vertical axis
@@ -257,8 +261,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				{
                     string attrValue = series[CustomPropertyName.PermittedPixelError];
 
-                    float pixelError;
-                    bool parseSucceed = float.TryParse(attrValue, NumberStyles.Any, CultureInfo.CurrentCulture, out pixelError);
+                    bool parseSucceed = float.TryParse(attrValue, NumberStyles.Any, CultureInfo.CurrentCulture, out float pixelError);
 
                     if (parseSucceed)
                     {
@@ -282,55 +285,52 @@ namespace WebCharts.Services.Models.ChartTypes
 				double axesValuesPixelSizeX = Math.Abs(hAxis.PositionToValue(axesMin.Width + pixelSize.Width, false) - hAxis.PositionToValue(axesMin.Width, false));
 				double axesValuesPixelSizeY = Math.Abs(vAxis.PositionToValue(axesMin.Height + pixelSize.Height, false) - vAxis.PositionToValue(axesMin.Height, false));
 
-				// Create point marker brush
-				SolidBrush	markerBrush = new SolidBrush( ((series.MarkerColor.IsEmpty) ? series.Color : series.MarkerColor) );
-				SolidBrush	emptyMarkerBrush = new SolidBrush( ((series.EmptyPointStyle.MarkerColor.IsEmpty) ? series.EmptyPointStyle.Color : series.EmptyPointStyle.MarkerColor) );
+                // Create point marker brush
+                SKPaint markerBrush = new() { Color = (series.MarkerColor == SKColor.Empty) ? series.Color : series.MarkerColor, Style = SKPaintStyle.Fill };
+                SKPaint emptyMarkerBrush = new() { Color = (series.EmptyPointStyle.MarkerColor == SKColor.Empty) ? series.EmptyPointStyle.Color : series.EmptyPointStyle.MarkerColor, Style = SKPaintStyle.Fill };
 
-				// Create point marker border pen
-				Pen	borderPen = null;
-				Pen	emptyBorderPen = null;
-				if(!series.MarkerBorderColor.IsEmpty && series.MarkerBorderWidth > 0)
+                // Create point marker border pen
+                SKPaint	borderPen = null;
+				SKPaint	emptyBorderPen = null;
+				if(series.MarkerBorderColor != SKColor.Empty && series.MarkerBorderWidth > 0)
 				{
-					borderPen = new Pen(series.MarkerBorderColor, series.MarkerBorderWidth);
+					borderPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = series.MarkerBorderColor, StrokeWidth = series.MarkerBorderWidth };
 				}
-				if(!series.EmptyPointStyle.MarkerBorderColor.IsEmpty && series.EmptyPointStyle.MarkerBorderWidth > 0)
+				if(series.EmptyPointStyle.MarkerBorderColor != SKColor.Empty && series.EmptyPointStyle.MarkerBorderWidth > 0)
 				{
-					emptyBorderPen = new Pen(series.EmptyPointStyle.MarkerBorderColor, series.EmptyPointStyle.MarkerBorderWidth);
+					emptyBorderPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = series.EmptyPointStyle.MarkerBorderColor, StrokeWidth = series.EmptyPointStyle.MarkerBorderWidth };
 				}
 
 				// Check if series is indexed
-				bool indexedSeries = ChartHelper.IndexedSeries(this.Common, series.Name );
+				bool indexedSeries = ChartHelper.IndexedSeries(Common, series.Name );
 
                 // Get marker size taking in consideration current DPIs
                 int markerSize = series.MarkerSize;
                 if (graph != null && graph.Graphics != null)
                 {
                     // Marker size is in pixels and we do the mapping for higher DPIs
-                    markerSize = (int)Math.Max(markerSize * graph.Graphics.DpiX / 96, markerSize * graph.Graphics.DpiY / 96);
+                    markerSize = Math.Max(markerSize, markerSize);
                 }
 
 				// Loop through all ponts in the series
 				int		index = 0;
-				double	xValue = 0.0;
-				double	yValue = 0.0;
-				double	xValuePrev = 0.0;
+                double xValuePrev = 0.0;
 				double	yValuePrev = 0.0;
 				SKPoint	currentPoint = SKPoint.Empty;
-				bool	currentPointIsEmpty = false;
-				double	xPixelConverter = (graph.Common.ChartPicture.Width - 1.0) / 100.0;
+                double xPixelConverter = (graph.Common.ChartPicture.Width - 1.0) / 100.0;
 				double	yPixelConverter = (graph.Common.ChartPicture.Height - 1.0) / 100.0;
 				MarkerStyle	markerStyle = series.MarkerStyle;
 				MarkerStyle	emptyMarkerStyle = series.EmptyPointStyle.MarkerStyle;
 				foreach( DataPoint point in series.Points )
 				{
-					// Get point X and Y values
-					xValue = (indexedSeries) ? index + 1 : point.XValue;
-					xValue = hAxis.GetLogValue(xValue);
-					yValue = vAxis.GetLogValue(point.YValues[0]);
-					currentPointIsEmpty = point.IsEmpty;
+                    // Get point X and Y values
+                    double xValue = (indexedSeries) ? index + 1 : point.XValue;
+                    xValue = hAxis.GetLogValue(xValue);
+                    double yValue = vAxis.GetLogValue(point.YValues[0]);
+                    bool currentPointIsEmpty = point.IsEmpty;
 
-					// Check if point is completly out of the data scaleView
-					if( xValue < hAxisMin ||
+                    // Check if point is completly out of the data scaleView
+                    if ( xValue < hAxisMin ||
 						xValue > hAxisMax ||
 						yValue < vAxisMin ||
 						yValue > vAxisMax )
@@ -341,22 +341,17 @@ namespace WebCharts.Services.Models.ChartTypes
 						continue;
 					}
 
-					// Check if point may be skipped
-					if(index > 0)
-					{
-						// Check if current point location is in the specified distance from the 
-						// preious data location.
-						if(Math.Abs(xValue - xValuePrev) < axesValuesPixelSizeX &&
-							Math.Abs(yValue - yValuePrev) < axesValuesPixelSizeY)
-						{
-							// Increase counter and proceed to the next data point
-							++index;
-							continue;
-						}
-					}
+                    // Check if point may be skipped
+                    if (index > 0 && Math.Abs(xValue - xValuePrev) < axesValuesPixelSizeX &&
+                            Math.Abs(yValue - yValuePrev) < axesValuesPixelSizeY)
+                    {
+                        // Increase counter and proceed to the next data point
+                        ++index;
+                        continue;
+                    }
 
-					// Get point pixel position
-					currentPoint.X = (float)
+                    // Get point pixel position
+                    currentPoint.X = (float)
 						(hAxis.GetLinearPosition( xValue ) * xPixelConverter);
 					currentPoint.Y = (float)
 						(vAxis.GetLinearPosition( yValue ) * yPixelConverter);
@@ -414,15 +409,15 @@ namespace WebCharts.Services.Models.ChartTypes
 			SKPoint location, 
 			MarkerStyle markerStyle, 
 			int markerSize, 
-			Brush brush,
-			Pen borderPen)
+			SKPaint brush,
+			SKPaint borderPen)
 		{
 			// Transform 3D coordinates
 			if(chartArea3DEnabled)
 			{
 				Point3D [] points = new Point3D[1];
 				location = graph.GetRelativePoint(location);
-				points[0] = new Point3D(location.X, location.Y, this.seriesZCoordinate);
+				points[0] = new Point3D(location.X, location.Y, seriesZCoordinate);
 				matrix3D.TransformPoints( points );
 				location.X = points[0].X;
 				location.Y = points[0].Y;
@@ -430,7 +425,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Create marker bounding rectangle in pixels
-			SKRect markerBounds = new SKRect(
+			SKRect markerBounds = new(
 				location.X - markerSize / 2f, location.Y - markerSize / 2f, markerSize, markerSize);
 
 			// Draw Marker
@@ -457,7 +452,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					}
 
 					// Get star polygon
-					SKPoint[]	points = graph.CreateStarPolygon(markerBounds, cornerNumber);
+					SKPoint[]	points = ChartGraphics.CreateStarPolygon(markerBounds, cornerNumber);
 
 					// Fill shape
 					graph.FillPolygon(brush, points);
@@ -490,8 +485,8 @@ namespace WebCharts.Services.Models.ChartTypes
 					{
 						graph.DrawRectangle(
 							borderPen, 
-							(int)Math.Round(markerBounds.X, 0), 
-							(int)Math.Round(markerBounds.Y, 0), 
+							(int)Math.Round(markerBounds.Left, 0), 
+							(int)Math.Round(markerBounds.Top, 0), 
 							(int)Math.Round(markerBounds.Width, 0), 
 							(int)Math.Round(markerBounds.Height, 0) );
 					}
@@ -502,7 +497,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				{
 					// Calculate cross line width and size
 					float crossLineWidth = (float)Math.Ceiling(markerSize/4F);
-					float crossSize = markerSize;	// * (float)Math.Sin(45f/180f*Math.PI);
+					float crossSize = markerSize;	// * (float)Math.Sin(45f/180f*Math.PI)
 
 					// Calculate cross coordinates
 					SKPoint[] points = new SKPoint[12];
@@ -535,10 +530,8 @@ namespace WebCharts.Services.Models.ChartTypes
 					points[11].Y = location.Y + crossLineWidth/2F;
 
 					// Rotate cross coordinates 45 degrees
-					Matrix rotationMatrix = new Matrix();
-					rotationMatrix.RotateAt(45, location);
+					SKMatrix rotationMatrix = SKMatrix.CreateRotationDegrees(45, location.X, location.Y);
 					rotationMatrix.TransformPoints(points);
-					rotationMatrix.Dispose();
 
 					// Fill shape
 					graph.FillPolygon(brush, points);
@@ -553,13 +546,13 @@ namespace WebCharts.Services.Models.ChartTypes
 				case(MarkerStyle.Diamond):
 				{
 					SKPoint[] points = new SKPoint[4];
-					points[0].X = markerBounds.X;
-					points[0].Y = markerBounds.Y + markerBounds.Height/2F;
-					points[1].X = markerBounds.X + markerBounds.Width/2F;
+					points[0].X = markerBounds.Left;
+					points[0].Y = markerBounds.Top + markerBounds.Height/2F;
+					points[1].X = markerBounds.Left + markerBounds.Width/2F;
 					points[1].Y = markerBounds.Top;
 					points[2].X = markerBounds.Right;
-					points[2].Y = markerBounds.Y + markerBounds.Height/2F;
-					points[3].X = markerBounds.X + markerBounds.Width/2F;
+					points[2].Y = markerBounds.Top + markerBounds.Height/2F;
+					points[3].X = markerBounds.Left + markerBounds.Width/2F;
 					points[3].Y = markerBounds.Bottom;
 
 					graph.FillPolygon(brush, points);
@@ -574,9 +567,9 @@ namespace WebCharts.Services.Models.ChartTypes
 				case(MarkerStyle.Triangle):
 				{
 					SKPoint[] points = new SKPoint[3];
-					points[0].X = markerBounds.X;
+					points[0].X = markerBounds.Left;
 					points[0].Y = markerBounds.Bottom;
-					points[1].X = markerBounds.X + markerBounds.Width/2F;
+					points[1].X = markerBounds.Top + markerBounds.Width/2F;
 					points[1].Y = markerBounds.Top;
 					points[2].X = markerBounds.Right;
 					points[2].Y = markerBounds.Bottom;
@@ -597,9 +590,9 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 			
 			// Process selection regions
-			if( this.Common.ProcessModeRegions )
+			if( Common.ProcessModeRegions )
 			{
-				this.Common.HotRegionsList.AddHotRegion(
+				Common.HotRegionsList.AddHotRegion(
 					graph.GetRelativeRectangle(markerBounds),
 					point, 
 					point.series.Name, 

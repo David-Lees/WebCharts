@@ -10,7 +10,9 @@
 
 using SkiaSharp;
 using System;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.Borders3D
 {
@@ -213,7 +215,7 @@ namespace WebCharts.Services.Models.Borders3D
 		public FrameTitle5Border()
 		{
 			sizeLeftTop = new SKSize(sizeLeftTop.Width, defaultRadiusSize*2f);
-			this.drawScrews = true;
+			drawScrews = true;
 		}
 
 		/// <summary>
@@ -306,7 +308,7 @@ namespace WebCharts.Services.Models.Borders3D
 		/// </summary>
 		public FrameTitle7Border()
 		{
-			this.sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
+			sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
 			float[] corners = {15f, 1f, 1f, 1f, 1f, 15f, 15f, 15f};
 			innerCorners = corners;
 		}
@@ -322,7 +324,7 @@ namespace WebCharts.Services.Models.Borders3D
             set
             {
                 base.Resolution = value;
-                this.sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
+                sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
                 float largeRadius = 15f * resolution / 96.0f;
                 float smallRadius = 1 * resolution / 96.0f;
                 float[] corners = { largeRadius, smallRadius, smallRadius, smallRadius, smallRadius, largeRadius, largeRadius, largeRadius };
@@ -345,8 +347,8 @@ namespace WebCharts.Services.Models.Borders3D
 		/// </summary>
 		public FrameTitle8Border()
 		{
-			this.sizeLeftTop = new SKSize(0, sizeLeftTop.Height);
-			this.sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
+			sizeLeftTop = new SKSize(0, sizeLeftTop.Height);
+			sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
 			float[] corners = {1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f};
 			innerCorners = corners;
 		}
@@ -363,8 +365,8 @@ namespace WebCharts.Services.Models.Borders3D
             {
                 base.Resolution = value;
 
-                this.sizeLeftTop = new SKSize(0, sizeLeftTop.Height);
-                this.sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
+                sizeLeftTop = new SKSize(0, sizeLeftTop.Height);
+                sizeRightBottom = new SKSize(0, sizeRightBottom.Height);
                 float radius = 1 * resolution / 96.0f;
                 float[] corners = { radius, radius, radius, radius, radius, radius, radius, radius };
                 innerCorners = corners;
@@ -623,8 +625,8 @@ namespace WebCharts.Services.Models.Borders3D
 			sunken = false;
 			outsideShadowRate = .9f;
 			drawOutsideTopLeftShadow = false;
-			bool oldScrewsFlag = this.drawScrews;
-			this.drawScrews = false;
+			bool oldScrewsFlag = drawScrews;
+			drawScrews = false;
 			base.DrawBorder(
 				graph, 
 				borderSkin, 
@@ -775,6 +777,10 @@ namespace WebCharts.Services.Models.Borders3D
 
         public virtual float Resolution
         {
+			get
+            {
+				return resolution;
+            }
             set
             {
                 resolution = value;
@@ -802,8 +808,8 @@ namespace WebCharts.Services.Models.Borders3D
         /// <param name="areasRect">Position to adjust.</param>
 		public virtual void AdjustAreasPosition(ChartGraphics graph, ref SKRect areasRect)
 		{
-			SKSize relSizeLeftTop = new SKSize(sizeLeftTop);
-			SKSize relSizeRightBottom = new SKSize(sizeRightBottom);
+			SKSize relSizeLeftTop = new(sizeLeftTop.Width, sizeLeftTop.Height);
+			SKSize relSizeRightBottom = new(sizeRightBottom.Width, sizeRightBottom.Height);
 			relSizeLeftTop.Width += defaultRadiusSize * 0.7f;
 			relSizeLeftTop.Height += defaultRadiusSize * 0.85f;
 			relSizeRightBottom.Width += defaultRadiusSize * 0.7f;
@@ -821,24 +827,24 @@ namespace WebCharts.Services.Models.Borders3D
 				relSizeRightBottom.Height = 0;
 
 
-			areasRect.X += relSizeLeftTop.Width;
-			areasRect.Width -= (float)Math.Min(areasRect.Width, relSizeLeftTop.Width + relSizeRightBottom.Width);
-			areasRect.Y += relSizeLeftTop.Height;
-			areasRect.Height -= (float)Math.Min(areasRect.Height, relSizeLeftTop.Height + relSizeRightBottom.Height);
+			areasRect.Left += relSizeLeftTop.Width;
+			areasRect.Right -= Math.Min(areasRect.Width, relSizeLeftTop.Width + relSizeRightBottom.Width);
+			areasRect.Top += relSizeLeftTop.Height;
+			areasRect.Bottom -= Math.Min(areasRect.Height, relSizeLeftTop.Height + relSizeRightBottom.Height);
 
 			if(areasRect.Right > 100f)
 			{
 				if(areasRect.Width > 100f - areasRect.Right)
-					areasRect.Width -= 100f - areasRect.Right;
+					areasRect.Right -= 100f - areasRect.Right;
 				else
-					areasRect.X -= 100f - areasRect.Right;
+					areasRect.Left -= 100f - areasRect.Right;
 			}
 			if(areasRect.Bottom > 100f)
 			{
 				if(areasRect.Height > 100f - areasRect.Bottom)
-					areasRect.Height -= 100f - areasRect.Bottom;
+					areasRect.Bottom -= 100f - areasRect.Bottom;
 				else
-					areasRect.Y -= 100f - areasRect.Bottom;
+					areasRect.Top -= 100f - areasRect.Bottom;
 
 			}
 		}
@@ -876,18 +882,17 @@ namespace WebCharts.Services.Models.Borders3D
 			int borderWidth, 
 			ChartDashStyle borderDashStyle)	
 		{
-			SKRect absolute = graph.Round( rect );
-			SKRect shadowRect = absolute;
+			SKRect absolute = ChartGraphics.Round( rect );
 
-			// Calculate shadow colors (0.2 - 0.6)
-			float colorDarkeningIndex = 0.3f + (0.4f * (borderSkin.PageColor.R + borderSkin.PageColor.G + borderSkin.PageColor.B) / 765f);
-			SKColor	shadowColor = new SKColor(
+            // Calculate shadow colors (0.2 - 0.6)
+            float colorDarkeningIndex = 0.3f + (0.4f * (borderSkin.PageColor.Red + borderSkin.PageColor.Green + borderSkin.PageColor.Blue) / 765f);
+            SKColor	shadowColor = new(
 				(byte)(backColor.Red*colorDarkeningIndex), 
 				(byte)(backColor.Green*colorDarkeningIndex), 
 				(byte)(backColor.Blue*colorDarkeningIndex));
 
 			colorDarkeningIndex += 0.2f;
-			SKColor	shadowLightColor = new SKColor(
+			SKColor	shadowLightColor = new(
 				(byte)(borderSkin.PageColor.Red*colorDarkeningIndex), 
 				(byte)(borderSkin.PageColor.Green*colorDarkeningIndex), 
 				(byte)(borderSkin.PageColor.Blue*colorDarkeningIndex));
@@ -898,41 +903,42 @@ namespace WebCharts.Services.Models.Borders3D
 			
 			// Calculate rounded rect radius
 			float	radius = defaultRadiusSize;
-            radius = (float)Math.Max(radius, 2f * resolution / 96.0f);
-			radius = (float)Math.Min(radius, rect.Width/2f);
-			radius = (float)Math.Min(radius, rect.Height/2f);
+            radius = Math.Max(radius, 2f * resolution / 96.0f);
+			radius = Math.Min(radius, rect.Width/2f);
+			radius = Math.Min(radius, rect.Height/2f);
 			radius = (float)Math.Ceiling(radius);
 
 			// Fill page background color
-            using (SKPaint brush = new(borderSkin.PageColor))
-            {
-                graph.FillRectangle(brush, rect);
-            }
-
-			if(drawOutsideTopLeftShadow)
+			using (SKPaint brush = new() { Color = borderSkin.PageColor, Style = SKPaintStyle.Fill })
 			{
-				// Top/Left outside shadow
-				shadowRect = absolute;
-				shadowRect.X -= radius * 0.3f;
-				shadowRect.Y -= radius * 0.3f;
-				shadowRect.Width -= radius * .3f;
-				shadowRect.Height -= radius * .3f;
-				graph.DrawRoundedRectShadowAbs(shadowRect, cornerRadius, radius, Color.FromArgb(128, Color.Black), borderSkin.PageColor, outsideShadowRate);
+				graph.FillRectangle(brush, rect);
 			}
 
-			// Bottom/Right outside shadow
-			shadowRect = absolute;
-			shadowRect.X += radius * 0.3f;
-			shadowRect.Y += radius * 0.3f;
-			shadowRect.Width -= radius * .3f;
-			shadowRect.Height -= radius * .3f;
+            SKRect shadowRect;
+            if (drawOutsideTopLeftShadow)
+            {
+                // Top/Left outside shadow
+                shadowRect = absolute;
+                shadowRect.Left -= radius * 0.3f;
+                shadowRect.Top -= radius * 0.3f;
+                shadowRect.Right -= radius * .3f;
+                shadowRect.Bottom -= radius * .3f;
+                graph.DrawRoundedRectShadowAbs(shadowRect, cornerRadius, radius, Color.FromArgb(128, SKColors.Black), borderSkin.PageColor, outsideShadowRate);
+            }
+
+            // Bottom/Right outside shadow
+            shadowRect = absolute;
+			shadowRect.Left += radius * 0.3f;
+			shadowRect.Top += radius * 0.3f;
+			shadowRect.Right -= radius * .3f;
+			shadowRect.Bottom -= radius * .3f;
 			graph.DrawRoundedRectShadowAbs(shadowRect, cornerRadius, radius, shadowLightColor, borderSkin.PageColor, outsideShadowRate);
 
 			// Background
 			shadowRect = absolute;
-			shadowRect.Width -= radius * .3f;
-			shadowRect.Height -= radius * .3f;
-			SKPath path = graph.CreateRoundedRectPath(shadowRect, cornerRadius);
+			shadowRect.Right -= radius * .3f;
+			shadowRect.Bottom -= radius * .3f;
+			SKPath path = ChartGraphics.CreateRoundedRectPath(shadowRect, cornerRadius);
 			graph.DrawPathAbs(
 				path, 
 				backColor, 
@@ -958,89 +964,89 @@ namespace WebCharts.Services.Models.Borders3D
 				// Left/Top screw
 				SKRect	screwRect = SKRect.Empty;
 				float offset = radius * 0.4f;
-				screwRect.X = shadowRect.X + offset;
-				screwRect.Y = shadowRect.Y + offset;
-				screwRect.Width = radius * 0.55f;
-				screwRect.Height = screwRect.Width;
+				screwRect.Left = shadowRect.Left + offset;
+				screwRect.Top = shadowRect.Top + offset;
+				screwRect.Size = new(radius * 0.55f,screwRect.Width);
 				DrawScrew(graph, screwRect);
 
 				// Right/Top screw
-				screwRect.X = shadowRect.Right - offset - screwRect.Width;
+				screwRect.Left = shadowRect.Right - offset - screwRect.Width;
 				DrawScrew(graph, screwRect);
 
 				// Right/Bottom screw
-				screwRect.X = shadowRect.Right - offset - screwRect.Width;
-				screwRect.Y = shadowRect.Bottom - offset - screwRect.Height;
+				screwRect.Left = shadowRect.Right - offset - screwRect.Width;
+				screwRect.Top = shadowRect.Bottom - offset - screwRect.Height;
 				DrawScrew(graph, screwRect);
 		
 				// Left/Bottom screw
-				screwRect.X = shadowRect.X + offset;
-				screwRect.Y = shadowRect.Bottom - offset - screwRect.Height;
+				screwRect.Left = shadowRect.Left + offset;
+				screwRect.Top = shadowRect.Bottom - offset - screwRect.Height;
 				DrawScrew(graph, screwRect);
 			}
 
 			// Bottom/Right inner shadow
-			Region	innerShadowRegion = null;
+			SKRegion	innerShadowRegion = null;
 			if(drawBottomShadow)
 			{
 				shadowRect = absolute;
-				shadowRect.Width -= radius * .3f;
-				shadowRect.Height -= radius * .3f;
-				innerShadowRegion = new Region(
-					graph.CreateRoundedRectPath(
+				shadowRect.Right -= radius * .3f;
+				shadowRect.Bottom -= radius * .3f;
+				innerShadowRegion = new SKRegion(
+                    ChartGraphics.CreateRoundedRectPath(
 					new SKRect(
-					shadowRect.X - radius, 
-					shadowRect.Y - radius, 
+					shadowRect.Left - radius, 
+					shadowRect.Top - radius, 
 					shadowRect.Width + 0.5f*radius, 
-					shadowRect.Height + 0.5f*radius), 
-					cornerRadius));
-				innerShadowRegion.Complement(graph.CreateRoundedRectPath(shadowRect, cornerRadius));
+					shadowRect.Height + 0.5f*radius),
+                    cornerRadius));
+                
+				// TODO: innerShadowRegion.Complement(graph.CreateRoundedRectPath(shadowRect, cornerRadius));
+				
 				graph.Clip = innerShadowRegion;
 
-				shadowRect.X -= 0.5f*radius;
-				shadowRect.Width += 0.5f*radius;
-				shadowRect.Y -= 0.5f*radius;
-				shadowRect.Height += 0.5f*radius;
+				shadowRect.Left -= 0.5f*radius;
+				shadowRect.Top -= 0.5f*radius;
+				shadowRect.Right += 0.5f*radius;
+				shadowRect.Bottom += 0.5f*radius;
 
 				graph.DrawRoundedRectShadowAbs(
 					shadowRect, 
 					cornerRadius,
 					radius,
-					Color.Transparent, 
-					Color.FromArgb(175, (sunken) ? Color.White : shadowColor), 
+					SKColors.Transparent, 
+					Color.FromArgb(175, (sunken) ? SKColors.White : shadowColor), 
 					1.0f);
-				graph.Clip = new Region();
+				graph.Clip = new SKRegion();
 			}
 
 			// Top/Left inner shadow					
 			shadowRect = absolute;
-			shadowRect.Width -= radius * .3f;
-			shadowRect.Height -= radius * .3f;
-			innerShadowRegion = new Region(
-				graph.CreateRoundedRectPath(
+			shadowRect.Right -= radius * .3f;
+			shadowRect.Bottom -= radius * .3f;
+			innerShadowRegion = new(
+                ChartGraphics.CreateRoundedRectPath(
 				new SKRect(
-				shadowRect.X + radius*.5f, 
-				shadowRect.Y + radius*.5f, 
+				shadowRect.Left + radius*.5f, 
+				shadowRect.Top + radius*.5f, 
 				shadowRect.Width - .2f*radius, 
 				shadowRect.Height - .2f*radius), 
 				cornerRadius));
 
 			SKRect shadowWithOffset = shadowRect;
-			shadowWithOffset.Width += radius;
-			shadowWithOffset.Height += radius;
-			innerShadowRegion.Complement(graph.CreateRoundedRectPath(shadowWithOffset, cornerRadius));
+			shadowWithOffset.Right += radius;
+			shadowWithOffset.Bottom += radius;
+			// TODO: innerShadowRegion.Complement(graph.CreateRoundedRectPath(shadowWithOffset, cornerRadius));
 			
-			innerShadowRegion.Intersect(graph.CreateRoundedRectPath(shadowRect, cornerRadius));
+			innerShadowRegion.SetPath(ChartGraphics.CreateRoundedRectPath(shadowRect, cornerRadius), innerShadowRegion);
 			graph.Clip = innerShadowRegion;
 			graph.DrawRoundedRectShadowAbs(
 				shadowWithOffset, 
 				cornerRadius, 
 				radius, 
-				Color.Transparent, 
-				Color.FromArgb(175, (sunken) ? shadowColor : Color.White), 
+				SKColors.Transparent, 
+				Color.FromArgb(175, (sunken) ? shadowColor : SKColors.White), 
 				1.0f);
-			graph.Clip = new Region();
-
+			graph.Clip = new();
 		}
 
 		/// <summary>
@@ -1051,12 +1057,12 @@ namespace WebCharts.Services.Models.Borders3D
 		private void DrawScrew(ChartGraphics graph, SKRect rect)
 		{
 			// Draw screw
-			Pen screwPen = new Pen(Color.FromArgb(128,255,255,255), 1);
-			graph.DrawEllipse(screwPen, rect.X, rect.Y, rect.Width, rect.Height);
-            graph.DrawLine(screwPen, rect.X + 2 * resolution / 96.0f, rect.Y + rect.Height - 2 * resolution / 96.0f, rect.Right - 2 * resolution / 96.0f, rect.Y + 2 * resolution / 96.0f);
-			screwPen = new Pen(Color.FromArgb(128, Color.Black), 1);
-            graph.DrawEllipse(screwPen, rect.X + 1 * resolution / 96.0f, rect.Y + 1 * resolution / 96.0f, rect.Width, rect.Height);
-            graph.DrawLine(screwPen, rect.X + 3 * resolution / 96.0f, rect.Y + rect.Height - 1 * resolution / 96.0f, rect.Right - 1 * resolution / 96.0f, rect.Y + 3 * resolution / 96.0f);
+			SKPaint screwPen = new() { Color = Color.FromArgb(128, 255, 255, 255), StrokeWidth = 1, Style = SKPaintStyle.Stroke };
+			graph.DrawEllipse(screwPen, rect.Left, rect.Top, rect.Width, rect.Height);
+            graph.DrawLine(screwPen, rect.Left + 2 * resolution / 96.0f, rect.Top + rect.Height - 2 * resolution / 96.0f, rect.Right - 2 * resolution / 96.0f, rect.Top + 2 * resolution / 96.0f);
+			screwPen.Color = Color.FromArgb(128, SKColors.Black);
+            graph.DrawEllipse(screwPen, rect.Left + 1 * resolution / 96.0f, rect.Top + 1 * resolution / 96.0f, rect.Width, rect.Height);
+            graph.DrawLine(screwPen, rect.Left + 3 * resolution / 96.0f, rect.Top + rect.Height - 1 * resolution / 96.0f, rect.Right - 1 * resolution / 96.0f, rect.Top + 3 * resolution / 96.0f);
 		}
 
 		#endregion

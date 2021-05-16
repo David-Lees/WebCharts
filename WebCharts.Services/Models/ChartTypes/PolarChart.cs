@@ -28,9 +28,12 @@
 //
 
 
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using SkiaSharp;
+using System;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -215,8 +218,8 @@ namespace WebCharts.Services.Models.ChartTypes
 
 				// Rotate position
 				float	sectorAngle = area.CircularPositionToAngle(point.XValue);
-				Matrix matrix = new Matrix();
-				matrix.RotateAt(sectorAngle, graph.GetAbsolutePoint(area.circularCenter));
+				SKMatrix matrix = SKMatrix.Empty;
+				matrix.CreateRotationDegrees(sectorAngle, graph.GetAbsolutePoint(area.circularCenter));
 				SKPoint[]	rotatedPoint = new SKPoint[] { pointPos[index] };
 				matrix.TransformPoints(rotatedPoint);
 				pointPos[index] = rotatedPoint[0];

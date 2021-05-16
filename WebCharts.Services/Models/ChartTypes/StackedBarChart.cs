@@ -2,24 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	This class contains all necessary methods and 
-//				properties for drawing and selection of the stacked 
-//				bar	and hundred percent stacked bar charts. 
-//				Every data point in the Stacked bar chart is 
-//				represented with one rectangle. If there is 
-//				more then one series with this chart type from 
-//				same chart area, bars with same X values are 
+//  Purpose:	This class contains all necessary methods and
+//				properties for drawing and selection of the stacked
+//				bar	and hundred percent stacked bar charts.
+//				Every data point in the Stacked bar chart is
+//				represented with one rectangle. If there is
+//				more then one series with this chart type from
+//				same chart area, bars with same X values are
 //				Stacked.
 //
 
-
+using SkiaSharp;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -30,641 +32,619 @@ namespace WebCharts.Services.Models.ChartTypes
     /// single cluster from all series adds up to 100%.
     /// </summary>
     internal class HundredPercentStackedBarChart : StackedBarChart
-	{
-		#region Constructor
+    {
+        #region Constructor
 
-		/// <summary>
-		/// Default constructor.
-		/// </summary>
-		public HundredPercentStackedBarChart()
-		{
-			hundredPercentStacked = true;
-		}
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public HundredPercentStackedBarChart()
+        {
+            hundredPercentStacked = true;
+        }
 
-		#endregion 
-		
-		#region Fields
+        #endregion Constructor
 
+        #region Fields
 
+        // Total Y values from all series at specified index orgonized by stacked groups
+        // Hashtable will contain arrays of doubles stored by group name key.
+        private Hashtable _stackedGroupsTotalPerPoint = null;
 
-		// Total Y values from all series at specified index orgonized by stacked groups
-		// Hashtable will contain arrays of doubles stored by group name key.
-		Hashtable		_stackedGroupsTotalPerPoint = null;
+        #endregion Fields
 
+        #region IChartType interface implementation
 
-		#endregion
+        /// <summary>
+        /// Chart type name
+        /// </summary>
+        override public string Name { get { return ChartTypeNames.OneHundredPercentStackedBar; } }
 
-		#region IChartType interface implementation
+        /// <summary>
+        /// Indicates that it's a hundredred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        override public bool HundredPercent { get { return true; } }
 
-		/// <summary>
-		/// Chart type name
-		/// </summary>
-		override public string Name			{ get{ return ChartTypeNames.OneHundredPercentStackedBar;}}
+        /// <summary>
+        /// Indicates that it's a hundredred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        override public bool HundredPercentSupportNegative { get { return true; } }
 
-		/// <summary>
-		/// Indicates that it's a hundredred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		override public bool HundredPercent{ get{return true;} }
+        #endregion IChartType interface implementation
 
-		/// <summary>
-		/// Indicates that it's a hundredred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		override public bool HundredPercentSupportNegative{ get{return true;} }
+        #region Painting and selection methods
 
-		#endregion
-
-		#region Painting and selection methods
-
-		/// <summary>
+        /// <summary>
         /// Paint HundredPercentStackedBarChart Chart.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		override public void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw )
-		{
-			// Reset pre-calculated totals
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        override public void Paint(ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw)
+        {
+            // Reset pre-calculated totals
 
-			this._stackedGroupsTotalPerPoint = null;
+            _stackedGroupsTotalPerPoint = null;
 
-			// Call base class painting
-			base.Paint( graph, common, area, seriesToDraw );
-		}
-		
-		#endregion
+            // Call base class painting
+            base.Paint(graph, common, area, seriesToDraw);
+        }
 
-		#region Y values related methods
+        #endregion Painting and selection methods
 
-		/// <summary>
-		/// Helper function, which returns the Y value of the point.
-		/// </summary>
-		/// <param name="common">Chart common elements.</param>
-		/// <param name="area">Chart area the series belongs to.</param>
-		/// <param name="series">Sereis of the point.</param>
-		/// <param name="point">Point object.</param>
-		/// <param name="pointIndex">Index of the point.</param>
-		/// <param name="yValueIndex">Index of the Y value to get.</param>
-		/// <returns>Y value of the point.</returns>
-		override public double GetYValue(CommonElements common, ChartArea area, Series series, DataPoint point, int pointIndex, int yValueIndex)
-		{
-			// Array of Y totals for individual series index in the current stacked group
-			double[] currentGroupTotalPerPoint = null;
+        #region Y values related methods
 
+        /// <summary>
+        /// Helper function, which returns the Y value of the point.
+        /// </summary>
+        /// <param name="common">Chart common elements.</param>
+        /// <param name="area">Chart area the series belongs to.</param>
+        /// <param name="series">Sereis of the point.</param>
+        /// <param name="point">Point object.</param>
+        /// <param name="pointIndex">Index of the point.</param>
+        /// <param name="yValueIndex">Index of the Y value to get.</param>
+        /// <returns>Y value of the point.</returns>
+        override public double GetYValue(CommonElements common, ChartArea area, Series series, DataPoint point, int pointIndex, int yValueIndex)
+        {
+            // Array of Y totals for individual series index in the current stacked group
+            double[] currentGroupTotalPerPoint = null;
 
-			string currentStackedGroupName = HundredPercentStackedColumnChart.GetSeriesStackGroupName(series);
-			if(this._stackedGroupsTotalPerPoint == null)
-			{
-				// Create new hashtable
-				this._stackedGroupsTotalPerPoint = new Hashtable();
+            string currentStackedGroupName = HundredPercentStackedColumnChart.GetSeriesStackGroupName(series);
+            if (_stackedGroupsTotalPerPoint == null)
+            {
+                // Create new hashtable
+                _stackedGroupsTotalPerPoint = new Hashtable();
 
-				// Iterate through all stacked groups
-				foreach(string groupName in this.stackGroupNames)
-				{
-					// Get series that belong to the same group
-					Series[] seriesArray = HundredPercentStackedColumnChart.GetSeriesByStackedGroupName(
+                // Iterate through all stacked groups
+                foreach (string groupName in stackGroupNames)
+                {
+                    // Get series that belong to the same group
+                    Series[] seriesArray = HundredPercentStackedColumnChart.GetSeriesByStackedGroupName(
                         common, groupName, series.ChartTypeName, series.ChartArea);
 
-					// Check if series are aligned
-					common.DataManipulator.CheckXValuesAlignment(seriesArray);
+                    // Check if series are aligned
+                    DataFormula.CheckXValuesAlignment(seriesArray);
 
-					// Allocate memory for the array of totals
-					double[] totals = new double[series.Points.Count];
+                    // Allocate memory for the array of totals
+                    double[] totals = new double[series.Points.Count];
 
-					// Calculate the total of Y value per point 
-					for(int index = 0; index < series.Points.Count; index++)
-					{
-						totals[index] = 0;
-						foreach( Series ser in seriesArray )
-						{
-							totals[index] += Math.Abs(ser.Points[index].YValues[0]);
-						}
-					}
+                    // Calculate the total of Y value per point
+                    for (int index = 0; index < series.Points.Count; index++)
+                    {
+                        totals[index] = 0;
+                        foreach (Series ser in seriesArray)
+                        {
+                            totals[index] += Math.Abs(ser.Points[index].YValues[0]);
+                        }
+                    }
 
-					// Add totals array into the hashtable
-					this._stackedGroupsTotalPerPoint.Add(groupName, totals);
-				}
-			}
+                    // Add totals array into the hashtable
+                    _stackedGroupsTotalPerPoint.Add(groupName, totals);
+                }
+            }
 
-			// Find array of total Y values based on the current stacked group name
-			currentGroupTotalPerPoint = (double[])this._stackedGroupsTotalPerPoint[currentStackedGroupName];
+            // Find array of total Y values based on the current stacked group name
+            currentGroupTotalPerPoint = (double[])_stackedGroupsTotalPerPoint[currentStackedGroupName];
 
+            if (!area.Area3DStyle.Enable3D)
+            {
+                if (point.YValues[0] == 0 || point.IsEmpty)
+                {
+                    return 0;
+                }
+            }
 
-			if(!area.Area3DStyle.Enable3D)
-			{
-				if(point.YValues[0] == 0 || point.IsEmpty)
-				{
-					return 0;
-				}
-			}
+            // Calculate stacked column Y value for 2D chart
+            if (area.Area3DStyle.Enable3D == false || yValueIndex == -2)
+            {
+                if (currentGroupTotalPerPoint[pointIndex] == 0.0)
+                {
+                    return 0.0;
+                }
+                return (point.YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
+            }
 
-			// Calculate stacked column Y value for 2D chart
-			if(area.Area3DStyle.Enable3D == false || yValueIndex == -2)
-			{
-				if(currentGroupTotalPerPoint[pointIndex] == 0.0)
-				{
-					return 0.0;
-				}
-				return (point.YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
-			}
+            // Get point Height if pointIndex == -1
+            double yValue = double.NaN;
+            if (yValueIndex == -1)
+            {
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                double barZeroValue = vAxis.Crossing;
+                yValue = GetYValue(common, area, series, point, pointIndex, 0);
+                if (yValue >= 0)
+                {
+                    if (!double.IsNaN(prevPosY))
+                    {
+                        barZeroValue = prevPosY;
+                    }
+                }
+                else
+                {
+                    if (!double.IsNaN(prevNegY))
+                    {
+                        barZeroValue = prevNegY;
+                    }
+                }
 
-			// Get point Height if pointIndex == -1
-			double yValue = double.NaN;
-			if(yValueIndex == -1)
-			{
-				Axis	vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
-				double	barZeroValue = vAxis.Crossing;
-				yValue = GetYValue(common, area, series, point, pointIndex, 0);
-				if( yValue >= 0 )
-				{
-					if(!double.IsNaN(prevPosY))
-					{
-						barZeroValue = prevPosY;
-					}
-				}
-				else
-				{
-					if(!double.IsNaN(prevNegY))
-					{
-						barZeroValue = prevNegY;
-					}
-				}
+                return yValue - barZeroValue;
+            }
 
-				return yValue - barZeroValue;
-			}
-
-			
-			// Loop through all series to find point value
-			prevPosY = double.NaN;
-			prevNegY = double.NaN;
-			foreach(Series ser in common.DataManager.Series)
-			{
-				// Check series of the current chart type & area
-				if(String.Compare(series.ChartArea, ser.ChartArea, StringComparison.Ordinal) == 0 &&
+            // Loop through all series to find point value
+            prevPosY = double.NaN;
+            prevNegY = double.NaN;
+            foreach (Series ser in common.DataManager.Series)
+            {
+                // Check series of the current chart type & area
+                if (String.Compare(series.ChartArea, ser.ChartArea, StringComparison.Ordinal) == 0 &&
                     String.Compare(series.ChartTypeName, ser.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0 &&
-					ser.IsVisible())
-				{
+                    ser.IsVisible())
+                {
+                    // Series must belong to the same stacked group
+                    if (currentStackedGroupName != HundredPercentStackedColumnChart.GetSeriesStackGroupName(ser))
+                    {
+                        continue;
+                    }
 
-					// Series must belong to the same stacked group
-					if(currentStackedGroupName != HundredPercentStackedColumnChart.GetSeriesStackGroupName(ser))
-					{
-						continue;
-					}
+                    if (double.IsNaN(yValue))
+                    {
+                        if (currentGroupTotalPerPoint[pointIndex] == 0.0)
+                        {
+                            yValue = 0.0;
+                        }
+                        else
+                        {
+                            yValue = (ser.Points[pointIndex].YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
+                        }
+                    }
+                    else
+                    {
+                        if (currentGroupTotalPerPoint[pointIndex] == 0.0)
+                        {
+                            yValue = 0.0;
+                        }
+                        else
+                        {
+                            yValue = (ser.Points[pointIndex].YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
+                        }
+                        if (yValue >= 0.0 && !double.IsNaN(prevPosY))
+                        {
+                            yValue += prevPosY;
+                        }
+                        if (yValue < 0.0 && !double.IsNaN(prevNegY))
+                        {
+                            yValue += prevNegY;
+                        }
+                    }
 
-
-					if(double.IsNaN(yValue))
-					{
-						if(currentGroupTotalPerPoint[pointIndex] == 0.0)
-						{
-							yValue = 0.0;
-						}
-						else
-						{
-							yValue = (ser.Points[pointIndex].YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
-						}
-					}
-					else
-					{
-						if(currentGroupTotalPerPoint[pointIndex] == 0.0)
-						{
-							yValue = 0.0;
-						}
-						else
-						{
-							yValue = (ser.Points[pointIndex].YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
-						}
-						if(yValue >= 0.0 && !double.IsNaN(prevPosY))
-						{
-							yValue += prevPosY;
-						}
-						if(yValue < 0.0 && !double.IsNaN(prevNegY))
-						{
-							yValue += prevNegY;
-						}
-					}
-
-					// Exit loop when current series was found
+                    // Exit loop when current series was found
                     if (String.Compare(series.Name, ser.Name, StringComparison.Ordinal) == 0)
-					{
-						break;
-					}
+                    {
+                        break;
+                    }
 
-					// Save previous value
-					if(yValue >= 0.0)
-					{
-						prevPosY = yValue;
-					}
-					else
-					{
-						prevNegY = yValue;
-					}
-				}
-			}
-			
-			return (yValue > 100.0) ? 100.0 : yValue;
-		}
+                    // Save previous value
+                    if (yValue >= 0.0)
+                    {
+                        prevPosY = yValue;
+                    }
+                    else
+                    {
+                        prevNegY = yValue;
+                    }
+                }
+            }
 
-		#endregion
-	}
+            return (yValue > 100.0) ? 100.0 : yValue;
+        }
 
-	/// <summary>
-    /// StackedBarChart class contains all the code necessary to draw 
-    /// and hit test Stacked Bar chart. 
+        #endregion Y values related methods
+    }
+
+    /// <summary>
+    /// StackedBarChart class contains all the code necessary to draw
+    /// and hit test Stacked Bar chart.
     /// </summary>
-	internal class StackedBarChart : IChartType
-	{
-		#region Fields
-
-		/// <summary>
-		/// Previous stacked positive Y values.
-		/// </summary>
-		protected	double	prevPosY = double.NaN;
-
-		/// <summary>
-		/// Previous stacked negative Y values.
-		/// </summary>
-		protected	double	prevNegY = double.NaN;
-
-		/// <summary>
-		/// Indicates if chart is 100% stacked
-		/// </summary>
-		protected	bool			hundredPercentStacked = false;
-
-
-
-		/// <summary>
-		/// True if stacke group name is applicable
-		/// </summary>
-		internal	bool			stackGroupNameUsed = false;
-
-		/// <summary>
-		/// List of all stack group names
-		/// </summary>
-		internal	ArrayList		stackGroupNames = null;
-
-		/// <summary>
-		/// Name of the current stack group.
-		/// </summary>
-		internal	string			currentStackGroup = string.Empty;
-
-
-
-		#endregion
-
-		#region IChartType interface implementation
-
-		/// <summary>
-		/// Chart type name
-		/// </summary>
-		virtual public string Name			{ get{ return ChartTypeNames.StackedBar;}}
-
-		/// <summary>
-		/// Gets chart type image.
-		/// </summary>
-		/// <param name="registry">Chart types registry object.</param>
-		/// <returns>Chart type image.</returns>
-        virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
-		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
-		}
-
-		/// <summary>
-		/// True if chart type is stacked
-		/// </summary>
-		public bool Stacked		{ get{ return true;}}
-
-
-		/// <summary>
-		/// True if stacked chart type supports groups
-		/// </summary>
-		virtual public bool SupportStackedGroups	{ get { return true; } }
-
-
-		/// <summary>
-		/// True if stacked chart type should draw separately positive and 
-		/// negative data points ( Bar and column Stacked types ).
-		/// </summary>
-		public bool StackSign		{ get{ return true;}}
-
-		/// <summary>
-		/// True if chart type supports axeses
-		/// </summary>
-		public bool RequireAxes	{ get{ return true;} }
-
-		/// <summary>
-		/// Chart type with two y values used for scale ( bubble chart type )
-		/// </summary>
-		public bool SecondYScale{ get{ return false;} }
-
-		/// <summary>
-		/// True if chart type requires circular chart area.
-		/// </summary>
-		public bool CircularChartArea	{ get{ return false;} }
-
-		/// <summary>
-		/// True if chart type supports logarithmic axes
-		/// </summary>
-		public bool SupportLogarithmicAxes	{ get{ return true;} }
-
-		/// <summary>
-		/// True if chart type requires to switch the value (Y) axes position
-		/// </summary>
-		public bool SwitchValueAxes	{ get{ return true;} }
-
-		/// <summary>
-		/// True if chart series can be placed side-by-side.
-		/// </summary>
-		public bool SideBySideSeries { get{ return false;} }
-
-		/// <summary>
-		/// If the crossing value is auto Crossing value should be 
-		/// automatically set to zero for some chart 
-		/// types (Bar, column, area etc.)
-		/// </summary>
-		public bool ZeroCrossing { get{ return true;} }
-
-		/// <summary>
-		/// True if each data point of a chart must be represented in the legend
-		/// </summary>
-		public bool DataPointsInLegend	{ get{ return false;} }
-
-		/// <summary>
-		/// Indicates that extra Y values are connected to the scale of the Y axis
-		/// </summary>
-		virtual public bool ExtraYValuesConnectedToYAxis{ get { return false; } }
-
-		/// <summary>
-		/// Indicates that it's a hundredred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercent{ get{return false;} }
-
-		/// <summary>
-		/// Indicates that it's a hundredred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercentSupportNegative{ get{return false;} }
-
-		/// <summary>
-		/// True if palette colors should be applied for each data paoint.
-		/// Otherwise the color is applied to the series.
-		/// </summary>
-		public bool ApplyPaletteColorsToPoints	{ get { return false; } }
-
-		/// <summary>
-		/// How to draw series/points in legend:
-		/// Filled rectangle, Line or Marker
-		/// </summary>
-		/// <param name="series">Legend item series.</param>
-		/// <returns>Legend item style.</returns>
-		public LegendImageStyle GetLegendImageStyle(Series series)
-		{
-			return LegendImageStyle.Rectangle;
-		}
-
-		/// <summary>
-		/// Number of supported Y value(s) per point 
-		/// </summary>
-		public int YValuesPerPoint{ get { return 1; } }
-
-		#endregion
-
-		#region Painting and selection methods
-
-		/// <summary>
-		/// Paint Stacked Bar Chart.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object</param>
-		/// <param name="common">The Common elements object</param>
-		/// <param name="area">Chart area for this chart</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual public void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw )
-		{		
-
-			// Reset stacked group names flag
-			this.stackGroupNameUsed = true;
-
-
-			// Set Clip Region in rounded to a pixel coordinates
-			SKRect areaPosition = ((ChartGraphics)graph).GetAbsoluteRectangle( area.PlotAreaPosition.ToSKRect());
-			float right = (float)Math.Ceiling(areaPosition.Right);
-			float bottom = (float)Math.Ceiling(areaPosition.Bottom);
-			areaPosition.X = (float)Math.Floor(areaPosition.X);
-			areaPosition.Width = right - areaPosition.X;
-			areaPosition.Y = (float)Math.Floor(areaPosition.Y);
-			areaPosition.Height = bottom - areaPosition.Y;
-			((ChartGraphics)graph).SetClipAbs( areaPosition );
-
-			// Draw shadow
-			ProcessChartType( false, graph, common, area, true, false, seriesToDraw );
-
-			// Draw stacked bars
-			ProcessChartType( false, graph, common, area, false, false, seriesToDraw );
-
-			// Draw labels
-			ProcessChartType( false, graph, common, area, false, true, seriesToDraw );
-
-			// Reset Clip Region
-			((ChartGraphics)graph).ResetClip();
-		}
-
-		/// <summary>
-		/// This method recalculates size of the stacked bars. This method is used 
-		/// from Paint or Select method.
-		/// </summary>
-		/// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="shadow">True if shadow mode is active.</param>
-		/// <param name="labels">Labels drawing mode.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		private void ProcessChartType( 
-			bool selection, 
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			bool shadow,
-			bool labels,
-			Series seriesToDraw )
-		{
-
-			//************************************************************
-			//** If stacked series is attached to diferent X and Y axis
-			//** they can not be processed. To solve this issue series 
-			//** will be orgonized in groups based on the axes.
-			//************************************************************
-
-			// Loop through all series and check if different axes are used
-			bool differentAxesAreUsed = false;
-			AxisType xAxisType = AxisType.Primary;
-			AxisType yAxisType = AxisType.Primary;
-			string xSubAxisName = string.Empty;
-			string ySubAxisName = string.Empty;
-			for(int seriesIndex = 0; seriesIndex < common.DataManager.Series.Count; seriesIndex++)
-			{
-				// Process non empty series of the area with stacked column chart type
-				Series ser = common.DataManager.Series[seriesIndex];
-				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-					|| ser.ChartArea != area.Name || !ser.IsVisible())
-				{
-					continue;
-				}
-
-				if(seriesIndex == 0)
-				{
-					xAxisType = ser.XAxisType;
-					yAxisType = ser.YAxisType;
-					xSubAxisName = ser.XSubAxisName;
-					ySubAxisName = ser.YSubAxisName;
-				}
-				else if(xAxisType != ser.XAxisType ||
-					yAxisType != ser.YAxisType ||
-					xSubAxisName != ser.XSubAxisName ||
-					ySubAxisName != ser.YSubAxisName)
-				{
-					differentAxesAreUsed = true;
-					break;
-				}
-			}
-
-			// Set stacked groups based on the axes used
-			if(differentAxesAreUsed)
-			{
-				for(int seriesIndex = 0; seriesIndex < common.DataManager.Series.Count; seriesIndex++)
-				{
-					// Process non empty series of the area with stacked column chart type
-					Series ser = common.DataManager.Series[seriesIndex];
-					if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-						|| ser.ChartArea != area.Name || !ser.IsVisible())
-					{
-						continue;
-					}
-
-					// Set new group name
-					string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-					stackGroupName = "_X_" + ser.XAxisType.ToString() + ser.XSubAxisName + "_Y_" + ser.YAxisType.ToString() + ser.YSubAxisName + "__"; 
-					ser[CustomPropertyName.StackedGroupName] = stackGroupName;
-				}
-			}
-
-			//************************************************************
-			//** Check how many stack groups are available.
-			//************************************************************
-			
-			// Loop through all series and get unique stack group names.
-			this.stackGroupNames = new ArrayList();
-			foreach( Series ser in common.DataManager.Series )
-			{
-				// Process non empty series of the area with stacked column chart type
-				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-					|| ser.ChartArea != area.Name || !ser.IsVisible())
-				{
-					continue;
-				}
-
-				// Get stack group name from the series
-				string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-
-				// Add group name if it do not already exsist
-				if(!this.stackGroupNames.Contains(stackGroupName))
-				{
-					this.stackGroupNames.Add(stackGroupName);
-				}
-			}
-
-
-			// Prosess 3D chart type
-			if(area.Area3DStyle.Enable3D)
-			{
-				if(!shadow)
-				{
-					ProcessChartType3D( 
-						selection, 
-						graph, 
-						common, 
-						area, 
-						labels,
-						seriesToDraw );
-				}
-
-				return;
-			}
-			
-			// All data series from chart area which have Stacked Bar chart type
-			string[]	seriesList = area.GetSeriesFromChartType(Name).ToArray();
-
-			// Get maximum number of data points for all series
-			int		maxNumOfPoints = common.DataManager.GetNumberOfPoints(seriesList);
-
-			// Zero X values mode.
-			bool	indexedSeries = ChartHelper.IndexedSeries( common, seriesList);
-
-			//************************************************************
-			//** Loop through all data points
-			//************************************************************
-			for( int pointIndx = 0; pointIndx < maxNumOfPoints; pointIndx++ )
-			{
-
-				//************************************************************
-				//** Loop through all stack groups
-				//************************************************************
-				for(int groupIndex = 0;  groupIndex < this.stackGroupNames.Count; groupIndex++)
-				{
-					// Rememmber current stack group name
-					this.currentStackGroup = (string)this.stackGroupNames[groupIndex];
-
-					int		seriesIndx = 0;		// Data series index
-					double	PreviousPosY = 0;	// Previous positive Y value
-					double	PreviousNegY = 0;	// Previous negative Y value
-
-					//************************************************************
-					//** Loop through all series
-					//************************************************************
-					foreach( Series ser in common.DataManager.Series )
-					{
-						// Process non empty series of the area with stacked bar chart type
-						if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-							|| ser.ChartArea != area.Name || !ser.IsVisible())
-						{
-							continue;
-						}
-
-						// Series point index is out of range
-						if( pointIndx >= ser.Points.Count )
-						{
-							continue;
-						}
-
-	
-						// Check if series belongs to the current group name
-						string seriesStackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-						if(seriesStackGroupName != this.currentStackGroup)
-						{
-							continue;
-						}
-
-	
-
-						// Get data point
-						DataPoint point = ser.Points[ pointIndx ];
-
-						// Reset pre-calculated point position
-						point.positionRel = new SKPoint(float.NaN, float.NaN);
-
-						// Set active horizontal/vertical axis
-						Axis	vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-						Axis	hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
-
-						// Interval between bars
-						double interval = 1;
-						if( !indexedSeries )
-						{
+    internal class StackedBarChart : IChartType
+    {
+        #region Fields
+
+        /// <summary>
+        /// Previous stacked positive Y values.
+        /// </summary>
+        protected double prevPosY = double.NaN;
+
+        /// <summary>
+        /// Previous stacked negative Y values.
+        /// </summary>
+        protected double prevNegY = double.NaN;
+
+        /// <summary>
+        /// Indicates if chart is 100% stacked
+        /// </summary>
+        protected bool hundredPercentStacked = false;
+
+        /// <summary>
+        /// True if stacke group name is applicable
+        /// </summary>
+        internal bool stackGroupNameUsed = false;
+
+        /// <summary>
+        /// List of all stack group names
+        /// </summary>
+        internal ArrayList stackGroupNames = null;
+
+        /// <summary>
+        /// Name of the current stack group.
+        /// </summary>
+        internal string currentStackGroup = string.Empty;
+
+        #endregion Fields
+
+        #region IChartType interface implementation
+
+        /// <summary>
+        /// Chart type name
+        /// </summary>
+        virtual public string Name { get { return ChartTypeNames.StackedBar; } }
+
+        /// <summary>
+        /// Gets chart type image.
+        /// </summary>
+        /// <param name="registry">Chart types registry object.</param>
+        /// <returns>Chart type image.</returns>
+        virtual public SKImage GetImage(ChartTypeRegistry registry)
+        {
+            return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
+        }
+
+        /// <summary>
+        /// True if chart type is stacked
+        /// </summary>
+        public bool Stacked { get { return true; } }
+
+        /// <summary>
+        /// True if stacked chart type supports groups
+        /// </summary>
+        virtual public bool SupportStackedGroups { get { return true; } }
+
+        /// <summary>
+        /// True if stacked chart type should draw separately positive and
+        /// negative data points ( Bar and column Stacked types ).
+        /// </summary>
+        public bool StackSign { get { return true; } }
+
+        /// <summary>
+        /// True if chart type supports axeses
+        /// </summary>
+        public bool RequireAxes { get { return true; } }
+
+        /// <summary>
+        /// Chart type with two y values used for scale ( bubble chart type )
+        /// </summary>
+        public bool SecondYScale { get { return false; } }
+
+        /// <summary>
+        /// True if chart type requires circular chart area.
+        /// </summary>
+        public bool CircularChartArea { get { return false; } }
+
+        /// <summary>
+        /// True if chart type supports logarithmic axes
+        /// </summary>
+        public bool SupportLogarithmicAxes { get { return true; } }
+
+        /// <summary>
+        /// True if chart type requires to switch the value (Y) axes position
+        /// </summary>
+        public bool SwitchValueAxes { get { return true; } }
+
+        /// <summary>
+        /// True if chart series can be placed side-by-side.
+        /// </summary>
+        public bool SideBySideSeries { get { return false; } }
+
+        /// <summary>
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
+        /// types (Bar, column, area etc.)
+        /// </summary>
+        public bool ZeroCrossing { get { return true; } }
+
+        /// <summary>
+        /// True if each data point of a chart must be represented in the legend
+        /// </summary>
+        public bool DataPointsInLegend { get { return false; } }
+
+        /// <summary>
+        /// Indicates that extra Y values are connected to the scale of the Y axis
+        /// </summary>
+        virtual public bool ExtraYValuesConnectedToYAxis { get { return false; } }
+
+        /// <summary>
+        /// Indicates that it's a hundredred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercent { get { return false; } }
+
+        /// <summary>
+        /// Indicates that it's a hundredred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercentSupportNegative { get { return false; } }
+
+        /// <summary>
+        /// True if palette colors should be applied for each data paoint.
+        /// Otherwise the color is applied to the series.
+        /// </summary>
+        public bool ApplyPaletteColorsToPoints { get { return false; } }
+
+        /// <summary>
+        /// How to draw series/points in legend:
+        /// Filled rectangle, Line or Marker
+        /// </summary>
+        /// <param name="series">Legend item series.</param>
+        /// <returns>Legend item style.</returns>
+        public LegendImageStyle GetLegendImageStyle(Series series)
+        {
+            return LegendImageStyle.Rectangle;
+        }
+
+        /// <summary>
+        /// Number of supported Y value(s) per point
+        /// </summary>
+        public int YValuesPerPoint { get { return 1; } }
+
+        #endregion IChartType interface implementation
+
+        #region Painting and selection methods
+
+        /// <summary>
+        /// Paint Stacked Bar Chart.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object</param>
+        /// <param name="common">The Common elements object</param>
+        /// <param name="area">Chart area for this chart</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual public void Paint(ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw)
+        {
+            // Reset stacked group names flag
+            stackGroupNameUsed = true;
+
+            // Set Clip Region in rounded to a pixel coordinates
+            SKRect areaPosition = graph.GetAbsoluteRectangle(area.PlotAreaPosition.ToSKRect());
+            float right = (float)Math.Ceiling(areaPosition.Right);
+            float bottom = (float)Math.Ceiling(areaPosition.Bottom);
+            areaPosition.Left = (float)Math.Floor(areaPosition.Left);
+            areaPosition.Right = right;
+            areaPosition.Top = (float)Math.Floor(areaPosition.Top);
+            areaPosition.Bottom = bottom;
+            graph.SetClipAbs(areaPosition);
+
+            // Draw shadow
+            ProcessChartType(false, graph, common, area, true, false, seriesToDraw);
+
+            // Draw stacked bars
+            ProcessChartType(false, graph, common, area, false, false, seriesToDraw);
+
+            // Draw labels
+            ProcessChartType(false, graph, common, area, false, true, seriesToDraw);
+
+            // Reset Clip Region
+            graph.ResetClip();
+        }
+
+        /// <summary>
+        /// This method recalculates size of the stacked bars. This method is used
+        /// from Paint or Select method.
+        /// </summary>
+        /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="shadow">True if shadow mode is active.</param>
+        /// <param name="labels">Labels drawing mode.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        private void ProcessChartType(
+            bool selection,
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            bool shadow,
+            bool labels,
+            Series seriesToDraw)
+        {
+            //************************************************************
+            //** If stacked series is attached to diferent X and Y axis
+            //** they can not be processed. To solve this issue series
+            //** will be orgonized in groups based on the axes.
+            //************************************************************
+
+            // Loop through all series and check if different axes are used
+            bool differentAxesAreUsed = false;
+            AxisType xAxisType = AxisType.Primary;
+            AxisType yAxisType = AxisType.Primary;
+            string xSubAxisName = string.Empty;
+            string ySubAxisName = string.Empty;
+            for (int seriesIndex = 0; seriesIndex < common.DataManager.Series.Count; seriesIndex++)
+            {
+                // Process non empty series of the area with stacked column chart type
+                Series ser = common.DataManager.Series[seriesIndex];
+                if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                    || ser.ChartArea != area.Name || !ser.IsVisible())
+                {
+                    continue;
+                }
+
+                if (seriesIndex == 0)
+                {
+                    xAxisType = ser.XAxisType;
+                    yAxisType = ser.YAxisType;
+                    xSubAxisName = ser.XSubAxisName;
+                    ySubAxisName = ser.YSubAxisName;
+                }
+                else if (xAxisType != ser.XAxisType ||
+                    yAxisType != ser.YAxisType ||
+                    xSubAxisName != ser.XSubAxisName ||
+                    ySubAxisName != ser.YSubAxisName)
+                {
+                    differentAxesAreUsed = true;
+                    break;
+                }
+            }
+
+            // Set stacked groups based on the axes used
+            if (differentAxesAreUsed)
+            {
+                for (int seriesIndex = 0; seriesIndex < common.DataManager.Series.Count; seriesIndex++)
+                {
+                    // Process non empty series of the area with stacked column chart type
+                    Series ser = common.DataManager.Series[seriesIndex];
+                    if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                        || ser.ChartArea != area.Name || !ser.IsVisible())
+                    {
+                        continue;
+                    }
+
+                    // Set new group name
+                    string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
+                    stackGroupName = "_X_" + ser.XAxisType.ToString() + ser.XSubAxisName + "_Y_" + ser.YAxisType.ToString() + ser.YSubAxisName + "__";
+                    ser[CustomPropertyName.StackedGroupName] = stackGroupName;
+                }
+            }
+
+            //************************************************************
+            //** Check how many stack groups are available.
+            //************************************************************
+
+            // Loop through all series and get unique stack group names.
+            stackGroupNames = new ArrayList();
+            foreach (Series ser in common.DataManager.Series)
+            {
+                // Process non empty series of the area with stacked column chart type
+                if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                    || ser.ChartArea != area.Name || !ser.IsVisible())
+                {
+                    continue;
+                }
+
+                // Get stack group name from the series
+                string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
+
+                // Add group name if it do not already exsist
+                if (!stackGroupNames.Contains(stackGroupName))
+                {
+                    stackGroupNames.Add(stackGroupName);
+                }
+            }
+
+            // Prosess 3D chart type
+            if (area.Area3DStyle.Enable3D)
+            {
+                if (!shadow)
+                {
+                    ProcessChartType3D(
+                        selection,
+                        graph,
+                        common,
+                        area,
+                        labels,
+                        seriesToDraw);
+                }
+
+                return;
+            }
+
+            // All data series from chart area which have Stacked Bar chart type
+            string[] seriesList = area.GetSeriesFromChartType(Name).ToArray();
+
+            // Get maximum number of data points for all series
+            int maxNumOfPoints = common.DataManager.GetNumberOfPoints(seriesList);
+
+            // Zero X values mode.
+            bool indexedSeries = ChartHelper.IndexedSeries(common, seriesList);
+
+            //************************************************************
+            //** Loop through all data points
+            //************************************************************
+            for (int pointIndx = 0; pointIndx < maxNumOfPoints; pointIndx++)
+            {
+                //************************************************************
+                //** Loop through all stack groups
+                //************************************************************
+                for (int groupIndex = 0; groupIndex < stackGroupNames.Count; groupIndex++)
+                {
+                    // Rememmber current stack group name
+                    currentStackGroup = (string)stackGroupNames[groupIndex];
+
+                    int seriesIndx = 0;     // Data series index
+                    double PreviousPosY = 0;    // Previous positive Y value
+                    double PreviousNegY = 0;    // Previous negative Y value
+
+                    //************************************************************
+                    //** Loop through all series
+                    //************************************************************
+                    foreach (Series ser in common.DataManager.Series)
+                    {
+                        // Process non empty series of the area with stacked bar chart type
+                        if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                            || ser.ChartArea != area.Name || !ser.IsVisible())
+                        {
+                            continue;
+                        }
+
+                        // Series point index is out of range
+                        if (pointIndx >= ser.Points.Count)
+                        {
+                            continue;
+                        }
+
+                        // Check if series belongs to the current group name
+                        string seriesStackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
+                        if (seriesStackGroupName != currentStackGroup)
+                        {
+                            continue;
+                        }
+
+                        // Get data point
+                        DataPoint point = ser.Points[pointIndx];
+
+                        // Reset pre-calculated point position
+                        point.positionRel = new SKPoint(float.NaN, float.NaN);
+
+                        // Set active horizontal/vertical axis
+                        Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                        Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+
+                        // Interval between bars
+                        double interval = 1;
+                        if (!indexedSeries)
+                        {
                             if (ser.Points.Count == 1 &&
-                                (ser.XValueType == ChartValueType.Date || 
-                                 ser.XValueType == ChartValueType.DateTime || 
+                                (ser.XValueType == ChartValueType.Date ||
+                                 ser.XValueType == ChartValueType.DateTime ||
                                  ser.XValueType == ChartValueType.Time ||
                                  ser.XValueType == ChartValueType.DateTimeOffset))
                             {
@@ -687,75 +667,71 @@ namespace WebCharts.Services.Models.ChartTypes
                             {
                                 interval = area.GetPointsInterval(vAxis.IsLogarithmic, vAxis.logarithmBase);
                             }
-						}
+                        }
 
-						// Calculates the width of bars.
-						double width = ser.GetPointWidth(graph, vAxis, interval, 0.8);
+                        // Calculates the width of bars.
+                        double width = ser.GetPointWidth(graph, vAxis, interval, 0.8);
 
-	
-						// Adjust width by number of stacked groups
-						width = width / (double)this.stackGroupNames.Count;
-	
+                        // Adjust width by number of stacked groups
+                        width = width / (double)stackGroupNames.Count;
 
-						// Call Back Paint event
-						if( !selection )
-						{
+                        // Call Back Paint event
+                        if (!selection)
+                        {
                             common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-						}
-						
-						// Change Y value if Bar is out of plot area
-						double	yValue = GetYValue(common, area, ser, point, pointIndx, 0);
-						if( seriesIndx != 0 )
-						{
-							if( yValue >= 0 )
-							{
-								yValue = yValue + PreviousPosY;
-							}
-							else
-							{
-								yValue = yValue + PreviousNegY;
-							}
-						}
+                        }
+
+                        // Change Y value if Bar is out of plot area
+                        double yValue = GetYValue(common, area, ser, point, pointIndx, 0);
+                        if (seriesIndx != 0)
+                        {
+                            if (yValue >= 0)
+                            {
+                                yValue = yValue + PreviousPosY;
+                            }
+                            else
+                            {
+                                yValue = yValue + PreviousNegY;
+                            }
+                        }
 
                         // Check if scrolling/zooming frames cutting mode is enabled
                         bool ajaxScrollingEnabled = false;
 
                         // Save original Y Value
-						double	originalYValue = yValue;
-						
-						// Axis is logarithmic
-						if( hAxis.IsLogarithmic )
-						{
-							yValue = Math.Log( yValue, hAxis.logarithmBase );
-						}
+                        double originalYValue = yValue;
 
-						// Recalculates Height position and zero position of bars
-						double height = hAxis.GetLinearPosition( yValue );
+                        // Axis is logarithmic
+                        if (hAxis.IsLogarithmic)
+                        {
+                            yValue = Math.Log(yValue, hAxis.logarithmBase);
+                        }
 
-						// Set x position
-						double	xValue = point.XValue;
-						if( indexedSeries )
-						{
-							// The formula for position is based on a distance 
-							//from the grid line or nPoints position.
-							xValue = (double)pointIndx + 1;
-						}
-						double xPosition = vAxis.GetPosition( xValue );
-	
-						// Adjust X position of each stack group
-						if(this.stackGroupNames.Count > 1)
-						{
-							xPosition = xPosition - width * ((double) this.stackGroupNames.Count) / 2.0 + width / 2.0 + groupIndex * width;
-						}
-	
+                        // Recalculates Height position and zero position of bars
+                        double height = hAxis.GetLinearPosition(yValue);
 
-						xValue = vAxis.GetLogValue(xValue);
+                        // Set x position
+                        double xValue = point.XValue;
+                        if (indexedSeries)
+                        {
+                            // The formula for position is based on a distance
+                            //from the grid line or nPoints position.
+                            xValue = (double)pointIndx + 1;
+                        }
+                        double xPosition = vAxis.GetPosition(xValue);
 
+                        // Adjust X position of each stack group
+                        if (stackGroupNames.Count > 1)
+                        {
+                            xPosition = xPosition - width * ((double)stackGroupNames.Count) / 2.0 + width / 2.0 + groupIndex * width;
+                        }
 
-						// Set Start position for a bar
-						double	barZeroValue;
-						if( seriesIndx == 0 )
-						{
+                        xValue = vAxis.GetLogValue(xValue);
+
+                        // Set Start position for a bar
+                        double barZeroValue;
+                        if (seriesIndx == 0)
+                        {
                             if (ajaxScrollingEnabled && labels)
                             {
                                 // If AJAX scrolling is used always use 0.0 as a starting point
@@ -766,261 +742,247 @@ namespace WebCharts.Services.Models.ChartTypes
                                 // Set Start position for a Column
                                 barZeroValue = hAxis.Crossing;
                             }
-						}
-						else if( GetYValue(common, area, ser, point, pointIndx, 0) >= 0 )
-						{
-							barZeroValue = PreviousPosY;
-						}
-						else
-						{
-							barZeroValue = PreviousNegY;
-						}
-						double zero = hAxis.GetPosition(barZeroValue);
+                        }
+                        else if (GetYValue(common, area, ser, point, pointIndx, 0) >= 0)
+                        {
+                            barZeroValue = PreviousPosY;
+                        }
+                        else
+                        {
+                            barZeroValue = PreviousNegY;
+                        }
+                        double zero = hAxis.GetPosition(barZeroValue);
 
-						// Calculate bar position
-						SKRect	rectSize = SKRect.Empty;
-						try
-						{
-							// Set the bar rectangle
-							rectSize.Y = (float)(xPosition - width/2);
-							rectSize.Height = (float)(width);
+                        // Calculate bar position
+                        SKRect rectSize = SKRect.Empty;
+                        try
+                        {
+                            // Set the bar rectangle
+                            rectSize.Top = (float)(xPosition - width / 2);
+                            rectSize.Bottom = rectSize.Top + (float)(width);
 
-							// The left side of rectangle has always 
-							// smaller value than a right value
-							if( zero < height )
-							{
-								rectSize.X = (float)zero;
-								rectSize.Width = (float)height - rectSize.X;
-							}
-							else
-							{
-								rectSize.X = (float)height;
-								rectSize.Width = (float)zero - rectSize.X;
-							}
-						}
-						catch(OverflowException)
-						{
-							continue;
-						}
+                            // The left side of rectangle has always
+                            // smaller value than a right value
+                            if (zero < height)
+                            {
+                                rectSize.Left = (float)zero;
+                                rectSize.Right = (float)height;
+                            }
+                            else
+                            {
+                                rectSize.Left = (float)height;
+                                rectSize.Right = (float)zero;
+                            }
+                        }
+                        catch (OverflowException)
+                        {
+                            continue;
+                        }
 
-						// Remeber pre-calculated point position
-						point.positionRel = new SKPoint(rectSize.Right, (float)xPosition);
+                        // Remeber pre-calculated point position
+                        point.positionRel = new SKPoint(rectSize.Right, (float)xPosition);
 
+                        // if data point is not empty
+                        if (point.IsEmpty)
+                        {
+                            continue;
+                        }
 
-						// if data point is not empty
-						if( point.IsEmpty )
-						{
-							continue;
-						}
+                        // Axis is logarithmic
+                        if (hAxis.IsLogarithmic)
+                        {
+                            barZeroValue = Math.Log(barZeroValue, hAxis.logarithmBase);
+                        }
 
-						// Axis is logarithmic
-						if( hAxis.IsLogarithmic )
-						{
-							barZeroValue = Math.Log( barZeroValue, hAxis.logarithmBase );
-						}
-						
-						// Check if column is completly out of the data scaleView
-						bool skipPoint = false;
-						if(xValue < vAxis.ViewMinimum || 
-							xValue > vAxis.ViewMaximum ||
-							(yValue < hAxis.ViewMinimum && barZeroValue < hAxis.ViewMinimum) ||
-							(yValue > hAxis.ViewMaximum && barZeroValue > hAxis.ViewMaximum) )
-						{
-							skipPoint = true;
-						}
+                        // Check if column is completly out of the data scaleView
+                        bool skipPoint = false;
+                        if (xValue < vAxis.ViewMinimum ||
+                            xValue > vAxis.ViewMaximum ||
+                            (yValue < hAxis.ViewMinimum && barZeroValue < hAxis.ViewMinimum) ||
+                            (yValue > hAxis.ViewMaximum && barZeroValue > hAxis.ViewMaximum))
+                        {
+                            skipPoint = true;
+                        }
 
-						// ***************************************************
-						// Painting mode
-						// ***************************************************
-						if(!skipPoint)
-						{
-							if( common.ProcessModePaint )
-							{
-								// Check if column is partialy in the data scaleView
-								bool	clipRegionSet = false;
-								if(rectSize.Y < area.PlotAreaPosition.Y || 
-									rectSize.Bottom > area.PlotAreaPosition.Bottom ||
-									rectSize.X < area.PlotAreaPosition.X || 
-									rectSize.Right > area.PlotAreaPosition.Right)
-								{
-									// Set clipping region for line drawing 
-									graph.SetClip( area.PlotAreaPosition.ToSKRect() );
-									clipRegionSet = true;
-								}
+                        // ***************************************************
+                        // Painting mode
+                        // ***************************************************
+                        if (!skipPoint)
+                        {
+                            if (common.ProcessModePaint)
+                            {
+                                // Check if column is partialy in the data scaleView
+                                bool clipRegionSet = false;
+                                if (rectSize.Left < area.PlotAreaPosition.Y ||
+                                    rectSize.Bottom > area.PlotAreaPosition.Bottom ||
+                                    rectSize.Left < area.PlotAreaPosition.X ||
+                                    rectSize.Right > area.PlotAreaPosition.Right)
+                                {
+                                    // Set clipping region for line drawing
+                                    graph.SetClip(area.PlotAreaPosition.ToSKRect());
+                                    clipRegionSet = true;
+                                }
 
-								// Set shadow
-								int shadowOffset = 0;
-								if( shadow )
-								{
-									shadowOffset = ser.ShadowOffset;
-								}
+                                // Set shadow
+                                int shadowOffset = 0;
+                                if (shadow)
+                                {
+                                    shadowOffset = ser.ShadowOffset;
+                                }
 
-								if( !labels )
-								{
-									// Start Svg Selection mode
-									graph.StartHotRegion( point );
+                                if (!labels)
+                                {
+                                    // Draw the bar rectangle
+                                    graph.FillRectangleRel(rectSize,
+                                        (!shadow) ? point.Color : SKColors.Transparent,
+                                        point.BackHatchStyle,
+                                        point.BackImage,
+                                        point.BackImageWrapMode,
+                                        point.BackImageTransparentColor,
+                                        point.BackImageAlignment,
+                                        point.BackGradientStyle,
+                                        (!shadow) ? point.BackSecondaryColor : SKColors.Transparent,
+                                        point.BorderColor,
+                                        point.BorderWidth,
+                                        point.BorderDashStyle,
+                                        ser.ShadowColor,
+                                        shadowOffset,
+                                        PenAlignment.Inset,
+                                        (shadow) ? BarDrawingStyle.Default : ChartGraphics.GetBarDrawingStyle(point),
+                                        false);
+                                }
 
-									// Draw the bar rectangle
-									graph.FillRectangleRel( rectSize, 
-										(!shadow)? point.Color : Color.Transparent, 
-										point.BackHatchStyle, 
-										point.BackImage, 
-										point.BackImageWrapMode, 
-										point.BackImageTransparentColor,
-										point.BackImageAlignment,
-										point.BackGradientStyle, 
-										(!shadow)? point.BackSecondaryColor : Color.Transparent, 
-										point.BorderColor, 
-										point.BorderWidth, 
-										point.BorderDashStyle, 
-										ser.ShadowColor, 
-										shadowOffset,
-										PenAlignment.Inset,
-										(shadow) ? BarDrawingStyle.Default : ChartGraphics.GetBarDrawingStyle(point),
-										false);
-
-									// End Svg Selection mode
-									graph.EndHotRegion( );
-								}
-
-									// Draw labels 
-								else
-								{
-									// Calculate label rectangle 
-									SKRect labelRect = new SKRect(rectSize.Location, rectSize.Size);
+                                // Draw labels
+                                else
+                                {
+                                    // Calculate label rectangle
+                                    SKRect labelRect = new SKRect(rectSize.Left, rectSize.Top, rectSize.Right, rectSize.Bottom);
                                     if (clipRegionSet && !ajaxScrollingEnabled)
-									{
-										labelRect.Intersect(area.PlotAreaPosition.ToSKRect());
-									}
+                                    {
+                                        labelRect.Intersect(area.PlotAreaPosition.ToSKRect());
+                                    }
 
-									// Draw Labels
-									DrawLabels( common, graph, area, point, pointIndx, ser, labelRect );
-								}
+                                    // Draw Labels
+                                    DrawLabels(common, graph, area, point, pointIndx, ser, labelRect);
+                                }
 
-								// Reset Clip Region
-								if(clipRegionSet)
-								{
-									graph.ResetClip();
-								}
-							}
+                                // Reset Clip Region
+                                if (clipRegionSet)
+                                {
+                                    graph.ResetClip();
+                                }
+                            }
 
-							// ***************************************************
-							// Hot Regions Mode
-							// ***************************************************
-							if( common.ProcessModeRegions && !shadow && !labels)
-							{
-								common.HotRegionsList.AddHotRegion( rectSize, point, ser.Name, pointIndx );
+                            // ***************************************************
+                            // Hot Regions Mode
+                            // ***************************************************
+                            if (common.ProcessModeRegions && !shadow && !labels)
+                            {
+                                common.HotRegionsList.AddHotRegion(rectSize, point, ser.Name, pointIndx);
 
-								// Process labels and markers regions only if it was not done while painting
-								if(labels && !common.ProcessModePaint)
-								{
-									DrawLabels( common, graph, area, point, pointIndx, ser, rectSize );
-								}
-							}
-											
-							// Call Paint event
-							if( !selection )
-							{
+                                // Process labels and markers regions only if it was not done while painting
+                                if (labels && !common.ProcessModePaint)
+                                {
+                                    DrawLabels(common, graph, area, point, pointIndx, ser, rectSize);
+                                }
+                            }
+
+                            // Call Paint event
+                            if (!selection)
+                            {
                                 common.Chart.CallOnPostPaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-							}
-						}
+                            }
+                        }
 
-						// Axis is logarithmic
-						if( hAxis.IsLogarithmic )
-						{
-							yValue = Math.Pow( hAxis.logarithmBase, yValue );
-						}
+                        // Axis is logarithmic
+                        if (hAxis.IsLogarithmic)
+                        {
+                            yValue = Math.Pow(hAxis.logarithmBase, yValue);
+                        }
 
-						// Data series index
-						seriesIndx++;
-						if( GetYValue(common, area, ser, point, pointIndx, 0) >= 0 )
-						{
-							PreviousPosY = originalYValue;
-						}
-						else
-						{
-							PreviousNegY = originalYValue;
-						}
-					}
+                        // Data series index
+                        seriesIndx++;
+                        if (GetYValue(common, area, ser, point, pointIndx, 0) >= 0)
+                        {
+                            PreviousPosY = originalYValue;
+                        }
+                        else
+                        {
+                            PreviousNegY = originalYValue;
+                        }
+                    }
+                }
+            }
 
-				}
+            //************************************************************
+            //** Remove stacked groups created for series attached to different axis
+            //************************************************************
 
-			}
-		
+            if (differentAxesAreUsed)
+            {
+                for (int seriesIndex = 0; seriesIndex < common.DataManager.Series.Count; seriesIndex++)
+                {
+                    // Process non empty series of the area with stacked column chart type
+                    Series ser = common.DataManager.Series[seriesIndex];
+                    if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                        || ser.ChartArea != area.Name || !ser.IsVisible())
+                    {
+                        continue;
+                    }
 
+                    // Set new group name
+                    string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
+                    int index = stackGroupName.IndexOf("__", StringComparison.Ordinal);
+                    if (index >= 0)
+                    {
+                        stackGroupName = stackGroupName.Substring(index + 2);
+                    }
+                    if (stackGroupName.Length > 0)
+                    {
+                        ser[CustomPropertyName.StackedGroupName] = stackGroupName;
+                    }
+                    else
+                    {
+                        ser.DeleteCustomProperty(CustomPropertyName.StackedGroupName);
+                    }
+                }
+            }
+        }
 
-			//************************************************************
-			//** Remove stacked groups created for series attached to different axis
-			//************************************************************
-
-			if(differentAxesAreUsed)
-			{
-				for(int seriesIndex = 0; seriesIndex < common.DataManager.Series.Count; seriesIndex++)
-				{
-					// Process non empty series of the area with stacked column chart type
-					Series ser = common.DataManager.Series[seriesIndex];
-					if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-						|| ser.ChartArea != area.Name || !ser.IsVisible())
-					{
-						continue;
-					}
-
-					// Set new group name
-					string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-					int index = stackGroupName.IndexOf("__", StringComparison.Ordinal);
-					if(index >= 0)
-					{
-						stackGroupName = stackGroupName.Substring(index + 2);
-					}
-					if(stackGroupName.Length > 0)
-					{
-						ser[CustomPropertyName.StackedGroupName] = stackGroupName;
-					}
-					else
-					{
-						ser.DeleteCustomProperty(CustomPropertyName.StackedGroupName);
-					}
-				}
-			}
-
-
-		
-		}
-
-		/// <summary>
-		/// Draw Stacked Column labels.
-		/// </summary>
-		/// <param name="common">Chart common elements.</param>
-		/// <param name="graph">Chart Graphics.</param>
-		/// <param name="area">Chart area the series belongs to.</param>
-		/// <param name="point">Data point.</param>
-		/// <param name="pointIndex">Data point index.</param>
-		/// <param name="series">Data series.</param>
-		/// <param name="rectangle">Column rectangle.</param>
-		public void DrawLabels(
-			CommonElements common, 
-			ChartGraphics graph, 
-			ChartArea area, 
-			DataPoint point, 
-			int pointIndex, 
-			Series series, 
-			SKRect rectangle )
-		{
-			// Label text format
+        /// <summary>
+        /// Draw Stacked Column labels.
+        /// </summary>
+        /// <param name="common">Chart common elements.</param>
+        /// <param name="graph">Chart Graphics.</param>
+        /// <param name="area">Chart area the series belongs to.</param>
+        /// <param name="point">Data point.</param>
+        /// <param name="pointIndex">Data point index.</param>
+        /// <param name="series">Data series.</param>
+        /// <param name="rectangle">Column rectangle.</param>
+        public void DrawLabels(
+            CommonElements common,
+            ChartGraphics graph,
+            ChartArea area,
+            DataPoint point,
+            int pointIndex,
+            Series series,
+            SKRect rectangle)
+        {
+            // Label text format
             using (StringFormat format = new StringFormat())
             {
                 format.Alignment = StringAlignment.Center;
                 format.LineAlignment = StringAlignment.Center;
 
                 // Disable the clip region
-                Region oldClipRegion = graph.Clip;
-                graph.Clip = new Region();
+                SKRegion oldClipRegion = graph.Clip;
+                graph.Clip = new();
 
                 if (point.IsValueShownAsLabel || point.Label.Length > 0)
                 {
                     // Round Y values for 100% stacked bar
                     double pointLabelValue = GetYValue(common, area, series, point, pointIndex, 0);
-                    if (this.hundredPercentStacked && point.LabelFormat.Length == 0)
+                    if (hundredPercentStacked && point.LabelFormat.Length == 0)
                     {
                         pointLabelValue = Math.Round(pointLabelValue, 2);
                     }
@@ -1045,8 +1007,8 @@ namespace WebCharts.Services.Models.ChartTypes
 
                     // Calculate position
                     SKPoint labelPosition = SKPoint.Empty;
-                    labelPosition.X = rectangle.X + rectangle.Width / 2f;
-                    labelPosition.Y = rectangle.Y + rectangle.Height / 2f;
+                    labelPosition.X = rectangle.Left + rectangle.Width / 2f;
+                    labelPosition.Y = rectangle.Left + rectangle.Height / 2f;
 
                     // Get text angle
                     int textAngle = point.LabelAngle;
@@ -1065,7 +1027,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             StringFormat.GenericTypographic));
 
                         //************************************************************
-                        // Check labels style custom properties 
+                        // Check labels style custom properties
                         //************************************************************
                         BarValueLabelDrawingStyle drawingStyle = BarValueLabelDrawingStyle.Center;
                         string valueLabelAttrib = "";
@@ -1095,7 +1057,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         //************************************************************
                         if (drawingStyle == BarValueLabelDrawingStyle.Left)
                         {
-                            labelPosition.X = rectangle.X + SKSizeont.Width / 2f;
+                            labelPosition.X = rectangle.Left + SKSizeont.Width / 2f;
                         }
                         else if (drawingStyle == BarValueLabelDrawingStyle.Right)
                         {
@@ -1105,7 +1067,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         {
                             labelPosition.X = rectangle.Right + SKSizeont.Width / 2f;
                         }
-
 
                         // Check if Smart Labels are enabled
                         if (series.SmartLabelStyle.Enabled)
@@ -1140,8 +1101,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             textAngle = 0;
                         }
 
-
-
                         // Draw label
                         if (!labelPosition.IsEmpty)
                         {
@@ -1156,9 +1115,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 sizeLabel.Width,
                                 sizeLabel.Height);
 
-
-
-                            // Adjust label background position that can be changed by the 
+                            // Adjust label background position that can be changed by the
                             // Smart Labels algorithm
                             // NOTE: Fixes issue #4688
                             labelBackPosition = area.smartLabels.GetLabelPosition(
@@ -1168,630 +1125,604 @@ namespace WebCharts.Services.Models.ChartTypes
                                 format,
                                 true);
 
-
-
                             // Draw label text
-                            using (Brush brush = new SolidBrush(point.LabelForeColor))
-                            {
-                                graph.DrawPointLabelStringRel(
-                                    common,
-                                    text,
-                                    point.Font,
-                                    brush,
-                                    labelPosition,
-                                    format,
-                                    textAngle,
-                                    labelBackPosition,
-                                    point.LabelBackColor,
-                                    point.LabelBorderColor,
-                                    point.LabelBorderWidth,
-                                    point.LabelBorderDashStyle,
-                                    series,
-                                    point,
-                                    pointIndex);
-                            }
+                            using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
+                            graph.DrawPointLabelStringRel(
+                                common,
+                                text,
+                                point.Font,
+                                brush,
+                                labelPosition,
+                                format,
+                                textAngle,
+                                labelBackPosition,
+                                point.LabelBackColor,
+                                point.LabelBorderColor,
+                                point.LabelBorderWidth,
+                                point.LabelBorderDashStyle,
+                                series,
+                                point,
+                                pointIndex);
                         }
-
                     }
                 }
 
                 // Restore old clip region
                 graph.Clip = oldClipRegion;
             }
-		}
+        }
 
-		#endregion
+        #endregion Painting and selection methods
 
-		#region Y values related methods
+        #region Y values related methods
 
-		/// <summary>
-		/// Helper function, which returns the Y value of the point.
-		/// </summary>
-		/// <param name="common">Chart common elements.</param>
-		/// <param name="area">Chart area the series belongs to.</param>
-		/// <param name="series">Sereis of the point.</param>
-		/// <param name="point">Point object.</param>
-		/// <param name="pointIndex">Index of the point.</param>
-		/// <param name="yValueIndex">Index of the Y value to get. Set to -1 to get the height.</param>
-		/// <returns>Y value of the point.</returns>
-		virtual public double GetYValue(CommonElements common, ChartArea area, Series series, DataPoint point, int pointIndex, int yValueIndex)
-		{
-			double	yValue = double.NaN;
+        /// <summary>
+        /// Helper function, which returns the Y value of the point.
+        /// </summary>
+        /// <param name="common">Chart common elements.</param>
+        /// <param name="area">Chart area the series belongs to.</param>
+        /// <param name="series">Sereis of the point.</param>
+        /// <param name="point">Point object.</param>
+        /// <param name="pointIndex">Index of the point.</param>
+        /// <param name="yValueIndex">Index of the Y value to get. Set to -1 to get the height.</param>
+        /// <returns>Y value of the point.</returns>
+        virtual public double GetYValue(CommonElements common, ChartArea area, Series series, DataPoint point, int pointIndex, int yValueIndex)
+        {
+            double yValue = double.NaN;
 
-			// Calculate stacked column Y value for 2D chart
-			if(area.Area3DStyle.Enable3D == false || yValueIndex == -2)
-			{
-				return point.YValues[0];
-			}
+            // Calculate stacked column Y value for 2D chart
+            if (area.Area3DStyle.Enable3D == false || yValueIndex == -2)
+            {
+                return point.YValues[0];
+            }
 
-			// Get point Height if pointIndex == -1
-			if(yValueIndex == -1)
-			{
-				Axis	vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
-				double	barZeroValue = vAxis.Crossing;
-				yValue = GetYValue(common, area, series, point, pointIndex, 0);
-				if( yValue >= 0 )
-				{
-					if(!double.IsNaN(prevPosY))
-					{
-						barZeroValue = prevPosY;
-					}
-				}
-				else
-				{
-					if(!double.IsNaN(prevNegY))
-					{
-						barZeroValue = prevNegY;
-					}
-				}
+            // Get point Height if pointIndex == -1
+            if (yValueIndex == -1)
+            {
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                double barZeroValue = vAxis.Crossing;
+                yValue = GetYValue(common, area, series, point, pointIndex, 0);
+                if (yValue >= 0)
+                {
+                    if (!double.IsNaN(prevPosY))
+                    {
+                        barZeroValue = prevPosY;
+                    }
+                }
+                else
+                {
+                    if (!double.IsNaN(prevNegY))
+                    {
+                        barZeroValue = prevNegY;
+                    }
+                }
 
-				return yValue - barZeroValue;
-			}
+                return yValue - barZeroValue;
+            }
 
-			// Loop through all series
-			prevPosY = double.NaN;
-			prevNegY = double.NaN;
-			foreach(Series ser in common.DataManager.Series)
-			{
-				// Check series of the current chart type & area
-				if(String.Compare(series.ChartArea, ser.ChartArea, StringComparison.Ordinal) == 0 &&
-                    String.Compare(series.ChartTypeName, ser.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0 && 
-					ser.IsVisible())
-				{
+            // Loop through all series
+            prevPosY = double.NaN;
+            prevNegY = double.NaN;
+            foreach (Series ser in common.DataManager.Series)
+            {
+                // Check series of the current chart type & area
+                if (String.Compare(series.ChartArea, ser.ChartArea, StringComparison.Ordinal) == 0 &&
+                    String.Compare(series.ChartTypeName, ser.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0 &&
+                    ser.IsVisible())
+                {
+                    // Check if series belongs to the current group name
+                    string seriesStackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
+                    if (stackGroupNameUsed &&
+                        seriesStackGroupName != currentStackGroup)
+                    {
+                        continue;
+                    }
 
-					// Check if series belongs to the current group name
-					string seriesStackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-					if(this.stackGroupNameUsed && 
-						seriesStackGroupName != this.currentStackGroup)
-					{
-						continue;
-					}
+                    if (double.IsNaN(yValue))
+                    {
+                        yValue = ser.Points[pointIndex].YValues[0];
+                    }
+                    else
+                    {
+                        yValue = ser.Points[pointIndex].YValues[0];
+                        if (yValue >= 0.0 && !double.IsNaN(prevPosY))
+                        {
+                            yValue += prevPosY;
+                        }
+                        if (yValue < 0.0 && !double.IsNaN(prevNegY))
+                        {
+                            yValue += prevNegY;
+                        }
+                    }
 
-
-
-					if(double.IsNaN(yValue))
-					{
-						yValue = ser.Points[pointIndex].YValues[0];
-					}
-					else
-					{
-						yValue = ser.Points[pointIndex].YValues[0];
-						if(yValue >= 0.0 && !double.IsNaN(prevPosY))
-						{
-							yValue += prevPosY;
-						}
-						if(yValue < 0.0 && !double.IsNaN(prevNegY))
-						{
-							yValue += prevNegY;
-						}
-					}
-
-					// Exit loop when current series was found
+                    // Exit loop when current series was found
                     if (String.Compare(series.Name, ser.Name, StringComparison.Ordinal) == 0)
-					{
-						break;
-					}
+                    {
+                        break;
+                    }
 
-					// Save previous value
-					if(yValue >= 0.0)
-					{
-						prevPosY = yValue;
-					}
-					if(yValue < 0.0)
-					{
-						prevNegY = yValue;
-					}
-				}
-			}
-			
-			return yValue;
-		}
+                    // Save previous value
+                    if (yValue >= 0.0)
+                    {
+                        prevPosY = yValue;
+                    }
+                    if (yValue < 0.0)
+                    {
+                        prevNegY = yValue;
+                    }
+                }
+            }
 
-		#endregion
+            return yValue;
+        }
 
-		#region 3D Painting and selection methods
+        #endregion Y values related methods
 
-		/// <summary>
-		/// This method recalculates size of the stacked bars in 3D space. This method is used 
-		/// from Paint or Select method.
-		/// </summary>
-		/// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="drawLabels">True if labels must be drawn.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		private void ProcessChartType3D( 
-			bool selection, 
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			bool drawLabels, 
-			Series seriesToDraw )
-		{
+        #region 3D Painting and selection methods
 
-			// Get list of series to draw
-			List<string> typeSeries = null;
+        /// <summary>
+        /// This method recalculates size of the stacked bars in 3D space. This method is used
+        /// from Paint or Select method.
+        /// </summary>
+        /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="drawLabels">True if labels must be drawn.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        private void ProcessChartType3D(
+            bool selection,
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            bool drawLabels,
+            Series seriesToDraw)
+        {
+            // Get list of series to draw
+            List<string> typeSeries = null;
 
+            // Get all series names that belong the same cluster
+            typeSeries = area.GetClusterSeriesNames(seriesToDraw.Name);
 
-			// Get all series names that belong the same cluster
-			typeSeries = area.GetClusterSeriesNames(seriesToDraw.Name);
+            //************************************************************
+            //** Get order of data points drawing
+            //************************************************************
+            ArrayList dataPointDrawingOrder = area.GetDataPointDrawingOrder(
+                typeSeries,
+                this,
+                selection,
+                COPCoordinates.X | COPCoordinates.Y,
+                new BarPointsDrawingOrderComparer(area, selection, COPCoordinates.X | COPCoordinates.Y),
+                0,
+                false);
 
+            //************************************************************
+            //** Loop through all data poins and draw them
+            //************************************************************
+            if (!drawLabels)
+            {
+                foreach (object obj in dataPointDrawingOrder)
+                {
+                    // Get point & series
+                    DataPoint3D pointEx = (DataPoint3D)obj;
+                    DataPoint point = pointEx.dataPoint;
+                    Series ser = point.series;
 
-			//************************************************************
-			//** Get order of data points drawing
-			//************************************************************
-			ArrayList	dataPointDrawingOrder = area.GetDataPointDrawingOrder(
-				typeSeries, 
-				this, 
-				selection, 
-				COPCoordinates.X | COPCoordinates.Y, 
-				new BarPointsDrawingOrderComparer(area, selection, COPCoordinates.X | COPCoordinates.Y),
-				0,
-				false);
+                    // Set current stack group name
+                    currentStackGroup = StackedColumnChart.GetSeriesStackGroupName(ser);
 
+                    // Reset pre-calculated point position
+                    point.positionRel = new SKPoint(float.NaN, float.NaN);
 
-			//************************************************************
-			//** Loop through all data poins and draw them
-			//************************************************************
-			if(!drawLabels)
-			{
-				foreach(object obj in dataPointDrawingOrder)
-				{
-					// Get point & series
-					DataPoint3D	pointEx = (DataPoint3D) obj;
-					DataPoint	point = pointEx.dataPoint;
-					Series		ser = point.series;
+                    // Set active horizontal/vertical axis
+                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
 
+                    // Get point bar drawing style
+                    BarDrawingStyle barDrawingStyle = ChartGraphics.GetBarDrawingStyle(point);
 
-					// Set current stack group name
-					this.currentStackGroup = StackedColumnChart.GetSeriesStackGroupName(ser);
+                    // All cut points are darkened except of the first and last series
+                    float rightDarkening = 0.5f;
+                    float leftDarkening = 0.5f;
 
+                    // NOTE: Following code was replaced with the code below to fix issue #5391
+                    //					if((string)typeSeries[typeSeries.Count - 1] == ser.Name)
+                    //					{
+                    //						leftDarkening = 0f;
+                    //					}
+                    //					if((string)typeSeries[0] == ser.Name)
+                    //					{
+                    //						rightDarkening = 0f;
+                    //					}
+                    bool firstVisibleSeries = true;
+                    bool lastVisibleSeries = false;
+                    for (int seriesIndex = 0; seriesIndex < typeSeries.Count; seriesIndex++)
+                    {
+                        // Get series object
+                        Series currentSeries = common.DataManager.Series[seriesIndex];
 
-					// Reset pre-calculated point position
-					point.positionRel = new SKPoint(float.NaN, float.NaN);
+                        // Check if it is a first series with non-zero Y value
+                        if (firstVisibleSeries)
+                        {
+                            // Make series has non zero vallue
+                            if (pointEx.index <= currentSeries.Points.Count &&
+                                currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                            {
+                                firstVisibleSeries = false;
+                                if (currentSeries.Name == ser.Name)
+                                {
+                                    rightDarkening = 0f;
+                                }
+                            }
+                        }
 
-					// Set active horizontal/vertical axis
-					Axis	vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-					Axis	hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                        // Check if it is a last series with non-zero Y value
+                        if (currentSeries.Name == ser.Name)
+                        {
+                            lastVisibleSeries = true;
+                        }
+                        else if (pointEx.index <= currentSeries.Points.Count &&
+                            currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                        {
+                            lastVisibleSeries = false;
+                        }
+                    }
 
-					// Get point bar drawing style
-					BarDrawingStyle	barDrawingStyle = ChartGraphics.GetBarDrawingStyle(point);
-		
-					// All cut points are darkened except of the first and last series
-					float	rightDarkening = 0.5f;
-					float	leftDarkening = 0.5f;
+                    // Remove darkenning from the last series in the group
+                    if (lastVisibleSeries)
+                    {
+                        leftDarkening = 0f;
+                    }
 
-					// NOTE: Following code was replaced with the code below to fix issue #5391
-//					if((string)typeSeries[typeSeries.Count - 1] == ser.Name)
-//					{
-//						leftDarkening = 0f;
-//					}
-//					if((string)typeSeries[0] == ser.Name)
-//					{
-//						rightDarkening = 0f;
-//					}
-					bool	firstVisibleSeries = true;
-					bool	lastVisibleSeries = false;
-					for(int seriesIndex = 0; seriesIndex < typeSeries.Count; seriesIndex++)
-					{
-						// Get series object
-						Series currentSeries = common.DataManager.Series[seriesIndex];
-
-						// Check if it is a first series with non-zero Y value
-						if(firstVisibleSeries)
-						{
-							// Make series has non zero vallue
-							if(pointEx.index <= currentSeries.Points.Count &&
-								currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
-							{
-								firstVisibleSeries = false;
-								if(currentSeries.Name == ser.Name)
-								{
-									rightDarkening = 0f;
-								}
-							}
-						}
-
-						// Check if it is a last series with non-zero Y value
-						if(currentSeries.Name == ser.Name)
-						{
-							lastVisibleSeries = true;
-						}
-						else if(pointEx.index <= currentSeries.Points.Count &&
-							currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
-						{
-							lastVisibleSeries = false;
-						}
-					}
-
-					// Remove darkenning from the last series in the group
-					if(lastVisibleSeries)
-					{
-						leftDarkening = 0f;
-					}
-
-
-					// If stacked groups are used remove darkenning from the
-					// first/last series in the group
+                    // If stacked groups are used remove darkenning from the
+                    // first/last series in the group
                     if (area.StackGroupNames != null &&
                         area.StackGroupNames.Count > 1 &&
-						area.Area3DStyle.IsClustered)
-					{
-						// Get series group name
-						string groupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-					
-						// Iterate through all series in the group
-						bool	firstSeries = true;
-						bool	lastSeries = false;
-						foreach(string seriesName in typeSeries)
-						{
-							Series currentSeries = common.DataManager.Series[seriesName];
-							if(StackedColumnChart.GetSeriesStackGroupName(currentSeries) == groupName)
-							{
-								// check if first seris
-								if(firstSeries)
-								{
-									// Make series has non zero vallue
-									if(pointEx.index < currentSeries.Points.Count &&
-										currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
-									{
-										firstSeries = false;
-										if(seriesName == ser.Name)
-										{
-											rightDarkening = 0f;
-										}
-									}
-								}
+                        area.Area3DStyle.IsClustered)
+                    {
+                        // Get series group name
+                        string groupName = StackedColumnChart.GetSeriesStackGroupName(ser);
 
-								// check if last series
-								if(seriesName == ser.Name)
-								{
-									lastSeries = true;
-								}
-						 		else if(pointEx.index < currentSeries.Points.Count &&
-									currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
-								{
-									lastSeries = false;
-								}
-							}
-						}
+                        // Iterate through all series in the group
+                        bool firstSeries = true;
+                        bool lastSeries = false;
+                        foreach (string seriesName in typeSeries)
+                        {
+                            Series currentSeries = common.DataManager.Series[seriesName];
+                            if (StackedColumnChart.GetSeriesStackGroupName(currentSeries) == groupName)
+                            {
+                                // check if first seris
+                                if (firstSeries)
+                                {
+                                    // Make series has non zero vallue
+                                    if (pointEx.index < currentSeries.Points.Count &&
+                                        currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                                    {
+                                        firstSeries = false;
+                                        if (seriesName == ser.Name)
+                                        {
+                                            rightDarkening = 0f;
+                                        }
+                                    }
+                                }
 
-						// Remove darkenning from the last series in the group
-						if(lastSeries)
-						{
-							leftDarkening = 0f;
-						}
-					}
+                                // check if last series
+                                if (seriesName == ser.Name)
+                                {
+                                    lastSeries = true;
+                                }
+                                else if (pointEx.index < currentSeries.Points.Count &&
+                                   currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                                {
+                                    lastSeries = false;
+                                }
+                            }
+                        }
 
+                        // Remove darkenning from the last series in the group
+                        if (lastSeries)
+                        {
+                            leftDarkening = 0f;
+                        }
+                    }
 
+                    // Change Y value if Bar is out of plot area
+                    double yValue = GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, 0);
 
-					// Change Y value if Bar is out of plot area
-					double	yValue = GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, 0);
+                    // Set Start position for a bar
+                    double barZeroValue = yValue - GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, -1);
 
-					// Set Start position for a bar
-					double	barZeroValue = yValue - GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, -1);
+                    // Convert values if logarithmic axis is used
+                    yValue = hAxis.GetLogValue(yValue);
+                    barZeroValue = hAxis.GetLogValue(barZeroValue);
 
-					// Convert values if logarithmic axis is used
-					yValue = hAxis.GetLogValue(yValue);
-					barZeroValue = hAxis.GetLogValue(barZeroValue);
+                    if (barZeroValue > hAxis.ViewMaximum)
+                    {
+                        leftDarkening = 0.5f;
+                        barZeroValue = hAxis.ViewMaximum;
+                    }
+                    else if (barZeroValue < hAxis.ViewMinimum)
+                    {
+                        rightDarkening = 0.5f;
+                        barZeroValue = hAxis.ViewMinimum;
+                    }
+                    if (yValue > hAxis.ViewMaximum)
+                    {
+                        leftDarkening = 0.5f;
+                        yValue = hAxis.ViewMaximum;
+                    }
+                    else if (yValue < hAxis.ViewMinimum)
+                    {
+                        rightDarkening = 0.5f;
+                        yValue = hAxis.ViewMinimum;
+                    }
 
-					if( barZeroValue > hAxis.ViewMaximum )
-					{
-						leftDarkening = 0.5f;
-						barZeroValue = hAxis.ViewMaximum;
-					}
-					else if( barZeroValue < hAxis.ViewMinimum )
-					{
-						rightDarkening = 0.5f;
-						barZeroValue = hAxis.ViewMinimum;
-					}
-					if( yValue > hAxis.ViewMaximum )
-					{
-						leftDarkening = 0.5f;
-						yValue = hAxis.ViewMaximum;
-					}
-					else if( yValue < hAxis.ViewMinimum )
-					{
-						rightDarkening = 0.5f;
-						yValue = hAxis.ViewMinimum;
-					}
-				
-					// Recalculates Height position and zero position of bars
-					double	height = hAxis.GetLinearPosition(yValue);
-					double	zero = hAxis.GetLinearPosition(barZeroValue);
+                    // Recalculates Height position and zero position of bars
+                    double height = hAxis.GetLinearPosition(yValue);
+                    double zero = hAxis.GetLinearPosition(barZeroValue);
 
-					// Set x position
-					double	xValue = (pointEx.indexedSeries) ? pointEx.index : point.XValue;
-					xValue = vAxis.GetLogValue(xValue);
+                    // Set x position
+                    double xValue = (pointEx.indexedSeries) ? pointEx.index : point.XValue;
+                    xValue = vAxis.GetLogValue(xValue);
 
+                    // Calculate bar position
+                    SKRect rectSize = SKRect.Empty;
+                    try
+                    {
+                        // Set the bar rectangle
+                        rectSize.Top = (float)(pointEx.xPosition - pointEx.width / 2);
+                        rectSize.Bottom = rectSize.Top + (float)(pointEx.width);
 
-					// Calculate bar position
-					SKRect	rectSize = SKRect.Empty;
-					try
-					{
-						// Set the bar rectangle
-						rectSize.Y = (float)(pointEx.xPosition - pointEx.width/2);
-						rectSize.Height = (float)(pointEx.width);
+                        // The left side of rectangle has always
+                        // smaller value than a right value
+                        if (zero < height)
+                        {
+                            float temp = leftDarkening;
+                            leftDarkening = rightDarkening;
+                            rightDarkening = temp;
 
-						// The left side of rectangle has always 
-						// smaller value than a right value
-						if( zero < height )
-						{
-							float temp = leftDarkening;
-							leftDarkening = rightDarkening;
-							rightDarkening = temp;
+                            rectSize.Left = (float)zero;
+                            rectSize.Right = (float)height;
+                        }
+                        else
+                        {
+                            rectSize.Left = (float)height;
+                            rectSize.Right = (float)zero;
+                        }
+                    }
+                    catch (OverflowException)
+                    {
+                        continue;
+                    }
 
-							rectSize.X = (float)zero;
-							rectSize.Width = (float)height - rectSize.X;
-						}
-						else
-						{
-							rectSize.X = (float)height;
-							rectSize.Width = (float)zero - rectSize.X;
-						}
-					}
-					catch(OverflowException)
-					{
-						continue;
-					}
+                    // Remeber pre-calculated point position
+                    point.positionRel = new SKPoint(rectSize.Right, (float)pointEx.xPosition);
 
-					// Remeber pre-calculated point position
-					point.positionRel = new SKPoint(rectSize.Right, (float)pointEx.xPosition);
+                    // if data point is not empty
+                    if (point.IsEmpty)
+                    {
+                        continue;
+                    }
 
-					// if data point is not empty
-					if( point.IsEmpty )
-					{
-						continue;
-					}
+                    SKPath rectPath = null;
 
-					SKPath rectPath = null;
-			
-					// Check if column is completly out of the data scaleView
-					if(xValue < vAxis.ViewMinimum || 
-						xValue > vAxis.ViewMaximum ||
-						(yValue < hAxis.ViewMinimum && barZeroValue < hAxis.ViewMinimum) ||
-						(yValue > hAxis.ViewMaximum && barZeroValue > hAxis.ViewMaximum) )
-					{
-						continue;
-					}
+                    // Check if column is completly out of the data scaleView
+                    if (xValue < vAxis.ViewMinimum ||
+                        xValue > vAxis.ViewMaximum ||
+                        (yValue < hAxis.ViewMinimum && barZeroValue < hAxis.ViewMinimum) ||
+                        (yValue > hAxis.ViewMaximum && barZeroValue > hAxis.ViewMaximum))
+                    {
+                        continue;
+                    }
 
-					// Check if column is partialy in the data scaleView
-					bool	clipRegionSet = false;
-					if(rectSize.Bottom <= area.PlotAreaPosition.Y || rectSize.Y >= area.PlotAreaPosition.Bottom)
-					{
-						continue;
-					}
-					if(rectSize.Y < area.PlotAreaPosition.Y)
-					{
-						rectSize.Height -= area.PlotAreaPosition.Y - rectSize.Y;
-						rectSize.Y = area.PlotAreaPosition.Y;
-					}
-					if(rectSize.Bottom > area.PlotAreaPosition.Bottom)
-					{
-						rectSize.Height -= rectSize.Bottom - area.PlotAreaPosition.Bottom;
-					}
-					if(rectSize.Height < 0)
-					{
-						rectSize.Height = 0;
-					}
-					if(rectSize.Height == 0f || rectSize.Width == 0f)
-					{
-						continue;
-					}
+                    // Check if column is partialy in the data scaleView
+                    bool clipRegionSet = false;
+                    if (rectSize.Bottom <= area.PlotAreaPosition.Y || rectSize.Top >= area.PlotAreaPosition.Bottom)
+                    {
+                        continue;
+                    }
+                    if (rectSize.Top < area.PlotAreaPosition.Y)
+                    {
+                        rectSize.Bottom -= area.PlotAreaPosition.Y - rectSize.Top;
+                        rectSize.Top = area.PlotAreaPosition.Y;
+                    }
+                    if (rectSize.Bottom > area.PlotAreaPosition.Bottom)
+                    {
+                        rectSize.Bottom -= rectSize.Bottom - area.PlotAreaPosition.Bottom;
+                    }
+                    if (rectSize.Height < 0)
+                    {
+                        rectSize.Bottom = rectSize.Top;
+                    }
+                    if (rectSize.Height == 0f || rectSize.Width == 0f)
+                    {
+                        continue;
+                    }
 
+                    // Detect if we need to get graphical path of drawn object
+                    DrawingOperationTypes drawingOperationType = DrawingOperationTypes.DrawElement;
 
-					// Detect if we need to get graphical path of drawn object
-					DrawingOperationTypes	drawingOperationType = DrawingOperationTypes.DrawElement;
+                    if (common.ProcessModeRegions)
+                    {
+                        drawingOperationType |= DrawingOperationTypes.CalcElementPath;
+                    }
 
-					if( common.ProcessModeRegions )
-					{
-						drawingOperationType |= DrawingOperationTypes.CalcElementPath;
-					}
+                    // Draw the Bar rectangle
+                    rectPath = graph.Fill3DRectangle(
+                        rectSize,
+                        pointEx.zPosition,
+                        pointEx.depth,
+                        area.matrix3D,
+                        area.Area3DStyle.LightStyle,
+                        point.Color,
+                        rightDarkening,
+                        leftDarkening,
+                        point.BorderColor,
+                        point.BorderWidth,
+                        point.BorderDashStyle,
+                        barDrawingStyle,
+                        false,
+                        drawingOperationType);
 
-					// Start Svg Selection mode
-					graph.StartHotRegion( point );
+                    // Reset Clip Region
+                    if (clipRegionSet)
+                    {
+                        graph.ResetClip();
+                    }
 
-					// Draw the Bar rectangle
-					rectPath = graph.Fill3DRectangle( 
-						rectSize, 
-						pointEx.zPosition,
-						pointEx.depth,
-						area.matrix3D,
-						area.Area3DStyle.LightStyle,
-						point.Color, 
-						rightDarkening,
-						leftDarkening,
-						point.BorderColor, 
-						point.BorderWidth, 
-						point.BorderDashStyle, 
-						barDrawingStyle,
-						false,
-						drawingOperationType);
-
-					// End Svg Selection mode
-					graph.EndHotRegion( );
-
-					// Reset Clip Region
-					if(clipRegionSet)
-					{
-						graph.ResetClip();
-					}
-
-					if( common.ProcessModeRegions && !drawLabels)
-					{
-						common.HotRegionsList.AddHotRegion(
-							rectPath,
-							false,
-							graph,
-							point,
-							ser.Name,
-							pointEx.index - 1
-							);
-					}
+                    if (common.ProcessModeRegions && !drawLabels)
+                    {
+                        common.HotRegionsList.AddHotRegion(
+                            rectPath,
+                            false,
+                            graph,
+                            point,
+                            ser.Name,
+                            pointEx.index - 1
+                            );
+                    }
                     if (rectPath != null)
                     {
                         rectPath.Dispose();
                     }
-				}
-			}
+                }
+            }
 
-			//************************************************************
-			//** Loop through all data poins and draw labels
-			//************************************************************
-			if(drawLabels)
-			{
-				foreach(object obj in dataPointDrawingOrder)
-				{
-					// Get point & series
-					DataPoint3D	pointEx = (DataPoint3D) obj;
-					DataPoint	point = pointEx.dataPoint;
-					Series		ser = point.series;
+            //************************************************************
+            //** Loop through all data poins and draw labels
+            //************************************************************
+            if (drawLabels)
+            {
+                foreach (object obj in dataPointDrawingOrder)
+                {
+                    // Get point & series
+                    DataPoint3D pointEx = (DataPoint3D)obj;
+                    DataPoint point = pointEx.dataPoint;
+                    Series ser = point.series;
 
-					// Set active horizontal/vertical axis
-					Axis	vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-					Axis	hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
-		
-					// Change Y value if Bar is out of plot area
-					double	yValue = GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, 0);
-					
-					// Axis is logarithmic
-					if( hAxis.IsLogarithmic )
-					{
-						yValue = Math.Log( yValue, hAxis.logarithmBase );
-					}
+                    // Set active horizontal/vertical axis
+                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
 
-					// Recalculates Height position and zero position of bars
-					double height = pointEx.yPosition;;
+                    // Change Y value if Bar is out of plot area
+                    double yValue = GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, 0);
 
-					// Set x position
-					double	xValue = (pointEx.indexedSeries) ? pointEx.index : point.XValue;
+                    // Axis is logarithmic
+                    if (hAxis.IsLogarithmic)
+                    {
+                        yValue = Math.Log(yValue, hAxis.logarithmBase);
+                    }
 
-					// Set Start position for a bar
-					double	barZeroValue = yValue - GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, -1);
-					double zero = pointEx.height;
+                    // Recalculates Height position and zero position of bars
+                    double height = pointEx.yPosition; ;
 
-					// Calculate bar position
-					SKRect	rectSize = SKRect.Empty;
-					try
-					{
-						// Set the bar rectangle
-						rectSize.Y = (float)(pointEx.xPosition - pointEx.width/2);
-						rectSize.Height = (float)(pointEx.width);
+                    // Set x position
+                    double xValue = (pointEx.indexedSeries) ? pointEx.index : point.XValue;
 
-						// The left side of rectangle has always 
-						// smaller value than a right value
-						if( zero < height )
-						{
-							rectSize.X = (float)zero;
-							rectSize.Width = (float)height - rectSize.X;
-						}
-						else
-						{
-							rectSize.X = (float)height;
-							rectSize.Width = (float)zero - rectSize.X;
-						}
-					}
-					catch(OverflowException)
-					{
-						continue;
-					}
+                    // Set Start position for a bar
+                    double barZeroValue = yValue - GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, -1);
+                    double zero = pointEx.height;
 
-					// if data point is not empty
-					if( point.IsEmpty )
-					{
-						continue;
-					}
-			
-					// Axis is logarithmic
-					if( hAxis.IsLogarithmic )
-					{
-						barZeroValue = Math.Log( barZeroValue, hAxis.logarithmBase );
-					}
+                    // Calculate bar position
+                    SKRect rectSize = SKRect.Empty;
+                    try
+                    {
+                        // Set the bar rectangle
+                        rectSize.Top = (float)(pointEx.xPosition - pointEx.width / 2);
+                        rectSize.Bottom = rectSize.Top + (float)pointEx.width;
 
-					// Check if column is completly out of the data scaleView
-					if(xValue < vAxis.ViewMinimum || 
-						xValue > vAxis.ViewMaximum ||
-						(yValue < hAxis.ViewMinimum && barZeroValue < hAxis.ViewMinimum) ||
-						(yValue > hAxis.ViewMaximum && barZeroValue > hAxis.ViewMaximum) )
-					{
-						continue;
-					}
+                        // The left side of rectangle has always
+                        // smaller value than a right value
+                        if (zero < height)
+                        {
+                            rectSize.Top = (float)zero;
+                            rectSize.Right = (float)height;
+                        }
+                        else
+                        {
+                            rectSize.Left = (float)height;
+                            rectSize.Right = (float)zero;
+                        }
+                    }
+                    catch (OverflowException)
+                    {
+                        continue;
+                    }
 
-					// Draw 3D labels
-					DrawLabels3D( area, graph, common, rectSize, pointEx, ser, barZeroValue, height, pointEx.width, pointEx.index - 1);
-				}	
-			}
-		}
+                    // if data point is not empty
+                    if (point.IsEmpty)
+                    {
+                        continue;
+                    }
 
-		/// <summary>
-		/// Draws labels in 3D.
-		/// </summary>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="rectSize">Bar rectangle.</param>
-		/// <param name="pointEx">Data point.</param>
-		/// <param name="ser">Data series.</param>
-		/// <param name="barStartPosition">The zero position or the bottom of bars.</param>
-		/// <param name="barSize">The Height of bars.</param>
-		/// <param name="width">The width of bars.</param>
-		/// <param name="pointIndex">Point index.</param>
-		private void DrawLabels3D( 
-			ChartArea area,
-			ChartGraphics graph, 
-			CommonElements common, 
-			SKRect rectSize, 
-			DataPoint3D pointEx, 
-			Series ser, 
-			double barStartPosition, 
-			double barSize, 
-			double width, 
-			int pointIndex)
-		{
-			DataPoint point = pointEx.dataPoint;
+                    // Axis is logarithmic
+                    if (hAxis.IsLogarithmic)
+                    {
+                        barZeroValue = Math.Log(barZeroValue, hAxis.logarithmBase);
+                    }
 
-			//************************************************************
-			// Draw data point value label
-			//************************************************************
-			if(ser.IsValueShownAsLabel || point.IsValueShownAsLabel || point.Label.Length > 0)
-			{
-				// Label rectangle
-				SKRect rectLabel = SKRect.Empty;
+                    // Check if column is completly out of the data scaleView
+                    if (xValue < vAxis.ViewMinimum ||
+                        xValue > vAxis.ViewMaximum ||
+                        (yValue < hAxis.ViewMinimum && barZeroValue < hAxis.ViewMinimum) ||
+                        (yValue > hAxis.ViewMaximum && barZeroValue > hAxis.ViewMaximum))
+                    {
+                        continue;
+                    }
 
-				// Label text format
+                    // Draw 3D labels
+                    DrawLabels3D(area, graph, common, rectSize, pointEx, ser, barZeroValue, height, pointEx.width, pointEx.index - 1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draws labels in 3D.
+        /// </summary>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="rectSize">Bar rectangle.</param>
+        /// <param name="pointEx">Data point.</param>
+        /// <param name="ser">Data series.</param>
+        /// <param name="barStartPosition">The zero position or the bottom of bars.</param>
+        /// <param name="barSize">The Height of bars.</param>
+        /// <param name="width">The width of bars.</param>
+        /// <param name="pointIndex">Point index.</param>
+        private void DrawLabels3D(
+            ChartArea area,
+            ChartGraphics graph,
+            CommonElements common,
+            SKRect rectSize,
+            DataPoint3D pointEx,
+            Series ser,
+            double barStartPosition,
+            double barSize,
+            double width,
+            int pointIndex)
+        {
+            DataPoint point = pointEx.dataPoint;
+
+            //************************************************************
+            // Draw data point value label
+            //************************************************************
+            if (ser.IsValueShownAsLabel || point.IsValueShownAsLabel || point.Label.Length > 0)
+            {
+                // Label rectangle
+                SKRect rectLabel = SKRect.Empty;
+
+                // Label text format
                 using (StringFormat format = new StringFormat())
                 {
-
                     //************************************************************
-                    // Get label text 
+                    // Get label text
                     //************************************************************
                     string text;
                     if (point.Label.Length == 0)
                     {
                         // Round Y values for 100% stacked bar
                         double pointLabelValue = GetYValue(common, area, ser, point, pointIndex, -2);
-                        if (this.hundredPercentStacked && point.LabelFormat.Length == 0)
+                        if (hundredPercentStacked && point.LabelFormat.Length == 0)
                         {
                             pointLabelValue = Math.Round(pointLabelValue, 2);
                         }
@@ -1810,9 +1741,8 @@ namespace WebCharts.Services.Models.ChartTypes
                         text = point.ReplaceKeywords(point.Label);
                     }
 
-				
                     //************************************************************
-                    // Check labels style custom properties 
+                    // Check labels style custom properties
                     //************************************************************
                     BarValueLabelDrawingStyle drawingStyle = BarValueLabelDrawingStyle.Center;
                     string valueLabelAttrib = "";
@@ -1850,18 +1780,18 @@ namespace WebCharts.Services.Models.ChartTypes
                         // LabelStyle rectangle
                         if (barStartPosition < barSize)
                         {
-                            rectLabel.X = rectSize.Right;
-                            rectLabel.Width = area.PlotAreaPosition.Right - rectSize.Right;
+                            rectLabel.Left = rectSize.Right;
+                            rectLabel.Right = rectLabel.Left + area.PlotAreaPosition.Right - rectSize.Right;
                         }
                         else
                         {
-                            rectLabel.X = area.PlotAreaPosition.X;
-                            rectLabel.Width = rectSize.X - area.PlotAreaPosition.X;
+                            rectLabel.Left = area.PlotAreaPosition.X;
+                            rectLabel.Right = rectLabel.Left + rectSize.Left - area.PlotAreaPosition.X;
                         }
 
                         // Adjust label rectangle
-                        rectLabel.Y = rectSize.Y - (float)width / 2F;
-                        rectLabel.Height = rectSize.Height + (float)width;
+                        rectLabel.Top = rectSize.Top - (float)width / 2F;
+                        rectLabel.Bottom = rectSize.Bottom + (float)width;
 
                         // Adjust label position depending on the drawing style
                         if (drawingStyle == BarValueLabelDrawingStyle.Left)
@@ -1894,7 +1824,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         // NOTE: Code below is commented. Fixes issue #4687 - AG
                         labelFit = true;
 
-                        //					// Make sure value label fits rectangle. 
+                        //					// Make sure value label fits rectangle.
                         //					SKSize valueTextSize = graph.MeasureStringRel(text, point.Font);
                         //					if(!labelSwitched && valueTextSize.Width > rectLabel.Width)
                         //					{
@@ -1927,7 +1857,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     SKPoint rotationCenter = SKPoint.Empty;
                     if (format.Alignment == StringAlignment.Near)
                     { // Near
-                        rotationCenter.X = rectLabel.X + size.Width / 2;
+                        rotationCenter.X = rectLabel.Left + size.Width / 2;
                     }
                     else if (format.Alignment == StringAlignment.Far)
                     { // Far
@@ -1955,16 +1885,15 @@ namespace WebCharts.Services.Models.ChartTypes
                     format.Alignment = StringAlignment.Center;
                     format.LineAlignment = StringAlignment.Center;
 
-
                     //************************************************************
                     // Adjust label rotation angle
                     //************************************************************
                     int angle = point.LabelAngle;
 
                     // Get projection coordinates
-                    Point3D[] rotationCenterProjection = new Point3D[] { 
-																		 new Point3D(rotationCenter.X, rotationCenter.Y, pointEx.zPosition + pointEx.depth),
-																		 new Point3D(rotationCenter.X - 20f, rotationCenter.Y, pointEx.zPosition + pointEx.depth) };
+                    Point3D[] rotationCenterProjection = new Point3D[] {
+                        new Point3D(rotationCenter.X, rotationCenter.Y, pointEx.zPosition + pointEx.depth),
+                        new Point3D(rotationCenter.X - 20f, rotationCenter.Y, pointEx.zPosition + pointEx.depth) };
                     // Transform coordinates of text rotation point
                     area.matrix3D.TransformPoints(rotationCenterProjection);
 
@@ -1988,7 +1917,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
                     SKSize SKSizeont = SKSize.Empty;
 
-
                     // Check if Smart Labels are enabled
                     if (ser.SmartLabelStyle.Enabled)
                     {
@@ -1999,14 +1927,14 @@ namespace WebCharts.Services.Models.ChartTypes
                             new SKSize(1000f, 1000f),
                             StringFormat.GenericTypographic));
 
-					// Force some SmartLabelStyle settings for column chart
-					bool oldMarkerOverlapping = ser.SmartLabelStyle.IsMarkerOverlappingAllowed;
-					LabelAlignmentStyles oldMovingDirection = ser.SmartLabelStyle.MovingDirection;
-					ser.SmartLabelStyle.IsMarkerOverlappingAllowed = true;
-					if(ser.SmartLabelStyle.MovingDirection == (LabelAlignmentStyles.Top | LabelAlignmentStyles.Bottom | LabelAlignmentStyles.Right | LabelAlignmentStyles.Left | LabelAlignmentStyles.TopLeft | LabelAlignmentStyles.TopRight | LabelAlignmentStyles.BottomLeft | LabelAlignmentStyles.BottomRight) )
-					{
-						ser.SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Left | LabelAlignmentStyles.Right;
-					}
+                        // Force some SmartLabelStyle settings for column chart
+                        bool oldMarkerOverlapping = ser.SmartLabelStyle.IsMarkerOverlappingAllowed;
+                        LabelAlignmentStyles oldMovingDirection = ser.SmartLabelStyle.MovingDirection;
+                        ser.SmartLabelStyle.IsMarkerOverlappingAllowed = true;
+                        if (ser.SmartLabelStyle.MovingDirection == (LabelAlignmentStyles.Top | LabelAlignmentStyles.Bottom | LabelAlignmentStyles.Right | LabelAlignmentStyles.Left | LabelAlignmentStyles.TopLeft | LabelAlignmentStyles.TopRight | LabelAlignmentStyles.BottomLeft | LabelAlignmentStyles.BottomRight))
+                        {
+                            ser.SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Left | LabelAlignmentStyles.Right;
+                        }
 
                         // Adjust label position using SmartLabelStyle algorithm
                         rotationCenter = area.smartLabels.AdjustSmartLabelPosition(
@@ -2021,17 +1949,13 @@ namespace WebCharts.Services.Models.ChartTypes
                             new SKSize(0f, 0f),
                             LabelAlignmentStyles.Center);
 
-					// Restore forced values
-					ser.SmartLabelStyle.IsMarkerOverlappingAllowed = oldMarkerOverlapping;
-					ser.SmartLabelStyle.MovingDirection = oldMovingDirection;
+                        // Restore forced values
+                        ser.SmartLabelStyle.IsMarkerOverlappingAllowed = oldMarkerOverlapping;
+                        ser.SmartLabelStyle.MovingDirection = oldMovingDirection;
 
                         // Smart labels always use 0 degrees text angle
                         angle = 0;
                     }
-
-
-
-
 
                     //************************************************************
                     // Draw label
@@ -2046,7 +1970,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 text,
                                 point.Font,
                                 new SKSize(1000f, 1000f),
-                                new StringFormat(StringFormat.GenericTypographic)));
+                                StringFormat.GenericTypographic));
                         }
 
                         // Get label background position
@@ -2061,7 +1985,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             sizeLabel.Height);
 
                         // Draw label text
-                        using (Brush brush = new SolidBrush(point.LabelForeColor))
+                        using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor })
                         {
                             graph.DrawPointLabelStringRel(
                                 common,
@@ -2082,35 +2006,36 @@ namespace WebCharts.Services.Models.ChartTypes
                         }
                     }
                 }
-			}
-		}
+            }
+        }
 
-		#endregion
+        #endregion 3D Painting and selection methods
 
-		#region SmartLabelStyle methods
+        #region SmartLabelStyle methods
 
-		/// <summary>
-		/// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
-		/// </summary>
-		/// <param name="common">Common chart elements.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="series">Series values to be used.</param>
-		/// <param name="list">List to add to.</param>
-		public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
-		{
+        /// <summary>
+        /// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
+        /// </summary>
+        /// <param name="common">Common chart elements.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="series">Series values to be used.</param>
+        /// <param name="list">List to add to.</param>
+        public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
+        {
             // NOTE: Stacked Bar chart type do not support SmartLabelStyle feature
-		}
+        }
 
-		#endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -2121,6 +2046,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 }

@@ -381,11 +381,9 @@ namespace WebCharts.Services.Models.Formulas
 			// There is no enough input series
 			if( inputValues.Length != 3 )
 				throw new ArgumentException( SR.ExceptionPriceIndicatorsFormulaRequiresTwoArrays);
-			
-			outLabels = null;
 
-			// Output arrays
-			outputValues = new double [2][];
+            // Output arrays
+            outputValues = new double [2][];
 
 			// Output Labels
 			outLabels = new string [1][];
@@ -1189,7 +1187,7 @@ namespace WebCharts.Services.Models.Formulas
 
             outLabels[0][0] = SR.LabelStatisticalProbability; 
 			outputValues[0][0] = 1; 
-			outputValues[1][0] = this.NormalDistribution( zValue ); 
+			outputValues[1][0] = NormalDistribution( zValue ); 
 		}
 
         /// <summary>
@@ -1357,7 +1355,7 @@ namespace WebCharts.Services.Models.Formulas
 
             outLabels[0][0] = SR.LabelStatisticalProbability; 
 			outputValues[0][0] = 1; 
-			outputValues[1][0] = this.NormalDistributionInverse( alpha ); 
+			outputValues[1][0] = NormalDistributionInverse( alpha ); 
 		}
 
 		#endregion
@@ -2066,7 +2064,7 @@ namespace WebCharts.Services.Models.Formulas
 		/// </summary>
 		/// <param name="probability">A probability corresponding to the normal distribution.</param>
 		/// <returns>Returns the inverse of the standard normal cumulative distribution.</returns>
-		private double NormalDistributionInverse( double probability )
+		private static double NormalDistributionInverse( double probability )
 		{
 					
 			// Validation

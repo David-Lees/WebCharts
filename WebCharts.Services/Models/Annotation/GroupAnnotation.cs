@@ -13,7 +13,7 @@ using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     /// <summary>
     /// <b>AnnotationGroup</b> is a class that represents an annotation group.
@@ -77,7 +77,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.ClipToChartArea = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.ClipToChartArea = value;
                 }
@@ -149,7 +149,7 @@ namespace WebCharts.Services.Models.Annotation
                 base.IsSelected = value;
 
                 // Clear selection for all annotations in the group
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.IsSelected = false;
                 }
@@ -202,7 +202,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.Alignment = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.Alignment = value;
                 }
@@ -249,7 +249,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.ForeColor = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.ForeColor = value;
                 }
@@ -276,7 +276,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.Font = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.Font = value;
                 }
@@ -304,7 +304,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.LineColor = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.LineColor = value;
                 }
@@ -332,7 +332,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.LineWidth = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.LineWidth = value;
                 }
@@ -360,7 +360,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.LineDashStyle = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.LineDashStyle = value;
                 }
@@ -389,7 +389,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.BackColor = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.BackColor = value;
                 }
@@ -421,7 +421,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.BackHatchStyle = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.BackHatchStyle = value;
                 }
@@ -453,7 +453,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.BackGradientStyle = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.BackGradientStyle = value;
                 }
@@ -487,7 +487,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.BackSecondaryColor = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.BackSecondaryColor = value;
                 }
@@ -514,7 +514,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.ShadowColor = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.ShadowColor = value;
                 }
@@ -541,7 +541,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 base.ShadowOffset = value;
-                foreach (Annotation annotation in this.annotations)
+                foreach (Annotation annotation in annotations)
                 {
                     annotation.ShadowOffset = value;
                 }
@@ -771,18 +771,18 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> object, used to paint the annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> control.
+        /// Reference to the <see cref="ChartService"/> control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Paint all annotations in the group
-            foreach (Annotation annotation in this.annotations)
+            foreach (Annotation annotation in annotations)
             {
                 annotation.Paint(chart, graphics);
             }
 
-            if ((this.Common.ProcessModePaint && this.IsSelected) ||
-                this.Common.ProcessModeRegions)
+            if ((Common.ProcessModePaint && IsSelected) ||
+                Common.ProcessModeRegions)
             {
                 // Get annotation position in relative coordinates
                 SKPoint firstPoint = SKPoint.Empty;
@@ -792,36 +792,36 @@ namespace WebCharts.Services.Models.Annotation
                 SKPoint secondPoint = new SKPoint(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
                 // Create selection rectangle
-                SKRect selectionRect = new SKRect(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
+                SKRect selectionRect = new(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
 
                 // Check rectangle orientation 
                 if (selectionRect.Width < 0)
                 {
                     selectionRect.Left = selectionRect.Right;
-                    selectionRect.Width = -selectionRect.Width;
+                    selectionRect.Right = -selectionRect.Width;
                 }
                 if (selectionRect.Height < 0)
                 {
-                    selectionRect.Y = selectionRect.Bottom;
-                    selectionRect.Height = -selectionRect.Height;
+                    selectionRect.Top = selectionRect.Bottom;
+                    selectionRect.Bottom = -selectionRect.Height;
                 }
 
                 // Check if text position is valid
                 if (selectionRect.IsEmpty ||
-                    float.IsNaN(selectionRect.X) ||
-                    float.IsNaN(selectionRect.Y) ||
+                    float.IsNaN(selectionRect.Left) ||
+                    float.IsNaN(selectionRect.Top) ||
                     float.IsNaN(selectionRect.Right) ||
                     float.IsNaN(selectionRect.Bottom))
                 {
                     return;
                 }
 
-                if (this.Common.ProcessModeRegions)
+                if (Common.ProcessModeRegions)
                 {
                     // Add hot region
-                    this.Common.HotRegionsList.AddHotRegion(
+                    Common.HotRegionsList.AddHotRegion(
                         selectionRect,
-                        ReplaceKeywords(this.ToolTip),
+                        ReplaceKeywords(ToolTip),
                         String.Empty,
                         String.Empty,
                         String.Empty,
@@ -847,10 +847,10 @@ namespace WebCharts.Services.Models.Annotation
             if (disposing)
             {
                 //Clean up managed resources
-                if (this.annotations != null)
+                if (annotations != null)
                 {
-                    this.annotations.Dispose();
-                    this.annotations = null;
+                    annotations.Dispose();
+                    annotations = null;
                 }
             }
             base.Dispose(disposing);

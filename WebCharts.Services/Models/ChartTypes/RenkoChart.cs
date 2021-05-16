@@ -53,10 +53,17 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Collections;
 using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -83,7 +90,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Get reference to the chart control
-			Chart	chart = series.Chart;
+			ChartService	chart = series.Chart;
 			if(chart == null)
 			{
                 throw (new InvalidOperationException(SR.ExceptionRenkoNullReference));
@@ -101,7 +108,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
 
 			// Create a temp series which will hold original series data points
-			Series seriesOriginalData = new Series("RENKO_ORIGINAL_DATA_" + series.Name, series.YValuesPerPoint);
+			Series seriesOriginalData = new("RENKO_ORIGINAL_DATA_" + series.Name, series.YValuesPerPoint);
 			seriesOriginalData.Enabled = false;
 			seriesOriginalData.IsVisibleInLegend = false;
 			chart.Series.Add(seriesOriginalData);
@@ -184,14 +191,14 @@ namespace WebCharts.Services.Models.ChartTypes
             if (series.Name.StartsWith("RENKO_ORIGINAL_DATA_", StringComparison.Ordinal))
             {
                 // Get reference to the chart control
-                Chart chart = series.Chart;
+                ChartService chart = series.Chart;
                 if (chart == null)
                 {
                     throw (new InvalidOperationException(SR.ExceptionRenkoNullReference));
                 }
 
                 // Get original Renko series
-                Series renkoSeries = chart.Series[series.Name.Substring(20)];
+                Series renkoSeries = chart.Series[series.Name[20..]];
                 Series.MovePositionMarkers(renkoSeries, series);
                 // Copy data back to original Renko series
                 renkoSeries.Points.Clear();
@@ -206,12 +213,10 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Restore renko series properties
                 renkoSeries.ChartType = SeriesChartType.Renko;
 
-                bool isXValIndexed;
-                bool parseSucceed = bool.TryParse(renkoSeries["OldXValueIndexed"], out isXValIndexed);
+                bool parseSucceed = bool.TryParse(renkoSeries["OldXValueIndexed"], out bool isXValIndexed);
                 renkoSeries.IsXValueIndexed = parseSucceed && isXValIndexed;
 
-                int yValsPerPoint;
-                parseSucceed = int.TryParse(renkoSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out yValsPerPoint);
+                parseSucceed = int.TryParse(renkoSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out int yValsPerPoint);
 
                 if (parseSucceed)
                 {
@@ -270,7 +275,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				bool	usePercentage = attrValue.EndsWith("%", StringComparison.Ordinal);
 				if(usePercentage)
 				{
-					attrValue = attrValue.Substring(0, attrValue.Length - 1);
+					attrValue = attrValue[0..^1];
 				}
 
 				try
@@ -405,7 +410,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					}
 
 					// Get Up Brick color
-					Color	upBrickColor = Color.Transparent;
+					SKColor	upBrickColor = SKColors.Transparent;
 					string	upBrickColorString = dataPoint[CustomPropertyName.PriceUpColor];
 					if(upBrickColorString == null)
 					{
@@ -415,8 +420,8 @@ namespace WebCharts.Services.Models.ChartTypes
 					{
 						try
 						{
-							ColorConverter colorConverter = new ColorConverter();
-							upBrickColor = (Color)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, upBrickColorString);
+							ColorConverter colorConverter = new();
+							upBrickColor = (SKColor)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, upBrickColorString);
 						}
 						catch
 						{
@@ -440,7 +445,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					while(numberOfBricks > 0)
 					{
 						// Create new point
-						DataPoint newDataPoint = (DataPoint)dataPoint.Clone();
+						DataPoint newDataPoint = dataPoint.Clone();
 						newDataPoint["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
 						newDataPoint.series = series;
 						newDataPoint.YValues = new double[2];
@@ -463,8 +468,8 @@ namespace WebCharts.Services.Models.ChartTypes
 							{
 								newDataPoint.BorderDashStyle = ChartDashStyle.Solid;
 							}
-							if( (newDataPoint.BorderColor == Color.Empty || newDataPoint.BorderColor == Color.Transparent) &&
-								(newDataPoint.Color == Color.Empty || newDataPoint.Color == Color.Transparent) )
+							if( (newDataPoint.BorderColor == SKColor.Empty || newDataPoint.BorderColor == SKColors.Transparent) &&
+								(newDataPoint.Color == SKColor.Empty || newDataPoint.Color == SKColors.Transparent) )
 							{
 								newDataPoint.BorderColor = series.Color;
 							}
@@ -616,9 +621,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-        virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+        virtual public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 		#endregion
 

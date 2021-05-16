@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Base class for all anotation objects. Provides 
+//  Purpose:	Base class for all anotation objects. Provides
 //				basic set of properties and methods.
 //
-
 
 using SkiaSharp;
 using System;
@@ -19,7 +17,7 @@ using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.DataManager;
 using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     #region Enumerations
 
@@ -54,62 +52,73 @@ namespace WebCharts.Services.Models.Annotation
         /// Top Left selection handle is used.
         /// </summary>
         TopLeftHandle = 0,
+
         /// <summary>
         /// Top selection handle is used.
         /// </summary>
         TopHandle = 1,
+
         /// <summary>
         /// Top Right selection handle is used.
         /// </summary>
         TopRightHandle = 2,
+
         /// <summary>
         /// Right selection handle is used.
         /// </summary>
         RightHandle = 3,
+
         /// <summary>
         /// Bottom Right selection handle is used.
         /// </summary>
         BottomRightHandle = 4,
+
         /// <summary>
         /// Bottom selection handle is used.
         /// </summary>
         BottomHandle = 5,
+
         /// <summary>
         /// Bottom Left selection handle is used.
         /// </summary>
         BottomLeftHandle = 6,
+
         /// <summary>
         /// Left selection handle is used.
         /// </summary>
         LeftHandle = 7,
+
         /// <summary>
         /// Anchor selection handle is used.
         /// </summary>
         AnchorHandle = 8,
+
         /// <summary>
         /// No selection handles used - moving mode.
         /// </summary>
         Moving = 16,
+
         /// <summary>
         /// Moving points of the annotation path.
         /// </summary>
         MovingPathPoints = 32,
+
         /// <summary>
         /// No moving or resizing.
         /// </summary>
         None = 64,
     }
 
-    #endregion
+    #endregion Enumerations
 
     /// <summary>
-    /// <b>Annotation</b> is an abstract class that defines properties and methods 
+    /// <b>Annotation</b> is an abstract class that defines properties and methods
     /// common to all annotations.
     /// </summary>
     /// <remarks>
-    /// All annotations are derived from the <b>Annotation</b> class, which can be 
-    /// used to set properties common to all annotation objects (e.g. color, position, 
-    /// anchoring and others). 
+    /// All annotations are derived from the <b>Annotation</b> class, which can be
+    /// used to set properties common to all annotation objects (e.g. color, position,
+    /// anchoring and others).
     /// </remarks>
     [
     SRDescription("DescriptionAttributeAnnotation_Annotation")
@@ -117,7 +126,6 @@ namespace WebCharts.Services.Models.Annotation
     public abstract class Annotation : ChartNamedElement
     {
         #region Fields
-
 
         // Name of the chart area the annotation is clipped to
         private string _clipToChartArea = Constants.NotSetValue;
@@ -130,18 +138,21 @@ namespace WebCharts.Services.Models.Annotation
 
         // Position attribute fields
         private double _x = double.NaN;
+
         private double _y = double.NaN;
         private double _width = double.NaN;
         private double _height = double.NaN;
 
         // Annotation axes attaching fields
         private string _axisXName = string.Empty;
+
         private string _axisYName = string.Empty;
         private Axis _axisX = null;
         private Axis _axisY = null;
 
         // Visual attribute fields
         private bool _visible = true;
+
         private ContentAlignment _alignment = ContentAlignment.MiddleCenter;
         private SKColor _foreColor = SKColors.Black;
         private FontCache _fontCache = new();
@@ -159,6 +170,7 @@ namespace WebCharts.Services.Models.Annotation
 
         // Anchor position attribute fields
         private string _anchorDataPointName = string.Empty;
+
         private DataPoint _anchorDataPoint = null;
         private DataPoint _anchorDataPoint2 = null;
         private double _anchorX = double.NaN;
@@ -170,17 +182,15 @@ namespace WebCharts.Services.Models.Annotation
         // Selection handles position (starting top-left and moving clockwise)
         internal SKRect[] selectionRects = null;
 
-        // Annotation tooltip
-        private string _tooltip = string.Empty;
-
         // Selection handles size
         internal const int selectionMarkerSize = 6;
 
         // Pre calculated relative position of annotation and anchor point
         internal SKRect currentPositionRel = new(float.NaN, float.NaN, float.NaN, float.NaN);
+
         internal SKPoint currentAnchorLocationRel = new(float.NaN, float.NaN);
 
-        // Smart labels style		
+        // Smart labels style
         private AnnotationSmartLabelStyle _smartLabelStyle = null;
 
         // Index of last selected point in the annotation path
@@ -188,14 +198,6 @@ namespace WebCharts.Services.Models.Annotation
 
         // Group this annotation belongs too
         internal AnnotationGroup annotationGroup = null;
-
-        // Selection and editing permissions
-        private bool _allowSelecting = false;
-        private bool _allowMoving = false;
-        private bool _allowAnchorMoving = false;
-        private bool _allowResizing = false;
-        private bool _allowTextEditing = false;
-        private bool _allowPathEditing = false;
 
         // Indicates that annotation position was changed. Flag used to fire events.
         internal bool positionChanged = false;
@@ -215,11 +217,12 @@ namespace WebCharts.Services.Models.Annotation
         /// <summary>
         /// Limit of annotation width and height.
         /// </summary>
-        internal static double WidthHightLimit = 290000000;
+        internal readonly static double WidthHightLimit = 290000000;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Annotation"/> class.
         /// </summary>
@@ -228,7 +231,7 @@ namespace WebCharts.Services.Models.Annotation
             _textFont = _fontCache.DefaultFont;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -261,7 +264,7 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         /// <remarks>
         /// This property is used to get the name of each annotation Style
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -275,7 +278,6 @@ namespace WebCharts.Services.Models.Annotation
             get;
         }
 
-
         /// <summary>
         /// Gets or sets the name of the chart area which an annotation is clipped to.
         /// </summary>
@@ -283,8 +285,8 @@ namespace WebCharts.Services.Models.Annotation
         /// A string which represents the name of an existing chart area.
         /// </value>
         /// <remarks>
-        /// If the chart area name is specified, an annotation will only be drawn inside the 
-        /// plotting area of the chart area specified.  All parts of the annotation 
+        /// If the chart area name is specified, an annotation will only be drawn inside the
+        /// plotting area of the chart area specified.  All parts of the annotation
         /// outside of the plotting area will be clipped.
         /// <para>
         /// To disable chart area clipping, set the property to "NotSet" or an empty string.
@@ -316,7 +318,7 @@ namespace WebCharts.Services.Models.Annotation
                         }
                         _clipToChartArea = value;
                     }
-                    this.Invalidate();
+                    Invalidate();
                 }
             }
         }
@@ -325,11 +327,11 @@ namespace WebCharts.Services.Models.Annotation
         /// Gets or sets the smart labels style of an annotation.
         /// </summary>
         /// <value>
-        /// An <see cref="AnnotationSmartLabelStyle"/> object that represents an annotation's 
+        /// An <see cref="AnnotationSmartLabelStyle"/> object that represents an annotation's
         /// smart labels style properties.
         /// </value>
         /// <remarks>
-        /// Smart labels are used to prevent an annotation from overlapping data point labels 
+        /// Smart labels are used to prevent an annotation from overlapping data point labels
         /// and other annotations.
         /// <para>
         /// Note that data point labels must also have smart labels enabled.
@@ -343,9 +345,9 @@ namespace WebCharts.Services.Models.Annotation
         {
             get
             {
-                if (this._smartLabelStyle == null)
+                if (_smartLabelStyle == null)
                 {
-                    this._smartLabelStyle = new AnnotationSmartLabelStyle(this);
+                    _smartLabelStyle = new AnnotationSmartLabelStyle(this);
                 }
                 return _smartLabelStyle;
             }
@@ -353,7 +355,7 @@ namespace WebCharts.Services.Models.Annotation
             {
                 value.chartElement = this;
                 _smartLabelStyle = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -362,29 +364,29 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         public AnnotationGroup AnnotationGroup
         {
-            get { return this.annotationGroup; }
+            get { return annotationGroup; }
         }
 
-        #endregion
+        #endregion Miscellaneous
 
         #region Position
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether the size of an annotation is always 
+        /// Gets or sets a flag that specifies whether the size of an annotation is always
         /// defined in relative chart coordinates.
         /// <seealso cref="Width"/>
         /// <seealso cref="Height"/>
         /// </summary>
         /// <value>
-        /// <b>True</b> if an annotation's <see cref="Width"/> and <see cref="Height"/> are always 
+        /// <b>True</b> if an annotation's <see cref="Width"/> and <see cref="Height"/> are always
         /// in chart relative coordinates, <b>false</b> otherwise.
         /// </value>
         /// <remarks>
-        /// An annotation's width and height may be set in relative chart or axes coordinates. 
+        /// An annotation's width and height may be set in relative chart or axes coordinates.
         /// By default, relative chart coordinates are used.
         /// <para>
-        /// To use axes coordinates for size set the <b>IsSizeAlwaysRelative</b> property to 
-        /// <b>false</b> and either anchor the annotation to a data point or set the 
+        /// To use axes coordinates for size set the <b>IsSizeAlwaysRelative</b> property to
+        /// <b>false</b> and either anchor the annotation to a data point or set the
         /// <see cref="AxisX"/> or <see cref="AxisY"/> properties.
         /// </para>
         /// </remarks>
@@ -401,7 +403,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _isSizeAlwaysRelative = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -415,16 +417,16 @@ namespace WebCharts.Services.Models.Annotation
         /// A Double value that represents the X coordinate of an annotation.
         /// </value>
         /// <remarks>
-        /// The X coordinate of an annotation is in relative chart coordinates or axes coordinates. Chart 
+        /// The X coordinate of an annotation is in relative chart coordinates or axes coordinates. Chart
         /// relative coordinates are used by default.
         /// <para>
-        /// To use axes coordinates, anchor 
-        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or 
+        /// To use axes coordinates, anchor
+        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or
         /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties.
         /// </para>
         /// <para>
-        /// Set the X position to Double.NaN ("NotSet") to achieve automatic position calculation 
-        /// when the annotation is anchored using the <see cref="AnchorDataPoint"/> property or 
+        /// Set the X position to Double.NaN ("NotSet") to achieve automatic position calculation
+        /// when the annotation is anchored using the <see cref="AnchorDataPoint"/> property or
         /// the <see cref="AnchorX"/> and <see cref="AnchorY"/> properties.
         /// </para>
         /// </remarks>
@@ -441,7 +443,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _x = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -455,16 +457,16 @@ namespace WebCharts.Services.Models.Annotation
         /// A Double value that represents the Y coordinate of an annotation.
         /// </value>
         /// <remarks>
-        /// The Y coordinate of an annotation is in relative chart coordinates or axes coordinates. Chart 
+        /// The Y coordinate of an annotation is in relative chart coordinates or axes coordinates. Chart
         /// relative coordinates are used by default.
         /// <para>
-        /// To use axes coordinates, anchor 
-        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or 
+        /// To use axes coordinates, anchor
+        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or
         /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties.
         /// </para>
         /// <para>
-        /// Set the Y position to Double.NaN ("NotSet") to achieve automatic position calculation 
-        /// when the annotation is anchored using the <see cref="AnchorDataPoint"/> property or 
+        /// Set the Y position to Double.NaN ("NotSet") to achieve automatic position calculation
+        /// when the annotation is anchored using the <see cref="AnchorDataPoint"/> property or
         /// the <see cref="AnchorX"/> and <see cref="AnchorY"/> properties.
         /// </para>
         /// </remarks>
@@ -481,7 +483,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _y = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -495,21 +497,21 @@ namespace WebCharts.Services.Models.Annotation
         /// A Double value that represents an annotation's width.
         /// </value>
         /// <remarks>
-        /// An annotation's width can be a negative value, in which case the annotation orientation 
+        /// An annotation's width can be a negative value, in which case the annotation orientation
         /// is switched.
         /// <para>
-        /// Annotation width can be in relative chart or axes coordinates. Chart 
+        /// Annotation width can be in relative chart or axes coordinates. Chart
         /// relative coordinates are used by default.
         /// </para>
         /// <para>
-        /// To use axes coordinates, anchor 
-        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or 
-        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties 
+        /// To use axes coordinates, anchor
+        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or
+        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties
         /// and set the <see cref="IsSizeAlwaysRelative"/> property to <b>false</b>.
         /// </para>
         /// <para>
-        /// Set the width to Double.NaN ("NotSet") to achieve automatic size calculation for 
-        /// annotations with text. The size will automatically be calculated based on 
+        /// Set the width to Double.NaN ("NotSet") to achieve automatic size calculation for
+        /// annotations with text. The size will automatically be calculated based on
         /// the annotation text and font size.
         /// </para>
         /// </remarks>
@@ -530,7 +532,7 @@ namespace WebCharts.Services.Models.Annotation
                     throw new ArgumentException(SR.ExceptionValueMustBeInRange(nameof(Width), (-WidthHightLimit).ToString(CultureInfo.CurrentCulture), WidthHightLimit.ToString(CultureInfo.CurrentCulture)));
                 }
                 _width = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -544,21 +546,21 @@ namespace WebCharts.Services.Models.Annotation
         /// A Double value that represents an annotation's height.
         /// </value>
         /// <remarks>
-        /// An annotation's height can be a negative value, in which case the annotation orientation 
+        /// An annotation's height can be a negative value, in which case the annotation orientation
         /// is switched.
         /// <para>
-        /// Annotation height can be in relative chart or axes coordinates. Chart 
+        /// Annotation height can be in relative chart or axes coordinates. Chart
         /// relative coordinates are used by default.
         /// </para>
         /// <para>
-        /// To use axes coordinates, anchor 
-        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or 
-        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties 
+        /// To use axes coordinates, anchor
+        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or
+        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties
         /// and set the <see cref="IsSizeAlwaysRelative"/> property to <b>false</b>.
         /// </para>
         /// <para>
-        /// Set the height to Double.NaN ("NotSet") to achieve automatic size calculation for 
-        /// annotations with text. The size will automatically be calculated based on 
+        /// Set the height to Double.NaN ("NotSet") to achieve automatic size calculation for
+        /// annotations with text. The size will automatically be calculated based on
         /// the annotation text and font size.
         /// </para>
         /// </remarks>
@@ -579,7 +581,7 @@ namespace WebCharts.Services.Models.Annotation
                     throw new ArgumentException(SR.ExceptionValueMustBeInRange(nameof(Height), (-WidthHightLimit).ToString(CultureInfo.CurrentCulture), WidthHightLimit.ToString(CultureInfo.CurrentCulture)));
                 }
                 _height = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -593,9 +595,9 @@ namespace WebCharts.Services.Models.Annotation
         /// A Double value that represents the position of an annotation's right boundary.
         /// </value>
         /// <remarks>
-        /// To use axes coordinates, anchor 
-        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or 
-        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties 
+        /// To use axes coordinates, anchor
+        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or
+        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties
         /// and set the <see cref="IsSizeAlwaysRelative"/> property to <b>false</b>.
         /// </remarks>
         [
@@ -611,7 +613,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _width = value - _x;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -625,9 +627,9 @@ namespace WebCharts.Services.Models.Annotation
         /// A Double value that represents the position of an annotation's bottom boundary.
         /// </value>
         /// <remarks>
-        /// To use axes coordinates, anchor 
-        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or 
-        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties 
+        /// To use axes coordinates, anchor
+        /// an annotation to a data point using the <see cref="AnchorDataPoint"/> property, or
+        /// set the annotation axes using the <see cref="AxisX"/> or <see cref="AxisY"/> properties
         /// and set the <see cref="IsSizeAlwaysRelative"/> property to <b>false</b>.
         /// </remarks>
         [
@@ -643,12 +645,12 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _height = value - _y;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
 
-        #endregion
+        #endregion Position
 
         #region Visual Attributes
 
@@ -728,8 +730,8 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ContentAlignment"/> value that represents the content alignment.
         /// </value>
         /// <remarks>
-        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,  
-        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align 
+        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,
+        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align
         /// a non-scaled image inside an <see cref="ImageAnnotation"/> object.
         /// </remarks>
         [
@@ -793,7 +795,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _textFont = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -955,6 +957,7 @@ namespace WebCharts.Services.Models.Annotation
                 Invalidate();
             }
         }
+
         /// <summary>
         /// Gets or sets the background gradient style of an annotation.
         /// <seealso cref="BackSecondaryColor"/>
@@ -991,7 +994,7 @@ namespace WebCharts.Services.Models.Annotation
         /// <seealso cref="BackGradientStyle"/>
         /// </summary>
         /// <value>
-        /// A <see cref="Color"/> value used for the secondary color of an annotation background with 
+        /// A <see cref="Color"/> value used for the secondary color of an annotation background with
         /// hatching or gradient fill.
         /// </value>
         /// <remarks>
@@ -1063,7 +1066,7 @@ namespace WebCharts.Services.Models.Annotation
             }
         }
 
-        #endregion
+        #endregion Visual Attributes
 
         #region Axes Attaching
 
@@ -1095,7 +1098,7 @@ namespace WebCharts.Services.Models.Annotation
             {
                 _axisXName = value;
                 _axisX = null;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1114,38 +1117,7 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeAnchorAxes"),
         SRDescription("DescriptionAttributeAxisYName"),
         ]
-        virtual public string AxisYName
-        {
-            get
-            {
-                //  Always return empty string to prevent property serialization
-                // "YAxisName" property will be used instead.
-                return string.Empty;
-            }
-            set
-            {
-                this.YAxisName = value;
-            }
-        }
-
-
-        /// <summary>
-        /// Gets or sets the name of the Y axis which an annotation is attached to.
-        /// NOTE: "AxisYName" property was used before but the name was changed to solve the
-        /// duplicated hash value during the serialization with the "TitleSeparator" property. 
-        /// </summary>
-        /// <value>
-        /// A string value that represents the name of the Y axis which an annotation
-        /// is attached to.
-        /// </value>
-        /// <remarks>
-        /// This property is for internal use and is hidden at design and run time.
-        /// </remarks>
-        [
-        SRCategory("CategoryAttributeAnchorAxes"),
-        SRDescription("DescriptionAttributeAxisYName"),
-        ]
-        virtual public string YAxisName
+        public virtual string AxisYName
         {
             get
             {
@@ -1159,7 +1131,7 @@ namespace WebCharts.Services.Models.Annotation
             {
                 _axisYName = value;
                 _axisY = null;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1173,8 +1145,8 @@ namespace WebCharts.Services.Models.Annotation
         /// <see cref="Axis"/> object which an annotation is attached to.
         /// </value>
         /// <remarks>
-        /// When an annotation is attached to an axis, its X position is always in 
-        /// axis coordinates. To define an annotation's size in axis coordinates as well, 
+        /// When an annotation is attached to an axis, its X position is always in
+        /// axis coordinates. To define an annotation's size in axis coordinates as well,
         /// make sure the <see cref="IsSizeAlwaysRelative"/> property is set to <b>false</b>.
         /// <para>
         /// Set this value to <b>null</b> or <b>nothing</b> to disable attachment to the axis.
@@ -1198,7 +1170,7 @@ namespace WebCharts.Services.Models.Annotation
             {
                 _axisX = value;
                 _axisXName = String.Empty;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1212,8 +1184,8 @@ namespace WebCharts.Services.Models.Annotation
         /// <see cref="Axis"/> object which an annotation is attached to.
         /// </value>
         /// <remarks>
-        /// When an annotation is attached to an axis, its Y position is always in 
-        /// axis coordinates. To define an annotation's size in axis coordinates as well, 
+        /// When an annotation is attached to an axis, its Y position is always in
+        /// axis coordinates. To define an annotation's size in axis coordinates as well,
         /// make sure <see cref="IsSizeAlwaysRelative"/> property is set to <b>false</b>.
         /// <para>
         /// Set this value to <b>null</b> or <b>nothing</b> to disable annotation attachment to an axis.
@@ -1237,12 +1209,12 @@ namespace WebCharts.Services.Models.Annotation
             {
                 _axisY = value;
                 _axisYName = String.Empty;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
 
-        #endregion
+        #endregion Axes Attaching
 
         #region Anchor
 
@@ -1250,7 +1222,7 @@ namespace WebCharts.Services.Models.Annotation
         /// Gets or sets the name of a data point which an annotation is anchored to.
         /// </summary>
         /// <value>
-        /// A string value that represents the name of the data point which an 
+        /// A string value that represents the name of the data point which an
         /// annotation is anchored to.
         /// </value>
         /// <remarks>
@@ -1274,7 +1246,7 @@ namespace WebCharts.Services.Models.Annotation
             {
                 _anchorDataPointName = value;
                 _anchorDataPoint = null;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1293,17 +1265,17 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="DataPoint"/> object an annotation is anchored to.
         /// </value>
         /// <remarks>
-        /// The annotation is anchored to the X and Y values of the specified data point, 
+        /// The annotation is anchored to the X and Y values of the specified data point,
         /// and automatically uses the same axes coordinates as the data point.
         /// <para>
-        /// To automatically position an annotation relative to an anchor point, make sure 
+        /// To automatically position an annotation relative to an anchor point, make sure
         /// its <see cref="X"/> and <see cref="Y"/> properties are set to <b>Double.NaN</b>.
-        /// The <see cref="AnchorAlignment"/> property may be used to change an annotation's 
-        /// automatic position alignment to an anchor point. The <see cref="AnchorOffsetX"/> and 
+        /// The <see cref="AnchorAlignment"/> property may be used to change an annotation's
+        /// automatic position alignment to an anchor point. The <see cref="AnchorOffsetX"/> and
         /// <see cref="AnchorOffsetY"/> properties may be used to add extra spacing.
         /// </para>
         /// <para>
-        /// When using this property, make sure the <see cref="AnchorX"/> and <see cref="AnchorY"/> 
+        /// When using this property, make sure the <see cref="AnchorX"/> and <see cref="AnchorY"/>
         /// properties are set to <b>Double.NaN</b> (they have precedence).
         /// </para>
         /// <para>
@@ -1328,7 +1300,7 @@ namespace WebCharts.Services.Models.Annotation
             {
                 _anchorDataPoint = value;
                 _anchorDataPointName = String.Empty;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1345,13 +1317,13 @@ namespace WebCharts.Services.Models.Annotation
         /// A double value that represents the X coordinate which an annotation is anchored to.
         /// </value>
         /// <remarks>
-        /// The annotation is anchored to the X coordinate specified in relative or axis coordinates, 
+        /// The annotation is anchored to the X coordinate specified in relative or axis coordinates,
         /// depending on the <see cref="AxisX"/> property value.
         /// <para>
-        /// To automatically position an annotation relative to an anchor point, make sure 
+        /// To automatically position an annotation relative to an anchor point, make sure
         /// its <see cref="X"/> property is set to <b>Double.NaN</b>.
-        /// The <see cref="AnchorAlignment"/> property may be used to change the annotation's 
-        /// automatic position alignment to the anchor point. The <see cref="AnchorOffsetX"/> and 
+        /// The <see cref="AnchorAlignment"/> property may be used to change the annotation's
+        /// automatic position alignment to the anchor point. The <see cref="AnchorOffsetX"/> and
         /// <see cref="AnchorOffsetY"/> properties may be used to add extra spacing.
         /// </para>
         /// <para>
@@ -1374,7 +1346,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _anchorX = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1391,13 +1363,13 @@ namespace WebCharts.Services.Models.Annotation
         /// A double value that represents the Y coordinate which an annotation is anchored to.
         /// </value>
         /// <remarks>
-        /// The annotation is anchored to the Y coordinate specified in relative or axis coordinates, 
+        /// The annotation is anchored to the Y coordinate specified in relative or axis coordinates,
         /// depending on the <see cref="AxisX"/> property value.
         /// <para>
-        /// To automatically position an annotation relative to an anchor point, make sure 
+        /// To automatically position an annotation relative to an anchor point, make sure
         /// its <see cref="Y"/> property is set to <b>Double.NaN</b>.
-        /// The <see cref="AnchorAlignment"/> property may be used to change the annotation's 
-        /// automatic position alignment to the anchor point. The <see cref="AnchorOffsetX"/> and 
+        /// The <see cref="AnchorAlignment"/> property may be used to change the annotation's
+        /// automatic position alignment to the anchor point. The <see cref="AnchorOffsetX"/> and
         /// <see cref="AnchorOffsetY"/> properties may be used to add extra spacing.
         /// </para>
         /// <para>
@@ -1420,7 +1392,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _anchorY = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1436,8 +1408,8 @@ namespace WebCharts.Services.Models.Annotation
         /// A double value that represents the x-coordinate offset between the positions of an annotation and its anchor point.
         /// </value>
         /// <remarks>
-        /// The annotation must be anchored using the <see cref="AnchorDataPoint"/> or 
-        /// <see cref="AnchorX"/> properties, and its <see cref="X"/> property must be set 
+        /// The annotation must be anchored using the <see cref="AnchorDataPoint"/> or
+        /// <see cref="AnchorX"/> properties, and its <see cref="X"/> property must be set
         /// to <b>Double.NaN</b>.
         /// </remarks>
         [
@@ -1457,7 +1429,7 @@ namespace WebCharts.Services.Models.Annotation
                     throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAnnotationAnchorOffsetInvalid));
                 }
                 anchorOffsetX = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1473,7 +1445,7 @@ namespace WebCharts.Services.Models.Annotation
         /// A double value that represents the y-coordinate offset between the positions of an annotation and its anchor point.
         /// </value>
         /// <remarks>
-        /// Annotation must be anchored using <see cref="Annotation.AnchorDataPoint"/> or 
+        /// Annotation must be anchored using <see cref="Annotation.AnchorDataPoint"/> or
         /// <see cref="Annotation.AnchorY"/> properties and it's <see cref="Annotation.Y"/> property must be set
         /// to <b>Double.NaN</b>.
         /// </remarks>
@@ -1494,7 +1466,7 @@ namespace WebCharts.Services.Models.Annotation
                     throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAnnotationAnchorOffsetInvalid));
                 }
                 anchorOffsetY = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
@@ -1508,12 +1480,12 @@ namespace WebCharts.Services.Models.Annotation
         /// <seealso cref="AnchorOffsetY"/>
         /// </summary>
         /// <value>
-        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to 
+        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to
         /// the anchor point.
         /// </value>
         /// <remarks>
-        /// The annotation must be anchored using either <see cref="AnchorDataPoint"/>, or the <see cref="AnchorX"/> 
-        /// and <see cref="AnchorY"/> properties. Its <see cref="X"/> and <see cref="Y"/> 
+        /// The annotation must be anchored using either <see cref="AnchorDataPoint"/>, or the <see cref="AnchorX"/>
+        /// and <see cref="AnchorY"/> properties. Its <see cref="X"/> and <see cref="Y"/>
         /// properties must be set to <b>Double.NaN</b>.
         /// </remarks>
         [
@@ -1529,17 +1501,17 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 anchorAlignment = value;
-                this.ResetCurrentRelativePosition();
+                ResetCurrentRelativePosition();
                 Invalidate();
             }
         }
 
-        #endregion // Anchoring
+        #endregion Anchor
 
         #region Editing Permissions
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation may be selected 
+        /// Gets or sets a flag that specifies whether an annotation may be selected
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -1549,20 +1521,10 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeEditing"),
         SRDescription("DescriptionAttributeAllowSelecting"),
         ]
-        virtual public bool AllowSelecting
-        {
-            get
-            {
-                return _allowSelecting;
-            }
-            set
-            {
-                _allowSelecting = value;
-            }
-        }
+        public virtual bool AllowSelecting { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation may be moved 
+        /// Gets or sets a flag that specifies whether an annotation may be moved
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -1572,20 +1534,10 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeEditing"),
         SRDescription("DescriptionAttributeAllowMoving"),
         ]
-        virtual public bool AllowMoving
-        {
-            get
-            {
-                return _allowMoving;
-            }
-            set
-            {
-                _allowMoving = value;
-            }
-        }
+        public virtual bool AllowMoving { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation anchor may be moved 
+        /// Gets or sets a flag that specifies whether an annotation anchor may be moved
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -1595,20 +1547,10 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeEditing"),
         SRDescription("DescriptionAttributeAllowAnchorMoving3"),
         ]
-        virtual public bool AllowAnchorMoving
-        {
-            get
-            {
-                return _allowAnchorMoving;
-            }
-            set
-            {
-                _allowAnchorMoving = value;
-            }
-        }
+        public virtual bool AllowAnchorMoving { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation may be resized 
+        /// Gets or sets a flag that specifies whether an annotation may be resized
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -1618,20 +1560,11 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeEditing"),
         SRDescription("DescriptionAttributeAllowResizing"),
         ]
-        virtual public bool AllowResizing
-        {
-            get
-            {
-                return _allowResizing;
-            }
-            set
-            {
-                _allowResizing = value;
-            }
-        }
+        public virtual bool AllowResizing { get; set; } = false;
+
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation's text may be edited 
+        /// Gets or sets a flag that specifies whether an annotation's text may be edited
         /// when the end user double clicks on the text.
         /// </summary>
         /// <value>
@@ -1641,20 +1574,11 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeEditing"),
         SRDescription("DescriptionAttributeAllowTextEditing"),
         ]
-        virtual public bool AllowTextEditing
-        {
-            get
-            {
-                return _allowTextEditing;
-            }
-            set
-            {
-                _allowTextEditing = value;
-            }
-        }
+        public virtual bool AllowTextEditing { get; set; } = false;
+
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether a polygon annotation's points 
+        /// Gets or sets a flag that specifies whether a polygon annotation's points
         /// may be moved with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -1664,19 +1588,9 @@ namespace WebCharts.Services.Models.Annotation
         SRCategory("CategoryAttributeEditing"),
         SRDescription("DescriptionAttributeAllowPathEditing3"),
         ]
-        virtual public bool AllowPathEditing
-        {
-            get
-            {
-                return _allowPathEditing;
-            }
-            set
-            {
-                _allowPathEditing = value;
-            }
-        }
+        public virtual bool AllowPathEditing { get; set; } = false;
 
-        #endregion
+        #endregion Editing Permissions
 
         #region Interactivity
 
@@ -1687,32 +1601,19 @@ namespace WebCharts.Services.Models.Annotation
         /// A string value.
         /// </value>
         /// <remarks>
-        /// Special keywords can be used in the text when an annotation is anchored to 
-        /// a data point using the <see cref="AnchorDataPoint"/> property.  For a listing of 
+        /// Special keywords can be used in the text when an annotation is anchored to
+        /// a data point using the <see cref="AnchorDataPoint"/> property.  For a listing of
         /// these keywords, refer to the "Annotations" help topic.
         /// </remarks>
         [
-
         SRCategory("CategoryAttributeMisc"),
         SRDescription("DescriptionAttributeToolTip"),
         ]
-        virtual public string ToolTip
-        {
-            get
-            {
-                return _tooltip;
-            }
-            set
-            {
-                _tooltip = value;
+        public virtual string ToolTip { get; set; } = string.Empty;
 
-            }
-        }
+        #endregion Interactivity
 
-
-        #endregion // Interactivity
-
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -1725,9 +1626,9 @@ namespace WebCharts.Services.Models.Annotation
 		/// A <see cref="ChartGraphics"/> object used to paint the annotation object.
 		/// </param>
 		/// <param name="chart">
-		/// Reference to the annotation's <see cref="Chart"/> control owner.
+		/// Reference to the annotation's <see cref="ChartService"/> control owner.
 		/// </param>
-        abstract internal void Paint(Chart chart, ChartGraphics graphics);
+        abstract internal void Paint(ChartService chart, ChartGraphics graphics);
 
         /// <summary>
         /// Paints annotation selection markers.
@@ -1772,7 +1673,6 @@ namespace WebCharts.Services.Models.Annotation
                             markerSizeRel.Width,
                             markerSizeRel.Height);
 
-
                         // Draw selection handle
                         chartGraphics.DrawMarkerRel(
                             rect.Location,
@@ -1800,7 +1700,7 @@ namespace WebCharts.Services.Models.Annotation
                             new(0, 0, 0, 128),
                             SKRect.Empty);
                     }
-                    else if (this.SelectionPointsStyle == SelectionPointsStyle.Rectangle)
+                    else if (SelectionPointsStyle == SelectionPointsStyle.Rectangle)
                     {
                         for (int index = 0; index < 8; index++)
                         {
@@ -1811,31 +1711,38 @@ namespace WebCharts.Services.Models.Annotation
                                 case ResizingMode.TopLeftHandle:
                                     handlePosition = rect.Location;
                                     break;
+
                                 case ResizingMode.TopHandle:
-                                    handlePosition = new SKPoint(rect.X + rect.Width / 2f, rect.Y);
+                                    handlePosition = new SKPoint(rect.Left + rect.Width / 2f, rect.Top);
                                     break;
+
                                 case ResizingMode.TopRightHandle:
                                     handlePosition = new SKPoint(rect.Right, rect.Top);
                                     break;
+
                                 case ResizingMode.RightHandle:
                                     handlePosition = new SKPoint(rect.Right, rect.Top + rect.Height / 2f);
                                     break;
+
                                 case ResizingMode.BottomRightHandle:
                                     handlePosition = new SKPoint(rect.Right, rect.Bottom);
                                     break;
+
                                 case ResizingMode.BottomHandle:
                                     handlePosition = new SKPoint(rect.Left + rect.Width / 2f, rect.Bottom);
                                     break;
+
                                 case ResizingMode.BottomLeftHandle:
                                     handlePosition = new SKPoint(rect.Left, rect.Bottom);
                                     break;
+
                                 case ResizingMode.LeftHandle:
                                     handlePosition = new SKPoint(rect.Left, rect.Top + rect.Height / 2f);
                                     break;
                             }
 
                             // Save selection handles position in array elements 0 and 4
-                            this.selectionRects[index] = new SKRect(
+                            selectionRects[index] = new SKRect(
                                 handlePosition.X - markerSizeRel.Width / 2f,
                                 handlePosition.Y - markerSizeRel.Height / 2f,
                                 markerSizeRel.Width,
@@ -1857,7 +1764,6 @@ namespace WebCharts.Services.Models.Annotation
                         }
                     }
 
-
                     //********************************************************************
                     //** Draw anchor selection handle
                     //********************************************************************
@@ -1872,7 +1778,7 @@ namespace WebCharts.Services.Models.Annotation
                     double anchorY = double.NaN;
                     bool relativeX = false;
                     bool relativeY = false;
-                    this.GetAnchorLocation(ref anchorX, ref anchorY, ref relativeX, ref relativeY);
+                    GetAnchorLocation(ref anchorX, ref anchorY, ref relativeX, ref relativeY);
 
                     // Convert anchor location to relative coordinates
                     if (!double.IsNaN(anchorX) && !double.IsNaN(anchorY))
@@ -1897,19 +1803,18 @@ namespace WebCharts.Services.Models.Annotation
                             chartArea = vertAxis.ChartArea;
                         }
                         if (chartArea != null &&
-                            chartArea.Area3DStyle.Enable3D == true &&
+                            chartArea.Area3DStyle.Enable3D &&
                             !chartArea.chartAreaIsCurcular &&
                             chartArea.requireAxes &&
                             chartArea.matrix3D.IsInitialized())
                         {
                             // Get anotation Z coordinate (use scene depth or anchored point Z position)
                             float positionZ = chartArea.areaSceneDepth;
-                            if (this.AnchorDataPoint != null && this.AnchorDataPoint.series != null)
+                            if (AnchorDataPoint != null && AnchorDataPoint.series != null)
                             {
-                                float depth = 0f;
                                 chartArea.GetSeriesZPositionAndDepth(
-                                    this.AnchorDataPoint.series,
-                                    out depth,
+                                    AnchorDataPoint.series,
+                                    out float depth,
                                     out positionZ);
                                 positionZ += depth / 2f;
                             }
@@ -1927,7 +1832,7 @@ namespace WebCharts.Services.Models.Annotation
                         }
 
                         // Save selection handles position in array elements 0 and 4
-                        this.selectionRects[(int)ResizingMode.AnchorHandle] = new SKRect(
+                        selectionRects[(int)ResizingMode.AnchorHandle] = new SKRect(
                             (float)anchorX - markerSizeRel.Width / 2f,
                             (float)anchorY - markerSizeRel.Height / 2f,
                             markerSizeRel.Width,
@@ -1942,9 +1847,9 @@ namespace WebCharts.Services.Models.Annotation
                             markerBorderColor,
                             1,
                             "",
-                            Color.Empty,
+                            SKColor.Empty,
                             0,
-                            Color.FromArgb(128, 0, 0, 0),
+                            new SKColor(0, 0, 0, 128),
                             SKRect.Empty);
                     }
 
@@ -1958,11 +1863,11 @@ namespace WebCharts.Services.Models.Annotation
                         SKRect[] newSelectionRects = new SKRect[pathPoints.Length + 9];
 
                         // Copy previous rectangles (first nine elements)
-                        for (int index = 0; index < this.selectionRects.Length; index++)
+                        for (int index = 0; index < selectionRects.Length; index++)
                         {
-                            newSelectionRects[index] = this.selectionRects[index];
+                            newSelectionRects[index] = selectionRects[index];
                         }
-                        this.selectionRects = newSelectionRects;
+                        selectionRects = newSelectionRects;
 
                         // Loop through all points
                         for (int index = 0; index < pathPoints.Length; index++)
@@ -1971,7 +1876,7 @@ namespace WebCharts.Services.Models.Annotation
                             SKPoint handlePosition = chartGraphics.GetRelativePoint(pathPoints[index]);
 
                             // Save selection handles position in array elements 0 and 4
-                            this.selectionRects[9 + index] = new SKRect(
+                            selectionRects[9 + index] = new SKRect(
                                 handlePosition.X - markerSizeRel.Width / 2f,
                                 handlePosition.Y - markerSizeRel.Height / 2f,
                                 markerSizeRel.Width,
@@ -1996,7 +1901,7 @@ namespace WebCharts.Services.Models.Annotation
             }
         }
 
-        #endregion
+        #endregion Painting
 
         #region Position and Size
 
@@ -2004,7 +1909,7 @@ namespace WebCharts.Services.Models.Annotation
         /// Resizes an annotation according to its content size.
         /// </summary>
         /// <remarks>
-        /// Sets the annotation width and height to fit the specified text. This method applies to 
+        /// Sets the annotation width and height to fit the specified text. This method applies to
         /// <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>, <see cref="EllipseAnnotation"/>
         /// and <see cref="CalloutAnnotation"/> objects only.
         /// </remarks>
@@ -2013,11 +1918,11 @@ namespace WebCharts.Services.Models.Annotation
             SKRect position = GetContentPosition();
             if (!double.IsNaN(position.Width))
             {
-                this.Width = position.Width;
+                Width = position.Width;
             }
             if (!double.IsNaN(position.Height))
             {
-                this.Height = position.Height;
+                Height = position.Height;
             }
         }
 
@@ -2039,16 +1944,16 @@ namespace WebCharts.Services.Models.Annotation
         /// <param name="inRelativeAnchorY">Indicates if Y coordinate is in relative chart coordinates.</param>
         private void GetAnchorLocation(ref double anchorX, ref double anchorY, ref bool inRelativeAnchorX, ref bool inRelativeAnchorY)
         {
-            anchorX = this.AnchorX;
-            anchorY = this.AnchorY;
+            anchorX = AnchorX;
+            anchorY = AnchorY;
 
-            if (this.AnchorDataPoint != null &&
-                this.AnchorDataPoint.series != null &&
-                this.Chart != null &&
-                this.Chart.chartPicture != null)
+            if (AnchorDataPoint != null &&
+                AnchorDataPoint.series != null &&
+                Chart != null &&
+                Chart.chartPicture != null)
             {
                 // Anchor data point is not allowed for gropped annotations
-                if (this.AnnotationGroup != null)
+                if (AnnotationGroup != null)
                 {
                     throw (new InvalidOperationException(SR.ExceptionAnnotationGroupedAnchorDataPointMustBeEmpty));
                 }
@@ -2059,14 +1964,14 @@ namespace WebCharts.Services.Models.Annotation
                     // Get X value from data point
                     if (double.IsNaN(anchorX))
                     {
-                        anchorX = this.AnchorDataPoint.positionRel.X;
+                        anchorX = AnchorDataPoint.positionRel.X;
                         inRelativeAnchorX = true;
                     }
 
                     // Get Y value from data point
                     if (double.IsNaN(anchorY))
                     {
-                        anchorY = this.AnchorDataPoint.positionRel.Y;
+                        anchorY = AnchorDataPoint.positionRel.Y;
                         inRelativeAnchorY = true;
                     }
                 }
@@ -2086,7 +1991,7 @@ namespace WebCharts.Services.Models.Annotation
             //***********************************************************************
             //** Check if position was precalculated
             //***********************************************************************
-            if (!double.IsNaN(currentPositionRel.X) && !double.IsNaN(currentPositionRel.X))
+            if (!double.IsNaN(currentPositionRel.Left) && !double.IsNaN(currentPositionRel.Top))
             {
                 location = currentPositionRel.Location;
                 size = currentPositionRel.Size;
@@ -2104,46 +2009,46 @@ namespace WebCharts.Services.Models.Annotation
             //***********************************************************************
             //** Check if annotation was anchored to 2 points.
             //***********************************************************************
-            if (this._anchorDataPoint != null &&
-                this._anchorDataPoint2 != null)
+            if (_anchorDataPoint != null &&
+                _anchorDataPoint2 != null)
             {
                 // Annotation size is in axis coordinates
-                this.IsSizeAlwaysRelative = false;
+                IsSizeAlwaysRelative = false;
 
                 // Set annotation size
-                this.Height =
-                    vertAxis.PositionToValue(this._anchorDataPoint2.positionRel.Y, false) -
-                    vertAxis.PositionToValue(this._anchorDataPoint.positionRel.Y, false);
-                this.Width =
-                    horizAxis.PositionToValue(this._anchorDataPoint2.positionRel.X, false) -
-                    horizAxis.PositionToValue(this._anchorDataPoint.positionRel.X, false);
+                Height =
+                    vertAxis.PositionToValue(_anchorDataPoint2.positionRel.Y, false) -
+                    vertAxis.PositionToValue(_anchorDataPoint.positionRel.Y, false);
+                Width =
+                    horizAxis.PositionToValue(_anchorDataPoint2.positionRel.X, false) -
+                    horizAxis.PositionToValue(_anchorDataPoint.positionRel.X, false);
 
                 // Reset second anchor point after setting width and height
-                this._anchorDataPoint2 = null;
+                _anchorDataPoint2 = null;
             }
 
             //***********************************************************************
-            //** Flags which indicate that coordinate was already transformed 
+            //** Flags which indicate that coordinate was already transformed
             //** into chart relative coordinate system.
             //***********************************************************************
             bool inRelativeX = false;
             bool inRelativeY = false;
-            bool inRelativeWidth = (_isSizeAlwaysRelative) ? true : false;
-            bool inRelativeHeight = (_isSizeAlwaysRelative) ? true : false;
+            bool inRelativeWidth = _isSizeAlwaysRelative;
+            bool inRelativeHeight = _isSizeAlwaysRelative;
             bool inRelativeAnchorX = false;
             bool inRelativeAnchorY = false;
 
             //***********************************************************************
             //** Get anchoring coordinates from anchored Data Point.
             //***********************************************************************
-            double anchorX = this.AnchorX;
-            double anchorY = this.AnchorY;
+            double anchorX = AnchorX;
+            double anchorY = AnchorY;
             GetAnchorLocation(ref anchorX, ref anchorY, ref inRelativeAnchorX, ref inRelativeAnchorY);
 
             //***********************************************************************
             //** Calculate scaling and translation for the annotations in the group.
             //***********************************************************************
-            AnnotationGroup group = this.AnnotationGroup;
+            AnnotationGroup group = AnnotationGroup;
             SKPoint groupLocation = SKPoint.Empty;
             double groupScaleX = 1.0;
             double groupScaleY = 1.0;
@@ -2153,21 +2058,18 @@ namespace WebCharts.Services.Models.Annotation
                 saveCurrentPosition = false;
 
                 // Take relative position of the group
-                SKSize groupSize = SKSize.Empty;
-                SKPoint groupAnchorLocation = SKPoint.Empty;
-                group.GetRelativePosition(out groupLocation, out groupSize, out groupAnchorLocation);
+                group.GetRelativePosition(out groupLocation, out SKSize groupSize, out _);
 
                 // Calculate Scale
                 groupScaleX = groupSize.Width / 100.0;
                 groupScaleY = groupSize.Height / 100.0;
             }
 
-
             //***********************************************************************
             //** Get annotation automatic size.
             //***********************************************************************
-            double relativeWidth = this._width;
-            double relativeHeight = this._height;
+            double relativeWidth = _width;
+            double relativeHeight = _height;
 
             // Get annotation content position
             SKRect contentPosition = GetContentPosition();
@@ -2193,31 +2095,10 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             //***********************************************************************
-            //** Provide "dummy" size at design time
-            //***********************************************************************
-            if (this.Chart != null && this.Chart.IsDesignMode())
-            {
-                if (this.IsSizeAlwaysRelative ||
-                    (vertAxis == null && horizAxis == null))
-                {
-                    if (double.IsNaN(relativeWidth))
-                    {
-                        relativeWidth = 20.0;
-                        saveCurrentPosition = false;
-                    }
-                    if (double.IsNaN(relativeHeight))
-                    {
-                        relativeHeight = 20.0;
-                        saveCurrentPosition = false;
-                    }
-                }
-            }
-
-            //***********************************************************************
             //** Get annotation location.
             //***********************************************************************
-            double relativeX = this.X;
-            double relativeY = this.Y;
+            double relativeX = X;
+            double relativeY = Y;
 
             // Check if annotation location Y coordinate is defined
             if (double.IsNaN(relativeY) && !double.IsNaN(anchorY))
@@ -2228,18 +2109,18 @@ namespace WebCharts.Services.Models.Annotation
                 {
                     relativeAnchorY = vertAxis.ValueToPosition(anchorY);
                 }
-                if (this.AnchorAlignment == ContentAlignment.TopCenter ||
-                    this.AnchorAlignment == ContentAlignment.TopLeft ||
-                    this.AnchorAlignment == ContentAlignment.TopRight)
+                if (AnchorAlignment == ContentAlignment.TopCenter ||
+                    AnchorAlignment == ContentAlignment.TopLeft ||
+                    AnchorAlignment == ContentAlignment.TopRight)
                 {
-                    relativeY = relativeAnchorY + this.AnchorOffsetY;
+                    relativeY = relativeAnchorY + AnchorOffsetY;
                     relativeY *= groupScaleY;
                 }
-                else if (this.AnchorAlignment == ContentAlignment.BottomCenter ||
-                    this.AnchorAlignment == ContentAlignment.BottomLeft ||
-                    this.AnchorAlignment == ContentAlignment.BottomRight)
+                else if (AnchorAlignment == ContentAlignment.BottomCenter ||
+                    AnchorAlignment == ContentAlignment.BottomLeft ||
+                    AnchorAlignment == ContentAlignment.BottomRight)
                 {
-                    relativeY = relativeAnchorY - this.AnchorOffsetY;
+                    relativeY = relativeAnchorY - AnchorOffsetY;
                     relativeY *= groupScaleY;
                     if (relativeHeight != 0f && !double.IsNaN(relativeHeight))
                     {
@@ -2257,7 +2138,7 @@ namespace WebCharts.Services.Models.Annotation
                 }
                 else
                 {
-                    relativeY = relativeAnchorY + this.AnchorOffsetY;
+                    relativeY = relativeAnchorY + AnchorOffsetY;
                     relativeY *= groupScaleY;
                     if (relativeHeight != 0f && !double.IsNaN(relativeHeight))
                     {
@@ -2288,18 +2169,18 @@ namespace WebCharts.Services.Models.Annotation
                 {
                     relativeAnchorX = horizAxis.ValueToPosition(anchorX);
                 }
-                if (this.AnchorAlignment == ContentAlignment.BottomLeft ||
-                    this.AnchorAlignment == ContentAlignment.MiddleLeft ||
-                    this.AnchorAlignment == ContentAlignment.TopLeft)
+                if (AnchorAlignment == ContentAlignment.BottomLeft ||
+                    AnchorAlignment == ContentAlignment.MiddleLeft ||
+                    AnchorAlignment == ContentAlignment.TopLeft)
                 {
-                    relativeX = relativeAnchorX + this.AnchorOffsetX;
+                    relativeX = relativeAnchorX + AnchorOffsetX;
                     relativeX *= groupScaleX;
                 }
-                else if (this.AnchorAlignment == ContentAlignment.BottomRight ||
-                    this.AnchorAlignment == ContentAlignment.MiddleRight ||
-                    this.AnchorAlignment == ContentAlignment.TopRight)
+                else if (AnchorAlignment == ContentAlignment.BottomRight ||
+                    AnchorAlignment == ContentAlignment.MiddleRight ||
+                    AnchorAlignment == ContentAlignment.TopRight)
                 {
-                    relativeX = relativeAnchorX - this.AnchorOffsetX;
+                    relativeX = relativeAnchorX - AnchorOffsetX;
                     relativeX *= groupScaleX;
                     if (relativeWidth != 0f && !double.IsNaN(relativeWidth))
                     {
@@ -2316,7 +2197,7 @@ namespace WebCharts.Services.Models.Annotation
                 }
                 else
                 {
-                    relativeX = relativeAnchorX + this.AnchorOffsetX;
+                    relativeX = relativeAnchorX + AnchorOffsetX;
                     relativeX *= groupScaleX;
                     if (relativeWidth != 0f && !double.IsNaN(relativeWidth))
                     {
@@ -2348,12 +2229,12 @@ namespace WebCharts.Services.Models.Annotation
             // Set annotation size if not set to custom value
             if (double.IsNaN(relativeX))
             {
-                relativeX = contentPosition.X * groupScaleX;
+                relativeX = contentPosition.Left * groupScaleX;
                 inRelativeX = true;
             }
             if (double.IsNaN(relativeY))
             {
-                relativeY = contentPosition.Y * groupScaleY;
+                relativeY = contentPosition.Top * groupScaleY;
                 inRelativeY = true;
             }
 
@@ -2408,19 +2289,18 @@ namespace WebCharts.Services.Models.Annotation
                 chartArea = vertAxis.ChartArea;
             }
             if (chartArea != null &&
-                chartArea.Area3DStyle.Enable3D == true &&
+                chartArea.Area3DStyle.Enable3D &&
                 !chartArea.chartAreaIsCurcular &&
                 chartArea.requireAxes &&
                 chartArea.matrix3D.IsInitialized())
             {
                 // Get anotation Z coordinate (use scene depth or anchored point Z position)
                 float positionZ = chartArea.areaSceneDepth;
-                if (this.AnchorDataPoint != null && this.AnchorDataPoint.series != null)
+                if (AnchorDataPoint != null && AnchorDataPoint.series != null)
                 {
-                    float depth = 0f;
                     chartArea.GetSeriesZPositionAndDepth(
-                        this.AnchorDataPoint.series,
-                        out depth,
+                        AnchorDataPoint.series,
+                        out float depth,
                         out positionZ);
                     positionZ += depth / 2f;
                 }
@@ -2441,37 +2321,10 @@ namespace WebCharts.Services.Models.Annotation
                 anchorY = annot3DPoints[2].Y;
 
                 // Don't adjust size for text annotation
-                if (!(isTextAnnotation && this.IsSizeAlwaysRelative))
+                if (!(isTextAnnotation && IsSizeAlwaysRelative))
                 {
                     relativeWidth = annot3DPoints[1].X - relativeX;
                     relativeHeight = annot3DPoints[1].Y - relativeY;
-                }
-            }
-
-            //***********************************************************************
-            //** Provide "dummy" position at design time
-            //***********************************************************************
-            if (this.Chart != null && this.Chart.IsDesignMode())
-            {
-                if (double.IsNaN(relativeX))
-                {
-                    relativeX = groupLocation.X;
-                    saveCurrentPosition = false;
-                }
-                if (double.IsNaN(relativeY))
-                {
-                    relativeY = groupLocation.Y;
-                    saveCurrentPosition = false;
-                }
-                if (double.IsNaN(relativeWidth))
-                {
-                    relativeWidth = 20.0 * groupScaleX;
-                    saveCurrentPosition = false;
-                }
-                if (double.IsNaN(relativeHeight))
-                {
-                    relativeHeight = 20.0 * groupScaleY;
-                    saveCurrentPosition = false;
                 }
             }
 
@@ -2486,70 +2339,68 @@ namespace WebCharts.Services.Models.Annotation
             //** Adjust text based annotaion position using SmartLabelStyle.
             //***********************************************************************
             // Check if smart labels are enabled
-            if (this.SmartLabelStyle.Enabled && isTextAnnotation &&
+            if (SmartLabelStyle.Enabled && isTextAnnotation &&
                 group == null)
             {
                 // Anchor point must be set
                 if (!double.IsNaN(anchorX) && !double.IsNaN(anchorY) &&
-                    double.IsNaN(this.X) && double.IsNaN(this.Y))
+                    double.IsNaN(X) && double.IsNaN(Y))
                 {
-                    if (this.Chart != null &&
-                        this.Chart.chartPicture != null)
+                    if (Chart != null &&
+                        Chart.chartPicture != null)
                     {
                         // Remember old movement distance restriction
-                        double oldMinMovingDistance = this.SmartLabelStyle.MinMovingDistance;
-                        double oldMaxMovingDistance = this.SmartLabelStyle.MaxMovingDistance;
+                        double oldMinMovingDistance = SmartLabelStyle.MinMovingDistance;
+                        double oldMaxMovingDistance = SmartLabelStyle.MaxMovingDistance;
 
                         // Increase annotation moving restrictions according to the anchor offset
-                        SKPoint anchorOffsetAbs = this.GetGraphics().GetAbsolutePoint(
-                            new SKPoint((float)this.AnchorOffsetX, (float)this.AnchorOffsetY));
+                        SKPoint anchorOffsetAbs = GetGraphics().GetAbsolutePoint(
+                            new SKPoint((float)AnchorOffsetX, (float)AnchorOffsetY));
                         float maxAnchorOffsetAbs = Math.Max(anchorOffsetAbs.X, anchorOffsetAbs.Y);
                         if (maxAnchorOffsetAbs > 0.0)
                         {
-                            this.SmartLabelStyle.MinMovingDistance += maxAnchorOffsetAbs;
-                            this.SmartLabelStyle.MaxMovingDistance += maxAnchorOffsetAbs;
+                            SmartLabelStyle.MinMovingDistance += maxAnchorOffsetAbs;
+                            SmartLabelStyle.MaxMovingDistance += maxAnchorOffsetAbs;
                         }
 
                         // Adjust label position using SmartLabelStyle algorithm
                         LabelAlignmentStyles labelAlignment = LabelAlignmentStyles.Bottom;
-                        using (StringFormat format = new StringFormat())
+                        using StringFormat format = new();
+                        SKSize markerSizeRel = new((float)AnchorOffsetX, (float)AnchorOffsetY);
+                        SKPoint newlocation = Chart.chartPicture.annotationSmartLabel.AdjustSmartLabelPosition(
+                            Common,
+                            Chart.chartPicture.ChartGraph,
+                            chartArea,
+                            SmartLabelStyle,
+                            location,
+                            size,
+                            format,
+                            anchorLocation,
+                            markerSizeRel,
+                            labelAlignment,
+                            (this is CalloutAnnotation));
+
+                        // Restore old movement distance restriction
+                        SmartLabelStyle.MinMovingDistance = oldMinMovingDistance;
+                        SmartLabelStyle.MaxMovingDistance = oldMaxMovingDistance;
+
+                        // Check if annotation should be hidden
+                        if (newlocation.IsEmpty)
                         {
-                            SKSize markerSizeRel = new SKSize((float)this.AnchorOffsetX, (float)this.AnchorOffsetY);
-                            SKPoint newlocation = this.Chart.chartPicture.annotationSmartLabel.AdjustSmartLabelPosition(
-                                this.Common,
-                                this.Chart.chartPicture.ChartGraph,
-                                chartArea,
-                                this.SmartLabelStyle,
-                                location,
+                            location = new SKPoint(float.NaN, float.NaN);
+                        }
+                        else
+                        {
+                            // Get new position using alignment in format
+                            SKRect newPosition = Chart.chartPicture.annotationSmartLabel.GetLabelPosition(
+                                Chart.chartPicture.ChartGraph,
+                                newlocation,
                                 size,
                                 format,
-                                anchorLocation,
-                                markerSizeRel,
-                                labelAlignment,
-                                (this is CalloutAnnotation));
+                                false);
 
-                            // Restore old movement distance restriction
-                            this.SmartLabelStyle.MinMovingDistance = oldMinMovingDistance;
-                            this.SmartLabelStyle.MaxMovingDistance = oldMaxMovingDistance;
-
-                            // Check if annotation should be hidden
-                            if (newlocation.IsEmpty)
-                            {
-                                location = new SKPoint(float.NaN, float.NaN);
-                            }
-                            else
-                            {
-                                // Get new position using alignment in format
-                                SKRect newPosition = this.Chart.chartPicture.annotationSmartLabel.GetLabelPosition(
-                                    this.Chart.chartPicture.ChartGraph,
-                                    newlocation,
-                                    size,
-                                    format,
-                                    false);
-
-                                // Set new location
-                                location = newPosition.Location;
-                            }
+                            // Set new location
+                            location = newPosition.Location;
                         }
                     }
                 }
@@ -2557,8 +2408,8 @@ namespace WebCharts.Services.Models.Annotation
                 {
                     // Add annotation position into the list (to prevent overlapping)
                     using StringFormat format = new();
-                    this.Chart.chartPicture.annotationSmartLabel.AddSmartLabelPosition(
-                        this.Chart.chartPicture.ChartGraph,
+                    Chart.chartPicture.annotationSmartLabel.AddSmartLabelPosition(
+                        Chart.chartPicture.ChartGraph,
                         location,
                         size,
                         format);
@@ -2595,10 +2446,10 @@ namespace WebCharts.Services.Models.Annotation
         /// <param name="userInput">Indicates if position changing was a result of the user input.</param>
         internal void SetPositionRelative(SKRect position, SKPoint anchorPoint, bool userInput)
         {
-            double newX = position.X;
-            double newY = position.Y;
-            double newRight = position.Right;
-            double newBottom = position.Bottom;
+            double newX = position.Left;
+            double newY = position.Top;
+            double newRight;
+            double newBottom;
             double newWidth = position.Width;
             double newHeight = position.Height;
             double newAnchorX = anchorPoint.X;
@@ -2607,8 +2458,8 @@ namespace WebCharts.Services.Models.Annotation
             //***********************************************************************
             //** Set pre calculated position and anchor location
             //***********************************************************************
-            this.currentPositionRel = new SKRect(position.Location.X, position.Location.Y, position.Location.X + position.Size.Width, position.Location.Y + position.Size.Height);
-            this.currentAnchorLocationRel = new SKPoint(anchorPoint.X, anchorPoint.Y);
+            currentPositionRel = new SKRect(position.Location.X, position.Location.Y, position.Location.X + position.Size.Width, position.Location.Y + position.Size.Height);
+            currentAnchorLocationRel = new SKPoint(anchorPoint.X, anchorPoint.Y);
 
             //***********************************************************************
             //** Get vertical and horizontal axis
@@ -2630,26 +2481,25 @@ namespace WebCharts.Services.Models.Annotation
             {
                 chartArea = vertAxis.ChartArea;
             }
-            if (chartArea != null && chartArea.Area3DStyle.Enable3D == true)
+            if (chartArea != null && chartArea.Area3DStyle.Enable3D)
             {
                 // If anchor point was set - get its relative position and use it as an anchor point
-                if (this.AnchorDataPoint != null)
+                if (AnchorDataPoint != null)
                 {
                     bool inRelativeCoordX = true;
                     bool inRelativeCoordY = true;
-                    this.GetAnchorLocation(ref newAnchorX, ref newAnchorY, ref inRelativeCoordX, ref inRelativeCoordY);
-                    this.currentAnchorLocationRel = new SKPoint((float)newAnchorX, (float)newAnchorY);
+                    GetAnchorLocation(ref newAnchorX, ref newAnchorY, ref inRelativeCoordX, ref inRelativeCoordY);
+                    currentAnchorLocationRel = new SKPoint((float)newAnchorX, (float)newAnchorY);
                 }
 
                 // In 3D always use relative annotation coordinates
                 // Disconnect annotation from axes and anchor point
-                this.AnchorDataPoint = null;
-                this.AxisX = null;
-                this.AxisY = null;
+                AnchorDataPoint = null;
+                AxisX = null;
+                AxisY = null;
                 horizAxis = null;
                 vertAxis = null;
             }
-
 
             //***********************************************************************
             //** Convert relative coordinates to axis values
@@ -2672,7 +2522,7 @@ namespace WebCharts.Services.Models.Annotation
                     }
                 }
 
-                if (!this.IsSizeAlwaysRelative)
+                if (!IsSizeAlwaysRelative)
                 {
                     if (float.IsNaN(position.Right) &&
                         !float.IsNaN(position.Width) &&
@@ -2715,7 +2565,7 @@ namespace WebCharts.Services.Models.Annotation
                     }
                 }
 
-                if (!this.IsSizeAlwaysRelative)
+                if (!IsSizeAlwaysRelative)
                 {
                     if (float.IsNaN(position.Bottom) &&
                         !float.IsNaN(position.Height) &&
@@ -2744,12 +2594,12 @@ namespace WebCharts.Services.Models.Annotation
             if (userInput)
             {
                 // Set flag that annotation position was changed
-                this.positionChanged = true;
+                positionChanged = true;
 
                 // Fire position changing event
-                if (this.Chart != null)
+                if (Chart != null)
                 {
-                    AnnotationPositionChangingEventArgs args = new AnnotationPositionChangingEventArgs();
+                    AnnotationPositionChangingEventArgs args = new();
                     args.NewLocationX = newX;
                     args.NewLocationY = newY;
                     args.NewSizeWidth = newWidth;
@@ -2758,7 +2608,7 @@ namespace WebCharts.Services.Models.Annotation
                     args.NewAnchorLocationY = newAnchorY;
                     args.Annotation = this;
 
-                    if (this.Chart.OnAnnotationPositionChanging(ref args))
+                    if (Chart.OnAnnotationPositionChanging(ref args))
                     {
                         // Get user changed position/anchor
                         newX = args.NewLocationX;
@@ -2772,18 +2622,17 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             // Adjust location & size
-            this.X = newX;
-            this.Y = newY;
-            this.Width = newWidth;
-            this.Height = newHeight;
-            this.AnchorX = newAnchorX;
-            this.AnchorY = newAnchorY;
+            X = newX;
+            Y = newY;
+            Width = newWidth;
+            Height = newHeight;
+            AnchorX = newAnchorX;
+            AnchorY = newAnchorY;
 
             // Invalidate annotation
-            this.Invalidate();
-
-            return;
+            Invalidate();
         }
+
         /// <summary>
         /// Adjust annotation location and\or size as a result of user action.
         /// </summary>
@@ -2816,30 +2665,33 @@ namespace WebCharts.Services.Models.Annotation
         {
             if (!movingDistance.IsEmpty)
             {
-                // Convert pixel coordinates into relative 
+                // Convert pixel coordinates into relative
                 if (pixelCoord)
                 {
                     movingDistance = Chart.chartPicture.ChartGraph.GetRelativeSize(movingDistance);
                 }
 
+
                 // Get annotation position in relative coordinates
-                SKPoint firstPoint = SKPoint.Empty;
-                SKPoint anchorPoint = SKPoint.Empty;
-                SKSize size = SKSize.Empty;
+                SKPoint firstPoint;
+
+                SKPoint anchorPoint;
+
+                SKSize size;
                 if (userInput)
                 {
-                    if (this.startMovePositionRel.X == 0f &&
-                        this.startMovePositionRel.Y == 0f &&
-                        this.startMovePositionRel.Width == 0f &&
-                        this.startMovePositionRel.Height == 0f)
+                    if (startMovePositionRel.Left == 0f &&
+                        startMovePositionRel.Top == 0f &&
+                        startMovePositionRel.Width == 0f &&
+                        startMovePositionRel.Height == 0f)
                     {
                         GetRelativePosition(out firstPoint, out size, out anchorPoint);
-                        this.startMovePositionRel = new SKRect(firstPoint.X, firstPoint.Y, firstPoint.X + size.Width, firstPoint.Y + size.Height);
-                        this.startMoveAnchorLocationRel = new SKPoint(anchorPoint.X, anchorPoint.Y);
+                        startMovePositionRel = new SKRect(firstPoint.X, firstPoint.Y, firstPoint.X + size.Width, firstPoint.Y + size.Height);
+                        startMoveAnchorLocationRel = new SKPoint(anchorPoint.X, anchorPoint.Y);
                     }
-                    firstPoint = this.startMovePositionRel.Location;
-                    size = this.startMovePositionRel.Size;
-                    anchorPoint = this.startMoveAnchorLocationRel;
+                    firstPoint = startMovePositionRel.Location;
+                    size = startMovePositionRel.Size;
+                    anchorPoint = startMoveAnchorLocationRel;
                 }
                 else
                 {
@@ -2902,11 +2754,11 @@ namespace WebCharts.Services.Models.Annotation
                 // Make sure we do not override automatic Width and Heigth
                 if (resizeMode == ResizingMode.Moving)
                 {
-                    if (double.IsNaN(this.Width))
+                    if (double.IsNaN(Width))
                     {
                         size.Width = float.NaN;
                     }
-                    if (double.IsNaN(this.Height))
+                    if (double.IsNaN(Height))
                     {
                         size.Height = float.NaN;
                     }
@@ -2915,16 +2767,16 @@ namespace WebCharts.Services.Models.Annotation
                 // Make sure we do not override automatic X and Y
                 if (resizeMode == ResizingMode.AnchorHandle)
                 {
-                    if (double.IsNaN(this.X))
+                    if (double.IsNaN(X))
                     {
                         firstPoint.X = float.NaN;
                     }
-                    if (double.IsNaN(this.Y))
+                    if (double.IsNaN(Y))
                     {
                         firstPoint.Y = float.NaN;
                     }
                 }
-                else if (double.IsNaN(this.AnchorX) || double.IsNaN(this.AnchorY))
+                else if (double.IsNaN(AnchorX) || double.IsNaN(AnchorY))
                 {
                     anchorPoint = new SKPoint(float.NaN, float.NaN);
                 }
@@ -2932,10 +2784,9 @@ namespace WebCharts.Services.Models.Annotation
                 // Set annotation position from rectangle in relative coordinates
                 SetPositionRelative(new SKRect(firstPoint.X, firstPoint.Y, firstPoint.X + size.Width, firstPoint.Y + size.Height), anchorPoint, userInput);
             }
-            return;
         }
 
-        #endregion
+        #endregion Position and Size
 
         #region Anchor Point and Axes Converters
 
@@ -2964,7 +2815,7 @@ namespace WebCharts.Services.Models.Annotation
                 if (separatorIndex > 0)
                 {
                     string seriesName = dataPointName.Substring(0, separatorIndex);
-                    string pointIndex = dataPointName.Substring(separatorIndex + 2);
+                    string pointIndex = dataPointName[(separatorIndex + 2)..];
 
                     if (int.TryParse(pointIndex, NumberStyles.Any, CultureInfo.InvariantCulture, out int index))
                     {
@@ -2996,18 +2847,21 @@ namespace WebCharts.Services.Models.Annotation
                     if (separatorIndex > 0)
                     {
                         string areaName = axisName.Substring(0, separatorIndex);
-                        string axisType = axisName.Substring(separatorIndex + 2);
+                        string axisType = axisName[(separatorIndex + 2)..];
                         switch ((AxisName)Enum.Parse(typeof(AxisName), axisType))
                         {
                             case (AxisName.X):
                                 axis = Chart.ChartAreas[areaName].AxisX;
                                 break;
+
                             case (AxisName.Y):
                                 axis = Chart.ChartAreas[areaName].AxisY;
                                 break;
+
                             case (AxisName.X2):
                                 axis = Chart.ChartAreas[areaName].AxisX2;
                                 break;
+
                             case (AxisName.Y2):
                                 axis = Chart.ChartAreas[areaName].AxisY2;
                                 break;
@@ -3032,7 +2886,7 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         /// <param name="dataPoint">Data point to get the name for.</param>
         /// <returns>Data point name.</returns>
-        internal string GetDataPointName(DataPoint dataPoint)
+        internal static string GetDataPointName(DataPoint dataPoint)
         {
             string name = String.Empty;
             if (dataPoint.series != null)
@@ -3053,9 +2907,9 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         /// <param name="axis">Axis to get the name for.</param>
         /// <returns>Axis name.</returns>
-        private string GetAxisName(Axis axis)
+        private static string GetAxisName(Axis axis)
         {
-            string name = String.Empty;
+            string name = string.Empty;
             if (axis.ChartArea != null)
             {
                 name = axis.ChartArea.Name +
@@ -3065,7 +2919,7 @@ namespace WebCharts.Services.Models.Annotation
             return name;
         }
 
-        #endregion
+        #endregion Anchor Point and Axes Converters
 
         #region Z Order Methods
 
@@ -3092,7 +2946,7 @@ namespace WebCharts.Services.Models.Annotation
             // Check if annotation is found
             if (collection != null)
             {
-                Annotation annot = collection.FindByName(this.Name);
+                Annotation annot = collection.FindByName(Name);
                 if (annot != null)
                 {
                     // Reinsert annotation at the beginning of the collection
@@ -3125,7 +2979,7 @@ namespace WebCharts.Services.Models.Annotation
             // Check if annotation is found
             if (collection != null)
             {
-                Annotation annot = collection.FindByName(this.Name);
+                Annotation annot = collection.FindByName(Name);
                 if (annot != null)
                 {
                     // Reinsert annotation at the end of the collection
@@ -3135,11 +2989,9 @@ namespace WebCharts.Services.Models.Annotation
             }
         }
 
-        #endregion // Z Order Methods
+        #endregion Z Order Methods
 
-        #region Group Related Methods
 
-        #endregion // Group Related Methods
 
         #region SmartLabelStyle methods
 
@@ -3150,7 +3002,7 @@ namespace WebCharts.Services.Models.Annotation
         internal void AddSmartLabelMarkerPositions(ArrayList list)
         {
             // Anchor position is added to the list of non-overlapped markers
-            if (this.Visible && this.IsAnchorDrawn())
+            if (Visible && IsAnchorDrawn())
             {
                 // Get vertical and horizontal axis
                 Axis vertAxis = null;
@@ -3162,7 +3014,7 @@ namespace WebCharts.Services.Models.Annotation
                 double anchorY = double.NaN;
                 bool relativeX = false;
                 bool relativeY = false;
-                this.GetAnchorLocation(ref anchorX, ref anchorY, ref relativeX, ref relativeY);
+                GetAnchorLocation(ref anchorX, ref anchorY, ref relativeX, ref relativeY);
 
                 // Convert anchor location to relative coordinates
                 if (!double.IsNaN(anchorX) && !double.IsNaN(anchorY))
@@ -3187,19 +3039,18 @@ namespace WebCharts.Services.Models.Annotation
                         chartArea = vertAxis.ChartArea;
                     }
                     if (chartArea != null &&
-                        chartArea.Area3DStyle.Enable3D == true &&
+                        chartArea.Area3DStyle.Enable3D &&
                         !chartArea.chartAreaIsCurcular &&
                         chartArea.requireAxes &&
                         chartArea.matrix3D.IsInitialized())
                     {
                         // Get anotation Z coordinate (use scene depth or anchored point Z position)
                         float positionZ = chartArea.areaSceneDepth;
-                        if (this.AnchorDataPoint != null && this.AnchorDataPoint.series != null)
+                        if (AnchorDataPoint != null && AnchorDataPoint.series != null)
                         {
-                            float depth = 0f;
                             chartArea.GetSeriesZPositionAndDepth(
-                                this.AnchorDataPoint.series,
-                                out depth,
+                                AnchorDataPoint.series,
+                                out float depth,
                                 out positionZ);
                             positionZ += depth / 2f;
                         }
@@ -3217,11 +3068,11 @@ namespace WebCharts.Services.Models.Annotation
                     }
 
                     // Save selection handles position in array elements 0 and 4
-                    if (this.GetGraphics() != null)
+                    if (GetGraphics() != null)
                     {
-                        SKSize markerSizeRel = this.GetGraphics().GetRelativeSize(
+                        SKSize markerSizeRel = GetGraphics().GetRelativeSize(
                             new SKSize(1f, 1f));
-                        SKRect anchorRect = new SKRect(
+                        SKRect anchorRect = new(
                             (float)anchorX - markerSizeRel.Width / 2f,
                             (float)anchorY - markerSizeRel.Height / 2f,
                             markerSizeRel.Width,
@@ -3233,7 +3084,7 @@ namespace WebCharts.Services.Models.Annotation
             }
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region Public Anchoring Methods
 
@@ -3267,21 +3118,21 @@ namespace WebCharts.Services.Models.Annotation
         /// Second anchor <see cref="DataPoint"/>.
         /// </param>
         /// <remarks>
-        /// Anchors an annotation's top/left and bottom/right corners to the 
+        /// Anchors an annotation's top/left and bottom/right corners to the
         /// specified data points.
         /// </remarks>
         public void SetAnchor(DataPoint dataPoint1, DataPoint dataPoint2)
         {
             // Set annotation position to automatic
-            this.X = double.NaN;
-            this.Y = double.NaN;
+            X = double.NaN;
+            Y = double.NaN;
 
             // Reset anchor point if any
-            this.AnchorX = double.NaN;
-            this.AnchorY = double.NaN;
+            AnchorX = double.NaN;
+            AnchorY = double.NaN;
 
             // Set anchor point
-            this.AnchorDataPoint = dataPoint1;
+            AnchorDataPoint = dataPoint1;
 
             // Get vertical and horizontal axis
             Axis vertAxis = null;
@@ -3291,14 +3142,14 @@ namespace WebCharts.Services.Models.Annotation
             // Set Width and Height in axis coordinates
             if (dataPoint2 != null && dataPoint1 != null)
             {
-                this._anchorDataPoint2 = dataPoint2;
+                _anchorDataPoint2 = dataPoint2;
             }
 
             // Invalidate annotation
-            this.Invalidate();
+            Invalidate();
         }
 
-        #endregion // Public Anchoring Methods
+        #endregion Public Anchoring Methods
 
         #region Placement Methods
 
@@ -3306,24 +3157,24 @@ namespace WebCharts.Services.Models.Annotation
         /// Begins end user placement of an annotation using the mouse.
         /// </summary>
         /// <remarks>
-        /// When this method is called, the end user is allowed to place an annotation using the 
+        /// When this method is called, the end user is allowed to place an annotation using the
         /// mouse.
         /// <para>
-        /// Placement will finish when the end user specifies all required points, or 
+        /// Placement will finish when the end user specifies all required points, or
         /// the <see cref="EndPlacement"/> method is called.</para>
         /// </remarks>
         virtual public void BeginPlacement()
         {
             // Can't place annotations inside the group
-            if (this.AnnotationGroup != null)
+            if (AnnotationGroup != null)
             {
                 throw (new InvalidOperationException(SR.ExceptionAnnotationGroupedUnableToStartPlacement));
             }
 
-            if (this.Chart != null)
+            if (Chart != null)
             {
-                // Set the annotation object which is currently placed 
-                this.Chart.Annotations.placingAnnotation = this;
+                // Set the annotation object which is currently placed
+                Chart.Annotations.placingAnnotation = this;
             }
             else
             {
@@ -3335,26 +3186,26 @@ namespace WebCharts.Services.Models.Annotation
         /// Ends user placement of an annotation.
         /// </summary>
         /// <remarks>
-        /// Ends an annotation placement operation previously started by a 
+        /// Ends an annotation placement operation previously started by a
         /// <see cref="BeginPlacement"/> method call.
         /// <para>
         /// Calling this method is not required, since placement will automatically
-        /// end when an end user enters all required points. However, it is useful when an annotation 
+        /// end when an end user enters all required points. However, it is useful when an annotation
         /// placement operation needs to be aborted for some reason.
         /// </para>
         /// </remarks>
         virtual public void EndPlacement()
         {
-            if (this.Chart != null)
+            if (Chart != null)
             {
                 // Reset currently placed annotation object
-                this.Chart.Annotations.placingAnnotation = null;
+                Chart.Annotations.placingAnnotation = null;
 
                 // Clear last placement mouse position
-                this.lastPlacementPosition = SKPoint.Empty;
+                lastPlacementPosition = SKPoint.Empty;
 
                 // Fire annotation placed event
-                this.Chart.OnAnnotationPlaced(this);
+                Chart.OnAnnotationPlaced(this);
             }
         }
 
@@ -3366,19 +3217,19 @@ namespace WebCharts.Services.Models.Annotation
         /// <returns>True if annotation can be placed at specified coordinates.</returns>
         virtual internal bool IsValidPlacementPosition(float x, float y)
         {
-            if (this.Chart != null &&
-                this.GetGraphics() != null)
+            if (Chart != null &&
+                GetGraphics() != null)
             {
                 // Check if cursor is over the area where placement allowed
                 // If so - change cursor to cross
-                SKRect placementRect = new SKRect(0f, 0f, 100f, 100f);
-                if (this.ClipToChartArea.Length > 0 &&
-                    this.ClipToChartArea != Constants.NotSetValue)
+                SKRect placementRect = new(0f, 0f, 100f, 100f);
+                if (ClipToChartArea.Length > 0 &&
+                    ClipToChartArea != Constants.NotSetValue)
                 {
-                    ChartArea area = Chart.ChartAreas[this.ClipToChartArea];
+                    ChartArea area = Chart.ChartAreas[ClipToChartArea];
                     placementRect = area.PlotAreaPosition.ToSKRect();
                 }
-                placementRect = this.GetGraphics().GetAbsoluteRectangle(placementRect);
+                placementRect = GetGraphics().GetAbsoluteRectangle(placementRect);
                 if (placementRect.Contains(x, y))
                 {
                     return true;
@@ -3386,7 +3237,8 @@ namespace WebCharts.Services.Models.Annotation
             }
             return false;
         }
-        #endregion // Placement Methods
+
+        #endregion Placement Methods
 
         #region Helper Methods
 
@@ -3396,38 +3248,32 @@ namespace WebCharts.Services.Models.Annotation
 		/// <returns>True if annotation is visible.</returns>
 		internal bool IsVisible()
         {
-            if (this.Visible)
+            if (Visible)
             {
-                if (this.Chart != null)
+                if (Chart != null)
                 {
                     // Check if annotation is anchored to the data point
                     ChartArea area = null;
-                    if (this.AnchorDataPoint != null &&
-                        this.AnchorDataPoint.series != null)
+                    if (AnchorDataPoint != null &&
+                        AnchorDataPoint.series != null && Chart.ChartAreas.IndexOf(AnchorDataPoint.series.ChartArea) >= 0)
                     {
-                        if (this.Chart.ChartAreas.IndexOf(this.AnchorDataPoint.series.ChartArea) >= 0)
-                        {
-                            area = this.Chart.ChartAreas[this.AnchorDataPoint.series.ChartArea];
-                        }
+                        area = Chart.ChartAreas[AnchorDataPoint.series.ChartArea];
                     }
                     if (area == null &&
-                        this._anchorDataPoint2 != null &&
-                        this._anchorDataPoint2.series != null)
+                        _anchorDataPoint2 != null &&
+                        _anchorDataPoint2.series != null && Chart.ChartAreas.IndexOf(_anchorDataPoint2.series.ChartArea) >= 0)
                     {
-                        if (this.Chart.ChartAreas.IndexOf(this._anchorDataPoint2.series.ChartArea) >= 0)
-                        {
-                            area = this.Chart.ChartAreas[this._anchorDataPoint2.series.ChartArea];
-                        }
+                        area = Chart.ChartAreas[_anchorDataPoint2.series.ChartArea];
                     }
 
                     // Check if annotation uses chart area axis values
-                    if (area == null && this.AxisX != null)
+                    if (area == null && AxisX != null)
                     {
-                        area = this.AxisX.ChartArea;
+                        area = AxisX.ChartArea;
                     }
-                    if (area == null && this.AxisY != null)
+                    if (area == null && AxisY != null)
                     {
-                        area = this.AxisY.ChartArea;
+                        area = AxisY.ChartArea;
                     }
 
                     // Check if associated area is visible
@@ -3437,7 +3283,6 @@ namespace WebCharts.Services.Models.Annotation
                         return false;
                     }
                 }
-
 
                 return true;
             }
@@ -3449,8 +3294,8 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         internal void ResetCurrentRelativePosition()
         {
-            this.currentPositionRel = new SKRect(float.NaN, float.NaN, float.NaN, float.NaN);
-            this.currentAnchorLocationRel = new SKPoint(float.NaN, float.NaN);
+            currentPositionRel = new SKRect(float.NaN, float.NaN, float.NaN, float.NaN);
+            currentAnchorLocationRel = new SKPoint(float.NaN, float.NaN);
         }
 
         /// <summary>
@@ -3461,9 +3306,9 @@ namespace WebCharts.Services.Models.Annotation
         /// <returns>Modified string.</returns>
         internal string ReplaceKeywords(string strOriginal)
         {
-            if (this.AnchorDataPoint != null)
+            if (AnchorDataPoint != null)
             {
-                return this.AnchorDataPoint.ReplaceKeywords(strOriginal);
+                return AnchorDataPoint.ReplaceKeywords(strOriginal);
             }
             return strOriginal;
         }
@@ -3482,81 +3327,74 @@ namespace WebCharts.Services.Models.Annotation
             // Get anchor position
             bool inRelativeAnchorX = false;
             bool inRelativeAnchorY = false;
-            double anchorX = this.AnchorX;
-            double anchorY = this.AnchorY;
+            double anchorX = AnchorX;
+            double anchorY = AnchorY;
             GetAnchorLocation(ref anchorX, ref anchorY, ref inRelativeAnchorX, ref inRelativeAnchorY);
 
             // Check if anchor is set
-            if (!double.IsNaN(anchorX) && !double.IsNaN(anchorY))
+            if (!double.IsNaN(anchorX) && !double.IsNaN(anchorY) && (AnchorDataPoint != null ||
+                    AxisX != null ||
+                    AxisY != null))
             {
-                // Check if anchor is in axes coordinates
-                if (this.AnchorDataPoint != null ||
-                    this.AxisX != null ||
-                    this.AxisY != null)
+                // Convert anchor point to relative coordinates
+                if (!inRelativeAnchorX && horizAxis != null)
                 {
-                    // Convert anchor point to relative coordinates
-                    if (!inRelativeAnchorX && horizAxis != null)
-                    {
-                        anchorX = horizAxis.ValueToPosition(anchorX);
-                    }
-                    if (!inRelativeAnchorY && vertAxis != null)
-                    {
-                        anchorY = vertAxis.ValueToPosition(anchorY);
-                    }
+                    anchorX = horizAxis.ValueToPosition(anchorX);
+                }
+                if (!inRelativeAnchorY && vertAxis != null)
+                {
+                    anchorY = vertAxis.ValueToPosition(anchorY);
+                }
 
-                    // Get chart area
-                    ChartArea chartArea = null;
-                    if (horizAxis != null)
+                // Get chart area
+                ChartArea chartArea = null;
+                if (horizAxis != null)
+                {
+                    chartArea = horizAxis.ChartArea;
+                }
+                if (chartArea == null && vertAxis != null)
+                {
+                    chartArea = vertAxis.ChartArea;
+                }
+
+                // Apply 3D transforamtion if required
+                if (chartArea != null && chartArea.Area3DStyle.Enable3D &&
+                    !chartArea.chartAreaIsCurcular &&
+                        chartArea.requireAxes &&
+                        chartArea.matrix3D.IsInitialized())
+                {
+                    // Get anotation Z coordinate (use scene depth or anchored point Z position)
+                    float positionZ = chartArea.areaSceneDepth;
+                    if (AnchorDataPoint != null && AnchorDataPoint.series != null)
                     {
-                        chartArea = horizAxis.ChartArea;
-                    }
-                    if (chartArea == null && vertAxis != null)
-                    {
-                        chartArea = vertAxis.ChartArea;
-                    }
-
-                    // Apply 3D transforamtion if required
-                    if (chartArea != null && chartArea.Area3DStyle.Enable3D == true)
-                    {
-                        if (!chartArea.chartAreaIsCurcular &&
-                            chartArea.requireAxes &&
-                            chartArea.matrix3D.IsInitialized())
-                        {
-                            // Get anotation Z coordinate (use scene depth or anchored point Z position)
-                            float positionZ = chartArea.areaSceneDepth;
-                            if (this.AnchorDataPoint != null && this.AnchorDataPoint.series != null)
-                            {
-                                float depth = 0f;
-                                chartArea.GetSeriesZPositionAndDepth(
-                                    this.AnchorDataPoint.series,
-                                    out depth,
-                                    out positionZ);
-                                positionZ += depth / 2f;
-                            }
-
-                            // Define 3D points of annotation object
-                            Point3D[] annot3DPoints = new Point3D[1];
-                            annot3DPoints[0] = new Point3D((float)anchorX, (float)anchorY, positionZ);
-
-                            // Tranform cube coordinates
-                            chartArea.matrix3D.TransformPoints(annot3DPoints);
-
-                            // Get transformed coordinates
-                            anchorX = annot3DPoints[0].X;
-                            anchorY = annot3DPoints[0].Y;
-                        }
+                        chartArea.GetSeriesZPositionAndDepth(
+                            AnchorDataPoint.series,
+                            out float depth,
+                            out positionZ);
+                        positionZ += depth / 2f;
                     }
 
-                    // Get plot rectangle position and inflate it slightly 
-                    // to solve any float rounding issues.
-                    SKRect rect = chartArea.PlotAreaPosition.ToSKRect();
-                    rect.Inflate(0.00001f, 0.00001f);
+                    // Define 3D points of annotation object
+                    Point3D[] annot3DPoints = new Point3D[1];
+                    annot3DPoints[0] = new Point3D((float)anchorX, (float)anchorY, positionZ);
 
-                    // Check if anchor point is in the plotting area
-                    if (!rect.Contains((float)anchorX, (float)anchorY))
-                    {
-                        return false;
-                    }
+                    // Tranform cube coordinates
+                    chartArea.matrix3D.TransformPoints(annot3DPoints);
+
+                    // Get transformed coordinates
+                    anchorX = annot3DPoints[0].X;
+                    anchorY = annot3DPoints[0].Y;
+                }
+
+                // Get plot rectangle position and inflate it slightly
+                // to solve any float rounding issues.
+                SKRect rect = chartArea.PlotAreaPosition.ToSKRect();
+                rect.Inflate(0.00001f, 0.00001f);
+
+                // Check if anchor point is in the plotting area
+                if (!rect.Contains((float)anchorX, (float)anchorY))
+                {
+                    return false;
                 }
             }
 
@@ -3569,15 +3407,15 @@ namespace WebCharts.Services.Models.Annotation
         /// <returns>Chart graphics object.</returns>
         internal ChartGraphics GetGraphics()
         {
-            if (this.Common != null)
+            if (Common != null)
             {
-                return this.Common.graph;
+                return Common.graph;
             }
             return null;
         }
 
         /// <summary>
-        /// Checks if provided pixel coordinate is contained in one of the 
+        /// Checks if provided pixel coordinate is contained in one of the
         /// selection handles rectangle.
         /// </summary>
         /// <param name="point">Coordinate in pixels.</param>
@@ -3586,24 +3424,24 @@ namespace WebCharts.Services.Models.Annotation
         {
             ResizingMode resizingMode = ResizingMode.None;
 
-            if (this.Common != null &&
-                this.Common.graph != null)
+            if (Common != null &&
+                Common.graph != null)
             {
                 // Convert point to relative coordinates
-                point = this.Common.graph.GetRelativePoint(point);
+                point = Common.graph.GetRelativePoint(point);
 
                 // Check if point is in one of the selection handles
-                if (this.selectionRects != null)
+                if (selectionRects != null)
                 {
-                    for (int index = 0; index < this.selectionRects.Length; index++)
+                    for (int index = 0; index < selectionRects.Length; index++)
                     {
-                        if (!this.selectionRects[index].IsEmpty &&
-                            this.selectionRects[index].Contains(point))
+                        if (!selectionRects[index].IsEmpty &&
+                            selectionRects[index].Contains(point))
                         {
                             if (index > (int)ResizingMode.AnchorHandle)
                             {
                                 resizingMode = ResizingMode.MovingPathPoints;
-                                this.currentPathPointIndex = index - 9;
+                                currentPathPointIndex = index - 9;
                             }
                             else
                             {
@@ -3654,67 +3492,64 @@ namespace WebCharts.Services.Models.Annotation
             vertAxis = null;
             horizAxis = null;
 
-            if (this.AxisX != null && this.AxisX.ChartArea != null)
+            if (AxisX != null && AxisX.ChartArea != null)
             {
-                if (this.AxisX.ChartArea.switchValueAxes)
+                if (AxisX.ChartArea.switchValueAxes)
                 {
-                    vertAxis = this.AxisX;
+                    vertAxis = AxisX;
                 }
                 else
                 {
-                    horizAxis = this.AxisX;
+                    horizAxis = AxisX;
                 }
             }
-            if (this.AxisY != null && this.AxisY.ChartArea != null)
+            if (AxisY != null && AxisY.ChartArea != null)
             {
-                if (this.AxisY.ChartArea.switchValueAxes)
+                if (AxisY.ChartArea.switchValueAxes)
                 {
-                    horizAxis = this.AxisY;
+                    horizAxis = AxisY;
                 }
                 else
                 {
-                    vertAxis = this.AxisY;
+                    vertAxis = AxisY;
                 }
             }
 
             // Get axes from attached data point
-            if (this.AnchorDataPoint != null)
+            if (AnchorDataPoint != null)
             {
                 if (horizAxis == null)
                 {
-                    horizAxis = GetDataPointAxis(this.AnchorDataPoint, AxisName.X);
+                    horizAxis = GetDataPointAxis(AnchorDataPoint, AxisName.X);
 
                     // For chart types like Bar, RangeBar and others, position of X and Y axes are flipped
                     if (horizAxis != null && horizAxis.ChartArea != null && horizAxis.ChartArea.switchValueAxes)
                     {
-                        horizAxis = GetDataPointAxis(this.AnchorDataPoint, AxisName.Y);
+                        horizAxis = GetDataPointAxis(AnchorDataPoint, AxisName.Y);
                     }
                 }
                 if (vertAxis == null)
                 {
-                    vertAxis = GetDataPointAxis(this.AnchorDataPoint, AxisName.Y);
+                    vertAxis = GetDataPointAxis(AnchorDataPoint, AxisName.Y);
 
                     // For chart types like Bar, RangeBar and others, position of X and Y axes are flipped
                     if (vertAxis != null && vertAxis.ChartArea != null && vertAxis.ChartArea.switchValueAxes)
                     {
-                        vertAxis = GetDataPointAxis(this.AnchorDataPoint, AxisName.X);
+                        vertAxis = GetDataPointAxis(AnchorDataPoint, AxisName.X);
                     }
                 }
             }
 
             // No axes coordinate system for grouped annotations
-            if (vertAxis != null || horizAxis != null)
+            if ((vertAxis != null || horizAxis != null) && AnnotationGroup != null)
             {
-                if (this.AnnotationGroup != null)
-                {
-                    throw (new InvalidOperationException(SR.ExceptionAnnotationGroupedAxisMustBeEmpty));
-                }
+                throw (new InvalidOperationException(SR.ExceptionAnnotationGroupedAxisMustBeEmpty));
             }
         }
 
-        #endregion
+        #endregion Helper Methods
 
-        #endregion
+        #endregion Methods
 
         #region IDisposable Members
 
@@ -3724,30 +3559,25 @@ namespace WebCharts.Services.Models.Annotation
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _fontCache != null)
             {
-                //Free managed resources
-                if (_fontCache != null)
-                {
-                    _fontCache.Dispose();
-                    _fontCache = null;
-                }
+                _fontCache.Dispose();
+                _fontCache = null;
             }
             base.Dispose(disposing);
         }
 
-
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
     /// This class is used to stores position changing event data for an annotation.
     /// </summary>
     /// <remarks>
-    /// Provides additional data like the new annotation and anchor position when an end user 
+    /// Provides additional data like the new annotation and anchor position when an end user
     /// is moving the annotation with the mouse.
     /// <para>
-    /// Can be used to restrict annotation movement, or snap the annotation position to 
+    /// Can be used to restrict annotation movement, or snap the annotation position to
     /// specific points.
     /// </para>
     /// </remarks>
@@ -3758,80 +3588,31 @@ namespace WebCharts.Services.Models.Annotation
     {
         #region Fields
 
-        private Annotation _Annotation = null;
-        /// <summary>
-        /// Gets or sets the annotation the event is fired for.
-        /// </summary>
-        public Annotation Annotation
-        {
-            get { return _Annotation; }
-            set { _Annotation = value; }
-        }
+        /// <summary>Gets or sets the annotation the event is fired for.</summary>
+        public Annotation Annotation { get; set; }
 
-        private double _NewLocationX = 0.0;
-        /// <summary>
-        /// Gets or sets the new X location of the annotation.
-        /// </summary>
-        public double NewLocationX
-        {
-            get { return _NewLocationX; }
-            set { _NewLocationX = value; }
-        }
+        /// <summary>Gets or sets the new X location of the annotation.</summary>
+        public double NewLocationX { get; set; } = 0.0;
 
-        private double _NewLocationY = 0.0;
-        /// <summary>
-        /// Gets or sets the new Y location of the annotation.
-        /// </summary>
-        public double NewLocationY
-        {
-            get { return _NewLocationY; }
-            set { _NewLocationY = value; }
-        }
+        /// <summary>Gets or sets the new Y location of the annotation.</summary>
+        public double NewLocationY { get; set; } = 0.0;
 
-        private double _NewSizeWidth = 0.0;
-        /// <summary>
-        /// Gets or sets the new width of the annotation.
-        /// </summary>
-        public double NewSizeWidth
-        {
-            get { return _NewSizeWidth; }
-            set { _NewSizeWidth = value; }
-        }
+        /// <summary>Gets or sets the new width of the annotation.</summary>
+        public double NewSizeWidth { get; set; } = 0.0;
 
-        private double _NewSizeHeight = 0.0;
-        /// <summary>
-        /// Gets or sets the new height of the annotation.
-        /// </summary>
-        public double NewSizeHeight
-        {
-            get { return _NewSizeHeight; }
-            set { _NewSizeHeight = value; }
-        }
+        /// <summary>Gets or sets the new height of the annotation.</summary>
+        public double NewSizeHeight { get; set; } = 0.0;
 
-        private double _NewAnchorLocationX = 0.0;
-        /// <summary>
-        /// Gets or sets the new annotation anchor point X location.
-        /// </summary>
-        public double NewAnchorLocationX
-        {
-            get { return _NewAnchorLocationX; }
-            set { _NewAnchorLocationX = value; }
-        }
+        /// <summary>Gets or sets the new annotation anchor point X location.</summary>
+        public double NewAnchorLocationX { get; set; } = 0.0;
 
-        private double _NewAnchorLocationY = 0.0;
-        /// <summary>
-        /// Gets or sets the new annotation anchor point Y location.
-        /// </summary>
-        public double NewAnchorLocationY
-        {
-            get { return _NewAnchorLocationY; }
-            set { _NewAnchorLocationY = value; }
-        }
 
-        #endregion // Fields
+        /// <summary>Gets or sets the new annotation anchor point Y location.</summary>
+        public double NewAnchorLocationY { get; set; } = 0.0;
+
+        #endregion Fields
 
         #region Properties
-
 
         /// <summary>
         /// Gets or sets the new location and size of the annotation.
@@ -3841,17 +3622,17 @@ namespace WebCharts.Services.Models.Annotation
             get
             {
                 return new SKRect(
-                    (float)this.NewLocationX,
-                    (float)this.NewLocationY,
-                    (float)this.NewSizeWidth,
-                    (float)this.NewSizeHeight);
+                    (float)NewLocationX,
+                    (float)NewLocationY,
+                    (float)NewSizeWidth,
+                    (float)NewSizeHeight);
             }
             set
             {
-                this.NewLocationX = value.Left;
-                this.NewLocationY = value.Top;
-                this.NewSizeWidth = value.Width;
-                this.NewSizeHeight = value.Height;
+                NewLocationX = value.Left;
+                NewLocationY = value.Top;
+                NewSizeWidth = value.Width;
+                NewSizeHeight = value.Height;
             }
         }
 
@@ -3863,17 +3644,16 @@ namespace WebCharts.Services.Models.Annotation
             get
             {
                 return new SKPoint(
-                    (float)this.NewAnchorLocationX,
-                    (float)this.NewAnchorLocationY);
+                    (float)NewAnchorLocationX,
+                    (float)NewAnchorLocationY);
             }
             set
             {
-                this.NewAnchorLocationX = value.X;
-                this.NewAnchorLocationY = value.Y;
+                NewAnchorLocationX = value.X;
+                NewAnchorLocationY = value.Y;
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
     }
-
 }

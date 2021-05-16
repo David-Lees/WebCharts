@@ -12,6 +12,7 @@
 //
 
 
+using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,8 +21,10 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.DataManager
 {
@@ -186,7 +189,7 @@ namespace WebCharts.Services.Models.DataManager
             }
 
             // Invert result depending on the sorting order
-            if (this._sortingOrder == PointSortOrder.Descending)
+            if (_sortingOrder == PointSortOrder.Descending)
             {
                 result = -result;
             }
@@ -229,7 +232,7 @@ namespace WebCharts.Services.Models.DataManager
         /// <param name="dataPoint">Reference to the data point object to initialize.</param>
         internal void DataPointInit(ref DataPoint dataPoint)
         {
-            DataPointInit(this.series, ref dataPoint);
+            DataPointInit(series, ref dataPoint);
         }
 
         /// <summary>
@@ -244,15 +247,6 @@ namespace WebCharts.Services.Models.DataManager
             if (dataPoint.AxisLabel.Length > 0 && series != null)
             {
                 series.noLabelsInPoints = false;
-            }
-
-            // Set flag that tooltips flags should be recalculated
-            if (dataPoint.ToolTip.Length > 0 &&
-                dataPoint.LegendToolTip.Length > 0 &&
-                dataPoint.LabelToolTip.Length > 0 &&
-                series != null && series.Chart != null && series.Chart.selection != null)
-            {
-                series.Chart.selection.enabledChecked = false;
             }
         }
 
@@ -366,7 +360,7 @@ namespace WebCharts.Services.Models.DataManager
                 ref otherValueFormat);
 
             // Remove all existing data points
-            this.Clear();
+            Clear();
 
             // Get and reset enumerator
             IEnumerator enumerator = GetDataSourceEnumerator(dataSource);
@@ -394,7 +388,7 @@ namespace WebCharts.Services.Models.DataManager
             object xValueObj = null;
             bool autoDetectType = true;
 
-            this.SuspendUpdates();
+            SuspendUpdates();
             try
             {
                 do
@@ -483,7 +477,7 @@ namespace WebCharts.Services.Models.DataManager
                             }
                             DataPointInit(ref newDataPoint);
                             newDataPoint.IsEmpty = true;
-                            this.Add(newDataPoint);
+                            Add(newDataPoint);
                         }
                         else
                         {
@@ -496,7 +490,7 @@ namespace WebCharts.Services.Models.DataManager
                                 newDataPoint.SetValueXY(0, yValuesObj);
                             }
                             DataPointInit(ref newDataPoint);
-                            this.Add(newDataPoint);
+                            Add(newDataPoint);
                         }
                     }
 
@@ -505,7 +499,7 @@ namespace WebCharts.Services.Models.DataManager
             }
             finally
             {
-                this.ResumeUpdates();
+                ResumeUpdates();
             }
         }
 
@@ -530,27 +524,27 @@ namespace WebCharts.Services.Models.DataManager
             // Y value must be provided
             if (yValues == null ||
                 yValues.Length == 1 && yValues[0] == null)
-                throw new ArgumentNullException("yValues");
+                throw new ArgumentNullException(nameof(yValues));
             if (yValues.GetLength(0) == 0)
-                throw new ArgumentException(SR.ExceptionDataPointBindingYValueNotSpecified, "yValues");
+                throw new ArgumentException(SR.ExceptionDataPointBindingYValueNotSpecified, nameof(yValues));
 
             // Double check that a string object is not provided for data binding
             for (int i = 0; i < yValues.Length; i++)
             {
                 if (yValues[i] is string)
                 {
-                    throw (new ArgumentException(SR.ExceptionDataBindYValuesToString, "yValues"));
+                    throw new ArgumentException(SR.ExceptionDataBindYValuesToString, nameof(yValues));
                 }
             }
 
             // Check if number of Y values do not out of range
             if (yValues.GetLength(0) > series.YValuesPerPoint)
             {
-                throw (new ArgumentOutOfRangeException("yValues", SR.ExceptionDataPointYValuesBindingCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                throw (new ArgumentOutOfRangeException(nameof(yValues), SR.ExceptionDataPointYValuesBindingCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture))));
             }
 
             // Remove all existing data points
-            this.Clear();
+            Clear();
 
             // Reset X, Y enumerators
             IEnumerator xEnumerator = null;
@@ -560,7 +554,7 @@ namespace WebCharts.Services.Models.DataManager
                 // Double check that a string object is not provided for data binding
                 if (xValue is string)
                 {
-                    throw (new ArgumentException(SR.ExceptionDataBindXValuesToString, "xValue"));
+                    throw (new ArgumentException(SR.ExceptionDataBindXValuesToString, nameof(xValue)));
                 }
 
                 // Get and reset Y values enumerators
@@ -614,7 +608,7 @@ namespace WebCharts.Services.Models.DataManager
                     if (autoDetectType)
                     {
                         autoDetectType = false;
-                        AutoDetectValuesType(this.series, xEnumerator, null, yEnumerator[0], null);
+                        AutoDetectValuesType(series, xEnumerator, null, yEnumerator[0], null);
                     }
 
                     // Create and initialize data point
@@ -658,7 +652,7 @@ namespace WebCharts.Services.Models.DataManager
                             }
                             DataPointInit(ref newDataPoint);
                             newDataPoint.IsEmpty = true;
-                            this.Add(newDataPoint);
+                            Add(newDataPoint);
                         }
                         else
                         {
@@ -671,7 +665,7 @@ namespace WebCharts.Services.Models.DataManager
                                 newDataPoint.SetValueXY(0, yValuesObj);
                             }
                             DataPointInit(ref newDataPoint);
-                            this.Add(newDataPoint);
+                            Add(newDataPoint);
                         }
 
                     }
@@ -681,7 +675,7 @@ namespace WebCharts.Services.Models.DataManager
             }
             finally
             {
-                this.ResumeUpdates();
+                ResumeUpdates();
             }
         }
 
@@ -712,13 +706,13 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Check arguments
             if (xValue is string)
-                throw new ArgumentException(SR.ExceptionDataBindXValuesToString, "xValue");
+                throw new ArgumentException(SR.ExceptionDataBindXValuesToString, nameof(xValue));
             if (yValue == null)
-                throw new ArgumentNullException("yValue", SR.ExceptionDataPointInsertionYValueNotSpecified);
+                throw new ArgumentNullException(nameof(yValue), SR.ExceptionDataPointInsertionYValueNotSpecified);
             if (yValue is string)
-                throw new ArgumentException(SR.ExceptionDataBindYValuesToString, "yValue");
+                throw new ArgumentException(SR.ExceptionDataBindYValuesToString, nameof(yValue));
             if (yFields == null)
-                throw new ArgumentOutOfRangeException("yFields", SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                throw new ArgumentOutOfRangeException(nameof(yFields), SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(CultureInfo.InvariantCulture)));
 
             // Convert comma separated field names string to array of names
             string[] yFieldNames = yFields.Replace(",,", "\n").Split(','); ;
@@ -727,10 +721,10 @@ namespace WebCharts.Services.Models.DataManager
                 yFieldNames[index] = yFieldNames[index].Replace("\n", ",");
             }
             if (yFieldNames.GetLength(0) > series.YValuesPerPoint)
-                throw new ArgumentOutOfRangeException("yFields", SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                throw new ArgumentOutOfRangeException(nameof(yFields), SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
             // Remove all existing data points
-            this.Clear();
+            Clear();
 
             // Reset X, Y enumerators
             IEnumerator xEnumerator = null;
@@ -764,7 +758,7 @@ namespace WebCharts.Services.Models.DataManager
             object xValueObj = null;
             bool autoDetectType = true;
 
-            this.SuspendUpdates();
+            SuspendUpdates();
             try
             {
                 do
@@ -781,7 +775,7 @@ namespace WebCharts.Services.Models.DataManager
                             xValueExsist = xEnumerator.MoveNext();
                             if (yValueExsist && !xValueExsist)
                             {
-                                throw (new ArgumentOutOfRangeException("xValue", SR.ExceptionDataPointInsertionXValuesQtyIsLessYValues));
+                                throw (new ArgumentOutOfRangeException(nameof(xValue), SR.ExceptionDataPointInsertionXValuesQtyIsLessYValues));
                             }
                         }
                         else
@@ -794,7 +788,7 @@ namespace WebCharts.Services.Models.DataManager
                     if (autoDetectType)
                     {
                         autoDetectType = false;
-                        AutoDetectValuesType(this.series, xEnumerator, xField, yEnumerator, yFieldNames[0]);
+                        AutoDetectValuesType(series, xEnumerator, xField, yEnumerator, yFieldNames[0]);
                     }
 
                     // Create and initialize data point
@@ -850,7 +844,7 @@ namespace WebCharts.Services.Models.DataManager
                             }
                             DataPointInit(ref newDataPoint);
                             newDataPoint.IsEmpty = true;
-                            this.Add(newDataPoint);
+                            Add(newDataPoint);
                         }
                         else
                         {
@@ -863,7 +857,7 @@ namespace WebCharts.Services.Models.DataManager
                                 newDataPoint.SetValueXY(0, yValuesObj);
                             }
                             DataPointInit(ref newDataPoint);
-                            this.Add(newDataPoint);
+                            Add(newDataPoint);
                         }
                     }
 
@@ -872,7 +866,7 @@ namespace WebCharts.Services.Models.DataManager
             }
             finally
             {
-                this.ResumeUpdates();
+                ResumeUpdates();
             }
         }
 
@@ -928,22 +922,22 @@ namespace WebCharts.Services.Models.DataManager
             //Check arguments
             if (yValue == null ||
                 yValue.Length == 1 && yValue[0] == null)
-                throw new ArgumentNullException("yValue");
+                throw new ArgumentNullException(nameof(yValue));
 
             // Auto detect DateTime values type
-            if (this.series.YValueType == ChartValueType.Auto &&
+            if (series.YValueType == ChartValueType.Auto &&
                 yValue.Length > 0 &&
                 yValue[0] != null)
             {
                 if (yValue[0] is DateTime)
                 {
-                    this.series.YValueType = ChartValueType.DateTime;
-                    this.series.autoYValueType = true;
+                    series.YValueType = ChartValueType.DateTime;
+                    series.autoYValueType = true;
                 }
                 else if (yValue[0] is DateTimeOffset)
                 {
-                    this.series.YValueType = ChartValueType.DateTimeOffset;
-                    this.series.autoYValueType = true;
+                    series.YValueType = ChartValueType.DateTimeOffset;
+                    series.autoYValueType = true;
                 }
             }
 
@@ -985,37 +979,37 @@ namespace WebCharts.Services.Models.DataManager
         {
 
             // Auto detect DateTime and String values type
-            if (this.series.XValueType == ChartValueType.Auto)
+            if (series.XValueType == ChartValueType.Auto)
             {
                 if (xValue is DateTime)
                 {
-                    this.series.XValueType = ChartValueType.DateTime;
+                    series.XValueType = ChartValueType.DateTime;
                 }
                 if (xValue is DateTimeOffset)
                 {
-                    this.series.XValueType = ChartValueType.DateTimeOffset;
+                    series.XValueType = ChartValueType.DateTimeOffset;
                 }
                 if (xValue is string)
                 {
-                    this.series.XValueType = ChartValueType.String;
+                    series.XValueType = ChartValueType.String;
                 }
 
-                this.series.autoXValueType = true;
+                series.autoXValueType = true;
             }
 
-            if (this.series.YValueType == ChartValueType.Auto &&
+            if (series.YValueType == ChartValueType.Auto &&
                 yValue.Length > 0 &&
                 yValue[0] != null)
             {
                 if (yValue[0] is DateTime)
                 {
-                    this.series.YValueType = ChartValueType.DateTime;
-                    this.series.autoYValueType = true;
+                    series.YValueType = ChartValueType.DateTime;
+                    series.autoYValueType = true;
                 }
                 else if (yValue[0] is DateTimeOffset)
                 {
-                    this.series.YValueType = ChartValueType.DateTimeOffset;
-                    this.series.autoYValueType = true;
+                    series.YValueType = ChartValueType.DateTimeOffset;
+                    series.autoYValueType = true;
                 }
             }
 
@@ -1040,7 +1034,7 @@ namespace WebCharts.Services.Models.DataManager
             DataPoint newDataPoint = new DataPoint(series);
             newDataPoint.SetValueXY(xValue, yValue);
             DataPointInit(ref newDataPoint);
-            this.Insert(index, newDataPoint);
+            Insert(index, newDataPoint);
         }
 
         /// <summary>
@@ -1055,7 +1049,7 @@ namespace WebCharts.Services.Models.DataManager
             DataPoint newDataPoint = new DataPoint(series);
             newDataPoint.SetValueY(yValue);
             DataPointInit(ref newDataPoint);
-            this.Insert(index, newDataPoint);
+            Insert(index, newDataPoint);
         }
 
         /// <summary>
@@ -1459,7 +1453,7 @@ namespace WebCharts.Services.Models.DataManager
         public IEnumerable<DataPoint> FindAllByValue(double valueToFind, string useValue, int startIndex)
         {
             // Loop through all points from specified index
-            for (int i = startIndex; i < this.Count; i++)
+            for (int i = startIndex; i < Count; i++)
             {
                 DataPoint point = this[i];
                 if (point.GetValueByName(useValue) == valueToFind)
@@ -1478,7 +1472,7 @@ namespace WebCharts.Services.Models.DataManager
         public IEnumerable<DataPoint> FindAllByValue(double valueToFind, string useValue)
         {
             // Loop through all points from specified index
-            for (int i = 0; i < this.Count; i++)
+            for (int i = 0; i < Count; i++)
             {
                 DataPoint point = this[i];
                 if (point.GetValueByName(useValue) == valueToFind)
@@ -1510,11 +1504,11 @@ namespace WebCharts.Services.Models.DataManager
             //Check arguments
             if (useValue == null)
                 throw new ArgumentNullException("useValue");
-            if (startIndex < 0 || startIndex >= this.Count)
+            if (startIndex < 0 || startIndex >= Count)
                 throw new ArgumentOutOfRangeException("startIndex");
 
             // Loop through all points from specified index
-            for (int i = startIndex; i < this.Count; i++)
+            for (int i = startIndex; i < Count; i++)
             {
                 DataPoint point = this[i];
                 if (point.GetValueByName(useValue) == valueToFind)
@@ -1559,14 +1553,14 @@ namespace WebCharts.Services.Models.DataManager
             //Check arguments
             if (useValue == null)
                 throw new ArgumentNullException("useValue");
-            if (startIndex < 0 || startIndex >= this.Count)
+            if (startIndex < 0 || startIndex >= Count)
                 throw new ArgumentOutOfRangeException("startIndex");
 
             bool isYValue = useValue.StartsWith("Y", StringComparison.OrdinalIgnoreCase);
             double maxValue = double.MinValue;
             DataPoint maxPoint = null;
 
-            for (int i = startIndex; i < this.Count; i++)
+            for (int i = startIndex; i < Count; i++)
             {
                 DataPoint point = this[i];
 
@@ -1615,14 +1609,14 @@ namespace WebCharts.Services.Models.DataManager
         {
             if (useValue == null)
                 throw new ArgumentNullException("useValue");
-            if (startIndex < 0 || startIndex >= this.Count)
+            if (startIndex < 0 || startIndex >= Count)
                 throw new ArgumentOutOfRangeException("startIndex");
 
             bool isYValue = useValue.StartsWith("Y", StringComparison.OrdinalIgnoreCase);
             double minValue = double.MaxValue;
             DataPoint minPoint = null;
 
-            for (int i = startIndex; i < this.Count; i++)
+            for (int i = startIndex; i < Count; i++)
             {
                 DataPoint point = this[i];
 
@@ -1699,8 +1693,6 @@ namespace WebCharts.Services.Models.DataManager
     /// </summary>
     [
     SRDescription("DescriptionAttributeDataPoint_DataPoint"),
-    DefaultProperty("YValues"),
-    TypeConverter(typeof(DataPointConverter))
     ]
     public class DataPoint : DataPointCustomProperties
     {
@@ -1754,11 +1746,11 @@ namespace WebCharts.Services.Models.DataManager
             : base(null, true)
         {
             // Set Y value
-            this._yValue = new double[1];
-            this._yValue[0] = yValue;
+            _yValue = new double[1];
+            _yValue[0] = yValue;
 
             // Set X value
-            this._xValue = xValue;
+            _xValue = xValue;
         }
 
         /// <summary>
@@ -1772,10 +1764,10 @@ namespace WebCharts.Services.Models.DataManager
             : base(null, true)
         {
             // Set Y value
-            this._yValue = yValues;
+            _yValue = yValues;
 
             // Set X value
-            this._xValue = xValue;
+            _xValue = xValue;
         }
 
         /// <summary>
@@ -1786,9 +1778,6 @@ namespace WebCharts.Services.Models.DataManager
         /// </remarks>
         /// <param name="xValue">X value.</param>
         /// <param name="yValues">String of comma separated Y values.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
         public DataPoint(double xValue, string yValues)
             : base(null, true)
         {
@@ -1803,7 +1792,7 @@ namespace WebCharts.Services.Models.DataManager
             }
 
             // Set X value
-            this._xValue = xValue;
+            _xValue = xValue;
         }
 
         #endregion
@@ -1834,7 +1823,7 @@ namespace WebCharts.Services.Models.DataManager
                 }
                 else
                 {
-                    doubleObj = this.ConvertValue(obj);
+                    doubleObj = ConvertValue(obj);
                 }
 
                 // Try converting to string
@@ -1843,9 +1832,9 @@ namespace WebCharts.Services.Models.DataManager
                     try
                     {
                         stringValue = ValueConverter.FormatValue(
-                            this.Chart,
+                            Chart,
                             this,
-                            this.Tag,
+                            Tag,
                             doubleObj,
                             format,
                             valueType,
@@ -1869,27 +1858,27 @@ namespace WebCharts.Services.Models.DataManager
             {
                 if (String.Compare(propertyName, "AxisLabel", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    this.AxisLabel = stringValue;
+                    AxisLabel = stringValue;
                 }
                 else if (String.Compare(propertyName, "Tooltip", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    this.ToolTip = stringValue;
+                    ToolTip = stringValue;
                 }
                 else if (String.Compare(propertyName, "Label", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    this.Label = stringValue;
+                    Label = stringValue;
                 }
                 else if (String.Compare(propertyName, "LegendTooltip", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    this.LegendToolTip = stringValue;
+                    LegendToolTip = stringValue;
                 }
                 else if (String.Compare(propertyName, "LegendText", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    this.LegendText = stringValue;
+                    LegendText = stringValue;
                 }
                 else if (String.Compare(propertyName, "LabelToolTip", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    this.LabelToolTip = stringValue;
+                    LabelToolTip = stringValue;
                 }
                 else
                 {
@@ -1970,7 +1959,7 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Check arguments
             if (xValue == null)
-                throw new ArgumentNullException("xValue");
+                throw new ArgumentNullException(nameof(xValue));
 
             // Set Y value first
             SetValueY(yValue);
@@ -1989,11 +1978,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             else if (paramType == typeof(DateTime))
             {
-                this._xValue = ((DateTime)xValue).ToOADate();
+                _xValue = ((DateTime)xValue).ToOADate();
             }
             else
             {
-                this._xValue = ConvertValue(xValue);
+                _xValue = ConvertValue(xValue);
             }
 
             // Get Date or Time if required
@@ -2009,7 +1998,7 @@ namespace WebCharts.Services.Models.DataManager
                         0,
                         0,
                         0);
-                    this._xValue = time.ToOADate();
+                    _xValue = time.ToOADate();
                 }
                 else if (base.series.XValueType == ChartValueType.Time)
                 {
@@ -2021,13 +2010,13 @@ namespace WebCharts.Services.Models.DataManager
                         ((DateTime)xValue).Minute,
                         ((DateTime)xValue).Second,
                         ((DateTime)xValue).Millisecond);
-                    this._xValue = time.ToOADate();
+                    _xValue = time.ToOADate();
                 }
             }
 
             // Check if one of Y values are not avilable
             bool empty = false;
-            foreach (double d in this._yValue)
+            foreach (double d in _yValue)
             {
                 if (double.IsNaN(d))
                 {
@@ -2039,10 +2028,10 @@ namespace WebCharts.Services.Models.DataManager
             // Set point empty flag and values to zero
             if (empty)
             {
-                this.IsEmpty = true;
-                for (int valueIndex = 0; valueIndex < this._yValue.Length; valueIndex++)
+                IsEmpty = true;
+                for (int valueIndex = 0; valueIndex < _yValue.Length; valueIndex++)
                 {
-                    this._yValue[valueIndex] = 0.0;
+                    _yValue[valueIndex] = 0.0;
                 }
             }
         }
@@ -2057,11 +2046,11 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Check arguments
             if (yValue == null)
-                throw new ArgumentNullException("yValue");
+                throw new ArgumentNullException(nameof(yValue));
 
             // Check number of parameters. Should be more than 0 and 
             if (yValue.Length == 0 || (base.series != null && yValue.Length > base.series.YValuesPerPoint))
-                throw (new ArgumentOutOfRangeException("yValue", SR.ExceptionDataPointYValuesSettingCountMismatch(base.series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                throw (new ArgumentOutOfRangeException(nameof(yValue), SR.ExceptionDataPointYValuesSettingCountMismatch(base.series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture))));
 
             // Check if there is a Null Y value
             for (int i = 0; i < yValue.Length; i++)
@@ -2071,7 +2060,7 @@ namespace WebCharts.Services.Models.DataManager
                     yValue[i] = 0.0;
                     if (i == 0)
                     {
-                        this.IsEmpty = true;
+                        IsEmpty = true;
                     }
                 }
             }
@@ -2084,9 +2073,9 @@ namespace WebCharts.Services.Models.DataManager
             }
 
             // Make sure the Y values array is big enough
-            if (this._yValue.Length < yValue.Length)
+            if (_yValue.Length < yValue.Length)
             {
-                this._yValue = new double[yValue.Length];
+                _yValue = new double[yValue.Length];
             }
 
             // Save value in the array
@@ -2096,7 +2085,7 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     for (int i = 0; i < yValue.Length; i++)
                     {
-                        this._yValue[i] = CommonElements.ParseDouble((string)yValue[i]);
+                        _yValue[i] = CommonElements.ParseDouble((string)yValue[i]);
                     }
                 }
                 catch
@@ -2104,7 +2093,7 @@ namespace WebCharts.Services.Models.DataManager
                     // Get reference to the chart object
                     if (Common != null && Common.ChartPicture != null && Common.ChartPicture.SuppressExceptions)
                     {
-                        this.IsEmpty = true;
+                        IsEmpty = true;
                         for (int i = 0; i < yValue.Length; i++)
                         {
                             yValue[i] = 0.0;
@@ -2124,11 +2113,11 @@ namespace WebCharts.Services.Models.DataManager
                     if (yValue[i] == null ||
                         (yValue[i] is double && ((double)yValue[i]) == 0.0))
                     {
-                        this._yValue[i] = DateTime.Now.ToOADate();
+                        _yValue[i] = DateTime.Now.ToOADate();
                     }
                     else
                     {
-                        this._yValue[i] = ((DateTime)yValue[i]).ToOADate();
+                        _yValue[i] = ((DateTime)yValue[i]).ToOADate();
                     }
                 }
             }
@@ -2136,7 +2125,7 @@ namespace WebCharts.Services.Models.DataManager
             {
                 for (int i = 0; i < yValue.Length; i++)
                 {
-                    this._yValue[i] = ConvertValue(yValue[i]);
+                    _yValue[i] = ConvertValue(yValue[i]);
                 }
             }
 
@@ -2150,11 +2139,11 @@ namespace WebCharts.Services.Models.DataManager
                     {
                         if (base.series.YValueType == ChartValueType.Date)
                         {
-                            this._yValue[i] = Math.Floor(this._yValue[i]);
+                            _yValue[i] = Math.Floor(_yValue[i]);
                         }
                         else if (base.series.YValueType == ChartValueType.Time)
                         {
-                            this._yValue[i] = this._xValue - Math.Floor(this._yValue[i]);
+                            _yValue[i] = _xValue - Math.Floor(_yValue[i]);
                         }
                     }
                     else
@@ -2178,7 +2167,7 @@ namespace WebCharts.Services.Models.DataManager
                                 0,
                                 0);
 
-                            this._yValue[i] = date.ToOADate();
+                            _yValue[i] = date.ToOADate();
                         }
                         else if (base.series.YValueType == ChartValueType.Time)
                         {
@@ -2199,7 +2188,7 @@ namespace WebCharts.Services.Models.DataManager
                                 yTime.Second,
                                 yTime.Millisecond);
 
-                            this._yValue[i] = time.ToOADate();
+                            _yValue[i] = time.ToOADate();
                         }
                     }
                 }
@@ -2218,19 +2207,19 @@ namespace WebCharts.Services.Models.DataManager
 
             // Reset series pointer
             clonePoint.series = null;
-            clonePoint.pointCustomProperties = this.pointCustomProperties;
+            clonePoint.pointCustomProperties = pointCustomProperties;
 
             // Copy values
-            clonePoint._xValue = this.XValue;
-            clonePoint._yValue = new double[this._yValue.Length];
-            this._yValue.CopyTo(clonePoint._yValue, 0);
-            clonePoint.tempColorIsSet = this.tempColorIsSet;
-            clonePoint.isEmptyPoint = this.isEmptyPoint;
+            clonePoint._xValue = XValue;
+            clonePoint._yValue = new double[_yValue.Length];
+            _yValue.CopyTo(clonePoint._yValue, 0);
+            clonePoint.tempColorIsSet = tempColorIsSet;
+            clonePoint.isEmptyPoint = isEmptyPoint;
 
             // Copy properties
-            foreach (object key in this.properties.Keys)
+            foreach (object key in properties.Keys)
             {
-                clonePoint.properties.Add(key, this.properties[key]);
+                clonePoint.properties.Add(key, properties[key]);
             }
 
             return clonePoint;
@@ -2266,19 +2255,19 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Check arguments
             if (valueName == null)
-                throw new ArgumentNullException("valueName");
+                throw new ArgumentNullException(nameof(valueName));
 
             valueName = valueName.ToUpper(System.Globalization.CultureInfo.InvariantCulture);
             if (String.Compare(valueName, "X", StringComparison.Ordinal) == 0)
             {
-                return this.XValue;
+                return XValue;
             }
             else if (valueName.StartsWith("Y", StringComparison.Ordinal))
 
             {
                 if (valueName.Length == 1)
                 {
-                    return this.YValues[0];
+                    return YValues[0];
                 }
                 else
                 {
@@ -2289,25 +2278,25 @@ namespace WebCharts.Services.Models.DataManager
                     }
                     catch (System.Exception)
                     {
-                        throw (new ArgumentException(SR.ExceptionDataPointValueNameInvalid, "valueName"));
+                        throw new ArgumentException(SR.ExceptionDataPointValueNameInvalid, nameof(valueName));
                     }
 
                     if (yIndex < 0)
                     {
-                        throw (new ArgumentException(SR.ExceptionDataPointValueNameYIndexIsNotPositive, "valueName"));
+                        throw new ArgumentException(SR.ExceptionDataPointValueNameYIndexIsNotPositive, nameof(valueName));
                     }
 
-                    if (yIndex >= this.YValues.Length)
+                    if (yIndex >= YValues.Length)
                     {
-                        throw (new ArgumentException(SR.ExceptionDataPointValueNameYIndexOutOfRange, "valueName"));
+                        throw new ArgumentException(SR.ExceptionDataPointValueNameYIndexOutOfRange, nameof(valueName));
                     }
 
-                    return this.YValues[yIndex];
+                    return YValues[yIndex];
                 }
             }
             else
             {
-                throw (new ArgumentException(SR.ExceptionDataPointValueNameInvalid, "valueName"));
+                throw (new ArgumentException(SR.ExceptionDataPointValueNameInvalid, nameof(valueName)));
             }
         }
 
@@ -2327,96 +2316,96 @@ namespace WebCharts.Services.Models.DataManager
             result = result.Replace("\\n", "\n");
 
             // #LABEL - point label
-            result = result.Replace(KeywordName.Label, this.Label);
+            result = result.Replace(KeywordName.Label, Label);
 
             // #LEGENDTEXT - series name
-            result = result.Replace(KeywordName.LegendText, this.LegendText);
+            result = result.Replace(KeywordName.LegendText, LegendText);
 
             // #AXISLABEL - series name
-            result = result.Replace(KeywordName.AxisLabel, this.AxisLabel);
+            result = result.Replace(KeywordName.AxisLabel, AxisLabel);
 
             // #CUSTOMPROPERTY - one of the custom properties by name
             result = DataPoint.ReplaceCustomPropertyKeyword(result, this);
 
-            if (this.series != null)
+            if (series != null)
             {
                 // #INDEX - point index
-                result = result.Replace(KeywordName.Index, this.series.Points.IndexOf(this).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                result = result.Replace(KeywordName.Index, series.Points.IndexOf(this).ToString(System.Globalization.CultureInfo.InvariantCulture));
 
                 // Replace series keywords
-                result = this.series.ReplaceKeywords(result);
+                result = series.ReplaceKeywords(result);
 
                 // #PERCENT - percentage of Y value from total
-                result = this.series.ReplaceOneKeyword(
-                    this.Chart,
+                result = series.ReplaceOneKeyword(
+                    Chart,
                     this,
-                    this.Tag,
+                    Tag,
                     ChartElementType.DataPoint,
                     result,
                     KeywordName.Percent,
-                    (this.YValues[0] / (this.series.GetTotalYValue())),
+                    (YValues[0] / (series.GetTotalYValue())),
                     ChartValueType.Double,
                     "P");
 
                 // #VAL[X] - point value X, Y, Y2, ...
-                if (this.series.XValueType == ChartValueType.String)
+                if (series.XValueType == ChartValueType.String)
                 {
-                    result = result.Replace(KeywordName.ValX, this.AxisLabel);
+                    result = result.Replace(KeywordName.ValX, AxisLabel);
                 }
                 else
                 {
-                    result = this.series.ReplaceOneKeyword(
-                        this.Chart,
+                    result = series.ReplaceOneKeyword(
+                        Chart,
                         this,
-                        this.Tag,
+                        Tag,
                         ChartElementType.DataPoint,
                         result,
                         KeywordName.ValX,
-                        this.XValue,
-                        this.series.XValueType,
+                        XValue,
+                        series.XValueType,
                         "");
                 }
 
                 // remove keywords #VAL? for unexisted Y value indices
-                for (int index = this.YValues.Length; index <= 7; index++)
+                for (int index = YValues.Length; index <= 7; index++)
                 {
                     result = this.RemoveOneKeyword(result, KeywordName.ValY + index + 1, SR.FormatErrorString);
                 }
 
-                for (int index = 1; index <= this.YValues.Length; index++)
+                for (int index = 1; index <= YValues.Length; index++)
                 {
-                    result = this.series.ReplaceOneKeyword(
-                        this.Chart,
+                    result = series.ReplaceOneKeyword(
+                        Chart,
                         this,
-                        this.Tag,
+                        Tag,
                         ChartElementType.DataPoint,
                         result,
                         KeywordName.ValY + index,
-                        this.YValues[index - 1],
-                        this.series.YValueType,
+                        YValues[index - 1],
+                        series.YValueType,
                         "");
                 }
 
-                result = this.series.ReplaceOneKeyword(
+                result = series.ReplaceOneKeyword(
                     Chart,
                     this,
-                    this.Tag,
+                    Tag,
                     ChartElementType.DataPoint,
                     result,
                     KeywordName.ValY,
-                    this.YValues[0],
-                    this.series.YValueType,
+                    YValues[0],
+                    series.YValueType,
                     "");
 
-                result = this.series.ReplaceOneKeyword(
+                result = series.ReplaceOneKeyword(
                     Chart,
                     this,
-                    this.Tag,
+                    Tag,
                     ChartElementType.DataPoint,
                     result,
                     KeywordName.Val,
-                    this.YValues[0],
-                    this.series.YValueType,
+                    YValues[0],
+                    series.YValueType,
                     "");
             }
 
@@ -2558,11 +2547,7 @@ namespace WebCharts.Services.Models.DataManager
 		/// </summary>
 		[
             SRCategory("CategoryAttributeData"),
-            Bindable(true),
             SRDescription("DescriptionAttributeDataPoint_XValue"),
-            TypeConverter(typeof(DataPointValueConverter)),
-            DefaultValue(typeof(double), "0.0"),
-            DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
         ]
         public double XValue
         {
@@ -2573,7 +2558,7 @@ namespace WebCharts.Services.Models.DataManager
             set
             {
                 _xValue = value;
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -2583,12 +2568,6 @@ namespace WebCharts.Services.Models.DataManager
         [
             SRCategory("CategoryAttributeData"),
             SRDescription("DescriptionAttributeDataPoint_YValues"),
-            Bindable(true),
-            DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-            TypeConverter(typeof(DoubleArrayConverter)),
-            Editor(typeof(UITypeEditor), typeof(UITypeEditor)),
-            RefreshProperties(RefreshProperties.All),
-            SerializationVisibilityAttribute(SerializationVisibility.Attribute)
         ]
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public double[] YValues
@@ -2611,7 +2590,7 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     _yValue = value;
                 }
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -2620,10 +2599,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeData"),
-
-        Bindable(true),
         SRDescription("DescriptionAttributeDataPoint_Empty"),
-        DefaultValue(false)
         ]
         public bool IsEmpty
         {
@@ -2634,7 +2610,7 @@ namespace WebCharts.Services.Models.DataManager
             set
             {
                 base.isEmptyPoint = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -2643,11 +2619,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeData"),
-        Bindable(true),
-        Browsable(false),
         SRDescription("DescriptionAttributeDataPoint_Name"),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
         public override string Name
         {
@@ -2670,8 +2642,6 @@ namespace WebCharts.Services.Models.DataManager
     /// </summary>
     [
     SRDescription("DescriptionAttributeDataPointCustomProperties_DataPointCustomProperties"),
-    DefaultProperty("LabelStyle"),
-    TypeConverter(typeof(DataPointCustomPropertiesConverter))
     ]
     public class DataPointCustomProperties : ChartNamedElement
     {
@@ -2705,8 +2675,8 @@ namespace WebCharts.Services.Models.DataManager
         public DataPointCustomProperties()
         {
             // Initialize the data series
-            this.series = null;
-            this.customProperties = new CustomProperties(this);
+            series = null;
+            customProperties = new CustomProperties(this);
         }
 
         /// <summary>
@@ -2718,8 +2688,8 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Initialize the data series
             this.series = series;
-            this.pointCustomProperties = pointProperties;
-            this.customProperties = new CustomProperties(this);
+            pointCustomProperties = pointProperties;
+            customProperties = new CustomProperties(this);
         }
 
         #endregion
@@ -2778,7 +2748,7 @@ namespace WebCharts.Services.Models.DataManager
 		internal void DeleteCustomProperty(CommonCustomProperties property)
         {
             // Check if trying to delete the common attribute from the series
-            if (!this.pointCustomProperties)
+            if (!pointCustomProperties)
             {
                 throw (new ArgumentException(SR.ExceptionAttributeUnableToDelete));
             }
@@ -2795,7 +2765,7 @@ namespace WebCharts.Services.Models.DataManager
         /// the default custom property of the data series will be returned.</returns>
         virtual public string GetCustomProperty(string name)
         {
-            if (!IsCustomPropertySet(name) && this.pointCustomProperties)
+            if (!IsCustomPropertySet(name) && pointCustomProperties)
             {
                 // Check if we are in serialization mode
                 bool serializing = false;
@@ -2808,7 +2778,7 @@ namespace WebCharts.Services.Models.DataManager
                 if (!serializing)
                 {
 
-                    if (this.isEmptyPoint)
+                    if (isEmptyPoint)
                     {
                         // Return empty point properties from series
                         return (string)series.EmptyPointStyle.properties[name];
@@ -2860,7 +2830,7 @@ namespace WebCharts.Services.Models.DataManager
         internal object GetAttributeObject(CommonCustomProperties attrib)
         {
             // Get series properties
-            if (!this.pointCustomProperties || series == null)
+            if (!pointCustomProperties || series == null)
             {
                 return properties[(int)attrib];
             }
@@ -2877,7 +2847,7 @@ namespace WebCharts.Services.Models.DataManager
 
                 if (!serializing)
                 {
-                    if (this.isEmptyPoint)
+                    if (isEmptyPoint)
                     {
                         // Return empty point properties from series
                         return series.EmptyPointStyle.properties[(int)attrib];
@@ -2922,7 +2892,7 @@ namespace WebCharts.Services.Models.DataManager
         virtual public void SetDefault(bool clearAll)
         {
             // If setting defaults for the data series - clear all properties and initialize common one
-            if (!this.pointCustomProperties)
+            if (!pointCustomProperties)
             {
                 if (clearAll)
                 {
@@ -2937,7 +2907,7 @@ namespace WebCharts.Services.Models.DataManager
                 if (!IsCustomPropertySet(CommonCustomProperties.LegendToolTip))
                     SetAttributeObject(CommonCustomProperties.LegendToolTip, "");
                 if (!IsCustomPropertySet(CommonCustomProperties.Color))
-                    SetAttributeObject(CommonCustomProperties.Color, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.Color, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.IsValueShownAsLabel))
                     SetAttributeObject(CommonCustomProperties.IsValueShownAsLabel, false);
                 if (!IsCustomPropertySet(CommonCustomProperties.MarkerStyle))
@@ -2959,7 +2929,7 @@ namespace WebCharts.Services.Models.DataManager
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelFormat))
                     SetAttributeObject(CommonCustomProperties.LabelFormat, "");
                 if (!IsCustomPropertySet(CommonCustomProperties.BorderColor))
-                    SetAttributeObject(CommonCustomProperties.BorderColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.BorderColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.BackImage))
                     SetAttributeObject(CommonCustomProperties.BackImage, "");
                 if (!IsCustomPropertySet(CommonCustomProperties.BackImageWrapMode))
@@ -2967,21 +2937,21 @@ namespace WebCharts.Services.Models.DataManager
                 if (!IsCustomPropertySet(CommonCustomProperties.BackImageAlignment))
                     SetAttributeObject(CommonCustomProperties.BackImageAlignment, ChartImageAlignmentStyle.TopLeft);
                 if (!IsCustomPropertySet(CommonCustomProperties.BackImageTransparentColor))
-                    SetAttributeObject(CommonCustomProperties.BackImageTransparentColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.BackImageTransparentColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.BackGradientStyle))
                     SetAttributeObject(CommonCustomProperties.BackGradientStyle, GradientStyle.None);
                 if (!IsCustomPropertySet(CommonCustomProperties.BackSecondaryColor))
-                    SetAttributeObject(CommonCustomProperties.BackSecondaryColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.BackSecondaryColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.BackHatchStyle))
                     SetAttributeObject(CommonCustomProperties.BackHatchStyle, ChartHatchStyle.None);
                 if (!IsCustomPropertySet(CommonCustomProperties.Font))
                     SetAttributeObject(CommonCustomProperties.Font, null);
                 if (!IsCustomPropertySet(CommonCustomProperties.MarkerImageTransparentColor))
-                    SetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.MarkerColor))
-                    SetAttributeObject(CommonCustomProperties.MarkerColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.MarkerColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.MarkerBorderColor))
-                    SetAttributeObject(CommonCustomProperties.MarkerBorderColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.MarkerBorderColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.MarkerBorderWidth))
                     SetAttributeObject(CommonCustomProperties.MarkerBorderWidth, 1);
                 if (!IsCustomPropertySet(CommonCustomProperties.MapAreaAttributes))
@@ -2990,7 +2960,7 @@ namespace WebCharts.Services.Models.DataManager
                     SetAttributeObject(CommonCustomProperties.PostBackValue, "");
 
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelForeColor))
-                    SetAttributeObject(CommonCustomProperties.LabelForeColor, Color.Black);
+                    SetAttributeObject(CommonCustomProperties.LabelForeColor, SKColors.Black);
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelAngle))
                     SetAttributeObject(CommonCustomProperties.LabelAngle, 0);
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelToolTip))
@@ -3002,13 +2972,13 @@ namespace WebCharts.Services.Models.DataManager
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelMapAreaAttributes))
                     SetAttributeObject(CommonCustomProperties.LabelMapAreaAttributes, "");
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelBackColor))
-                    SetAttributeObject(CommonCustomProperties.LabelBackColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.LabelBackColor, SKColor.Empty);
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelBorderWidth))
                     SetAttributeObject(CommonCustomProperties.LabelBorderWidth, 1);
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelBorderDashStyle))
                     SetAttributeObject(CommonCustomProperties.LabelBorderDashStyle, ChartDashStyle.Solid);
                 if (!IsCustomPropertySet(CommonCustomProperties.LabelBorderColor))
-                    SetAttributeObject(CommonCustomProperties.LabelBorderColor, Color.Empty);
+                    SetAttributeObject(CommonCustomProperties.LabelBorderColor, SKColor.Empty);
 
                 if (!IsCustomPropertySet(CommonCustomProperties.Url))
                     SetAttributeObject(CommonCustomProperties.Url, "");
@@ -3076,9 +3046,9 @@ namespace WebCharts.Services.Models.DataManager
             get
             {
                 // If attribute is not set in data point - try getting it from the series
-                if (!IsCustomPropertySet(name) && this.pointCustomProperties)
+                if (!IsCustomPropertySet(name) && pointCustomProperties)
                 {
-                    if (this.isEmptyPoint)
+                    if (isEmptyPoint)
                     {
                         return (string)series.EmptyPointStyle.properties[name];
                     }
@@ -3090,7 +3060,7 @@ namespace WebCharts.Services.Models.DataManager
             set
             {
                 properties[name] = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3098,16 +3068,14 @@ namespace WebCharts.Services.Models.DataManager
         /// The text of the data point label.
         /// </summary>
         [
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         SRCategory("CategoryAttributeLabel"),
-        Bindable(true),
         SRDescription("DescriptionAttributeLabel"),
         ]
         virtual public string Label
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.Label))
                     {
@@ -3119,7 +3087,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.Label);
                         }
@@ -3140,12 +3108,12 @@ namespace WebCharts.Services.Models.DataManager
                     value = string.Empty;
                 }
 
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.Label, value);
                 else
                     series.label = value;
 
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3154,15 +3122,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        Bindable(true),
         SRDescription("DescriptionAttributeAxisLabel"),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         ]
         virtual public string AxisLabel
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.AxisLabel))
                     {
@@ -3174,7 +3140,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.AxisLabel);
                         }
@@ -3196,7 +3162,7 @@ namespace WebCharts.Services.Models.DataManager
                     value = string.Empty;
                 }
 
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.AxisLabel, value);
                 else
                     series.axisLabel = value;
@@ -3207,7 +3173,7 @@ namespace WebCharts.Services.Models.DataManager
                     series.noLabelsInPoints = false;
                 }
 
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -3217,14 +3183,14 @@ namespace WebCharts.Services.Models.DataManager
         [
 
         SRCategory("CategoryAttributeLabel"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeLabelFormat")
         ]
         public string LabelFormat
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelFormat))
                     {
@@ -3236,7 +3202,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelFormat);
                         }
@@ -3257,11 +3223,11 @@ namespace WebCharts.Services.Models.DataManager
                     value = string.Empty;
                 }
 
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelFormat, value);
                 else
                     series.labelFormat = value;
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -3271,14 +3237,14 @@ namespace WebCharts.Services.Models.DataManager
         [
 
         SRCategory("CategoryAttributeLabel"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeShowLabelAsValue")
         ]
         public bool IsValueShownAsLabel
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.IsValueShownAsLabel))
                     {
@@ -3290,7 +3256,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return false;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (bool)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.IsValueShownAsLabel);
                         }
@@ -3306,11 +3272,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.IsValueShownAsLabel, value);
                 else
                     series.showLabelAsValue = value;
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -3319,30 +3285,30 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeColor4"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
+
+
         ]
-        public Color Color
+        public SKColor Color
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.Color))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.Color);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.Color);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.Color);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.Color);
                         }
 
                         return series.color;
@@ -3356,19 +3322,19 @@ namespace WebCharts.Services.Models.DataManager
             set
             {
                 // Remove the temp color flag
-                this.tempColorIsSet = false;
+                tempColorIsSet = false;
 
-                if (value == Color.Empty && this.pointCustomProperties)
+                if (value == SKColor.Empty && pointCustomProperties)
                 {
                     DeleteCustomProperty(CommonCustomProperties.Color);
                 }
                 else
                 {
-                    if (this.pointCustomProperties)
+                    if (pointCustomProperties)
                         SetAttributeObject(CommonCustomProperties.Color, value);
                     else
                         series.color = value;
-                    this.Invalidate(true);
+                    Invalidate(true);
                 }
             }
         }
@@ -3378,30 +3344,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeBorderColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color BorderColor
+        public SKColor BorderColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BorderColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.BorderColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.BorderColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BorderColor);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BorderColor);
                         }
 
                         return series.borderColor;
@@ -3414,11 +3377,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BorderColor, value);
                 else
                     series.borderColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3427,14 +3390,14 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeBorderDashStyle")
         ]
         public ChartDashStyle BorderDashStyle
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BorderDashStyle))
                     {
@@ -3446,7 +3409,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return ChartDashStyle.Solid;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (ChartDashStyle)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BorderDashStyle);
                         }
@@ -3462,11 +3425,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BorderDashStyle, value);
                 else
                     series.borderDashStyle = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3475,14 +3438,14 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeBorderWidth"),
         ]
         public int BorderWidth
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BorderWidth))
                     {
@@ -3494,7 +3457,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return 1;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (int)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BorderWidth);
                         }
@@ -3512,13 +3475,13 @@ namespace WebCharts.Services.Models.DataManager
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionBorderWidthIsNotPositive));
+                    throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNotPositive);
                 }
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BorderWidth, value);
                 else
                     series.borderWidth = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3527,15 +3490,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeBackImage"),
-        Editor(typeof(ImageValueEditor), typeof(UITypeEditor)),
         ]
         public string BackImage
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackImage))
                     {
@@ -3547,7 +3508,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackImage);
                         }
@@ -3569,11 +3530,11 @@ namespace WebCharts.Services.Models.DataManager
                     value = string.Empty;
                 }
 
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackImage, value);
                 else
                     series.backImage = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3585,14 +3546,14 @@ namespace WebCharts.Services.Models.DataManager
         /// </value>
 		[
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeImageWrapMode")
         ]
         public ChartImageWrapMode BackImageWrapMode
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackImageWrapMode))
                     {
@@ -3604,7 +3565,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return ChartImageWrapMode.Tile;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (ChartImageWrapMode)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackImageWrapMode);
                         }
@@ -3620,11 +3581,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackImageWrapMode, value);
                 else
                     series.backImageWrapMode = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3636,31 +3597,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </value>
 		[
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeImageTransparentColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color BackImageTransparentColor
+        public SKColor BackImageTransparentColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackImageTransparentColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.BackImageTransparentColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.BackImageTransparentColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackImageTransparentColor);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackImageTransparentColor);
                         }
 
                         return series.backImageTransparentColor;
@@ -3674,11 +3631,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackImageTransparentColor, value);
                 else
                     series.backImageTransparentColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3687,15 +3644,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeBackImageAlign")
         ]
         public ChartImageAlignmentStyle BackImageAlignment
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackImageAlignment))
                     {
@@ -3707,7 +3662,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return ChartImageAlignmentStyle.TopLeft;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (ChartImageAlignmentStyle)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackImageAlignment);
                         }
@@ -3723,11 +3678,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackImageAlignment, value);
                 else
                     series.backImageAlignment = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3736,15 +3691,15 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
 		[
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeBackGradientStyle"),
-        Editor(typeof(GradientEditor), typeof(UITypeEditor))
+
         ]
         public GradientStyle BackGradientStyle
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackGradientStyle))
                     {
@@ -3756,7 +3711,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return GradientStyle.None;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (GradientStyle)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackGradientStyle);
                         }
@@ -3772,11 +3727,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackGradientStyle, value);
                 else
                     series.backGradientStyle = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3785,30 +3740,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
 		[
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeBackSecondaryColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color BackSecondaryColor
+        public SKColor BackSecondaryColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackSecondaryColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.BackSecondaryColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.BackSecondaryColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackSecondaryColor);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackSecondaryColor);
                         }
 
                         return series.backSecondaryColor;
@@ -3822,11 +3774,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackSecondaryColor, value);
                 else
                     series.backSecondaryColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3835,15 +3787,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
 		[
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeBackHatchStyle"),
-        Editor(typeof(HatchStyleEditor), typeof(UITypeEditor))
         ]
         public ChartHatchStyle BackHatchStyle
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.BackHatchStyle))
                     {
@@ -3855,7 +3805,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return ChartHatchStyle.None;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (ChartHatchStyle)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.BackHatchStyle);
                         }
@@ -3871,11 +3821,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.BackHatchStyle, value);
                 else
                     series.backHatchStyle = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -3884,20 +3834,19 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeFont")
         ]
-        public Font Font
+        public SKFont Font
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
-                    if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.Font))
+                    if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.Font) &&
+                        GetAttributeObject(CommonCustomProperties.Font) is SKFont font)
                     {
-                        Font font = GetAttributeObject(CommonCustomProperties.Font) as Font;
-                        if (font != null)
-                            return font;
+                        return font;
                     }
 
                     if (IsSerializing())
@@ -3905,7 +3854,7 @@ namespace WebCharts.Services.Models.DataManager
                         return series.FontCache.DefaultFont;
                     }
 
-                    if (this.isEmptyPoint)
+                    if (isEmptyPoint)
                     {
                         return series.EmptyPointStyle.Font;
                     }
@@ -3919,11 +3868,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.Font, value);
                 else
                     series.font = value;
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -3932,35 +3881,31 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeFontColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
+
+
         ]
-        public Color LabelForeColor
+        public SKColor LabelForeColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelForeColor))
                     {
-                        Color color = (Color)GetAttributeObject(CommonCustomProperties.LabelForeColor);
+                        SKColor color = (SKColor)GetAttributeObject(CommonCustomProperties.LabelForeColor);
                         return color;
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Black;
+                            return SKColors.Black;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelForeColor);
-                        }
-                        if (SystemInformation.HighContrast)
-                        {
-                            return Drawing.SystemColors.WindowText;
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelForeColor);
                         }
 
                         return series.fontColor;
@@ -3974,11 +3919,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelForeColor, value);
                 else
                     series.fontColor = value;
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -3987,14 +3932,14 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
+
         SRDescription(SR.Keys.DescriptionAttributeLabel_FontAngle)
         ]
         public int LabelAngle
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelAngle))
                     {
@@ -4006,7 +3951,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return 0;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (int)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelAngle);
                         }
@@ -4024,13 +3969,13 @@ namespace WebCharts.Services.Models.DataManager
             {
                 if (value < -90 || value > 90)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionAngleRangeInvalid));
+                    throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAngleRangeInvalid);
                 }
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelAngle, value);
                 else
                     series.fontAngle = value;
-                this.Invalidate(false);
+                Invalidate(false);
             }
         }
 
@@ -4039,16 +3984,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
         SRDescription("DescriptionAttributeMarkerStyle4"),
-        Editor(typeof(MarkerStyleEditor), typeof(UITypeEditor)),
-        RefreshProperties(RefreshProperties.All)
         ]
         public MarkerStyle MarkerStyle
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerStyle))
                     {
@@ -4060,7 +4002,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return MarkerStyle.None;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (MarkerStyle)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerStyle);
                         }
@@ -4076,17 +4018,16 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerStyle, value);
                 else
                     series.markerStyle = value;
 
-                Series thisSeries = this as Series;
-                if (thisSeries != null)
+                if (this is Series thisSeries)
                 {
                     thisSeries.tempMarkerStyleIsSet = false;
                 }
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4095,15 +4036,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
         SRDescription("DescriptionAttributeMarkerSize"),
-        RefreshProperties(RefreshProperties.All)
         ]
         public int MarkerSize
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerSize))
                     {
@@ -4115,7 +4054,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return 5;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (int)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerSize);
                         }
@@ -4131,11 +4070,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerSize, value);
                 else
                     series.markerSize = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4144,16 +4083,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
         SRDescription("DescriptionAttributeMarkerImage"),
-        Editor(typeof(ImageValueEditor), typeof(UITypeEditor)),
-        RefreshProperties(RefreshProperties.All)
         ]
         public string MarkerImage
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerImage))
                     {
@@ -4165,7 +4101,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerImage);
                         }
@@ -4187,11 +4123,11 @@ namespace WebCharts.Services.Models.DataManager
                     value = string.Empty;
                 }
 
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerImage, value);
                 else
                     series.markerImage = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4200,31 +4136,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
         SRDescription("DescriptionAttributeImageTransparentColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
-        RefreshProperties(RefreshProperties.All)
         ]
-        public Color MarkerImageTransparentColor
+        public SKColor MarkerImageTransparentColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerImageTransparentColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor);
                         }
 
                         return series.markerImageTransparentColor;
@@ -4238,11 +4170,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerImageTransparentColor, value);
                 else
                     series.markerImageTransparentColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4251,31 +4183,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
         SRDescription("DescriptionAttributeMarkerColor3"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
-        RefreshProperties(RefreshProperties.All)
         ]
-        public Color MarkerColor
+        public SKColor MarkerColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.MarkerColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.MarkerColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerColor);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerColor);
                         }
 
                         return series.markerColor;
@@ -4289,11 +4217,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerColor, value);
                 else
                     series.markerColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4302,31 +4230,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
         SRDescription("DescriptionAttributeMarkerBorderColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
-        RefreshProperties(RefreshProperties.All)
         ]
-        public Color MarkerBorderColor
+        public SKColor MarkerBorderColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerBorderColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.MarkerBorderColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.MarkerBorderColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerBorderColor);
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerBorderColor);
                         }
 
                         return series.markerBorderColor;
@@ -4340,11 +4264,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerBorderColor, value);
                 else
                     series.markerBorderColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4356,14 +4280,14 @@ namespace WebCharts.Services.Models.DataManager
         [
 
         SRCategory("CategoryAttributeMarker"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeMarkerBorderWidth")
         ]
         public int MarkerBorderWidth
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.MarkerBorderWidth))
                     {
@@ -4375,7 +4299,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return 1;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (int)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.MarkerBorderWidth);
                         }
@@ -4393,13 +4317,13 @@ namespace WebCharts.Services.Models.DataManager
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionBorderWidthIsNotPositive));
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNotPositive));
                 }
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.MarkerBorderWidth, value);
                 else
                     series.markerBorderWidth = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4412,16 +4336,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        Bindable(false),
         SRDescription("DescriptionAttributeCustomAttributesExtended"),
-        DefaultValue(null),
-        RefreshProperties(RefreshProperties.All),
-        NotifyParentPropertyAttribute(true),
-        DesignOnlyAttribute(true),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden),
-        EditorBrowsableAttribute(EditorBrowsableState.Never),
-        DisplayName("CustomProperties")
         ]
         public CustomProperties CustomPropertiesExtended
         {
@@ -4442,10 +4357,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        Bindable(true),
-        Browsable(false),
         SRDescription("DescriptionAttributeCustomAttributesExtended"),
-        DefaultValue("")
         ]
         public string CustomProperties
         {
@@ -4552,7 +4464,7 @@ namespace WebCharts.Services.Models.DataManager
                     }
                 }
                 properties = newAttributes;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4565,27 +4477,20 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeMapArea"),
-        Bindable(true),
         SRDescription("DescriptionAttributeToolTip"),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         ]
         public string ToolTip
         {
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.ToolTip, value);
                 else
                     series.toolTip = value;
-
-                if (Chart != null && Chart.selection != null)
-                {
-                    Chart.selection.enabledChecked = false;
-                }
             }
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.ToolTip))
                     {
@@ -4597,7 +4502,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.ToolTip);
                         }
@@ -4632,14 +4537,14 @@ namespace WebCharts.Services.Models.DataManager
 		/// </summary>
 		[
         SRCategory("CategoryAttributeLegend"),
-        Bindable(true),
+
         SRDescription("DescriptionAttributeShowInLegend")
         ]
         public bool IsVisibleInLegend
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.IsVisibleInLegend))
                     {
@@ -4651,7 +4556,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return true;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (bool)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.IsVisibleInLegend);
                         }
@@ -4666,11 +4571,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.IsVisibleInLegend, value);
                 else
                     series.showInLegend = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4679,23 +4584,21 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLegend"),
-        Bindable(true),
         SRDescription("DescriptionAttributeLegendText"),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         ]
         public string LegendText
         {
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LegendText, value);
                 else
                     series.legendText = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LegendText))
                     {
@@ -4707,7 +4610,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LegendText);
                         }
@@ -4727,27 +4630,20 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLegend"),
-        Bindable(true),
         SRDescription("DescriptionAttributeLegendToolTip"),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         ]
         public string LegendToolTip
         {
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LegendToolTip, value);
                 else
                     series.legendToolTip = value;
-
-                if (Chart != null && Chart.selection != null)
-                {
-                    Chart.selection.enabledChecked = false;
-                }
             }
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LegendToolTip))
                     {
@@ -4759,7 +4655,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LegendToolTip);
                         }
@@ -4782,35 +4678,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeLabelBackColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
-        DefaultValue(typeof(Color), ""),
         ]
-        public Color LabelBackColor
+        public SKColor LabelBackColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelBackColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.LabelBackColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.LabelBackColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelBackColor);
-                        }
-                        if (SystemInformation.HighContrast)
-                        {
-                            return Drawing.SystemColors.Window;
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelBackColor);
                         }
 
                         return series.labelBackColor;
@@ -4823,11 +4711,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelBackColor, value);
                 else
                     series.labelBackColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4836,35 +4724,27 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeBorderColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
-        DefaultValue(typeof(Color), ""),
         ]
-        public Color LabelBorderColor
+        public SKColor LabelBorderColor
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelBorderColor))
                     {
-                        return (Color)GetAttributeObject(CommonCustomProperties.LabelBorderColor);
+                        return (SKColor)GetAttributeObject(CommonCustomProperties.LabelBorderColor);
                     }
                     else
                     {
                         if (IsSerializing())
                         {
-                            return Color.Empty;
+                            return SKColor.Empty;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
-                            return (Color)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelBorderColor);
-                        }
-                        if (SystemInformation.HighContrast)
-                        {
-                            return Drawing.SystemColors.ActiveBorder;
+                            return (SKColor)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelBorderColor);
                         }
 
                         return series.labelBorderColor;
@@ -4877,11 +4757,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelBorderColor, value);
                 else
                     series.labelBorderColor = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4890,14 +4770,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeLabelBorderDashStyle")
         ]
         public ChartDashStyle LabelBorderDashStyle
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelBorderDashStyle))
                     {
@@ -4909,7 +4788,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return ChartDashStyle.Solid;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (ChartDashStyle)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelBorderDashStyle);
                         }
@@ -4925,11 +4804,11 @@ namespace WebCharts.Services.Models.DataManager
             }
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelBorderDashStyle, value);
                 else
                     series.labelBorderDashStyle = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4938,14 +4817,13 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
 		[
         SRCategory("CategoryAttributeLabelAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeBorderWidth")
         ]
         public int LabelBorderWidth
         {
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelBorderWidth))
                     {
@@ -4957,7 +4835,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return 1;
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (int)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelBorderWidth);
                         }
@@ -4975,13 +4853,13 @@ namespace WebCharts.Services.Models.DataManager
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionLabelBorderIsNotPositive));
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionLabelBorderIsNotPositive));
                 }
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelBorderWidth, value);
                 else
                     series.labelBorderWidth = value;
-                this.Invalidate(true);
+                Invalidate(true);
             }
         }
 
@@ -4990,27 +4868,20 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeLabel"),
-        Bindable(true),
         SRDescription("DescriptionAttributeLabelToolTip"),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         ]
         public string LabelToolTip
         {
             set
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                     SetAttributeObject(CommonCustomProperties.LabelToolTip, value);
                 else
                     series.labelToolTip = value;
-
-                if (Chart != null && Chart.selection != null)
-                {
-                    Chart.selection.enabledChecked = false;
-                }
             }
             get
             {
-                if (this.pointCustomProperties)
+                if (pointCustomProperties)
                 {
                     if (properties.Count != 0 && IsCustomPropertySet(CommonCustomProperties.LabelToolTip))
                     {
@@ -5022,7 +4893,7 @@ namespace WebCharts.Services.Models.DataManager
                         {
                             return "";
                         }
-                        if (this.isEmptyPoint)
+                        if (isEmptyPoint)
                         {
                             return (string)series.EmptyPointStyle.GetAttributeObject(CommonCustomProperties.LabelToolTip);
                         }
@@ -5052,7 +4923,7 @@ namespace WebCharts.Services.Models.DataManager
             }
             else
             {
-                object attr1 = this.GetAttributeObject(attribute);
+                object attr1 = GetAttributeObject(attribute);
                 object attr2 = Series.defaultCustomProperties.GetAttributeObject(attribute);
                 if (attr1 == null || attr2 == null)
                 {
@@ -5070,7 +4941,7 @@ namespace WebCharts.Services.Models.DataManager
             }
             else
             {
-                this.SetAttributeObject(attribute, Series.defaultCustomProperties.GetAttributeObject(attribute));
+                SetAttributeObject(attribute, Series.defaultCustomProperties.GetAttributeObject(attribute));
             }
         }
 
@@ -5080,7 +4951,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabel()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.Label);
             else
                 return !String.IsNullOrEmpty(series.label);
@@ -5092,7 +4963,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeAxisLabel()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.AxisLabel);
             else
                 return !String.IsNullOrEmpty(series.axisLabel);
@@ -5104,7 +4975,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelFormat()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelFormat);
             else
                 return !String.IsNullOrEmpty(series.labelFormat);
@@ -5116,10 +4987,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeIsValueShownAsLabel()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.IsValueShownAsLabel);
             else
-                return series.showLabelAsValue != false;
+                return series.showLabelAsValue;
         }
 
         /// <summary>
@@ -5128,10 +4999,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.Color);
             else
-                return series.color != Color.Empty;
+                return series.color != SKColor.Empty;
         }
 
         /// <summary>
@@ -5140,10 +5011,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBorderColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BorderColor);
             else
-                return series.borderColor != Color.Empty;
+                return series.borderColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5152,7 +5023,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBorderDashStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BorderDashStyle);
             else
                 return series.borderDashStyle != ChartDashStyle.Solid;
@@ -5164,7 +5035,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBorderWidth()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BorderWidth);
             else
                 return series.borderWidth != 1;
@@ -5176,7 +5047,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerBorderWidth()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerBorderWidth);
             else
                 return series.markerBorderWidth != 1;
@@ -5188,7 +5059,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackImage()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackImage);
             else
                 return !String.IsNullOrEmpty(series.backImage);
@@ -5200,7 +5071,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackImageWrapMode()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackImageWrapMode);
             else
                 return series.backImageWrapMode != ChartImageWrapMode.Tile;
@@ -5212,10 +5083,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackImageTransparentColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackImageTransparentColor);
             else
-                return series.backImageTransparentColor != Color.Empty;
+                return series.backImageTransparentColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5224,7 +5095,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackImageAlignment()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackImageAlignment);
             else
                 return series.backImageAlignment != ChartImageAlignmentStyle.TopLeft;
@@ -5236,7 +5107,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackGradientStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackGradientStyle);
             else
                 return series.backGradientStyle != GradientStyle.None;
@@ -5248,10 +5119,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackSecondaryColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackSecondaryColor);
             else
-                return series.backSecondaryColor != Color.Empty;
+                return series.backSecondaryColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5260,7 +5131,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeBackHatchStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.BackHatchStyle);
             else
                 return series.backHatchStyle != ChartHatchStyle.None;
@@ -5272,7 +5143,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeFont()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.Font);
             else
             {
@@ -5285,10 +5156,10 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         internal bool ShouldSerializeLabelForeColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelForeColor);
             else
-                return series.fontColor != Color.Black;
+                return series.fontColor != SKColors.Black;
         }
 
         /// <summary>
@@ -5297,7 +5168,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelAngle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelAngle);
             else
                 return series.fontAngle != 0f;
@@ -5309,7 +5180,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerStyle);
             else
                 return series.markerStyle != MarkerStyle.None;
@@ -5321,7 +5192,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerSize()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerSize);
             else
                 return series.markerSize != 5;
@@ -5333,7 +5204,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerImage()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerImage);
             else
                 return !String.IsNullOrEmpty(series.markerImage);
@@ -5345,10 +5216,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerImageTransparentColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerImageTransparentColor);
             else
-                return series.markerImageTransparentColor != Color.Empty;
+                return series.markerImageTransparentColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5357,10 +5228,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerColor);
             else
-                return series.markerColor != Color.Empty;
+                return series.markerColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5369,10 +5240,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeMarkerBorderColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.MarkerBorderColor);
             else
-                return series.markerBorderColor != Color.Empty;
+                return series.markerBorderColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5381,7 +5252,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeToolTip()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.ToolTip);
             else
                 return !String.IsNullOrEmpty(series.toolTip);
@@ -5392,10 +5263,10 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         internal bool ShouldSerializeIsVisibleInLegend()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.IsVisibleInLegend);
             else
-                return series.showInLegend != true;
+                return !series.showInLegend;
         }
 
         /// <summary>
@@ -5404,7 +5275,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLegendText()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LegendText);
             else
                 return !String.IsNullOrEmpty(series.legendText);
@@ -5416,7 +5287,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLegendToolTip()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LegendToolTip);
             else
                 return !String.IsNullOrEmpty(series.legendToolTip);
@@ -5430,7 +5301,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelToolTip()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelToolTip);
             else
                 return !String.IsNullOrEmpty(series.labelToolTip);
@@ -5442,10 +5313,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelBackColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelBackColor);
             else
-                return series.labelBackColor != Color.Empty;
+                return series.labelBackColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5454,10 +5325,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelBorderColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelBorderColor);
             else
-                return series.labelBorderColor != Color.Empty;
+                return series.labelBorderColor != SKColor.Empty;
         }
 
         /// <summary>
@@ -5466,7 +5337,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelBorderDashStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelBorderDashStyle);
             else
                 return series.labelBorderDashStyle != ChartDashStyle.Solid;
@@ -5478,7 +5349,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal bool ShouldSerializeLabelBorderWidth()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 return CheckIfSerializationRequired(CommonCustomProperties.LabelBorderWidth);
             else
                 return series.labelBorderWidth != 1;
@@ -5491,7 +5362,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabel()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.Label);
             else
                 series.label = "";
@@ -5503,7 +5374,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetAxisLabel()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.AxisLabel);
             else
                 series.axisLabel = "";
@@ -5515,7 +5386,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelFormat()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelFormat);
             else
                 series.labelFormat = "";
@@ -5527,7 +5398,7 @@ namespace WebCharts.Services.Models.DataManager
 
         public void ResetIsValueShownAsLabel()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.IsValueShownAsLabel);
             else
                 series.IsValueShownAsLabel = false;
@@ -5539,10 +5410,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.Color);
             else
-                series.color = Color.Empty;
+                series.color = SKColor.Empty;
         }
 
         /// <summary>
@@ -5551,10 +5422,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBorderColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BorderColor);
             else
-                series.borderColor = Color.Empty;
+                series.borderColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5563,7 +5434,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBorderDashStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BorderDashStyle);
             else
                 series.borderDashStyle = ChartDashStyle.Solid;
@@ -5575,7 +5446,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBorderWidth()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BorderWidth);
             else
                 series.borderWidth = 1;
@@ -5589,7 +5460,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerBorderWidth()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerBorderWidth);
             else
                 series.markerBorderWidth = 1;
@@ -5603,7 +5474,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBackImage()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BackImage);
             else
                 series.backImage = "";
@@ -5615,7 +5486,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBackImageWrapMode()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BackImageWrapMode);
             else
                 series.backImageWrapMode = ChartImageWrapMode.Tile;
@@ -5627,10 +5498,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBackImageTransparentColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BackImageTransparentColor);
             else
-                series.backImageTransparentColor = Color.Empty;
+                series.backImageTransparentColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5639,10 +5510,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBackSecondaryColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BackSecondaryColor);
             else
-                series.backSecondaryColor = Color.Empty;
+                series.backSecondaryColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5651,7 +5522,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetBackHatchStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.BackHatchStyle);
             else
                 series.backHatchStyle = ChartHatchStyle.None;
@@ -5663,7 +5534,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetFont()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.Font);
             else
             {
@@ -5678,7 +5549,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelAngle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelAngle);
             else
                 series.fontAngle = 0;
@@ -5690,7 +5561,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerStyle);
             else
                 series.markerStyle = MarkerStyle.None;
@@ -5702,7 +5573,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerSize()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerSize);
             else
                 series.markerSize = 5;
@@ -5714,7 +5585,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerImage()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerImage);
             else
                 series.markerImage = "";
@@ -5726,10 +5597,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerImageTransparentColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerImageTransparentColor);
             else
-                series.markerImageTransparentColor = Color.Empty;
+                series.markerImageTransparentColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5738,10 +5609,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerColor);
             else
-                series.markerColor = Color.Empty;
+                series.markerColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5750,10 +5621,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetMarkerBorderColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.MarkerBorderColor);
             else
-                series.markerBorderColor = Color.Empty;
+                series.markerBorderColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5762,15 +5633,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetToolTip()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.ToolTip);
             else
                 series.toolTip = "";
-
-            if (Chart != null && Chart.selection != null)
-            {
-                Chart.selection.enabledChecked = false;
-            }
         }
 
         /// <summary>
@@ -5778,7 +5644,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         public void ResetIsVisibleInLegend()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.IsVisibleInLegend);
             else
                 series.showInLegend = true;
@@ -5790,7 +5656,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLegendText()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LegendText);
             else
                 series.legendText = "";
@@ -5802,15 +5668,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLegendToolTip()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LegendToolTip);
             else
                 series.legendToolTip = "";
-
-            if (Chart != null && Chart.selection != null)
-            {
-                Chart.selection.enabledChecked = false;
-            }
         }
 
 
@@ -5821,10 +5682,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelBackColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelBackColor);
             else
-                series.labelBackColor = Color.Empty;
+                series.labelBackColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5833,10 +5694,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelBorderColor()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelBorderColor);
             else
-                series.labelBorderColor = Color.Empty;
+                series.labelBorderColor = SKColor.Empty;
         }
 
         /// <summary>
@@ -5845,7 +5706,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelBorderDashStyle()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelBorderDashStyle);
             else
                 series.labelBorderDashStyle = ChartDashStyle.Solid;
@@ -5857,7 +5718,7 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelBorderWidth()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelBorderWidth);
             else
                 series.labelBorderWidth = 1;
@@ -5869,15 +5730,10 @@ namespace WebCharts.Services.Models.DataManager
 
         internal void ResetLabelToolTip()
         {
-            if (this.pointCustomProperties)
+            if (pointCustomProperties)
                 ResetProperty(CommonCustomProperties.LabelToolTip);
             else
                 series.labelToolTip = "";
-
-            if (Chart != null && Chart.selection != null)
-            {
-                Chart.selection.enabledChecked = false;
-            }
         }
 
 
@@ -5890,17 +5746,15 @@ namespace WebCharts.Services.Models.DataManager
         /// Invalidate chart area.
         /// </summary>
         /// <param name="invalidateLegend">Invalidate legend area only.</param>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", Justification = "This parameter is used when compiling for the WinForms version of Chart")]
         internal void Invalidate(bool invalidateLegend)
         {
-            if (this.series != null)
+            if (series != null)
             {
                 series.Invalidate(true, invalidateLegend);
             }
             else
             {
-                Series thisSeries = this as Series;
-                if (thisSeries != null)
+                if (this is Series thisSeries)
                 {
                     thisSeries.Invalidate(true, invalidateLegend);
                 }
@@ -5976,8 +5830,6 @@ namespace WebCharts.Services.Models.DataManager
     /// property at design time and supports expandable list
     /// of custom properties.
     /// </summary>
-    [TypeConverter(typeof(CustomPropertiesTypeConverter))]
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public class CustomProperties
     {
         #region Fields
@@ -5995,7 +5847,7 @@ namespace WebCharts.Services.Models.DataManager
         /// <param name="properties">Attributes object.</param>
         internal CustomProperties(DataPointCustomProperties properties)
         {
-            this.m_DataPointCustomProperties = properties;
+            m_DataPointCustomProperties = properties;
         }
 
         #endregion // Constructor
@@ -6006,11 +5858,11 @@ namespace WebCharts.Services.Models.DataManager
         {
             get
             {
-                return this.m_DataPointCustomProperties;
+                return m_DataPointCustomProperties;
             }
             set
             {
-                this.m_DataPointCustomProperties = value;
+                m_DataPointCustomProperties = value;
             }
 
         }
@@ -6036,11 +5888,11 @@ namespace WebCharts.Services.Models.DataManager
         internal virtual string GetUserDefinedCustomProperties(bool userDefined)
         {
             // Get comma separated string of custom properties
-            string customAttribute = this.DataPointCustomProperties.CustomProperties;
+            string customAttribute = DataPointCustomProperties.CustomProperties;
             string userDefinedCustomAttribute = string.Empty;
 
             // Get custom attribute registry
-            CustomPropertyRegistry registry = (CustomPropertyRegistry)this.DataPointCustomProperties.Common.container.GetService(typeof(CustomPropertyRegistry));
+            CustomPropertyRegistry registry = (CustomPropertyRegistry)DataPointCustomProperties.Common.CustomPropertyRegistry;
 
             // Replace commas in value string
             customAttribute = customAttribute.Replace("\\,", "\\x45");
@@ -6119,7 +5971,7 @@ namespace WebCharts.Services.Models.DataManager
             }
 
             // Set new custom attribute string
-            this.DataPointCustomProperties.CustomProperties = properties;
+            DataPointCustomProperties.CustomProperties = properties;
         }
 
 

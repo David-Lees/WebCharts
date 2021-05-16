@@ -26,9 +26,9 @@ namespace WebCharts.Services.Models.Common
         {
             get
             {
-                if (!this.replaced)
+                if (!replaced)
                 {
-                    this.replaced = true;
+                    replaced = true;
                     base.DescriptionValue = SR.Keys.GetString(base.Description);
                 }
                 return base.Description;

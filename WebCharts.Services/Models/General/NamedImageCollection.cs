@@ -15,8 +15,8 @@
 //              chart properties which require image names.
 //
 
-
-using System.ComponentModel;
+using SkiaSharp;
+using WebCharts.Services.Models.Common;
 
 namespace WebCharts.Services.Models.General
 {
@@ -44,14 +44,13 @@ namespace WebCharts.Services.Models.General
 	/// </summary>
 	[
 		SRDescription("DescriptionAttributeNamedImage_NamedImage"),
-		DefaultProperty("Name"),
 	]
     public class NamedImage : ChartNamedElement
 	{
 		#region Fields
 
 		private	string _name  = string.Empty;
-		private System.Drawing.Image _image = null;
+		private SKImage _image = null;
 
 		#endregion
 
@@ -69,10 +68,10 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		/// <param name="name">Image name.</param>
 		/// <param name="image">Image object.</param>
-        public NamedImage(string name, System.Drawing.Image image)
+        public NamedImage(string name, SKImage image)
 		{
-			this._name = name;
-            this._image = image;
+			_name = name;
+            _image = image;
 		}
 
 		#endregion
@@ -83,7 +82,6 @@ namespace WebCharts.Services.Models.General
 		/// Gets or sets the image name.
 		/// </summary>
 		[
-		Bindable(false),
 		SRDescription("DescriptionAttributeNamedImage_Name"),
 		]
 		public override string Name
@@ -102,10 +100,9 @@ namespace WebCharts.Services.Models.General
 		/// Gets or sets the image object.
 		/// </summary>
 		[
-		Bindable(false),
 		SRDescription("DescriptionAttributeNamedImage_Image"),
 		]
-		public System.Drawing.Image Image
+		public SKImage Image
 		{
 			get
 			{

@@ -73,231 +73,231 @@ namespace WebCharts.Services.Models.Utilities
             #endregion // Keyword Names
         }
 
-	/// <summary>
+    /// <summary>
     /// KeywordRegistry class stores information about all 
     /// chart formatting keywords. It automatically registers 
     /// all known keywords when object is constructed. This 
     /// data is exposed as ArrayList through the ‘registeredKeywords’ 
     /// field. Each item in this ArrayList is a KeywordInfo 
     /// object which describes a single formatting keyword.
-	/// </summary>
-	internal class KeywordsRegistry : IServiceProvider
-	{
-		#region Fields
+    /// </summary>
+    internal class KeywordsRegistry : IServiceProvider, IKeywordsRegistry
+    {
+        #region Fields
 
-		// List of registered keywords
-		internal	ArrayList		registeredKeywords = new ArrayList();
+        // List of registered keywords
+        internal ArrayList registeredKeywords = new ArrayList();
 
-		#endregion
+        #endregion
 
-		#region Constructor and Services
+        #region Constructor and Services
 
-		/// <summary>
-		/// Keywords registry public constructor.
-		/// </summary>
-		public KeywordsRegistry()
-		{
-			// Register Keywords used in the chart
-			RegisterKeywords();
-		}
+        /// <summary>
+        /// Keywords registry public constructor.
+        /// </summary>
+        public KeywordsRegistry()
+        {
+            // Register Keywords used in the chart
+            RegisterKeywords();
+        }
 
-		/// <summary>
-		/// Returns Keywords registry service object.
-		/// </summary>
-		/// <param name="serviceType">Service type to get.</param>
-		/// <returns>Custom properties registry service.</returns>
-		[EditorBrowsableAttribute(EditorBrowsableState.Never)]
-		object IServiceProvider.GetService(Type serviceType)
-		{
-			if(serviceType == typeof(KeywordsRegistry))
-			{
-				return this;
-			}
-			throw (new ArgumentException( SR.ExceptionKeywordsRegistryUnsupportedType(serviceType.ToString())));
-		}
+        /// <summary>
+        /// Returns Keywords registry service object.
+        /// </summary>
+        /// <param name="serviceType">Service type to get.</param>
+        /// <returns>Custom properties registry service.</returns>
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        object IServiceProvider.GetService(Type serviceType)
+        {
+            if (serviceType == typeof(KeywordsRegistry))
+            {
+                return this;
+            }
+            throw (new ArgumentException(SR.ExceptionKeywordsRegistryUnsupportedType(serviceType.ToString())));
+        }
 
-		#endregion
+        #endregion
 
-		#region Keywords Registering methods
+        #region Keywords Registering methods
 
-		/// <summary>
-		/// Registers all chart formatting keywords.
-		/// </summary>
-		private void RegisterKeywords()
-		{
+        /// <summary>
+        /// Registers all chart formatting keywords.
+        /// </summary>
+        private void RegisterKeywords()
+        {
             string seriesPointSupportedProperties = "Text,Label,LabelMapAreaAttributes,ToolTip,Url,LabelToolTip,MapAreaAttributes,AxisLabel,LegendToolTip,LegendMapAreaAttributes,LegendUrl,LegendText";
 
-			// #INDEX keyword
-			this.Register(
+            // #INDEX keyword
+            Register(
                 SR.DescriptionKeyWordNameIndexDataPoint,
-				KeywordName.Index,
-				string.Empty,
+                KeywordName.Index,
+                string.Empty,
                 SR.DescriptionKeyWordIndexDataPoint2,
-				"DataPoint",
-				seriesPointSupportedProperties,
-				false,
-				false);
+                "DataPoint",
+                seriesPointSupportedProperties,
+                false,
+                false);
 
-			// #VALX keyword
-			this.Register(
+            // #VALX keyword
+            Register(
                 SR.DescriptionKeyWordNameXValue,
-				KeywordName.ValX,
-				string.Empty,
+                KeywordName.ValX,
+                string.Empty,
                 SR.DescriptionKeyWordXValue,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                false);
 
-			// #VALY keyword
-			this.Register(
+            // #VALY keyword
+            Register(
                 SR.DescriptionKeyWordNameYValue,
-				KeywordName.Val,
-				string.Empty,
+                KeywordName.Val,
+                string.Empty,
                 SR.DescriptionKeyWordYValue,
-				"Series,DataPoint,Annotation,LegendCellColumn,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
+                "Series,DataPoint,Annotation,LegendCellColumn,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
 
-			// #TOTAL keyword
-			this.Register(
+            // #TOTAL keyword
+            Register(
                 SR.DescriptionKeyWordNameTotalYValues,
-				KeywordName.Total,
-				string.Empty,
+                KeywordName.Total,
+                string.Empty,
                 SR.DescriptionKeyWordTotalYValues,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                false);
 
-			// #PERCENT keyword
-			this.Register(
+            // #PERCENT keyword
+            Register(
                 SR.DescriptionKeyWordNameYValuePercentTotal,
-				KeywordName.Percent,
-				string.Empty,
+                KeywordName.Percent,
+                string.Empty,
                 SR.DescriptionKeyWordYValuePercentTotal,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
 
-			// #INDEX keyword
-			this.Register(
+            // #INDEX keyword
+            Register(
                 SR.DescriptionKeyWordNameIndexTheDataPoint,
-				KeywordName.Index,
-				string.Empty,
+                KeywordName.Index,
+                string.Empty,
                 SR.DescriptionKeyWordIndexDataPoint,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				false,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                false,
+                false);
 
-			// #LABEL keyword
-			this.Register(
+            // #LABEL keyword
+            Register(
                 SR.DescriptionKeyWordNameLabelDataPoint,
-				KeywordName.Label,
-				string.Empty,
+                KeywordName.Label,
+                string.Empty,
                 SR.DescriptionKeyWordLabelDataPoint,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				false,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                false,
+                false);
 
-			// #AXISLABEL keyword
-			this.Register(
+            // #AXISLABEL keyword
+            Register(
                 SR.DescriptionKeyWordNameAxisLabelDataPoint,
-				KeywordName.AxisLabel,
-				string.Empty,
+                KeywordName.AxisLabel,
+                string.Empty,
                 SR.DescriptionKeyWordAxisLabelDataPoint,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				false,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                false,
+                false);
 
-			// #LEGENDTEXT keyword
-			this.Register(
+            // #LEGENDTEXT keyword
+            Register(
                 SR.DescriptionKeyWordNameLegendText,
-				KeywordName.LegendText,
-				string.Empty,
+                KeywordName.LegendText,
+                string.Empty,
                 SR.DescriptionKeyWordLegendText,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				false,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                false,
+                false);
 
-			// #SERIESNAME keyword
-			this.Register(
+            // #SERIESNAME keyword
+            Register(
                 SR.DescriptionKeyWordNameSeriesName,
-				KeywordName.SeriesName,
-				KeywordName.Ser,
+                KeywordName.SeriesName,
+                KeywordName.Ser,
                 SR.DescriptionKeyWordSeriesName,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				false,
-				false);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                false,
+                false);
 
-			// *************** NEW KEYWORDS in version 5.5 ***************
+            // *************** NEW KEYWORDS in version 5.5 ***************
 
-			// #AVG keyword
-			this.Register(
+            // #AVG keyword
+            Register(
                 SR.DescriptionKeyWordNameAverageYValues,
-				KeywordName.Avg,
-				string.Empty,
+                KeywordName.Avg,
+                string.Empty,
                 SR.DescriptionKeyWordAverageYValues,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
 
-			// #MAX keyword
-			this.Register(
+            // #MAX keyword
+            Register(
                 SR.DescriptionKeyWordNameMaximumYValues,
-				KeywordName.Max,
-				string.Empty,
+                KeywordName.Max,
+                string.Empty,
                 SR.DescriptionKeyWordMaximumYValues,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
 
-			// #MIN keyword
-			this.Register(
+            // #MIN keyword
+            Register(
                 SR.DescriptionKeyWordNameMinimumYValues,
-				KeywordName.Min,
-				string.Empty,
+                KeywordName.Min,
+                string.Empty,
                 SR.DescriptionKeyWordMinimumYValues,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
 
-			// #LAST keyword
-			this.Register(
+            // #LAST keyword
+            Register(
                 SR.DescriptionKeyWordNameLastPointYValue,
-				KeywordName.Last,
-				string.Empty,
+                KeywordName.Last,
+                string.Empty,
                 SR.DescriptionKeyWordLastPointYValue,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
 
-			// #FIRST keyword
-			this.Register(
+            // #FIRST keyword
+            Register(
                 SR.DescriptionKeyWordNameFirstPointYValue,
-				KeywordName.First,
-				string.Empty,
+                KeywordName.First,
+                string.Empty,
                 SR.DescriptionKeyWordFirstPointYValue,
-				"Series,DataPoint,Annotation,LegendCellColumn",
-				seriesPointSupportedProperties,
-				true,
-				true);
-		}
+                "Series,DataPoint,Annotation,LegendCellColumn",
+                seriesPointSupportedProperties,
+                true,
+                true);
+        }
 
-		#endregion // Keywords Registering methods
+        #endregion // Keywords Registering methods
 
-		#region Registry methods
+        #region Registry methods
 
         /// <summary>
         /// Adds keyword information into the registry.
@@ -310,40 +310,40 @@ namespace WebCharts.Services.Models.Utilities
         /// <param name="appliesToProperties">Comma separated list of applicable properties.</param>
         /// <param name="supportsFormatting">True if formatting is supported.</param>
         /// <param name="supportsValueIndex">True if different point Y values are supported.</param>
-		public void Register(
-			string name,
-			string keyword,
-			string keywordAliases,
-			string description,
-			string appliesToTypes,
-			string appliesToProperties,
-			bool supportsFormatting,
-			bool supportsValueIndex)
-		{
-			// Create new keyword information object
-			KeywordInfo keywordInfo = new KeywordInfo(
-				name,
-				keyword,
-				keywordAliases,
-				description,
-				appliesToTypes,
-				appliesToProperties,
-				supportsFormatting,
-				supportsValueIndex);
+        public void Register(
+            string name,
+            string keyword,
+            string keywordAliases,
+            string description,
+            string appliesToTypes,
+            string appliesToProperties,
+            bool supportsFormatting,
+            bool supportsValueIndex)
+        {
+            // Create new keyword information object
+            KeywordInfo keywordInfo = new KeywordInfo(
+                name,
+                keyword,
+                keywordAliases,
+                description,
+                appliesToTypes,
+                appliesToProperties,
+                supportsFormatting,
+                supportsValueIndex);
 
-			// Add keyword information to the hash table
-			registeredKeywords.Add(keywordInfo);
-		}
+            // Add keyword information to the hash table
+            registeredKeywords.Add(keywordInfo);
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 
-	/// <summary>
+    /// <summary>
     /// KeywordInfo class stores information about a single 
     /// formatting keyword. This information includes Name, 
     /// Description, list of data types and properties it 
     /// applies to and other information.
-	/// </summary>
+    /// </summary>
     internal class KeywordInfo
 	{
 		#region Public Fields
@@ -414,14 +414,14 @@ namespace WebCharts.Services.Models.Utilities
 			bool supportsFormatting,
 			bool supportsValueIndex)
 		{
-			this.Name = name;
-			this.Keyword = keyword;
-			this.KeywordAliases = keywordAliases;
-			this.Description = description;
-			this.AppliesToTypes = appliesToTypes;
-			this.AppliesToProperties = appliesToProperties;
-			this.SupportsFormatting = supportsFormatting;
-			this.SupportsValueIndex = supportsValueIndex;
+			Name = name;
+			Keyword = keyword;
+			KeywordAliases = keywordAliases;
+			Description = description;
+			AppliesToTypes = appliesToTypes;
+			AppliesToProperties = appliesToProperties;
+			SupportsFormatting = supportsFormatting;
+			SupportsValueIndex = supportsValueIndex;
 		}
 
 		#endregion // Constructor
@@ -434,7 +434,7 @@ namespace WebCharts.Services.Models.Utilities
 		/// <returns>Returns keyword name.</returns>
 		public override string ToString()
 		{
-			return this.Name;
+			return Name;
 		}
 		/// <summary>
 		/// Gets an array of keywords names including the aliases.
@@ -448,17 +448,17 @@ namespace WebCharts.Services.Models.Utilities
             // short form. For example, KeywordName.Ser and "#SERIES".
             
 			// Fill array of possible names for that keyword
-			if(this.KeywordAliases.Length > 0)
+			if(KeywordAliases.Length > 0)
 			{
-				string[] keywordAliases = this.KeywordAliases.Split(',');
+				string[] keywordAliases = KeywordAliases.Split(',');
 				string[] keywordNames = new string[keywordAliases.Length + 1];
-				keywordNames[0] = this.Keyword;
+				keywordNames[0] = Keyword;
 				keywordAliases.CopyTo(keywordNames, 1);
 				return keywordNames;
 			}
 			else
 			{
-				return new string[] { this.Keyword };
+				return new string[] { Keyword };
 			}
 		}
 

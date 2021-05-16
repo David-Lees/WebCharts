@@ -12,13 +12,13 @@
 //
 
 
-using System.ComponentModel.Design;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Borders3D;
-using System.Windows.Forms.DataVisualization.Charting.ChartTypes;
-using System.Windows.Forms.DataVisualization.Charting.Data;
-using System.Windows.Forms.DataVisualization.Charting.Formulas;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Models.Utilities;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.Borders3D;
+using WebCharts.Services.Models.ChartTypes;
+using System;
+using WebCharts.Services.Models.Formulas;
 
 namespace WebCharts.Services.Models.General
 {
@@ -27,20 +27,15 @@ namespace WebCharts.Services.Models.General
     /// DataManager, ChartTypeRegistry, ImageLoader and others. It is passed 
     /// to different chart elements to simplify access to those common classes.
     /// </summary>
-    internal class CommonElements
+    public class CommonElements
 	{
 		#region Fields
 
-        private Chart _chart;
+        private ChartService _chart;
         private ChartImage _chartPicture; 
 
 		// Reference to Chart Graphics Object
 		internal ChartGraphics graph = null;
-
-		/// <summary>
-		/// Service Container
-		/// </summary>
-		internal IServiceContainer	container = null;
 
 		/// <summary>
 		/// Indicates painting mode
@@ -52,26 +47,26 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		internal bool processModeRegions = false;
 
-		// Private Fields
-		private int _width = 0;
-		private int _height = 0;
+        #endregion
 
-		#endregion
+        #region Properties
 
-		#region Properties
+        private readonly IServiceProvider _provider;
+
+        public CommonElements(IServiceProvider serviceProvider)
+        {
+			_provider = serviceProvider;
+        }
 
 		/// <summary>
 		/// Reference to the Data Manager
 		/// </summary>
-		internal DataManager DataManager
-		{
-			get
-			{
-				return (DataManager)container.GetService(typeof(DataManager));
-			}
-		}
+		internal IDataManager DataManager => (IDataManager)_provider.GetService(typeof(IDataManager));
 
-		/// <summary>
+		internal ICustomPropertyRegistry CustomPropertyRegistry => (ICustomPropertyRegistry)_provider.GetService(typeof(ICustomPropertyRegistry));
+
+
+ 		/// <summary>
 		/// True if painting mode is active
 		/// </summary>
 		public bool ProcessModePaint
@@ -96,7 +91,7 @@ namespace WebCharts.Services.Models.General
 		/// <summary>
 		/// Reference to the hot regions object
 		/// </summary>
-		public HotRegionsList HotRegionsList
+		internal HotRegionsList HotRegionsList
 		{
 			get
 			{
@@ -118,23 +113,18 @@ namespace WebCharts.Services.Models.General
 		/// <summary>
 		/// Reference to the ImageLoader
 		/// </summary>
-		internal ImageLoader ImageLoader
-		{
-			get
-			{
-				return (ImageLoader)container.GetService(typeof(ImageLoader));
-			}
-		}
+		internal ImageLoader ImageLoader => (ImageLoader)_provider.GetService(typeof(IImageLoader));
 
 		/// <summary>
 		/// Reference to the Chart
 		/// </summary>
-		internal Chart Chart
+		internal ChartService Chart
 		{
 			get
 			{
+				
 				if (_chart==null)
-                    _chart = (Chart)container.GetService(typeof(Chart));
+                    _chart = (ChartService)_provider.GetService(typeof(ChartService));
                 return _chart;
 			}
 		}
@@ -146,7 +136,7 @@ namespace WebCharts.Services.Models.General
 		{
 			get
 			{
-				return (ChartTypeRegistry)container.GetService(typeof(ChartTypeRegistry));
+				return (ChartTypeRegistry)_provider.GetService(typeof(ChartTypeRegistry));
 			}
 		}
 
@@ -157,7 +147,7 @@ namespace WebCharts.Services.Models.General
 		{
 			get
 			{
-				return (BorderTypeRegistry)container.GetService(typeof(BorderTypeRegistry));
+				return (BorderTypeRegistry)_provider.GetService(typeof(BorderTypeRegistry));
 			}
 		}
 
@@ -168,7 +158,7 @@ namespace WebCharts.Services.Models.General
 		{
 			get
 			{
-				return (FormulaRegistry)container.GetService(typeof(FormulaRegistry));
+				return (FormulaRegistry)_provider.GetService(typeof(IFormulaRegistry));
 			}
 		}
 
@@ -182,64 +172,30 @@ namespace WebCharts.Services.Models.General
 			get
 			{
 				if (_chartPicture ==null)
-                    _chartPicture = (ChartImage)container.GetService(typeof(ChartImage));
+                    _chartPicture = (ChartImage)_provider.GetService(typeof(IChartImage));
                 return _chartPicture;
 			}
 		}
 
-		/// <summary>
-		/// Width of the chart picture
-		/// </summary>
-		internal int Width
-		{
-			get
-			{
-				return _width;
-			}
-			set
-			{
-				_width = value;
-			}
-		}
-
-		/// <summary>
-		/// Height of the chart picture
-		/// </summary>
-		internal int Height
-		{
-			get
-			{
-				return _height;
-			}
-			set
-			{
-				_height = value;
-			}
-		}
-
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="container">Service container.</param>
-        internal CommonElements(IServiceContainer container)
-		{
-			this.container = container;
-		}
-		
-
-		#endregion
-
-		#region String convertion helper methods
+        /// <summary>
+        /// Width of the chart picture
+        /// </summary>
+        internal int Width { get; set; } = 0;
 
         /// <summary>
-		/// Converts string to double.
-		/// </summary>
-		/// <param name="stringToParse">String to convert.</param>
-		/// <returns>Double result.</returns>
+        /// Height of the chart picture
+        /// </summary>
+        internal int Height { get; set; } = 0;
+
+        #endregion
+
+        #region String convertion helper methods
+
+        /// <summary>
+        /// Converts string to double.
+        /// </summary>
+        /// <param name="stringToParse">String to convert.</param>
+        /// <returns>Double result.</returns>
         internal static double ParseDouble(string stringToParse)
         {
             return ParseDouble(stringToParse, false);
@@ -250,11 +206,9 @@ namespace WebCharts.Services.Models.General
         /// <param name="stringToParse">String to convert.</param>
         /// <param name="throwException">if set to <c>true</c> the exception thrown.</param>
         /// <returns>Double result.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", MessageId = "System.Double.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Double@)")]
-        internal static double ParseDouble(string stringToParse, bool throwException)
+         internal static double ParseDouble(string stringToParse, bool throwException)
         {
-            Double result = 0.0;
-
+            double result;
             if (throwException)
             {
                 result = double.Parse(stringToParse, NumberStyles.Any, CultureInfo.InvariantCulture);
@@ -275,11 +229,9 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		/// <param name="stringToParse">String to convert.</param>
 		/// <returns>Double result.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1806:DoNotIgnoreMethodResults", MessageId = "System.Single.TryParse(System.String,System.Globalization.NumberStyles,System.IFormatProvider,System.Single@)")]
-        internal static float ParseFloat(string stringToParse)
+         internal static float ParseFloat(string stringToParse)
         {
-            float result = 0f;
-            bool parseSucceed = float.TryParse(stringToParse, NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+            bool parseSucceed = float.TryParse(stringToParse, NumberStyles.Any, CultureInfo.InvariantCulture, out float result);
 
             if (!parseSucceed)
             {

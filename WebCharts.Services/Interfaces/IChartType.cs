@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections;
 using System.IO;
 using WebCharts.Services.Models.ChartTypes;
@@ -31,7 +32,7 @@ namespace WebCharts.Services.Interfaces
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		MemoryStream GetImage(ChartTypeRegistry registry);
+		SKImage GetImage(ChartTypeRegistry registry);
 
 		/// <summary>
 		/// True if chart type is stacked

@@ -16,6 +16,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using System.Resources;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
@@ -168,7 +169,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_pageColor = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -189,7 +190,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_skinStyle = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -210,7 +211,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backColor = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -231,7 +232,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_borderColor = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -252,7 +253,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backHatchStyle = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -273,7 +274,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backImage = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -294,7 +295,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backImageWrapMode = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -316,7 +317,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backImageTransparentColor = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -339,7 +340,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backImageAlignment = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -360,7 +361,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backGradientStyle = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -385,7 +386,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_backSecondaryColor = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -410,7 +411,7 @@ namespace WebCharts.Services.Models.Borders3D
 					throw(new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNotPositive));
 				}
 				_borderWidth = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -431,7 +432,7 @@ namespace WebCharts.Services.Models.Borders3D
 			set
 			{
 				_borderDashStyle = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -441,27 +442,27 @@ namespace WebCharts.Services.Models.Borders3D
     /// <summary>
     /// Keep track of all registered 3D borders.
     /// </summary>
-    internal class BorderTypeRegistry : IServiceProvider
-	{
-		#region Fields
+    internal class BorderTypeRegistry : IServiceProvider, IBorderTypeRegistry
+    {
+        #region Fields
 
-		// Border types image resource manager
-		private		ResourceManager	_resourceManager = null;
+        // Border types image resource manager
+        private ResourceManager _resourceManager = null;
 
-		// Storage for all registered border types
+        // Storage for all registered border types
         internal Hashtable registeredBorderTypes = new(StringComparer.OrdinalIgnoreCase);
         private readonly Hashtable _createdBorderTypes = new(StringComparer.OrdinalIgnoreCase);
 
-		#endregion
+        #endregion
 
-		#region Constructors and services
+        #region Constructors and services
 
-		/// <summary>
-		/// Border types registry public constructor
-		/// </summary>
-		public BorderTypeRegistry()
-		{
-		}
+        /// <summary>
+        /// Border types registry public constructor
+        /// </summary>
+        public BorderTypeRegistry()
+        {
+        }
 
         /// <summary>
         /// Returns border type registry service object
@@ -469,101 +470,101 @@ namespace WebCharts.Services.Models.Borders3D
         /// <param name="serviceType">Service type to get.</param>
         /// <returns>Border registry service.</returns>
         object IServiceProvider.GetService(Type serviceType)
-		{
-			if(serviceType == typeof(BorderTypeRegistry))
-			{
-				return this;
-			}
-			throw (new ArgumentException( SR.ExceptionBorderTypeRegistryUnsupportedType( serviceType.ToString()) ));
-		}
+        {
+            if (serviceType == typeof(BorderTypeRegistry))
+            {
+                return this;
+            }
+            throw (new ArgumentException(SR.ExceptionBorderTypeRegistryUnsupportedType(serviceType.ToString())));
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// Adds 3D border type into the registry.
-		/// </summary>
-		/// <param name="name">Border type name.</param>
-		/// <param name="borderType">Border class type.</param>
-		public void Register(string name, Type borderType)
-		{
-			// First check if border type with specified name already registered
-			if(registeredBorderTypes.Contains(name))
-			{
-				// If same type provided - ignore
-				if(registeredBorderTypes[name].GetType() == borderType)
-				{
-					return;
-				}
+        /// <summary>
+        /// Adds 3D border type into the registry.
+        /// </summary>
+        /// <param name="name">Border type name.</param>
+        /// <param name="borderType">Border class type.</param>
+        public void Register(string name, Type borderType)
+        {
+            // First check if border type with specified name already registered
+            if (registeredBorderTypes.Contains(name))
+            {
+                // If same type provided - ignore
+                if (registeredBorderTypes[name].GetType() == borderType)
+                {
+                    return;
+                }
 
-				// Error - throw exception
-                throw (new ArgumentException(SR.ExceptionBorderTypeNameIsNotUnique( name ) ) );
-			}
+                // Error - throw exception
+                throw (new ArgumentException(SR.ExceptionBorderTypeNameIsNotUnique(name)));
+            }
 
-			// Make sure that specified class support IBorderType interface
-			bool	found = false;
-			Type[]	interfaces = borderType.GetInterfaces();
-			foreach(Type type in interfaces)
-			{   
-				if(type == typeof(IBorderType))
-				{
-					found = true;
-					break;
-				}
-			}
-			if(!found)
-			{
-                throw (new ArgumentException(SR.ExceptionBorderTypeHasNoInterface ));
-			}
+            // Make sure that specified class support IBorderType interface
+            bool found = false;
+            Type[] interfaces = borderType.GetInterfaces();
+            foreach (Type type in interfaces)
+            {
+                if (type == typeof(IBorderType))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                throw (new ArgumentException(SR.ExceptionBorderTypeHasNoInterface));
+            }
 
-			// Add border type to the hash table
-			registeredBorderTypes[name] = borderType;
-		}
+            // Add border type to the hash table
+            registeredBorderTypes[name] = borderType;
+        }
 
-		/// <summary>
-		/// Returns border type object by name.
-		/// </summary>
-		/// <param name="name">Border type name.</param>
-		/// <returns>Border type object derived from IBorderType.</returns>
-		public IBorderType GetBorderType(string name)
-		{
-			// First check if border type with specified name registered
-			if(!registeredBorderTypes.Contains(name))
-			{
-				throw( new ArgumentException( SR.ExceptionBorderTypeUnknown( name ) ) );
-			}
+        /// <summary>
+        /// Returns border type object by name.
+        /// </summary>
+        /// <param name="name">Border type name.</param>
+        /// <returns>Border type object derived from IBorderType.</returns>
+        public IBorderType GetBorderType(string name)
+        {
+            // First check if border type with specified name registered
+            if (!registeredBorderTypes.Contains(name))
+            {
+                throw (new ArgumentException(SR.ExceptionBorderTypeUnknown(name)));
+            }
 
-			// Check if the border type object is already created
-			if(!_createdBorderTypes.Contains(name))
-			{	
-				// Create border type object
-				_createdBorderTypes[name] = 
-					((Type)registeredBorderTypes[name]).Assembly.
-					CreateInstance(((Type)registeredBorderTypes[name]).ToString());
-			}
+            // Check if the border type object is already created
+            if (!_createdBorderTypes.Contains(name))
+            {
+                // Create border type object
+                _createdBorderTypes[name] =
+                    ((Type)registeredBorderTypes[name]).Assembly.
+                    CreateInstance(((Type)registeredBorderTypes[name]).ToString());
+            }
 
-			return (IBorderType)_createdBorderTypes[name];
-		}
+            return (IBorderType)_createdBorderTypes[name];
+        }
 
-		/// <summary>
-		/// Border images resource manager.
-		/// </summary>
-		public ResourceManager	ResourceManager
-		{
-			get
-			{
-				// Create border images resource manager
-				if(_resourceManager == null)
-				{
-					_resourceManager = new ResourceManager("System.Web.UI.DataVisualization.Charting", Assembly.GetExecutingAssembly());
-				}
-				return _resourceManager;
-			}
-		}
+        /// <summary>
+        /// Border images resource manager.
+        /// </summary>
+        public ResourceManager ResourceManager
+        {
+            get
+            {
+                // Create border images resource manager
+                if (_resourceManager == null)
+                {
+                    _resourceManager = new ResourceManager("System.Web.UI.DataVisualization.Charting", Assembly.GetExecutingAssembly());
+                }
+                return _resourceManager;
+            }
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 
     /// <summary>
     /// Interface which defines the set of standard methods and

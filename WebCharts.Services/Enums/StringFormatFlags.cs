@@ -1,5 +1,8 @@
-﻿namespace WebCharts.Services.Enums
+﻿using System;
+
+namespace WebCharts.Services.Enums
 {
+    [Flags]
     public enum StringFormatFlags
     {
         DirectionRightToLeft = 1, // Text is displayed from right to left.

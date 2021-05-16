@@ -16,9 +16,7 @@ namespace WebCharts.Services.Models.General
     {
         #region Member variables
 
-        private IChartElement  _parent = null;
         private CommonElements _common = null;
-        private object _tag = null;
 
         #endregion
 
@@ -33,24 +31,13 @@ namespace WebCharts.Services.Models.General
         /// <remarks>
         /// This property may be used to store additional data with this chart element.
         /// </remarks>
-        [
-        Utilities.SerializationVisibility(Utilities.SerializationVisibility.Hidden)
-        ]
-        public object Tag
-        {
-            get { return _tag; }
-            set { _tag = value; }
-        }
+        public object Tag { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the parent chart element or collection.
         /// </summary>
         /// <value>The parent chart element or collection.</value>
-        internal virtual IChartElement Parent
-        {
-            get { return _parent; }
-            set { _parent = value; }
-        }
+        internal virtual IChartElement Parent { get; set; }
 
         /// <summary>
         /// Gets a shortcut to Common intance providing access to the various chart related services.
@@ -60,9 +47,9 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                if (_common == null && _parent != null)
+                if (_common == null && Parent != null)
                 {
-                    _common = _parent.Common;
+                    _common = Parent.Common;
                 }
                 return _common;
             }
@@ -76,7 +63,7 @@ namespace WebCharts.Services.Models.General
         /// Gets the chart.
         /// </summary>
         /// <value>The chart.</value>
-        internal Chart Chart
+        internal ChartService Chart
         {
             get
             {
@@ -96,15 +83,16 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         protected ChartElement()
         {
+            Parent = null;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChartElement"/> class.
         /// </summary>
         /// <param name="parent">The parent chart element or collection.</param>
-        internal ChartElement(IChartElement parent)
+        protected ChartElement(IChartElement parent)
         {
-            _parent = parent;
+            Parent = parent;
         }
 
         #endregion
@@ -116,8 +104,8 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal virtual void Invalidate() 
         {
-            if (_parent != null)
-                _parent.Invalidate();
+            if (Parent != null)
+                Parent.Invalidate();
         }
 
         #endregion
@@ -127,18 +115,18 @@ namespace WebCharts.Services.Models.General
 
         IChartElement IChartElement.Parent
         {
-            get { return _parent; }
-            set { this.Parent = value; }
+            get { return Parent; }
+            set { Parent = value; }
         }
 
         void IChartElement.Invalidate()
         {
-            this.Invalidate();
+            Invalidate();
         }
 
         CommonElements IChartElement.Common
         {
-            get{ return this.Common; }
+            get{ return Common; }
         }
 
         #endregion
@@ -159,7 +147,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]        
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -188,7 +176,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override string ToString()
         {
-            return this.ToStringInternal();
+            return ToStringInternal();
         }
 
         /// <summary>
@@ -216,7 +204,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override bool Equals(object obj)
         {
-            return this.EqualsInternal(obj);
+            return EqualsInternal(obj);
         }
 
         /// <summary>

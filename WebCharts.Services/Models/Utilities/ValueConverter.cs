@@ -12,6 +12,7 @@
 
 using System;
 using System.Globalization;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.General;
 
 namespace WebCharts.Services.Models.Utilities
@@ -35,7 +36,7 @@ namespace WebCharts.Services.Models.Utilities
         /// <param name="valueType">Value type.</param>
         /// <param name="elementType">Chart element type being formatted.</param>
 		public static string FormatValue(
-			Chart chart,
+			ChartService chart,
 			object obj,
             object objTag,
 			double value, 

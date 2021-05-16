@@ -10,8 +10,11 @@
 //
 
 
+using SkiaSharp;
 using System;
 using System.Drawing;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -34,9 +37,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		override public Image GetImage(ChartTypeRegistry registry)
+		override public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 
 		/// <summary>

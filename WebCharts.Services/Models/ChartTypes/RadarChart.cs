@@ -10,10 +10,15 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Collections;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -23,333 +28,333 @@ namespace WebCharts.Services.Models.ChartTypes
     /// Circular chart drawing style.
     /// </summary>
     internal enum RadarDrawingStyle
-	{
-		/// <summary>
-		/// Series are drawn as filled areas.
-		/// </summary>
-		Area,
-		/// <summary>
-		/// Series are drawn as lines.
-		/// </summary>
-		Line,
-		/// <summary>
-		/// Series are drawn as markers.
-		/// </summary>
-		Marker
-	}
+    {
+        /// <summary>
+        /// Series are drawn as filled areas.
+        /// </summary>
+        Area,
+        /// <summary>
+        /// Series are drawn as lines.
+        /// </summary>
+        Line,
+        /// <summary>
+        /// Series are drawn as markers.
+        /// </summary>
+        Marker
+    }
 
-	#endregion // Enumerations
+    #endregion // Enumerations
 
-	/// <summary>
+    /// <summary>
     /// RadarChart class provides 2D/3D drawing and hit testing 
     /// functionality for the Radar chart. It is also used as a
     /// base class for the PolarChart. 
-	/// </summary>
-	internal class RadarChart : IChartType, ICircularChartType
-	{
-		#region Fields
+    /// </summary>
+    internal class RadarChart : IChartType, ICircularChartType
+    {
+        #region Fields
 
-		/// <summary>
-		/// Common elements object
-		/// </summary>
+        /// <summary>
+        /// Common elements object
+        /// </summary>
         internal CommonElements Common { get; set; }
 
-		/// <summary>
-		/// Chart area object
-		/// </summary>
+        /// <summary>
+        /// Chart area object
+        /// </summary>
         internal ChartArea Area { get; set; }
 
-		/// <summary>
-		/// Auto label position flag
-		/// </summary>
-		private	bool				_autoLabelPosition = true;
+        /// <summary>
+        /// Auto label position flag
+        /// </summary>
+        private bool _autoLabelPosition = true;
 
-		/// <summary>
-		/// Label position
-		/// </summary>
-		private	LabelAlignmentStyles		_labelPosition = LabelAlignmentStyles.Top;
+        /// <summary>
+        /// Label position
+        /// </summary>
+        private LabelAlignmentStyles _labelPosition = LabelAlignmentStyles.Top;
 
-		#endregion
+        #endregion
 
         #region Constructors
 
         /// <summary>
-		/// Class public constructor.
-		/// </summary>
-		public RadarChart()
-		{
-		}
+        /// Class public constructor.
+        /// </summary>
+        public RadarChart()
+        {
+        }
 
-		#endregion
+        #endregion
 
-		#region IChartType interface implementation
+        #region IChartType interface implementation
 
-		/// <summary>
-		/// Chart type name
-		/// </summary>
-		virtual public string Name			{ get{ return ChartTypeNames.Radar;}}
+        /// <summary>
+        /// Chart type name
+        /// </summary>
+        virtual public string Name { get { return ChartTypeNames.Radar; } }
 
-		/// <summary>
-		/// True if chart type is stacked
-		/// </summary>
-		virtual public bool Stacked		{ get{ return false;}}
-
-
-		/// <summary>
-		/// True if stacked chart type supports groups
-		/// </summary>
-		virtual public bool SupportStackedGroups	{ get { return false; } }
+        /// <summary>
+        /// True if chart type is stacked
+        /// </summary>
+        virtual public bool Stacked { get { return false; } }
 
 
-		/// <summary>
-		/// True if stacked chart type should draw separately positive and 
-		/// negative data points ( Bar and column Stacked types ).
-		/// </summary>
-		public bool StackSign		{ get{ return false;}}
+        /// <summary>
+        /// True if stacked chart type supports groups
+        /// </summary>
+        virtual public bool SupportStackedGroups { get { return false; } }
 
-		/// <summary>
-		/// True if chart type supports axes
-		/// </summary>
-		virtual public bool RequireAxes	{ get{ return true;} }
 
-		/// <summary>
-		/// Chart type with two y values used for scale ( bubble chart type )
-		/// </summary>
-		public bool SecondYScale{ get{ return false;} }
+        /// <summary>
+        /// True if stacked chart type should draw separately positive and 
+        /// negative data points ( Bar and column Stacked types ).
+        /// </summary>
+        public bool StackSign { get { return false; } }
 
-		/// <summary>
-		/// True if chart type requires circular chart area.
-		/// </summary>
-		public bool CircularChartArea	{ get{ return true;} }
+        /// <summary>
+        /// True if chart type supports axes
+        /// </summary>
+        virtual public bool RequireAxes { get { return true; } }
 
-		/// <summary>
-		/// True if chart type supports logarithmic axes
-		/// </summary>
-		virtual public bool SupportLogarithmicAxes	{ get{ return false;} }
+        /// <summary>
+        /// Chart type with two y values used for scale ( bubble chart type )
+        /// </summary>
+        public bool SecondYScale { get { return false; } }
 
-		/// <summary>
-		/// True if chart type requires to switch the value (Y) axes position
-		/// </summary>
-		virtual public bool SwitchValueAxes	{ get{ return false;} }
+        /// <summary>
+        /// True if chart type requires circular chart area.
+        /// </summary>
+        public bool CircularChartArea { get { return true; } }
 
-		/// <summary>
-		/// True if chart series can be placed side-by-side.
-		/// </summary>
-		virtual public bool SideBySideSeries { get{ return false;} }
+        /// <summary>
+        /// True if chart type supports logarithmic axes
+        /// </summary>
+        virtual public bool SupportLogarithmicAxes { get { return false; } }
 
-		/// <summary>
-		/// True if each data point of a chart must be represented in the legend
-		/// </summary>
-		virtual public bool DataPointsInLegend	{ get{ return false;} }
+        /// <summary>
+        /// True if chart type requires to switch the value (Y) axes position
+        /// </summary>
+        virtual public bool SwitchValueAxes { get { return false; } }
 
-		/// <summary>
-		/// If the crossing value is auto Crossing value should be 
-		/// automatically set to zero for some chart 
-		/// types (Bar, column, area etc.)
-		/// </summary>
-		virtual public bool ZeroCrossing { get{ return false;} }
+        /// <summary>
+        /// True if chart series can be placed side-by-side.
+        /// </summary>
+        virtual public bool SideBySideSeries { get { return false; } }
 
-		/// <summary>
-		/// True if palette colors should be applied for each data point.
-		/// Otherwise the color is applied to the series.
-		/// </summary>
-		virtual public bool ApplyPaletteColorsToPoints	{ get { return false; } }
+        /// <summary>
+        /// True if each data point of a chart must be represented in the legend
+        /// </summary>
+        virtual public bool DataPointsInLegend { get { return false; } }
 
-		/// <summary>
-		/// Indicates that extra Y values are connected to the scale of the Y axis
-		/// </summary>
-		virtual public bool ExtraYValuesConnectedToYAxis{ get { return false; } }
-		
-		/// <summary>
-		/// Indicates that this is a one hundred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercent{ get{return false;} }
+        /// <summary>
+        /// If the crossing value is auto Crossing value should be 
+        /// automatically set to zero for some chart 
+        /// types (Bar, column, area etc.)
+        /// </summary>
+        virtual public bool ZeroCrossing { get { return false; } }
 
-		/// <summary>
-		/// Indicates that negative 100% stacked values are shown on
-		/// the other side of the X axis
-		/// </summary>
-		virtual public bool HundredPercentSupportNegative{ get{return false;} }
+        /// <summary>
+        /// True if palette colors should be applied for each data point.
+        /// Otherwise the color is applied to the series.
+        /// </summary>
+        virtual public bool ApplyPaletteColorsToPoints { get { return false; } }
 
-		/// <summary>
-		/// How to draw series/points in legend:
-		/// Filled rectangle, Line or Marker
-		/// </summary>
-		/// <param name="series">Legend item series.</param>
-		/// <returns>Legend item style.</returns>
-		virtual public LegendImageStyle GetLegendImageStyle(Series series)
-		{
-			if(series != null)
-			{
-				RadarDrawingStyle drawingStyle = GetDrawingStyle(series, new DataPoint(series)); 
-				if(drawingStyle == RadarDrawingStyle.Line)
-				{
-					return LegendImageStyle.Line;
-				}
-				else if(drawingStyle == RadarDrawingStyle.Marker)
-				{
-					return LegendImageStyle.Marker;
-				}
-			}
-			return LegendImageStyle.Rectangle;
-		}
+        /// <summary>
+        /// Indicates that extra Y values are connected to the scale of the Y axis
+        /// </summary>
+        virtual public bool ExtraYValuesConnectedToYAxis { get { return false; } }
 
-		/// <summary>
-		/// Number of supported Y value(s) per point 
-		/// </summary>
-		virtual public int YValuesPerPoint	{ get { return 1; } }
+        /// <summary>
+        /// Indicates that this is a one hundred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercent { get { return false; } }
 
-		/// <summary>
-		/// Gets chart type image.
-		/// </summary>
-		/// <param name="registry">Chart types registry object.</param>
-		/// <returns>Chart type image.</returns>
-		virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
-		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
-		}
+        /// <summary>
+        /// Indicates that negative 100% stacked values are shown on
+        /// the other side of the X axis
+        /// </summary>
+        virtual public bool HundredPercentSupportNegative { get { return false; } }
 
-		#endregion
+        /// <summary>
+        /// How to draw series/points in legend:
+        /// Filled rectangle, Line or Marker
+        /// </summary>
+        /// <param name="series">Legend item series.</param>
+        /// <returns>Legend item style.</returns>
+        virtual public LegendImageStyle GetLegendImageStyle(Series series)
+        {
+            if (series != null)
+            {
+                RadarDrawingStyle drawingStyle = GetDrawingStyle(series, new DataPoint(series));
+                if (drawingStyle == RadarDrawingStyle.Line)
+                {
+                    return LegendImageStyle.Line;
+                }
+                else if (drawingStyle == RadarDrawingStyle.Marker)
+                {
+                    return LegendImageStyle.Marker;
+                }
+            }
+            return LegendImageStyle.Rectangle;
+        }
 
-		#region ICircularChartType interface implementation
+        /// <summary>
+        /// Number of supported Y value(s) per point 
+        /// </summary>
+        virtual public int YValuesPerPoint { get { return 1; } }
 
-		/// <summary>
-		/// Checks if closed figure should be drawn even in Line drawing mode.
-		/// </summary>
-		/// <returns>True if closed figure should be drawn even in Line drawing mode.</returns>
-		public virtual bool RequireClosedFigure()
-		{
-			return true;
-		}
+        /// <summary>
+        /// Gets chart type image.
+        /// </summary>
+        /// <param name="registry">Chart types registry object.</param>
+        /// <returns>Chart type image.</returns>
+        virtual public SKImage GetImage(ChartTypeRegistry registry)
+        {
+            return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
+        }
 
-		/// <summary>
-		/// Checks if Y axis position may be changed using X axis Crossing property.
-		/// </summary>
-		/// <returns>True if Y axis position may be changed using X axis Crossing property.</returns>
-		public virtual bool XAxisCrossingSupported()
-		{
-			return false;
-		}
+        #endregion
 
-		/// <summary>
-		/// Checks if automatic X axis labels are supported.
-		/// </summary>
-		/// <returns>True if automatic X axis labels are supported.</returns>
-		public virtual bool XAxisLabelsSupported()
-		{
-			return false;
-		}
+        #region ICircularChartType interface implementation
 
-		/// <summary>
-		/// Checks if radial grid lines (X axis) are supported by the chart type.
-		/// </summary>
-		/// <returns>True if radial grid lines are supported.</returns>
-		public virtual bool RadialGridLinesSupported()
-		{
-			return false;
-		}
+        /// <summary>
+        /// Checks if closed figure should be drawn even in Line drawing mode.
+        /// </summary>
+        /// <returns>True if closed figure should be drawn even in Line drawing mode.</returns>
+        public virtual bool RequireClosedFigure()
+        {
+            return true;
+        }
 
-		/// <summary>
-		/// Gets number of sectors in the circular chart area.
-		/// </summary>
-		/// <param name="area">Chart area to get number of sectors for.</param>
-		/// <param name="seriesCollection">Collection of series.</param>
-		/// <returns>Returns number of sectors in circular chart.</returns>
-		public virtual int GetNumerOfSectors(ChartArea area, SeriesCollection seriesCollection)
-		{
-			int	sectorNumber = 0;
+        /// <summary>
+        /// Checks if Y axis position may be changed using X axis Crossing property.
+        /// </summary>
+        /// <returns>True if Y axis position may be changed using X axis Crossing property.</returns>
+        public virtual bool XAxisCrossingSupported()
+        {
+            return false;
+        }
 
-			// Get maximum number of points in all series
-			foreach(Series series in seriesCollection)
-			{
-				if(series.IsVisible() && series.ChartArea == area.Name)
-				{
-					sectorNumber = (int)Math.Max(series.Points.Count, sectorNumber);
-				}
-			}
-			return sectorNumber;
-		}
+        /// <summary>
+        /// Checks if automatic X axis labels are supported.
+        /// </summary>
+        /// <returns>True if automatic X axis labels are supported.</returns>
+        public virtual bool XAxisLabelsSupported()
+        {
+            return false;
+        }
 
-		/// <summary>
-		/// Get a location of each Y axis in degrees.
-		/// </summary>
-		/// <param name="area">Chart area to get Y axes locations for.</param>
-		/// <returns>Returns an array of one or more locations of Y axis.</returns>
-		public virtual float[] GetYAxisLocations(ChartArea area)
-		{
-			float[]	axesLocation = new float[area.CircularSectorsNumber];
-			float sectorSize = 360f / ((float)axesLocation.Length);
-			for(int index = 0; index < axesLocation.Length; index++)
-			{
-				axesLocation[index] = sectorSize * index;
-			}
-			return axesLocation;
-		}
+        /// <summary>
+        /// Checks if radial grid lines (X axis) are supported by the chart type.
+        /// </summary>
+        /// <returns>True if radial grid lines are supported.</returns>
+        public virtual bool RadialGridLinesSupported()
+        {
+            return false;
+        }
 
-		#endregion // ICircularChartType interface implementation
+        /// <summary>
+        /// Gets number of sectors in the circular chart area.
+        /// </summary>
+        /// <param name="area">Chart area to get number of sectors for.</param>
+        /// <param name="seriesCollection">Collection of series.</param>
+        /// <returns>Returns number of sectors in circular chart.</returns>
+        public virtual int GetNumerOfSectors(ChartArea area, SeriesCollection seriesCollection)
+        {
+            int sectorNumber = 0;
 
-		#region Painting and Selection
+            // Get maximum number of points in all series
+            foreach (Series series in seriesCollection)
+            {
+                if (series.IsVisible() && series.ChartArea == area.Name)
+                {
+                    sectorNumber = (int)Math.Max(series.Points.Count, sectorNumber);
+                }
+            }
+            return sectorNumber;
+        }
 
-		/// <summary>
-		/// Paint Radar Chart.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual public void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw )
-		{	
-			this.Common = common;
-			this.Area = area;
+        /// <summary>
+        /// Get a location of each Y axis in degrees.
+        /// </summary>
+        /// <param name="area">Chart area to get Y axes locations for.</param>
+        /// <returns>Returns an array of one or more locations of Y axis.</returns>
+        public virtual float[] GetYAxisLocations(ChartArea area)
+        {
+            float[] axesLocation = new float[area.CircularSectorsNumber];
+            float sectorSize = 360f / ((float)axesLocation.Length);
+            for (int index = 0; index < axesLocation.Length; index++)
+            {
+                axesLocation[index] = sectorSize * index;
+            }
+            return axesLocation;
+        }
 
-			// Draw chart
-			ProcessChartType( false, graph, common, area, seriesToDraw );
-		}
+        #endregion // ICircularChartType interface implementation
 
-		/// <summary>
-		/// This method recalculates size of the bars. This method is used 
-		/// from Paint or Select method.
-		/// </summary>
-		/// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual protected void ProcessChartType( 
-			bool selection, 
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			Series seriesToDraw )
-		{
-				
-			//************************************************************
-			//** Loop through all series
-			//************************************************************
-			foreach( Series ser in common.DataManager.Series )
-			{
-				// Process only series in this chart area
-				if( ser.ChartArea != area.Name || !ser.IsVisible())
-				{
-					continue;
-				}
+        #region Painting and Selection
 
-				// All series attached to this chart area must have Radar chart type
-				if(String.Compare( ser.ChartTypeName, this.Name, true, System.Globalization.CultureInfo.CurrentCulture ) != 0 )
-				{
-					throw(new InvalidOperationException(SR.ExceptionChartTypeCanNotCombine(ser.ChartTypeName, this.Name)));
-				}
+        /// <summary>
+        /// Paint Radar Chart.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual public void Paint(ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw)
+        {
+            Common = common;
+            Area = area;
 
-				//************************************************************
-				//** Call Back Paint event
-				//************************************************************
-				if( !selection )
-				{
+            // Draw chart
+            ProcessChartType(false, graph, common, area, seriesToDraw);
+        }
+
+        /// <summary>
+        /// This method recalculates size of the bars. This method is used 
+        /// from Paint or Select method.
+        /// </summary>
+        /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual protected void ProcessChartType(
+            bool selection,
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            Series seriesToDraw)
+        {
+
+            //************************************************************
+            //** Loop through all series
+            //************************************************************
+            foreach (Series ser in common.DataManager.Series)
+            {
+                // Process only series in this chart area
+                if (ser.ChartArea != area.Name || !ser.IsVisible())
+                {
+                    continue;
+                }
+
+                // All series attached to this chart area must have Radar chart type
+                if (String.Compare(ser.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) != 0)
+                {
+                    throw (new InvalidOperationException(SR.ExceptionChartTypeCanNotCombine(ser.ChartTypeName, Name)));
+                }
+
+                //************************************************************
+                //** Call Back Paint event
+                //************************************************************
+                if (!selection)
+                {
                     common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-				}
+                }
 
-				// Chart type do not supprot secondary axes
+                // Chart type do not supprot secondary axes
                 //if (ser.YAxisType == AxisType.Secondary)
                 //{
                 //    throw (new InvalidOperationException(SR.ExceptionChartTypeSecondaryYAxisUnsupported(this.Name)));
@@ -359,174 +364,172 @@ namespace WebCharts.Services.Models.ChartTypes
                 //    throw (new InvalidOperationException(SR.ExceptionChartTypeSecondaryXAxisUnsupported(this.Name)));
                 //}
 
-				// Set active vertical axis and scaleView boundary
-				Axis vAxis = area.GetAxis(AxisName.Y, AxisType.Primary, ser.YSubAxisName);
-				double vAxisMin = vAxis.ViewMinimum;
-				double vAxisMax = vAxis.ViewMaximum;
+                // Set active vertical axis and scaleView boundary
+                Axis vAxis = area.GetAxis(AxisName.Y, AxisType.Primary, ser.YSubAxisName);
+                double vAxisMin = vAxis.ViewMinimum;
+                double vAxisMax = vAxis.ViewMaximum;
 
-				//************************************************************
-				//** Fill the array of data points coordinates (absolute)
-				//************************************************************
-				SKPoint[]	dataPointPos = GetPointsPosition(graph, area, ser);
+                //************************************************************
+                //** Fill the array of data points coordinates (absolute)
+                //************************************************************
+                SKPoint[] dataPointPos = GetPointsPosition(graph, area, ser);
 
-				//************************************************************
-				//** Draw shadow of area first
-				//************************************************************
-				int index = 0;				// Data points loop
-				if(ser.ShadowOffset != 0 && !selection)
-				{
-					foreach( DataPoint point in ser.Points )
-					{
-						// Calculate second point index
-						int	secondPointIndex = index + 1;
-						if(secondPointIndex >= ser.Points.Count)
-						{
-							secondPointIndex = 0;
-						}
-
-						// Get visual properties of the point 
-						DataPointCustomProperties pointAttributes = point;
-
-						if(ser.Points[secondPointIndex].IsEmpty)
-						{
-							pointAttributes = ser.Points[secondPointIndex];
-						}
-
-
-						//************************************************************
-						//** Check what is the main element of radar point. It can be
-						//** area (default), line or marker.
-						//************************************************************
-						Color	areaColor = pointAttributes.Color;
-						Color	borderColor = pointAttributes.BorderColor;
-						int		borderWidth = pointAttributes.BorderWidth;
-						ChartDashStyle borderDashStyle = pointAttributes.BorderDashStyle;
-						RadarDrawingStyle drawingStyle = GetDrawingStyle(ser, point); 
-
-						// Check if point Y value is in axis scaleView
-						if(vAxis.GetLogValue(point.YValues[0]) > vAxisMax || vAxis.GetLogValue(point.YValues[0]) < vAxisMin ||
-							vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) > vAxisMax || vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) < vAxisMin)
-						{
-							++index;
-							continue;
-						}
-
-						if(drawingStyle == RadarDrawingStyle.Line)
-						{
-							// Use the main color for the border and make sure border is visible
-							borderColor = pointAttributes.Color;
-							borderWidth = (borderWidth < 1) ? 1 : borderWidth;
-							borderDashStyle = (borderDashStyle == ChartDashStyle.NotSet) ? ChartDashStyle.Solid : borderDashStyle;
-
-							// Area is not visible
-							areaColor = Color.Transparent;
-						}
-						else if(drawingStyle == RadarDrawingStyle.Marker)
-						{
-							// Area is not visible
-							areaColor = Color.Transparent;
-						}
-
-						// Check if line should be always closed
-						if(secondPointIndex == 0 && 
-							!RequireClosedFigure() &&
-							drawingStyle != RadarDrawingStyle.Area)
-						{
-							break;
-						}
-
-						//************************************************************
-						//** Fill area
-						//************************************************************
-                        if (areaColor != Color.Transparent && areaColor != Color.Empty && ser.ShadowOffset != 0)
+                //************************************************************
+                //** Draw shadow of area first
+                //************************************************************
+                int index = 0;              // Data points loop
+                if (ser.ShadowOffset != 0 && !selection)
+                {
+                    foreach (DataPoint point in ser.Points)
+                    {
+                        // Calculate second point index
+                        int secondPointIndex = index + 1;
+                        if (secondPointIndex >= ser.Points.Count)
                         {
-                            // Create sector path
-                            using (SKPath fillPath = new SKPath())
-                            {
-                                fillPath.AddLine(graph.GetAbsolutePoint(area.circularCenter), dataPointPos[index]);
-                                fillPath.AddLine(dataPointPos[index], dataPointPos[secondPointIndex]);
-                                fillPath.AddLine(dataPointPos[secondPointIndex], graph.GetAbsolutePoint(area.circularCenter));
-
-                                // Shift shadow position
-                                Matrix shadowMatrix = new Matrix();
-                                shadowMatrix.Translate(ser.ShadowOffset, ser.ShadowOffset);
-                                fillPath.Transform(shadowMatrix);
-
-                                // Fill shadow sector
-                                using (Brush brush = new SolidBrush(ser.ShadowColor))
-                                {
-                                    graph.FillPath(brush, fillPath);
-                                }
-                            }
+                            secondPointIndex = 0;
                         }
 
-						// Increase index
-						++index;
-					}
-				}
+                        // Get visual properties of the point 
+                        DataPointCustomProperties pointAttributes = point;
+
+                        if (ser.Points[secondPointIndex].IsEmpty)
+                        {
+                            pointAttributes = ser.Points[secondPointIndex];
+                        }
 
 
-				//************************************************************
-				//** Loop through all data points in the series and fill areas
-				//** and draw border lines.
-				//************************************************************
-				index = 0;				// Data points loop
-				foreach( DataPoint point in ser.Points )
-				{
-					// Set pre-calculated point position
-					point.positionRel = graph.GetRelativePoint(dataPointPos[index]);
+                        //************************************************************
+                        //** Check what is the main element of radar point. It can be
+                        //** area (default), line or marker.
+                        //************************************************************
+                        SKColor areaColor = pointAttributes.Color;
+                        SKColor borderColor = pointAttributes.BorderColor;
+                        int borderWidth = pointAttributes.BorderWidth;
+                        ChartDashStyle borderDashStyle = pointAttributes.BorderDashStyle;
+                        RadarDrawingStyle drawingStyle = GetDrawingStyle(ser, point);
 
-					// Calculate second point index
-					int	secondPointIndex = index + 1;
-					if(secondPointIndex >= ser.Points.Count)
-					{
-						secondPointIndex = 0;
-					}
+                        // Check if point Y value is in axis scaleView
+                        if (vAxis.GetLogValue(point.YValues[0]) > vAxisMax || vAxis.GetLogValue(point.YValues[0]) < vAxisMin ||
+                            vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) > vAxisMax || vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) < vAxisMin)
+                        {
+                            ++index;
+                            continue;
+                        }
 
-					// Get visual properties of the point 
-					DataPointCustomProperties pointAttributes = point;
+                        if (drawingStyle == RadarDrawingStyle.Line)
+                        {
+                            // Use the main color for the border and make sure border is visible
+                            borderColor = pointAttributes.Color;
+                            borderWidth = (borderWidth < 1) ? 1 : borderWidth;
+                            borderDashStyle = (borderDashStyle == ChartDashStyle.NotSet) ? ChartDashStyle.Solid : borderDashStyle;
 
-					if(ser.Points[secondPointIndex].IsEmpty)
-					{
-						pointAttributes = ser.Points[secondPointIndex];
-					}
+                            // Area is not visible
+                            areaColor = SKColors.Transparent;
+                        }
+                        else if (drawingStyle == RadarDrawingStyle.Marker)
+                        {
+                            // Area is not visible
+                            areaColor = SKColors.Transparent;
+                        }
+
+                        // Check if line should be always closed
+                        if (secondPointIndex == 0 &&
+                            !RequireClosedFigure() &&
+                            drawingStyle != RadarDrawingStyle.Area)
+                        {
+                            break;
+                        }
+
+                        //************************************************************
+                        //** Fill area
+                        //************************************************************
+                        if (areaColor != SKColors.Transparent && areaColor != SKColor.Empty && ser.ShadowOffset != 0)
+                        {
+                            // Create sector path
+                            using SKPath fillPath = new();
+                            fillPath.MoveTo(graph.GetAbsolutePoint(area.circularCenter));
+                            fillPath.LineTo(dataPointPos[index]);
+                            fillPath.LineTo(dataPointPos[secondPointIndex]);
+                            fillPath.LineTo(graph.GetAbsolutePoint(area.circularCenter));
+
+                            // Shift shadow position
+                            SKMatrix shadowMatrix = new();
+                            shadowMatrix.TransX = ser.ShadowOffset;
+                            shadowMatrix.TransY = ser.ShadowOffset;
+                            fillPath.Transform(shadowMatrix);
+
+                            // Fill shadow sector
+                            using SKPaint brush = new() { Color = ser.ShadowColor, Style = SKPaintStyle.Fill };
+                            graph.FillPath(brush, fillPath);
+                        }
+
+                        // Increase index
+                        ++index;
+                    }
+                }
 
 
-					//************************************************************
-					//** Check what is the main element of radar point. It can be
-					//** area (default), line or marker.
-					//************************************************************
-					Color	areaColor = pointAttributes.Color;
-					Color	borderColor = pointAttributes.BorderColor;
-					int		borderWidth = pointAttributes.BorderWidth;
-					ChartDashStyle borderDashStyle = pointAttributes.BorderDashStyle;
-					RadarDrawingStyle drawingStyle = GetDrawingStyle(ser, point); 
+                //************************************************************
+                //** Loop through all data points in the series and fill areas
+                //** and draw border lines.
+                //************************************************************
+                index = 0;              // Data points loop
+                foreach (DataPoint point in ser.Points)
+                {
+                    // Set pre-calculated point position
+                    point.positionRel = graph.GetRelativePoint(dataPointPos[index]);
 
-					// Check if point Y value is in axis scaleView
-					if(vAxis.GetLogValue(point.YValues[0]) > vAxisMax || vAxis.GetLogValue(point.YValues[0]) < vAxisMin ||
-						vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) > vAxisMax || vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) < vAxisMin)
-					{
-						++index;
-						continue;
-					}
+                    // Calculate second point index
+                    int secondPointIndex = index + 1;
+                    if (secondPointIndex >= ser.Points.Count)
+                    {
+                        secondPointIndex = 0;
+                    }
 
-					if(drawingStyle == RadarDrawingStyle.Line)
-					{
-						// Use the main color for the border and make sure border is visible
-						borderColor = pointAttributes.Color;
-						borderWidth = (borderWidth < 1) ? 1 : borderWidth;
-						borderDashStyle = (borderDashStyle == ChartDashStyle.NotSet) ? ChartDashStyle.Solid : borderDashStyle;
+                    // Get visual properties of the point 
+                    DataPointCustomProperties pointAttributes = point;
 
-						// Area is not visible
-						areaColor = Color.Transparent;
-					}
-					else if(drawingStyle == RadarDrawingStyle.Marker)
-					{
-						// Area is not visible
-						areaColor = Color.Transparent;
-					}
+                    if (ser.Points[secondPointIndex].IsEmpty)
+                    {
+                        pointAttributes = ser.Points[secondPointIndex];
+                    }
 
-					// Check if line should be always closed
+
+                    //************************************************************
+                    //** Check what is the main element of radar point. It can be
+                    //** area (default), line or marker.
+                    //************************************************************
+                    SKColor areaColor = pointAttributes.Color;
+                    SKColor borderColor = pointAttributes.BorderColor;
+                    int borderWidth = pointAttributes.BorderWidth;
+                    ChartDashStyle borderDashStyle = pointAttributes.BorderDashStyle;
+                    RadarDrawingStyle drawingStyle = GetDrawingStyle(ser, point);
+
+                    // Check if point Y value is in axis scaleView
+                    if (vAxis.GetLogValue(point.YValues[0]) > vAxisMax || vAxis.GetLogValue(point.YValues[0]) < vAxisMin ||
+                        vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) > vAxisMax || vAxis.GetLogValue(ser.Points[secondPointIndex].YValues[0]) < vAxisMin)
+                    {
+                        ++index;
+                        continue;
+                    }
+
+                    if (drawingStyle == RadarDrawingStyle.Line)
+                    {
+                        // Use the main color for the border and make sure border is visible
+                        borderColor = pointAttributes.Color;
+                        borderWidth = (borderWidth < 1) ? 1 : borderWidth;
+                        borderDashStyle = (borderDashStyle == ChartDashStyle.NotSet) ? ChartDashStyle.Solid : borderDashStyle;
+
+                        // Area is not visible
+                        areaColor = SKColors.Transparent;
+                    }
+                    else if (drawingStyle == RadarDrawingStyle.Marker)
+                    {
+                        // Area is not visible
+                        areaColor = SKColors.Transparent;
+                    }
+
+                    // Check if line should be always closed
                     using (SKPath selectionPath = new SKPath())
                     {
                         if (secondPointIndex == 0 &&
@@ -540,7 +543,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 AddSelectionPath(area, selectionPath, dataPointPos, index, secondPointIndex, graph.GetAbsolutePoint(area.circularCenter), 0);
 
                                 // Insert area just after the last custom area
-                                int insertIndex = common.HotRegionsList.FindInsertIndex();
+                                int insertIndex = HotRegionsList.FindInsertIndex();
 
                                 // Insert area
                                 common.HotRegionsList.AddHotRegion(
@@ -558,7 +561,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         //************************************************************
                         //** Fill area
                         //************************************************************
-                        if (areaColor != Color.Transparent && areaColor != Color.Empty)
+                        if (areaColor != SKColors.Transparent && areaColor != SKColor.Empty)
                         {
                             // Create sector path
                             using (SKPath fillPath = new SKPath())
@@ -570,7 +573,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 if (common.ProcessModePaint)
                                 {
                                     // Create fill brush
-                                    using (Brush brush = graph.CreateBrush(
+                                    using SKPaint brush = graph.CreateBrush(
                                         fillPath.GetBounds(),
                                         areaColor,
                                         pointAttributes.BackHatchStyle,
@@ -578,18 +581,9 @@ namespace WebCharts.Services.Models.ChartTypes
                                         pointAttributes.BackImageWrapMode,
                                         pointAttributes.BackImageTransparentColor,
                                         pointAttributes.BackGradientStyle,
-                                        pointAttributes.BackSecondaryColor))
-                                    {
-
-                                        // Start Svg Selection mode
-                                        graph.StartHotRegion(point);
-
-                                        // Fill sector
-                                        graph.FillPath(brush, fillPath);
-
-                                        // End Svg Selection mode
-                                        graph.EndHotRegion();
-                                    }
+                                        pointAttributes.BackSecondaryColor);
+                                    // Fill sector
+                                    graph.FillPath(brush, fillPath);
                                 }
                             }
 
@@ -604,15 +598,12 @@ namespace WebCharts.Services.Models.ChartTypes
                         //************************************************************
                         //** Draw Line
                         //************************************************************
-                        if (borderColor != Color.Empty && borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet)
+                        if (borderColor != SKColor.Empty && borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet)
                         {
                             if (secondPointIndex < ser.Points.Count)
                             {
                                 if (common.ProcessModePaint)
                                 {
-                                    // Start Svg Selection mode
-                                    graph.StartHotRegion(point);
-
                                     graph.DrawLineAbs(
                                         borderColor,
                                         borderWidth,
@@ -620,10 +611,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                         dataPointPos[index],
                                         dataPointPos[secondPointIndex],
                                         ser.ShadowColor,
-                                        (areaColor == Color.Transparent || areaColor == Color.Empty) ? ser.ShadowOffset : 0);
-
-                                    // End Svg Selection mode
-                                    graph.EndHotRegion();
+                                        (areaColor == SKColors.Transparent || areaColor == SKColor.Empty) ? ser.ShadowOffset : 0);
                                 }
 
                                 if (common.ProcessModeRegions)
@@ -640,7 +628,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         if (common.ProcessModeRegions)
                         {
                             // Insert area just after the last custom area
-                            int insertIndex = common.HotRegionsList.FindInsertIndex();
+                            int insertIndex = HotRegionsList.FindInsertIndex();
 
                             // Insert area
                             common.HotRegionsList.AddHotRegion(
@@ -653,362 +641,342 @@ namespace WebCharts.Services.Models.ChartTypes
                                 index);
                         }
                     }
-					// Increase index
-					++index;
-				}
+                    // Increase index
+                    ++index;
+                }
 
-				//************************************************************
-				//** Loop through all data points in the series and draw
-				//** markers and points labels.
-				//************************************************************
-				int	markerIndex = 0;		// Marker index
-				index = 0;					// Data points loop
-				foreach( DataPoint point in ser.Points )
-				{
-					//************************************************************
-					//** Check what is the main element of radar point. It can be
-					//** area (default), line or marker.
-					//************************************************************
-					Color	markerColor = point.MarkerColor;
-					MarkerStyle markerStyle = point.MarkerStyle;
-					RadarDrawingStyle drawingStyle = GetDrawingStyle(ser, point); 
+                //************************************************************
+                //** Loop through all data points in the series and draw
+                //** markers and points labels.
+                //************************************************************
+                int markerIndex = 0;        // Marker index
+                index = 0;                  // Data points loop
+                foreach (DataPoint point in ser.Points)
+                {
+                    //************************************************************
+                    //** Check what is the main element of radar point. It can be
+                    //** area (default), line or marker.
+                    //************************************************************
+                    SKColor markerColor = point.MarkerColor;
+                    MarkerStyle markerStyle = point.MarkerStyle;
+                    RadarDrawingStyle drawingStyle = GetDrawingStyle(ser, point);
 
-					// Check if point Y value is in axis scaleView
-					if(vAxis.GetLogValue(point.YValues[0]) > vAxisMax || 
-						vAxis.GetLogValue(point.YValues[0]) < vAxisMin)
-					{
-						++index;
-						continue;
-					}
+                    // Check if point Y value is in axis scaleView
+                    if (vAxis.GetLogValue(point.YValues[0]) > vAxisMax ||
+                        vAxis.GetLogValue(point.YValues[0]) < vAxisMin)
+                    {
+                        ++index;
+                        continue;
+                    }
 
-					if(drawingStyle == RadarDrawingStyle.Marker &&
-						markerColor.IsEmpty)
-					{
-						// Set main color to marker
-						markerColor = point.Color;
-					}
+                    if (drawingStyle == RadarDrawingStyle.Marker &&
+                        markerColor == SKColor.Empty)
+                    {
+                        // Set main color to marker
+                        markerColor = point.Color;
+                    }
 
-					//************************************************************
-					//** Get marker  size
-					//************************************************************
-					// Get marker size
-					SKSize markerSize = GetMarkerSize(
-						graph, 
-						common, 
-						area, 
-						point, 
-						point.MarkerSize, 
-						point.MarkerImage);
+                    //************************************************************
+                    //** Get marker  size
+                    //************************************************************
+                    // Get marker size
+                    SKSize markerSize = GetMarkerSize(
+                        graph,
+                        common,
+                        area,
+                        point,
+                        point.MarkerSize,
+                        point.MarkerImage);
 
-					//************************************************************
-					//** Draw point chart
-					//************************************************************
-					if( common.ProcessModePaint )
-					{
-						if(markerStyle != MarkerStyle.None || point.MarkerImage.Length > 0)
-						{
-							// If marker style is set and color is not - use main color of point
-							if(markerColor.IsEmpty)
-							{
-								markerColor = point.Color;
-							}
+                    //************************************************************
+                    //** Draw point chart
+                    //************************************************************
+                    if (common.ProcessModePaint)
+                    {
+                        if (markerStyle != MarkerStyle.None || point.MarkerImage.Length > 0)
+                        {
+                            // If marker style is set and color is not - use main color of point
+                            if (markerColor == SKColor.Empty)
+                            {
+                                markerColor = point.Color;
+                            }
 
-							// Check marker index
-							if(markerIndex == 0)
-							{
-								// Start Svg Selection mode
-								graph.StartHotRegion( point );
+                            // Check marker index
+                            if (markerIndex == 0)
+                            {
+                                // Draw the marker
+                                graph.DrawMarkerAbs(dataPointPos[index],
+                                    markerStyle,
+                                    (int)markerSize.Height,
+                                    markerColor,
+                                    point.MarkerBorderColor,
+                                    point.MarkerBorderWidth,
+                                    point.MarkerImage,
+                                    point.MarkerImageTransparentColor,
+                                    (point.series != null) ? point.series.ShadowOffset : 0,
+                                    (point.series != null) ? point.series.ShadowColor : SKColor.Empty,
+                                    new SKRect(dataPointPos[index].X, dataPointPos[index].Y, markerSize.Width, markerSize.Height),
+                                    false);
+                            }
 
-								// Draw the marker
-								graph.DrawMarkerAbs(dataPointPos[index], 
-									markerStyle,
-									(int)markerSize.Height,
-									markerColor,
-									point.MarkerBorderColor,
-									point.MarkerBorderWidth,
-									point.MarkerImage,
-									point.MarkerImageTransparentColor,
-									(point.series != null) ? point.series.ShadowOffset : 0,
-									(point.series != null) ? point.series.ShadowColor : Color.Empty,
-									new SKRect(dataPointPos[index].X, dataPointPos[index].Y, markerSize.Width, markerSize.Height),
-									false);
-
-                                // End Svg Selection mode
-								graph.EndHotRegion( );
-							}
-						
-							// Increase the markers counter
-							++markerIndex;
-							if(ser.MarkerStep == markerIndex)
-							{
-								markerIndex = 0;
-							}
-						}
+                            // Increase the markers counter
+                            ++markerIndex;
+                            if (ser.MarkerStep == markerIndex)
+                            {
+                                markerIndex = 0;
+                            }
+                        }
 
                         // Draw labels
-						DrawLabels( 
-							area, 
-							graph, 
-							common, 
-							dataPointPos[index], 
-							(int)markerSize.Height, 
-							point, 
-							ser, 
-							index);
-					}
+                        DrawLabels(
+                            area,
+                            graph,
+                            common,
+                            dataPointPos[index],
+                            (int)markerSize.Height,
+                            point,
+                            ser,
+                            index);
+                    }
 
-					if( common.ProcessModeRegions )
-					{
-						// Get relative marker size
-						SKSize relativeMarkerSize = graph.GetRelativeSize(markerSize);
+                    if (common.ProcessModeRegions)
+                    {
+                        // Get relative marker size
+                        SKSize relativeMarkerSize = graph.GetRelativeSize(markerSize);
 
-						// Get relative marker position
-						SKPoint relativeMarkerPosition = graph.GetRelativePoint(dataPointPos[index]);
+                        // Get relative marker position
+                        SKPoint relativeMarkerPosition = graph.GetRelativePoint(dataPointPos[index]);
 
-						// Insert area just after the last custom area
-						int insertIndex = common.HotRegionsList.FindInsertIndex();
-										
-						// Insert circle area
-						if(point.MarkerStyle == MarkerStyle.Circle)
-						{
-							float[]	circCoord = new float[3];
-							circCoord[0] = relativeMarkerPosition.X;
-							circCoord[1] = relativeMarkerPosition.Y;
-							circCoord[2] = relativeMarkerSize.Width/2f;
+                        // Insert area just after the last custom area
+                        int insertIndex = HotRegionsList.FindInsertIndex();
 
-							common.HotRegionsList.AddHotRegion( 
-								insertIndex, 
-								graph, 
-								circCoord[0], 
-								circCoord[1],
-								circCoord[2],
-								point,
-								ser.Name,
-								index );
-						}
+                        // Insert circle area
+                        if (point.MarkerStyle == MarkerStyle.Circle)
+                        {
+                            float[] circCoord = new float[3];
+                            circCoord[0] = relativeMarkerPosition.X;
+                            circCoord[1] = relativeMarkerPosition.Y;
+                            circCoord[2] = relativeMarkerSize.Width / 2f;
 
-							// All other markers represented as rectangles
-						else
-						{
-							common.HotRegionsList.AddHotRegion(
-								new SKRect(relativeMarkerPosition.X - relativeMarkerSize.Width/2f, relativeMarkerPosition.Y - relativeMarkerSize.Height/2f, relativeMarkerSize.Width, relativeMarkerSize.Height),
-								point,
-								ser.Name,
-								index );
-						}
-					}
-				
-					++index;
-				}
-						
-				// Call Paint event
-				if( !selection )
-				{
+                            common.HotRegionsList.AddHotRegion(
+                                insertIndex,
+                                graph,
+                                circCoord[0],
+                                circCoord[1],
+                                circCoord[2],
+                                point,
+                                ser.Name,
+                                index);
+                        }
+
+                        // All other markers represented as rectangles
+                        else
+                        {
+                            common.HotRegionsList.AddHotRegion(
+                                new SKRect(relativeMarkerPosition.X - relativeMarkerSize.Width / 2f, relativeMarkerPosition.Y - relativeMarkerSize.Height / 2f, relativeMarkerSize.Width, relativeMarkerSize.Height),
+                                point,
+                                ser.Name,
+                                index);
+                        }
+                    }
+
+                    ++index;
+                }
+
+                // Call Paint event
+                if (!selection)
+                {
                     common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-				}
-			}
-		}
-
-		/// <summary>
-		/// Creates selection path for one data point.
-		/// </summary>
-		/// <param name="area">Chart area object.</param>
-		/// <param name="selectionPath">Selection path used for data storing.</param>
-		/// <param name="dataPointPos">Array of points positions.</param>
-		/// <param name="firstPointIndex">First point index.</param>
-		/// <param name="secondPointIndex">Second point index.</param>
-		/// <param name="centerPoint">Center point for segment area.</param>
-		/// <param name="borderWidth">Border width</param>
-		internal void AddSelectionPath(
-			ChartArea area,
-			SKPath selectionPath, 
-			SKPoint[] dataPointPos, 
-			int firstPointIndex, 
-			int secondPointIndex, 
-			SKPoint centerPoint, 
-			int borderWidth)
-		{
-			// Calculate "half" points on the left and right side of the point
-			SKPoint	rightSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[secondPointIndex]);
-			SKPoint	leftSidePoint = SKPoint.Empty;
-			if(firstPointIndex > 0)
-			{
-				leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[firstPointIndex - 1]);
-			}
-			else if(firstPointIndex == 0)
-			{
-				if(area.CircularSectorsNumber == dataPointPos.Length - 1)
-				{
-					leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[dataPointPos.Length - 2]);
-				}
-			}
-
-			// Add area segment
-			if(!centerPoint.IsEmpty)
-			{
-				selectionPath.AddLine(centerPoint, rightSidePoint);
-				selectionPath.AddLine(rightSidePoint, dataPointPos[firstPointIndex]);
-				if(leftSidePoint.IsEmpty)
-				{
-					selectionPath.AddLine(dataPointPos[firstPointIndex], centerPoint);
-				}
-				else
-				{
-					selectionPath.AddLine(dataPointPos[firstPointIndex], leftSidePoint);
-					selectionPath.AddLine(leftSidePoint, centerPoint);
-				}
-			}
-			else
-			{
-				// Add line
-				SKPath	linePath = new SKPath();
-				if(!leftSidePoint.IsEmpty)
-				{
-					linePath.AddLine(leftSidePoint, dataPointPos[firstPointIndex]);
-				}
-				linePath.AddLine(dataPointPos[firstPointIndex], rightSidePoint);
-
-				// Widen path
-				try
-				{
-					linePath.Widen(new Pen(Color.Black, borderWidth + 2));
-					linePath.Flatten();
-				}
-                catch (OutOfMemoryException)
-                {
-                    // SKPath.Widen incorrectly throws OutOfMemoryException
-                    // catching here and reacting by not widening
                 }
-                catch (ArgumentException)
+            }
+        }
+
+        /// <summary>
+        /// Creates selection path for one data point.
+        /// </summary>
+        /// <param name="area">Chart area object.</param>
+        /// <param name="selectionPath">Selection path used for data storing.</param>
+        /// <param name="dataPointPos">Array of points positions.</param>
+        /// <param name="firstPointIndex">First point index.</param>
+        /// <param name="secondPointIndex">Second point index.</param>
+        /// <param name="centerPoint">Center point for segment area.</param>
+        /// <param name="borderWidth">Border width</param>
+        internal void AddSelectionPath(
+            ChartArea area,
+            SKPath selectionPath,
+            SKPoint[] dataPointPos,
+            int firstPointIndex,
+            int secondPointIndex,
+            SKPoint centerPoint,
+            int borderWidth)
+        {
+            // Calculate "half" points on the left and right side of the point
+            SKPoint rightSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[secondPointIndex]);
+            SKPoint leftSidePoint = SKPoint.Empty;
+            if (firstPointIndex > 0)
+            {
+                leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[firstPointIndex - 1]);
+            }
+            else if (firstPointIndex == 0)
+            {
+                if (area.CircularSectorsNumber == dataPointPos.Length - 1)
                 {
+                    leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[dataPointPos.Length - 2]);
                 }
+            }
 
-				// Add to the selection path
-				selectionPath.AddPath(linePath, false);
-			}
+            // Add area segment
+            if (!centerPoint.IsEmpty)
+            {
+                selectionPath.AddLine(centerPoint, rightSidePoint);
+                selectionPath.AddLine(rightSidePoint, dataPointPos[firstPointIndex]);
+                if (leftSidePoint.IsEmpty)
+                {
+                    selectionPath.AddLine(dataPointPos[firstPointIndex], centerPoint);
+                }
+                else
+                {
+                    selectionPath.AddLine(dataPointPos[firstPointIndex], leftSidePoint);
+                    selectionPath.AddLine(leftSidePoint, centerPoint);
+                }
+            }
+            else
+            {
+                // Add line
+                SKPath linePath = new SKPath();
+                if (!leftSidePoint.IsEmpty)
+                {
+                    linePath.AddLine(leftSidePoint, dataPointPos[firstPointIndex]);
+                }
+                linePath.AddLine(dataPointPos[firstPointIndex], rightSidePoint);
 
-		}
+               
+                // Add to the selection path
+                selectionPath.AddPath(linePath);
+            }
 
-		/// <summary>
-		/// Gets the middle point of the line.
-		/// </summary>
-		/// <param name="p1">First line point.</param>
-		/// <param name="p2">Second line point.</param>
-		/// <returns></returns>
-		private SKPoint GetMiddlePoint(SKPoint p1, SKPoint p2)
-		{
-			SKPoint middlePoint = SKPoint.Empty;
-			middlePoint.X = (p1.X + p2.X) / 2f;
-			middlePoint.Y = (p1.Y + p2.Y) / 2f;
-			return middlePoint;
-		}
+        }
 
-		/// <summary>
-		/// Returns marker size.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="point">Data point.</param>
-		/// <param name="markerSize">Marker size.</param>
-		/// <param name="markerImage">Marker image.</param>
-		/// <returns>Marker width and height.</returns>
-		virtual protected SKSize GetMarkerSize(
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			DataPoint point, 
-			int markerSize, 
-			string markerImage)
-		{
-			SKSize size = new SKSize(markerSize, markerSize);
+        /// <summary>
+        /// Gets the middle point of the line.
+        /// </summary>
+        /// <param name="p1">First line point.</param>
+        /// <param name="p2">Second line point.</param>
+        /// <returns></returns>
+        private SKPoint GetMiddlePoint(SKPoint p1, SKPoint p2)
+        {
+            SKPoint middlePoint = SKPoint.Empty;
+            middlePoint.X = (p1.X + p2.X) / 2f;
+            middlePoint.Y = (p1.Y + p2.Y) / 2f;
+            return middlePoint;
+        }
+
+        /// <summary>
+        /// Returns marker size.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="point">Data point.</param>
+        /// <param name="markerSize">Marker size.</param>
+        /// <param name="markerImage">Marker image.</param>
+        /// <returns>Marker width and height.</returns>
+        virtual protected SKSize GetMarkerSize(
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            DataPoint point,
+            int markerSize,
+            string markerImage)
+        {
+            SKSize size = new SKSize(markerSize, markerSize);
             if (graph != null && graph.Graphics != null)
             {
                 // Marker size is in pixels and we do the mapping for higher DPIs
-                size.Width = markerSize * graph.Graphics.DpiX / 96;
-                size.Height = markerSize * graph.Graphics.DpiY / 96;
+                size.Width = markerSize;
+                size.Height = markerSize;
             }
 
-            if(markerImage.Length > 0)
-			    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
-			
+            if (markerImage.Length > 0)
+                common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
+
             return size;
-		}
+        }
 
-		/// <summary>
-		/// Fills a SKPoint array of data points absolute pixel positions.
-		/// </summary>
-		/// <param name="graph">Graphics object.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="series">Point series.</param>
-		/// <returns>Array of data points position.</returns>
-		virtual protected SKPoint[] GetPointsPosition(ChartGraphics graph, ChartArea area, Series series)
-		{
-			SKPoint[]	pointPos = new SKPoint[series.Points.Count + 1];
-			int index = 0;
-			foreach( DataPoint point in series.Points )
-			{
-				// Change Y value if line is out of plot area
-				double yValue = GetYValue(Common, area, series, point, index, 0);
+        /// <summary>
+        /// Fills a SKPoint array of data points absolute pixel positions.
+        /// </summary>
+        /// <param name="graph">Graphics object.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="series">Point series.</param>
+        /// <returns>Array of data points position.</returns>
+        virtual protected SKPoint[] GetPointsPosition(ChartGraphics graph, ChartArea area, Series series)
+        {
+            SKPoint[] pointPos = new SKPoint[series.Points.Count + 1];
+            int index = 0;
+            foreach (DataPoint point in series.Points)
+            {
+                // Change Y value if line is out of plot area
+                double yValue = GetYValue(Common, area, series, point, index, 0);
 
-				// Recalculates y position
-				double yPosition = area.AxisY.GetPosition( yValue );
+                // Recalculates y position
+                double yPosition = area.AxisY.GetPosition(yValue);
 
-				// Recalculates x position
-				double xPosition = area.circularCenter.X;
+                // Recalculates x position
+                double xPosition = area.circularCenter.X;
 
-				// Add point position into array
-				pointPos[index] = graph.GetAbsolutePoint(new SKPoint((float)xPosition, (float)yPosition));
+                // Add point position into array
+                pointPos[index] = graph.GetAbsolutePoint(new SKPoint((float)xPosition, (float)yPosition));
 
-				// Rotate position
-				float	sectorAngle = 360f / area.CircularSectorsNumber * index;
-				Matrix matrix = new Matrix();
-				matrix.RotateAt(sectorAngle, graph.GetAbsolutePoint(area.circularCenter));
-				SKPoint[]	rotatedPoint = new SKPoint[] { pointPos[index] };
-				matrix.TransformPoints(rotatedPoint);
-				pointPos[index] = rotatedPoint[0];
-								
-				index++;
-			}
+                // Rotate position
+                float sectorAngle = 360f / area.CircularSectorsNumber * index;
+                SKMatrix matrix = new();
+                matrix.CreateRotationDegrees(sectorAngle, graph.GetAbsolutePoint(area.circularCenter));
+                SKPoint[] rotatedPoint = new SKPoint[] { pointPos[index] };
+                matrix.TransformPoints(rotatedPoint);
+                pointPos[index] = rotatedPoint[0];
 
-			// Add last center point
-			pointPos[index] = graph.GetAbsolutePoint(area.circularCenter);
+                index++;
+            }
 
-			return pointPos;
-		}
+            // Add last center point
+            pointPos[index] = graph.GetAbsolutePoint(area.circularCenter);
 
-		/// <summary>
-		/// This method draws labels in point chart.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object</param>
-		/// <param name="common">The Common elements object</param>
-		/// <param name="area">Chart area for this chart</param>
-		/// <param name="markerPosition">Marker position</param>
-		/// <param name="markerSize">Marker size</param>
-		/// <param name="point">Data point</param>
-		/// <param name="ser">Data series</param>
-		/// <param name="pointIndex">Data point index.</param>
-		internal void DrawLabels( 
-			ChartArea area, 
-			ChartGraphics graph, 
-			CommonElements common, 
-			SKPoint markerPosition, 
-			int markerSize, 
-			DataPoint point, 
-			Series ser,
-			int pointIndex)
-		{
-			// Get some properties for performance
-			string	pointLabel = point.Label;
-			bool	pointShowLabelAsValue = point.IsValueShownAsLabel;
+            return pointPos;
+        }
 
-			// ****************************
-			// Draw data point value label
-			// ****************************
-			if((!point.IsEmpty && (ser.IsValueShownAsLabel || pointShowLabelAsValue || pointLabel.Length > 0)) ||
-				(pointShowLabelAsValue || pointLabel.Length > 0))
-			{
-				// Label text format
+        /// <summary>
+        /// This method draws labels in point chart.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object</param>
+        /// <param name="common">The Common elements object</param>
+        /// <param name="area">Chart area for this chart</param>
+        /// <param name="markerPosition">Marker position</param>
+        /// <param name="markerSize">Marker size</param>
+        /// <param name="point">Data point</param>
+        /// <param name="ser">Data series</param>
+        /// <param name="pointIndex">Data point index.</param>
+        internal void DrawLabels(
+            ChartArea area,
+            ChartGraphics graph,
+            CommonElements common,
+            SKPoint markerPosition,
+            int markerSize,
+            DataPoint point,
+            Series ser,
+            int pointIndex)
+        {
+            // Get some properties for performance
+            string pointLabel = point.Label;
+            bool pointShowLabelAsValue = point.IsValueShownAsLabel;
+
+            // ****************************
+            // Draw data point value label
+            // ****************************
+            if ((!point.IsEmpty && (ser.IsValueShownAsLabel || pointShowLabelAsValue || pointLabel.Length > 0)) ||
+                (pointShowLabelAsValue || pointLabel.Length > 0))
+            {
+                // Label text format
                 using (StringFormat format = new StringFormat())
                 {
                     format.Alignment = StringAlignment.Near;
@@ -1033,16 +1001,16 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
 
                     // Get point label style attribute
-                    SKSize sizeMarker = new SKSize(markerSize, markerSize);
+                    SKSize sizeMarker = new(markerSize, markerSize);
                     SKSize SKSizeont = graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic);
 
                     // Increase label size when background is drawn
-                    SKSize sizeLabel = new SKSize(SKSizeont.Width, SKSizeont.Height);
+                    SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
                     sizeLabel.Height += sizeLabel.Height / 2;
                     sizeLabel.Width += sizeLabel.Width / text.Length;
 
                     // Get attribute from point or series
-                    this._autoLabelPosition = true;
+                    _autoLabelPosition = true;
                     string attrib = point[CustomPropertyName.LabelStyle];
                     if (attrib == null || attrib.Length == 0)
                     {
@@ -1050,48 +1018,48 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
                     if (attrib != null && attrib.Length > 0)
                     {
-                        this._autoLabelPosition = false;
+                        _autoLabelPosition = false;
 
                         // Get label position from attribute
                         if (String.Compare(attrib, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._autoLabelPosition = true;
+                            _autoLabelPosition = true;
                         }
                         else if (String.Compare(attrib, "Center", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.Center;
+                            _labelPosition = LabelAlignmentStyles.Center;
                         }
                         else if (String.Compare(attrib, "Bottom", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.Bottom;
+                            _labelPosition = LabelAlignmentStyles.Bottom;
                         }
                         else if (String.Compare(attrib, "TopLeft", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.TopLeft;
+                            _labelPosition = LabelAlignmentStyles.TopLeft;
                         }
                         else if (String.Compare(attrib, "TopRight", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.TopRight;
+                            _labelPosition = LabelAlignmentStyles.TopRight;
                         }
                         else if (String.Compare(attrib, "BottomLeft", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.BottomLeft;
+                            _labelPosition = LabelAlignmentStyles.BottomLeft;
                         }
                         else if (String.Compare(attrib, "BottomRight", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.BottomRight;
+                            _labelPosition = LabelAlignmentStyles.BottomRight;
                         }
                         else if (String.Compare(attrib, "Left", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.Left;
+                            _labelPosition = LabelAlignmentStyles.Left;
                         }
                         else if (String.Compare(attrib, "Right", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.Right;
+                            _labelPosition = LabelAlignmentStyles.Right;
                         }
                         else if (String.Compare(attrib, "Top", StringComparison.OrdinalIgnoreCase) == 0)
                         {
-                            this._labelPosition = LabelAlignmentStyles.Top;
+                            _labelPosition = LabelAlignmentStyles.Top;
                         }
                         else
                         {
@@ -1100,14 +1068,14 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
 
                     // Try to get automatic label position
-                    if (this._autoLabelPosition)
+                    if (_autoLabelPosition)
                     {
-                        this._labelPosition = GetAutoLabelPosition(area, ser, pointIndex);
+                        _labelPosition = GetAutoLabelPosition(area, ser, pointIndex);
                     }
 
                     // Calculate label position
                     SKPoint position = new SKPoint(markerPosition.X, markerPosition.Y);
-                    switch (this._labelPosition)
+                    switch (_labelPosition)
                     {
                         case LabelAlignmentStyles.Center:
                             format.Alignment = StringAlignment.Center;
@@ -1184,7 +1152,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 format,
                                 markerPosition,
                                 sizeMarker,
-                                this._labelPosition);
+                                _labelPosition);
 
                             // Restore absolute coordinates
                             if (!position.IsEmpty)
@@ -1215,7 +1183,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 true);
 
                             // Draw label text
-                            using (Brush brush = new SolidBrush(point.LabelForeColor))
+                            using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
                             {
                                 graph.DrawPointLabelStringRel(
                                     common,
@@ -1238,131 +1206,131 @@ namespace WebCharts.Services.Models.ChartTypes
                         }
                     }
                 }
-			}
-		}
+            }
+        }
 
-		/// <summary>
-		/// Gets label position depending on the prev/next point values.
-		/// This method will reduce label overlapping with the chart itself (line).
-		/// </summary>
-		/// <param name="area">Chart area for this chart</param>
-		/// <param name="series">Series.</param>
-		/// <param name="pointIndex">Data point index in series.</param>
-		/// <returns>Return automaticly detected label position.</returns>
-		virtual protected LabelAlignmentStyles GetAutoLabelPosition(ChartArea area, Series series, int pointIndex)
-		{
-			LabelAlignmentStyles	labelAlignment = LabelAlignmentStyles.Top;
+        /// <summary>
+        /// Gets label position depending on the prev/next point values.
+        /// This method will reduce label overlapping with the chart itself (line).
+        /// </summary>
+        /// <param name="area">Chart area for this chart</param>
+        /// <param name="series">Series.</param>
+        /// <param name="pointIndex">Data point index in series.</param>
+        /// <returns>Return automaticly detected label position.</returns>
+        virtual protected LabelAlignmentStyles GetAutoLabelPosition(ChartArea area, Series series, int pointIndex)
+        {
+            LabelAlignmentStyles labelAlignment = LabelAlignmentStyles.Top;
 
-			// Calculate data point sector angle
-			float	sectorAngle = 360f / area.CircularSectorsNumber * pointIndex;
+            // Calculate data point sector angle
+            float sectorAngle = 360f / area.CircularSectorsNumber * pointIndex;
 
-			if(sectorAngle == 0f)
-			{
-				labelAlignment = LabelAlignmentStyles.TopRight;
-			}
-			else if(sectorAngle >= 0 && sectorAngle <= 45)
-			{
-				labelAlignment = LabelAlignmentStyles.Top;
-			}
-			else if(sectorAngle >= 45 && sectorAngle <= 90)
-			{
-				labelAlignment = LabelAlignmentStyles.TopRight;
-			}
-			else if(sectorAngle >= 90 && sectorAngle <= 135)
-			{
-				labelAlignment = LabelAlignmentStyles.BottomRight;
-			}
-			else if(sectorAngle >= 135 && sectorAngle <= 180)
-			{
-				labelAlignment = LabelAlignmentStyles.BottomRight;
-			}
-			else if(sectorAngle >= 180 && sectorAngle <= 225)
-			{
-				labelAlignment = LabelAlignmentStyles.BottomLeft;
-			}
-			else if(sectorAngle >= 225 && sectorAngle <= 270)
-			{
-				labelAlignment = LabelAlignmentStyles.BottomLeft;
-			}
-			else if(sectorAngle >= 270 && sectorAngle <= 315)
-			{
-				labelAlignment = LabelAlignmentStyles.TopLeft;
-			}
-			else if(sectorAngle >= 315 && sectorAngle <= 360)
-			{
-				labelAlignment = LabelAlignmentStyles.TopLeft;
-			}
+            if (sectorAngle == 0f)
+            {
+                labelAlignment = LabelAlignmentStyles.TopRight;
+            }
+            else if (sectorAngle >= 0 && sectorAngle <= 45)
+            {
+                labelAlignment = LabelAlignmentStyles.Top;
+            }
+            else if (sectorAngle >= 45 && sectorAngle <= 90)
+            {
+                labelAlignment = LabelAlignmentStyles.TopRight;
+            }
+            else if (sectorAngle >= 90 && sectorAngle <= 135)
+            {
+                labelAlignment = LabelAlignmentStyles.BottomRight;
+            }
+            else if (sectorAngle >= 135 && sectorAngle <= 180)
+            {
+                labelAlignment = LabelAlignmentStyles.BottomRight;
+            }
+            else if (sectorAngle >= 180 && sectorAngle <= 225)
+            {
+                labelAlignment = LabelAlignmentStyles.BottomLeft;
+            }
+            else if (sectorAngle >= 225 && sectorAngle <= 270)
+            {
+                labelAlignment = LabelAlignmentStyles.BottomLeft;
+            }
+            else if (sectorAngle >= 270 && sectorAngle <= 315)
+            {
+                labelAlignment = LabelAlignmentStyles.TopLeft;
+            }
+            else if (sectorAngle >= 315 && sectorAngle <= 360)
+            {
+                labelAlignment = LabelAlignmentStyles.TopLeft;
+            }
 
-			return labelAlignment;
-		}
+            return labelAlignment;
+        }
 
-		/// <summary>
-		/// Gets radar chart drawing style.
-		/// </summary>
-		/// <param name="ser">Chart series.</param>
-		/// <param name="point">Series point.</param>
-		/// <returns>Returns radar drawing style.</returns>
-		virtual protected RadarDrawingStyle GetDrawingStyle(Series ser, DataPoint point)
-		{
-			RadarDrawingStyle drawingStyle = RadarDrawingStyle.Area;
-			if(point.IsCustomPropertySet(CustomPropertyName.RadarDrawingStyle) || 
-				ser.IsCustomPropertySet(CustomPropertyName.RadarDrawingStyle))
-			{
-				string	attributeValue = 
-					(point.IsCustomPropertySet(CustomPropertyName.RadarDrawingStyle)) ? 
-					point[CustomPropertyName.RadarDrawingStyle] : 
-					ser[CustomPropertyName.RadarDrawingStyle];
-				if(String.Compare(attributeValue, "Area", StringComparison.OrdinalIgnoreCase) == 0 )
-				{
-					drawingStyle = RadarDrawingStyle.Area;
-				}
+        /// <summary>
+        /// Gets radar chart drawing style.
+        /// </summary>
+        /// <param name="ser">Chart series.</param>
+        /// <param name="point">Series point.</param>
+        /// <returns>Returns radar drawing style.</returns>
+        virtual protected RadarDrawingStyle GetDrawingStyle(Series ser, DataPoint point)
+        {
+            RadarDrawingStyle drawingStyle = RadarDrawingStyle.Area;
+            if (point.IsCustomPropertySet(CustomPropertyName.RadarDrawingStyle) ||
+                ser.IsCustomPropertySet(CustomPropertyName.RadarDrawingStyle))
+            {
+                string attributeValue =
+                    (point.IsCustomPropertySet(CustomPropertyName.RadarDrawingStyle)) ?
+                    point[CustomPropertyName.RadarDrawingStyle] :
+                    ser[CustomPropertyName.RadarDrawingStyle];
+                if (String.Compare(attributeValue, "Area", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    drawingStyle = RadarDrawingStyle.Area;
+                }
                 else if (String.Compare(attributeValue, "Line", StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					drawingStyle = RadarDrawingStyle.Line;
-				}
-				else if(String.Compare(attributeValue, "Marker", StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					drawingStyle = RadarDrawingStyle.Marker;
-				}
-				else
-				{
-					throw(new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(attributeValue, "RadarDrawingStyle")));
-				}
-			}
-			return drawingStyle;
-		}
+                {
+                    drawingStyle = RadarDrawingStyle.Line;
+                }
+                else if (String.Compare(attributeValue, "Marker", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    drawingStyle = RadarDrawingStyle.Marker;
+                }
+                else
+                {
+                    throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(attributeValue, "RadarDrawingStyle")));
+                }
+            }
+            return drawingStyle;
+        }
 
-		#endregion
+        #endregion
 
-		#region Y values related methods
+        #region Y values related methods
 
-		/// <summary>
-		/// Helper function that returns the Y value of the point.
-		/// </summary>
-		/// <param name="common">Chart common elements.</param>
-		/// <param name="area">Chart area the series belongs to.</param>
-		/// <param name="series">Sereis of the point.</param>
-		/// <param name="point">Point object.</param>
-		/// <param name="pointIndex">Index of the point.</param>
-		/// <param name="yValueIndex">Index of the Y value to get.</param>
-		/// <returns>Y value of the point.</returns>
-		virtual public double GetYValue(
-			CommonElements common, 
-			ChartArea area, 
-			Series series, 
-			DataPoint point, 
-			int pointIndex, 
-			int yValueIndex)
-		{
+        /// <summary>
+        /// Helper function that returns the Y value of the point.
+        /// </summary>
+        /// <param name="common">Chart common elements.</param>
+        /// <param name="area">Chart area the series belongs to.</param>
+        /// <param name="series">Sereis of the point.</param>
+        /// <param name="point">Point object.</param>
+        /// <param name="pointIndex">Index of the point.</param>
+        /// <param name="yValueIndex">Index of the Y value to get.</param>
+        /// <returns>Y value of the point.</returns>
+        virtual public double GetYValue(
+            CommonElements common,
+            ChartArea area,
+            Series series,
+            DataPoint point,
+            int pointIndex,
+            int yValueIndex)
+        {
 
-			// Point chart do not have height
-			if(yValueIndex == -1)
-			{
-				return 0.0;
-			}
+            // Point chart do not have height
+            if (yValueIndex == -1)
+            {
+                return 0.0;
+            }
 
-			if( point.IsEmpty )
-			{
+            if (point.IsEmpty)
+            {
                 double result = GetEmptyPointValue(point, pointIndex);
 
                 // NOTE: Fixes issue #6921
@@ -1385,195 +1353,195 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 return result;
-			}
-			return point.YValues[yValueIndex];
-		}
+            }
+            return point.YValues[yValueIndex];
+        }
 
-		/// <summary>
-		/// This method will find previous and next data point, which is not 
-		/// empty and recalculate a new value for current empty data point. 
-		/// New value depends on custom attribute “EmptyPointValue” and 
-		/// it could be zero or average.
-		/// </summary>
-		/// <param name="point">IsEmpty data point.</param>
-		/// <param name="pointIndex">IsEmpty data point index.</param>
-		/// <returns>A Value for empty data point.</returns>
-		internal double GetEmptyPointValue( DataPoint point, int pointIndex )
-		{
-			Series	series = point.series;				// Data series
-			double	previousPoint = 0;					// Previous data point value (not empty)
-			double	nextPoint = 0;						// Next data point value (not empty)
-			int		prevIndx = 0;						// Previous data point index
-			int		nextIndx = series.Points.Count - 1;	// Next data point index
+        /// <summary>
+        /// This method will find previous and next data point, which is not 
+        /// empty and recalculate a new value for current empty data point. 
+        /// New value depends on custom attribute “EmptyPointValue” and 
+        /// it could be zero or average.
+        /// </summary>
+        /// <param name="point">IsEmpty data point.</param>
+        /// <param name="pointIndex">IsEmpty data point index.</param>
+        /// <returns>A Value for empty data point.</returns>
+        internal double GetEmptyPointValue(DataPoint point, int pointIndex)
+        {
+            Series series = point.series;               // Data series
+            double previousPoint = 0;                   // Previous data point value (not empty)
+            double nextPoint = 0;                       // Next data point value (not empty)
+            int prevIndx = 0;                       // Previous data point index
+            int nextIndx = series.Points.Count - 1; // Next data point index
 
-			//************************************************************
-			//** Check custom attribute "EmptyPointValue"
-			//************************************************************
-			string emptyPointValue = "";
-			if( series.EmptyPointStyle.IsCustomPropertySet(CustomPropertyName.EmptyPointValue) )
-			{
-				emptyPointValue = series.EmptyPointStyle[CustomPropertyName.EmptyPointValue];
-			}
-			else if( series.IsCustomPropertySet(CustomPropertyName.EmptyPointValue) )
-			{
-				emptyPointValue = series[CustomPropertyName.EmptyPointValue];
-			}
+            //************************************************************
+            //** Check custom attribute "EmptyPointValue"
+            //************************************************************
+            string emptyPointValue = "";
+            if (series.EmptyPointStyle.IsCustomPropertySet(CustomPropertyName.EmptyPointValue))
+            {
+                emptyPointValue = series.EmptyPointStyle[CustomPropertyName.EmptyPointValue];
+            }
+            else if (series.IsCustomPropertySet(CustomPropertyName.EmptyPointValue))
+            {
+                emptyPointValue = series[CustomPropertyName.EmptyPointValue];
+            }
 
-			// Take attribute value
-			if( String.Compare(emptyPointValue, "Zero", StringComparison.OrdinalIgnoreCase) == 0 )
-			{
-				// IsEmpty points represented with zero values
-				return 0;
-			}
-			
-			//************************************************************
-			//** IsEmpty point value is an average of neighbour points
-			//************************************************************
+            // Take attribute value
+            if (String.Compare(emptyPointValue, "Zero", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                // IsEmpty points represented with zero values
+                return 0;
+            }
 
-			// Find previous non-empty point value
-			for( int indx = pointIndex; indx >= 0; indx-- )
-			{
-				if( !series.Points[indx].IsEmpty )
-				{
-					previousPoint = series.Points[indx].YValues[0];
-					prevIndx = indx;
-					break;
-				}
-				previousPoint = Double.NaN;
-			}
+            //************************************************************
+            //** IsEmpty point value is an average of neighbour points
+            //************************************************************
 
-			// Find next non-empty point value
-			for( int indx = pointIndex; indx < series.Points.Count; indx++ )
-			{
-				if( !series.Points[indx].IsEmpty )
-				{
-					nextPoint = series.Points[indx].YValues[0];
-					nextIndx = indx;
-					break;
-				}
-				nextPoint = Double.NaN;
-			}
+            // Find previous non-empty point value
+            for (int indx = pointIndex; indx >= 0; indx--)
+            {
+                if (!series.Points[indx].IsEmpty)
+                {
+                    previousPoint = series.Points[indx].YValues[0];
+                    prevIndx = indx;
+                    break;
+                }
+                previousPoint = Double.NaN;
+            }
 
-			// All Previous points are empty
-			if( Double.IsNaN( previousPoint ) )
-			{
-				// All points are empty
-				if( Double.IsNaN( nextPoint ) )
-				{
-					previousPoint = 0;
-				}
-				else // Next point is equal to previous point
-				{
-					previousPoint = nextPoint;
-				}
-			}
+            // Find next non-empty point value
+            for (int indx = pointIndex; indx < series.Points.Count; indx++)
+            {
+                if (!series.Points[indx].IsEmpty)
+                {
+                    nextPoint = series.Points[indx].YValues[0];
+                    nextIndx = indx;
+                    break;
+                }
+                nextPoint = Double.NaN;
+            }
 
-			// All next points are empty
-			if( Double.IsNaN( nextPoint ) )
-			{
-				// Previous point is equal to next point
-				nextPoint = previousPoint;
-			}
+            // All Previous points are empty
+            if (Double.IsNaN(previousPoint))
+            {
+                // All points are empty
+                if (Double.IsNaN(nextPoint))
+                {
+                    previousPoint = 0;
+                }
+                else // Next point is equal to previous point
+                {
+                    previousPoint = nextPoint;
+                }
+            }
 
-			// If points value are the same use average
-			if( series.Points[nextIndx].XValue == series.Points[prevIndx].XValue )
-			{
-				return ( previousPoint + nextPoint ) / 2;
-			}
+            // All next points are empty
+            if (Double.IsNaN(nextPoint))
+            {
+                // Previous point is equal to next point
+                nextPoint = previousPoint;
+            }
 
-			// Calculate and return average value
-			double aCoeff = (previousPoint - nextPoint) / (series.Points[nextIndx].XValue - series.Points[prevIndx].XValue);
-			return -aCoeff * (point.XValue - series.Points[prevIndx].XValue) + previousPoint;
-		}
+            // If points value are the same use average
+            if (series.Points[nextIndx].XValue == series.Points[prevIndx].XValue)
+            {
+                return (previousPoint + nextPoint) / 2;
+            }
 
-		#endregion
+            // Calculate and return average value
+            double aCoeff = (previousPoint - nextPoint) / (series.Points[nextIndx].XValue - series.Points[prevIndx].XValue);
+            return -aCoeff * (point.XValue - series.Points[prevIndx].XValue) + previousPoint;
+        }
 
-		#region SmartLabelStyle methods
+        #endregion
 
-		/// <summary>
-		/// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
-		/// </summary>
-		/// <param name="common">Common chart elements.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="series">Series values to be used.</param>
-		/// <param name="list">List to add to.</param>
-		public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)		
-		{
-			//************************************************************
-			//** Fill the array of data points coordinates (absolute)
-			//************************************************************
-			SKPoint[]	dataPointPos = GetPointsPosition(common.graph, area, series);
+        #region SmartLabelStyle methods
 
-			//************************************************************
-			//** Loop through all data points in the series and draw
-			//** markers and points labels.
-			//************************************************************
-			int	markerIndex = 0;		// Marker index
-			int index = 0;					// Data points loop
-			foreach( DataPoint point in series.Points )
-			{
-				//************************************************************
-				//** Check what is the main element of radar point. It can be
-				//** area (default), line or marker.
-				//************************************************************
-				Color	markerColor = point.MarkerColor;
-				MarkerStyle markerStyle = point.MarkerStyle;
-				RadarDrawingStyle drawingStyle = GetDrawingStyle(series, point);
-				if(drawingStyle == RadarDrawingStyle.Marker)
-				{
-					// Set main color to marker
-					markerColor = point.Color;
-				}
+        /// <summary>
+        /// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
+        /// </summary>
+        /// <param name="common">Common chart elements.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="series">Series values to be used.</param>
+        /// <param name="list">List to add to.</param>
+        public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
+        {
+            //************************************************************
+            //** Fill the array of data points coordinates (absolute)
+            //************************************************************
+            SKPoint[] dataPointPos = GetPointsPosition(common.graph, area, series);
 
-				//************************************************************
-				//** Get marker  size
-				//************************************************************
-				// Get marker size
-				SKSize markerSize = GetMarkerSize(
-					common.graph, 
-					common, 
-					area, 
-					point, 
-					point.MarkerSize, 
-					point.MarkerImage);
+            //************************************************************
+            //** Loop through all data points in the series and draw
+            //** markers and points labels.
+            //************************************************************
+            int markerIndex = 0;        // Marker index
+            int index = 0;                  // Data points loop
+            foreach (DataPoint point in series.Points)
+            {
+                //************************************************************
+                //** Check what is the main element of radar point. It can be
+                //** area (default), line or marker.
+                //************************************************************
+                SKColor markerColor = point.MarkerColor;
+                MarkerStyle markerStyle = point.MarkerStyle;
+                RadarDrawingStyle drawingStyle = GetDrawingStyle(series, point);
+                if (drawingStyle == RadarDrawingStyle.Marker)
+                {
+                    // Set main color to marker
+                    markerColor = point.Color;
+                }
 
-				//************************************************************
-				//** Draw point chart
-				//************************************************************
-				if(markerStyle != MarkerStyle.None || point.MarkerImage.Length > 0)
-				{
-					// If marker style is set and color is not - use main color of point
-					if(markerColor.IsEmpty)
-					{
-						markerColor = point.Color;
-					}
+                //************************************************************
+                //** Get marker  size
+                //************************************************************
+                // Get marker size
+                SKSize markerSize = GetMarkerSize(
+                    common.graph,
+                    common,
+                    area,
+                    point,
+                    point.MarkerSize,
+                    point.MarkerImage);
 
-					// Check marker index
-					if(markerIndex == 0)
-					{
-						SKPoint markerPosition = common.graph.GetRelativePoint(dataPointPos[index]);
-						markerSize = common.graph.GetRelativeSize(markerSize);
-						SKRect	markerRect = new SKRect(
-							markerPosition.X - markerSize.Width/2f,
-							markerPosition.Y - markerSize.Height/2f,
-							markerSize.Width,
-							markerSize.Height);
-						list.Add(markerRect);
-					}
-				
-					// Increase the markers counter
-					++markerIndex;
-					if(series.MarkerStep == markerIndex)
-					{
-						markerIndex = 0;
-					}
-				}
+                //************************************************************
+                //** Draw point chart
+                //************************************************************
+                if (markerStyle != MarkerStyle.None || point.MarkerImage.Length > 0)
+                {
+                    // If marker style is set and color is not - use main color of point
+                    if (markerColor == SKColor.Empty)
+                    {
+                        markerColor = point.Color;
+                    }
 
-				++index;
-			}
-		}
+                    // Check marker index
+                    if (markerIndex == 0)
+                    {
+                        SKPoint markerPosition = common.graph.GetRelativePoint(dataPointPos[index]);
+                        markerSize = common.graph.GetRelativeSize(markerSize);
+                        SKRect markerRect = new SKRect(
+                            markerPosition.X - markerSize.Width / 2f,
+                            markerPosition.Y - markerSize.Height / 2f,
+                            markerSize.Width,
+                            markerSize.Height);
+                        list.Add(markerRect);
+                    }
 
-		#endregion
+                    // Increase the markers counter
+                    ++markerIndex;
+                    if (series.MarkerStep == markerIndex)
+                    {
+                        markerIndex = 0;
+                    }
+                }
+
+                ++index;
+            }
+        }
+
+        #endregion
 
         #region IDisposable interface implementation
         /// <summary>
@@ -1594,57 +1562,57 @@ namespace WebCharts.Services.Models.ChartTypes
             GC.SuppressFinalize(this);
         }
         #endregion
-	}
-    
-	/// <summary>
+    }
+
+    /// <summary>
     /// ICircularChartType interface provides behaviuour information for circular 
     /// chart types like Radar or Polar. This interface is similar to IChartType 
     /// interface.
-	/// </summary>
-	internal interface ICircularChartType 
-	{
-		#region Methods
+    /// </summary>
+    internal interface ICircularChartType
+    {
+        #region Methods
 
-		/// <summary>
-		/// Checks if closed figure should be drawn even in Line drawing mode.
-		/// </summary>
-		/// <returns>True if closed figure should be drawn even in Line drawing mode.</returns>
-		bool RequireClosedFigure();
+        /// <summary>
+        /// Checks if closed figure should be drawn even in Line drawing mode.
+        /// </summary>
+        /// <returns>True if closed figure should be drawn even in Line drawing mode.</returns>
+        bool RequireClosedFigure();
 
-		/// <summary>
-		/// Checks if Y axis position may be changed using X axis Crossing property.
-		/// </summary>
-		/// <returns>True if Y axis position may be changed using X axis Crossing property.</returns>
-		bool XAxisCrossingSupported();
+        /// <summary>
+        /// Checks if Y axis position may be changed using X axis Crossing property.
+        /// </summary>
+        /// <returns>True if Y axis position may be changed using X axis Crossing property.</returns>
+        bool XAxisCrossingSupported();
 
-		/// <summary>
-		/// Checks if automatic X axis labels are supported.
-		/// </summary>
-		/// <returns>True if automatic X axis labels are supported.</returns>
-		bool XAxisLabelsSupported();
+        /// <summary>
+        /// Checks if automatic X axis labels are supported.
+        /// </summary>
+        /// <returns>True if automatic X axis labels are supported.</returns>
+        bool XAxisLabelsSupported();
 
-		/// <summary>
-		/// Checks if radial grid lines (X axis) are supported by the chart type.
-		/// </summary>
-		/// <returns>True if radial grid lines are supported.</returns>
-		bool RadialGridLinesSupported();
+        /// <summary>
+        /// Checks if radial grid lines (X axis) are supported by the chart type.
+        /// </summary>
+        /// <returns>True if radial grid lines are supported.</returns>
+        bool RadialGridLinesSupported();
 
-		/// <summary>
-		/// Gets number of sectors in the circular chart area.
-		/// </summary>
-		/// <param name="area">Chart area to get number of sectors for.</param>
-		/// <param name="seriesCollection">Collection of series.</param>
-		/// <returns>Returns number of sectors in circular chart.</returns>
-		int GetNumerOfSectors(ChartArea area, SeriesCollection seriesCollection);
+        /// <summary>
+        /// Gets number of sectors in the circular chart area.
+        /// </summary>
+        /// <param name="area">Chart area to get number of sectors for.</param>
+        /// <param name="seriesCollection">Collection of series.</param>
+        /// <returns>Returns number of sectors in circular chart.</returns>
+        int GetNumerOfSectors(ChartArea area, SeriesCollection seriesCollection);
 
-		/// <summary>
-		/// Get a location of each Y axis in degrees.
-		/// </summary>
-		/// <param name="area">Chart area to get Y axes locations for.</param>
-		/// <returns>Returns an array of one or more locations of Y axis.</returns>
-		float[] GetYAxisLocations(ChartArea area);
+        /// <summary>
+        /// Get a location of each Y axis in degrees.
+        /// </summary>
+        /// <param name="area">Chart area to get Y axes locations for.</param>
+        /// <returns>Returns an array of one or more locations of Y axis.</returns>
+        float[] GetYAxisLocations(ChartArea area);
 
-		#endregion // Methods
-	}
+        #endregion // Methods
+    }
 
 }

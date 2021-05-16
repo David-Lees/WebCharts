@@ -52,9 +52,15 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -91,7 +97,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Get reference to the chart control
-			Chart	chart = series.Chart;
+			ChartService	chart = series.Chart;
 			if(chart == null)
 			{
                 throw (new InvalidOperationException(SR.ExceptionPointAndFigureNullReference));
@@ -120,7 +126,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			{
 				return; // the temp series has already been added
 			}
-			Series seriesOriginalData = new Series(tempSeriesName, series.YValuesPerPoint);
+			Series seriesOriginalData = new(tempSeriesName, series.YValuesPerPoint);
 			seriesOriginalData.Enabled = false;
 			seriesOriginalData.IsVisibleInLegend = false;
 			seriesOriginalData.YValuesPerPoint = series.YValuesPerPoint;
@@ -202,7 +208,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			if(series.Name.StartsWith("POINTANDFIGURE_ORIGINAL_DATA_", StringComparison.Ordinal))
 			{
 				// Get reference to the chart control
-				Chart	chart = series.Chart;
+				ChartService	chart = series.Chart;
 				if(chart == null)
 				{
                     throw (new InvalidOperationException(SR.ExceptionPointAndFigureNullReference));
@@ -216,7 +222,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 
 				// Get original PointAndFigure series
-				Series	pointAndFigureSeries = chart.Series[series.Name.Substring(29)];
+				Series	pointAndFigureSeries = chart.Series[series.Name[29..]];
                 Series.MovePositionMarkers(pointAndFigureSeries, series);
 
 				// Copy data back to original PointAndFigure series
@@ -229,14 +235,12 @@ namespace WebCharts.Services.Models.ChartTypes
 					}
 				}
 
-				// Restore series properties
-                bool xValIndexed;
-                bool parseSucceed = bool.TryParse(pointAndFigureSeries["OldXValueIndexed"], out xValIndexed);
+                // Restore series properties
+                bool parseSucceed = bool.TryParse(pointAndFigureSeries["OldXValueIndexed"], out bool xValIndexed);
 
                 pointAndFigureSeries.IsXValueIndexed = parseSucceed && xValIndexed;
 
-                int yVals;
-                parseSucceed = int.TryParse(pointAndFigureSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out yVals);
+                parseSucceed = int.TryParse(pointAndFigureSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out int yVals);
 
                 if (parseSucceed)
                 {
@@ -297,7 +301,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					// Check required Y values number
 					if(dp.YValues.Length < 2)
 					{
-						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(ChartTypeNames.PointAndFigure, ((int)(2)).ToString(CultureInfo.CurrentCulture))));
+						throw new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(ChartTypeNames.PointAndFigure, 2.ToString(CultureInfo.CurrentCulture)));
 					}
 
 					if(dp.YValues[yValueHighIndex] > maxPrice)
@@ -342,14 +346,13 @@ namespace WebCharts.Services.Models.ChartTypes
                 bool usePercentage = attrValue.EndsWith("%", StringComparison.Ordinal);
                 if (usePercentage)
                 {
-                    attrValue = attrValue.Substring(0, attrValue.Length - 1);
+                    attrValue = attrValue[0..^1];
                 }
 
-                bool parseSucceed = false;
+                bool parseSucceed;
                 if (usePercentage)
                 {
-                    double percent;
-                    parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out percent);
+                    parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double percent);
                     if (parseSucceed)
                     {
                         percentOfPriceRange = percent;
@@ -358,8 +361,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
                 else
                 {
-                    double b = 0;
-                    parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out b);
+                    parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double b);
                     if (parseSucceed)
                     {
                         boxSize = b;
@@ -375,11 +377,10 @@ namespace WebCharts.Services.Models.ChartTypes
 			// Calculate box size using the percentage of price range
 			if(percentOfPriceRange > 0.0)
 			{
-				// Set default box size
-				boxSize = 1.0;
+                // Set default box size
 
-				// Calculate box size as percentage of price difference
-				if(minPrice == maxPrice)
+                // Calculate box size as percentage of price difference
+                if (minPrice == maxPrice)
 				{
 					boxSize = 1.0;
 				}
@@ -430,15 +431,14 @@ namespace WebCharts.Services.Models.ChartTypes
             {
                 string attrValue = series[CustomPropertyName.ReversalAmount].Trim();
 
-                double amount;
-                bool parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out amount);
+                bool parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double amount);
                 if (parseSucceed)
                 {
                     reversalAmount = amount;
                 }
                 else
                 {
-                    throw (new InvalidOperationException(SR.ExceptionPointAndFigureReversalAmountInvalidFormat));
+                    throw new InvalidOperationException(SR.ExceptionPointAndFigureReversalAmountInvalidFormat);
                 }
             }
 
@@ -491,14 +491,14 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Get Up Brick color
-			Color	upPriceColor = ChartGraphics.GetGradientColor(series.Color, Color.Black, 0.5);
+			SKColor	upPriceColor = ChartGraphics.GetGradientColor(series.Color, SKColors.Black, 0.5);
 			string	upPriceColorString = series[CustomPropertyName.PriceUpColor];
 			if(upPriceColorString != null)
 			{
 				try
 				{
-					ColorConverter colorConverter = new ColorConverter();
-					upPriceColor = (Color)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, upPriceColorString);
+					ColorConverter colorConverter = new();
+					upPriceColor = (SKColor)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, upPriceColorString);
 				}
 				catch
 				{
@@ -506,9 +506,8 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 			}
 
-			// Get price range
-			double	priceHigh, priceLow;
-			GetPriceRange(originalData, yValueHighIndex, yValueLowIndex, out priceHigh, out priceLow);
+            // Get price range
+            GetPriceRange(originalData, yValueHighIndex, yValueLowIndex, out double priceHigh, out double priceLow);
 
 			// Calculate box size
 			double	boxSize = GetBoxSize(series, priceHigh, priceLow);
@@ -624,7 +623,7 @@ namespace WebCharts.Services.Models.ChartTypes
 						else
 						{
 							// Opposite direction by more than reversal amount
-							DataPoint newDataPoint = (DataPoint)dataPoint.Clone();
+							DataPoint newDataPoint = dataPoint.Clone();
 							newDataPoint["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
 							newDataPoint.series = series;
 							newDataPoint.XValue = dataPoint.XValue;
@@ -666,7 +665,7 @@ namespace WebCharts.Services.Models.ChartTypes
 		static private void OnCustomize(Object sender, EventArgs e)
 		{
 			bool	chartResized = false;
-            Chart chart = (Chart)sender;
+            ChartService chart = (ChartService)sender;
 			// Loop through all series
 			foreach(Series series in chart.Series)
 			{
@@ -775,23 +774,22 @@ namespace WebCharts.Services.Models.ChartTypes
 				vAxis.GetLinearPosition(vAxis.GetLogValue(vAxis.ViewMinimum + boxSize)));
 
 			// Draw a series of Xs or Os
-			for(float positionY = rectSize.Y; positionY < rectSize.Bottom - (float)(boxSizeRel - boxSizeRel/4.0); positionY += (float)boxSizeRel)
+			for(float positionY = rectSize.Top; positionY < rectSize.Bottom - (float)(boxSizeRel - boxSizeRel/4.0); positionY += (float)boxSizeRel)
 			{
 				// Get position of symbol
 				SKRect	position = SKRect.Empty;
-				position.X = rectSize.X;
-				position.Y = positionY;
-				position.Width = rectSize.Width;
-				position.Height = (float)boxSizeRel;
+				position.Left = rectSize.Left;
+				position.Top = positionY;
+				position.Size = new(rectSize.Width,(float)boxSizeRel);
 
 				// Get absolute position and add 1 pixel spacing
 				position = graph.GetAbsoluteRectangle(position);
 				int	spacing = 1 + point.BorderWidth / 2;
-				position.Y += spacing;
-				position.Height -= 2 * spacing;
+				position.Top += spacing;
+				position.Bottom -= 2 * spacing;
 
 				// Calculate shadow position
-				SKRect	shadowPosition = new SKRect(position.Location, position.Size);
+				SKRect	shadowPosition = new(position.Left, position.Top, position.Right, position.Bottom);
 				shadowPosition.Offset(ser.ShadowOffset, ser.ShadowOffset);
 
 				if(point.IsCustomPropertySet("PriceUpPoint"))
@@ -833,7 +831,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					if(ser.ShadowOffset != 0)
 					{
 						graph.DrawCircleAbs(
-							new Pen(ser.ShadowColor, point.BorderWidth), 
+							new SKPaint() { Color = ser.ShadowColor, StrokeWidth = point.BorderWidth, Style = SKPaintStyle.Stroke }, 
 							null, 
 							shadowPosition, 
 							1, 
@@ -842,7 +840,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
 					// Draw 'O' symbol
 					graph.DrawCircleAbs(
-						new Pen(point.Color, point.BorderWidth), 
+						new SKPaint() { Color = point.Color, StrokeWidth = point.BorderWidth, Style = SKPaintStyle.Stroke }, 
 						null, 
 						position, 
 						1, 
@@ -867,9 +865,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		override public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+		override public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 		#endregion
 	}

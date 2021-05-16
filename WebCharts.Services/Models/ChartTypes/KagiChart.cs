@@ -37,10 +37,14 @@
 
 
 using SkiaSharp;
+using System;
 using System.Collections;
 using System.Globalization;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -69,13 +73,13 @@ namespace WebCharts.Services.Models.ChartTypes
 		internal static void PrepareData(Series series)
 		{
 			// Check series chart type
-            if (String.Compare(series.ChartTypeName, ChartTypeNames.Kagi, StringComparison.OrdinalIgnoreCase) != 0 || !series.IsVisible())
+            if (string.Compare(series.ChartTypeName, ChartTypeNames.Kagi, StringComparison.OrdinalIgnoreCase) != 0 || !series.IsVisible())
 			{
 				return;
 			}
 
 			// Get reference to the chart control
-			Chart	chart = series.Chart;
+			ChartService	chart = series.Chart;
 			if(chart == null)
 			{
 				throw(new InvalidOperationException(SR.ExceptionKagiNullReference));
@@ -97,7 +101,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			{
 				return; // the temp series has already been added
 			}
-			Series seriesOriginalData = new Series(tempSeriesName, series.YValuesPerPoint);
+			Series seriesOriginalData = new(tempSeriesName, series.YValuesPerPoint);
 			seriesOriginalData.Enabled = false;
 			seriesOriginalData.IsVisibleInLegend = false;
 			chart.Series.Add(seriesOriginalData);
@@ -178,14 +182,14 @@ namespace WebCharts.Services.Models.ChartTypes
 			if(series.Name.StartsWith("KAGI_ORIGINAL_DATA_", StringComparison.Ordinal))
 			{
 				// Get reference to the chart control
-				Chart	chart = series.Chart;
+				ChartService	chart = series.Chart;
 				if(chart == null)
 				{
                     throw (new InvalidOperationException(SR.ExceptionKagiNullReference));
 				}
 
 				// Get original Kagi series
-				Series	kagiSeries = chart.Series[series.Name.Substring(19)];
+				Series	kagiSeries = chart.Series[series.Name[19..]];
                 Series.MovePositionMarkers(kagiSeries, series);
                 // Copy data back to original Kagi series
 				kagiSeries.Points.Clear();
@@ -197,13 +201,11 @@ namespace WebCharts.Services.Models.ChartTypes
 					}
 				}
 
-				// Restore series properties
-                bool xValIndexed;
-                bool parseSucceed = bool.TryParse(kagiSeries["OldXValueIndexed"], out xValIndexed);
+                // Restore series properties
+                bool parseSucceed = bool.TryParse(kagiSeries["OldXValueIndexed"], out bool xValIndexed);
                 kagiSeries.IsXValueIndexed = parseSucceed && xValIndexed;
 
-                int yValPerPoint;
-                parseSucceed = int.TryParse(kagiSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out yValPerPoint);
+                parseSucceed = int.TryParse(kagiSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out int yValPerPoint);
                 if (parseSucceed)
                 {
                     kagiSeries.YValuesPerPoint = yValPerPoint;
@@ -253,13 +255,12 @@ namespace WebCharts.Services.Models.ChartTypes
                 bool usePercentage = attrValue.EndsWith("%", StringComparison.Ordinal);
                 if (usePercentage)
                 {
-                    attrValue = attrValue.Substring(0, attrValue.Length - 1);
+                    attrValue = attrValue[0..^1];
                 }
 
                 if (usePercentage)
                 {
-                    double percent;
-                    bool parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out percent);
+                    bool parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double percent);
                     if (parseSucceed)
                     {
                         percentOfPrice = percent;
@@ -271,8 +272,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
                 else
                 {
-                    double amount;
-                    bool parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out amount);
+                    bool parseSucceed = double.TryParse(attrValue, NumberStyles.Any, CultureInfo.InvariantCulture, out double amount);
                     if (parseSucceed)
                     {
                         reversalAmount = amount;
@@ -301,8 +301,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			int	yValueIndex = 0;
             if (series.IsCustomPropertySet(CustomPropertyName.UsedYValue))
             {
-                int yi;
-                bool parseSucceed = int.TryParse(series[CustomPropertyName.UsedYValue], NumberStyles.Any, CultureInfo.InvariantCulture, out yi);
+                bool parseSucceed = int.TryParse(series[CustomPropertyName.UsedYValue], NumberStyles.Any, CultureInfo.InvariantCulture, out int yi);
 
                 if (parseSucceed)
                 {
@@ -310,21 +309,20 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
                 else
                 {
-                    throw (new InvalidOperationException(SR.ExceptionKagiAttributeFormatInvalid("UsedYValue")));
+                    throw new InvalidOperationException(SR.ExceptionKagiAttributeFormatInvalid("UsedYValue"));
                 }
 
                 if (yValueIndex >= series.YValuesPerPoint)
                 {
-                    throw (new InvalidOperationException(SR.ExceptionKagiAttributeOutOfRange("UsedYValue")));
+                    throw new InvalidOperationException(SR.ExceptionKagiAttributeOutOfRange("UsedYValue"));
                 }
             }
 
-			// Calculate reversal amount
-			double	reversalAmountPercentage = 0.0;
-			double	reversalAmount = GetReversalAmount(series, out reversalAmountPercentage);
+            // Calculate reversal amount
+            double reversalAmount = GetReversalAmount(series, out double reversalAmountPercentage);
 
-			// Fill points
-			double	prevClose = double.NaN;
+            // Fill points
+            double	prevClose = double.NaN;
 			int		prevDirection = 0;	// 1 up; -1 down; 0 none
 			int		pointIndex = 0;
 			foreach(DataPoint dataPoint in originalData.Points)
@@ -335,7 +333,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					prevClose = dataPoint.YValues[yValueIndex];
 
 					// Add first point
-					DataPoint newDataPoint = (DataPoint)dataPoint.Clone();
+					DataPoint newDataPoint = dataPoint.Clone();
                     newDataPoint["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
 					newDataPoint.series = series;
 					newDataPoint.XValue = dataPoint.XValue;
@@ -373,10 +371,10 @@ namespace WebCharts.Services.Models.ChartTypes
 					// Extend line in same direction
 					if(direction == prevDirection)
 					{
-						series.Points[series.Points.Count - 1].YValues[0] = 
+						series.Points[^1].YValues[0] = 
 							dataPoint.YValues[yValueIndex];
-						series.Points[series.Points.Count - 1]["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
-                        series.Points[series.Points.Count - 1].Tag = dataPoint;
+						series.Points[^1]["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
+                        series.Points[^1].Tag = dataPoint;
 					}
 					else if( Math.Abs(dataPoint.YValues[yValueIndex] - prevClose) < reversalAmount)
 					{
@@ -387,7 +385,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					else
 					{
 						// Opposite direction by more than reversal amount
-						DataPoint newDataPoint = (DataPoint)dataPoint.Clone();
+						DataPoint newDataPoint = dataPoint.Clone();
                         newDataPoint["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
 						newDataPoint.series = series;
 						newDataPoint.XValue = dataPoint.XValue;
@@ -437,18 +435,16 @@ namespace WebCharts.Services.Models.ChartTypes
 			if(currentKagiDirection == 0)
 			{
 				// Get up price color
-				this.kagiUpColor = ChartGraphics.GetGradientColor(series.Color, Color.Black, 0.5);
+				kagiUpColor = ChartGraphics.GetGradientColor(series.Color, SKColors.Black, 0.5);
 				string	priceUpColorString = series[CustomPropertyName.PriceUpColor];
-				ColorConverter colorConverter = new ColorConverter();
 				if(priceUpColorString != null)
 				{
 					try
 					{
-						this.kagiUpColor = (Color)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, priceUpColorString);
-					}
+						kagiUpColor = SKColor.Parse(priceUpColorString);		}
 					catch
 					{
-						throw(new InvalidOperationException(SR.ExceptionKagiAttributeFormatInvalid("Up Brick color")));
+						throw new InvalidOperationException(SR.ExceptionKagiAttributeFormatInvalid("Up Brick color"));
 					}
 				}
 
@@ -458,11 +454,11 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Set up movement colors and width
-			Color	lineColor = (currentKagiDirection == 1) ? this.kagiUpColor : point.Color;
+			SKColor	lineColor = (currentKagiDirection == 1) ? kagiUpColor : point.Color;
 
 			// Prepare coordinate to draw 2 or 3 segments of the step line
 			SKPoint	point1 = points[pointIndex - 1];
-			SKPoint	point2 = new SKPoint(points[pointIndex].X, points[pointIndex - 1].Y);
+			SKPoint	point2 = new(points[pointIndex].X, points[pointIndex - 1].Y);
 			SKPoint	point3 = points[pointIndex];
 			SKPoint	point4 = SKPoint.Empty;
 			
@@ -539,7 +535,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				currentKagiDirection = (currentKagiDirection == 1) ? -1 : 1;
 
 				// Set color
-				lineColor = (currentKagiDirection == 1) ? this.kagiUpColor : point.Color;
+				lineColor = (currentKagiDirection == 1) ? kagiUpColor : point.Color;
 
 				// Draw second part of vertical segment
 				graph.DrawLineRel( lineColor, point.BorderWidth, point.BorderDashStyle, 
@@ -549,44 +545,42 @@ namespace WebCharts.Services.Models.ChartTypes
 
 			if( common.ProcessModeRegions )
 			{
-				// Create grapics path object dor the curve
-                using (SKPath path = new SKPath())
+                // Create grapics path object dor the curve
+                using SKPath path = new();
+                try
                 {
-                    try
-                    {
-                        path.AddLine(point1, point2);
-                        path.AddLine(point2, point3);
-                        path.Widen(new Pen(point.Color, point.BorderWidth + 2));
-                    }
-                    catch (OutOfMemoryException)
-                    {
-                        // SKPath.Widen incorrectly throws OutOfMemoryException
-                        // catching here and reacting by not widening
-                    }
-                    catch (ArgumentException)
-                    {
-                    }
-
-                    // Allocate array of floats
-                    SKPoint pointNew = SKPoint.Empty;
-                    float[] coord = new float[path.PointCount * 2];
-                    SKPoint[] pathPoints = path.PathPoints;
-                    for (int i = 0; i < path.PointCount; i++)
-                    {
-                        pointNew = graph.GetRelativePoint(pathPoints[i]);
-                        coord[2 * i] = pointNew.X;
-                        coord[2 * i + 1] = pointNew.Y;
-                    }
-
-                    common.HotRegionsList.AddHotRegion(
-                        path,
-                        false,
-                        coord,
-                        point,
-                        series.Name,
-                        pointIndex);
+                    path.AddLine(point1, point2);
+                    path.AddLine(point2, point3);
+                    //path.Widen(new Pen(point.Color, point.BorderWidth + 2));
                 }
-			}
+                catch (OutOfMemoryException)
+                {
+                    // SKPath.Widen incorrectly throws OutOfMemoryException
+                    // catching here and reacting by not widening
+                }
+                catch (ArgumentException)
+                {
+                }
+
+                // Allocate array of floats
+                SKPoint pointNew = SKPoint.Empty;
+                float[] coord = new float[path.PointCount * 2];
+                SKPoint[] pathPoints = path.Points;
+                for (int i = 0; i < path.PointCount; i++)
+                {
+                    pointNew = graph.GetRelativePoint(pathPoints[i]);
+                    coord[2 * i] = pointNew.X;
+                    coord[2 * i + 1] = pointNew.Y;
+                }
+
+                common.HotRegionsList.AddHotRegion(
+                    path,
+                    false,
+                    coord,
+                    point,
+                    series.Name,
+                    pointIndex);
+            }
 
 		}
 		
@@ -604,7 +598,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			foreach( DataPoint point in series.Points )
 			{
 				// Change Y value if line is out of plot area
-				double yValue = GetYValue(Common, Area, series, point, index, this.YValueIndex);
+				double yValue = GetYValue(Common, Area, series, point, index, YValueIndex);
 
 				// Recalculates y position
 				double yPosition = VAxis.GetPosition( yValue );
@@ -690,7 +684,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			DataPoint3D firstPoint = ChartGraphics.FindPointByIndex(
 				points, 
 				secondPoint.index - 1, 
-				(this.multiSeries) ? secondPoint : null, 
+				(multiSeries) ? secondPoint : null, 
 				ref pointArrayIndex);
 
 			// Fint point with line properties
@@ -705,11 +699,11 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Adjust point visual properties 
-			Color			color = (useBorderColor) ? pointAttr.dataPoint.BorderColor : pointAttr.dataPoint.Color;
+			SKColor			color = (useBorderColor) ? pointAttr.dataPoint.BorderColor : pointAttr.dataPoint.Color;
 			ChartDashStyle	dashStyle = pointAttr.dataPoint.BorderDashStyle;
-			if( pointAttr.dataPoint.IsEmpty && pointAttr.dataPoint.Color == Color.Empty)
+			if( pointAttr.dataPoint.IsEmpty && pointAttr.dataPoint.Color == SKColor.Empty)
 			{
-				color = Color.Gray;
+				color = SKColors.Gray;
 			}
 			if( pointAttr.dataPoint.IsEmpty && pointAttr.dataPoint.BorderDashStyle == ChartDashStyle.NotSet )
 			{
@@ -720,14 +714,13 @@ namespace WebCharts.Services.Models.ChartTypes
 			if(currentKagiDirection == 0)
 			{
 				// Get up price color
-				this.kagiUpColor = secondPoint.dataPoint.series.Color;
+				kagiUpColor = secondPoint.dataPoint.series.Color;
 				string	priceUpColorString = secondPoint.dataPoint.series[CustomPropertyName.PriceUpColor];
-				ColorConverter colorConverter = new ColorConverter();
 				if(priceUpColorString != null)
 				{
 					try
 					{
-						this.kagiUpColor = (Color)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, priceUpColorString);
+						kagiUpColor = SKColor.Parse(priceUpColorString);
 					}
 					catch
 					{
@@ -741,12 +734,12 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Set up movement colors and width
-			Color	lineColor = (currentKagiDirection == 1) ? this.kagiUpColor : color;
+			SKColor	lineColor = (currentKagiDirection == 1) ? kagiUpColor : color;
 
 			//************************************************************
 			//** Create "middle" point
 			//************************************************************
-			DataPoint3D	middlePoint = new DataPoint3D();
+			DataPoint3D	middlePoint = new();
 			middlePoint.xPosition = secondPoint.xPosition;
 			middlePoint.yPosition = firstPoint.yPosition;
 
@@ -761,18 +754,15 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 			}
 
-			// Check in which order vertical & horizontal lines segments should be drawn
-			if(centerPointIndex != int.MaxValue)
-			{
-				if(pointIndex >= centerPointIndex)
-				{
-					originalDrawOrder = false;
-				}
-			}
+            // Check in which order vertical & horizontal lines segments should be drawn
+            if (centerPointIndex != int.MaxValue && pointIndex >= centerPointIndex)
+            {
+                originalDrawOrder = false;
+            }
 
-	
-			// Check if vertical line should be draw as to segments of different color
-			DataPoint3D	vertSplitPoint = null;
+
+            // Check if vertical line should be draw as to segments of different color
+            DataPoint3D	vertSplitPoint = null;
 			if(secondPoint.index >= 3) //Point3D.index is 1 based
 			{
 				// Check current direction
@@ -786,7 +776,7 @@ namespace WebCharts.Services.Models.ChartTypes
 					DataPoint3D prevPoint = ChartGraphics.FindPointByIndex(
 						points, 
 						secondPoint.index - 2, 
-						(this.multiSeries) ? secondPoint : null, 
+						(multiSeries) ? secondPoint : null, 
 						ref pointArrayIndex);
 
 					bool	twoVertSegments = false;
@@ -805,7 +795,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
 					if(twoVertSegments)
 					{
-						vertSplitPoint = new DataPoint3D();
+						vertSplitPoint = new();
 						vertSplitPoint.xPosition = secondPoint.xPosition;
 						vertSplitPoint.yPosition = prevPoint.yPosition;
 						vertSplitPoint.dataPoint = secondPoint.dataPoint;
@@ -829,9 +819,9 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 				else if(segmentIndex == 1)
 				{
-					lineSegmentType = (!originalDrawOrder) ? LineSegmentType.First : LineSegmentType.Last;
-					middlePoint.dataPoint = (!originalDrawOrder) ? secondPoint.dataPoint : secondPoint.dataPoint;
-					point1 = (!originalDrawOrder) ? firstPoint : middlePoint;
+                    lineSegmentType = (!originalDrawOrder) ? LineSegmentType.First : LineSegmentType.Last;
+					middlePoint.dataPoint = secondPoint.dataPoint;
+                    point1 = (!originalDrawOrder) ? firstPoint : middlePoint;
 					point2 = (!originalDrawOrder) ? middlePoint : secondPoint;
 				}
 
@@ -839,33 +829,31 @@ namespace WebCharts.Services.Models.ChartTypes
 				if(lineSegmentType == LineSegmentType.First ||
 					vertSplitPoint == null)
 				{
-					resultPathLine[segmentIndex] = new SKPath();
 					resultPathLine[segmentIndex] = graph.Draw3DSurface( 
 						area, matrix, lightStyle, SurfaceNames.Top, positionZ, depth, lineColor, 
 						pointAttr.dataPoint.BorderColor, pointAttr.dataPoint.BorderWidth, dashStyle, 
 						point1, point2, 
-						points, pointIndex, 0f, operationType, lineSegmentType, 
-						(this.showPointLines) ? true : false, false,
+						points, pointIndex, 0f, operationType, lineSegmentType,
+                        showPointLines, false,
                         area.ReverseSeriesOrder,
-						this.multiSeries, 0, true);
+						multiSeries, 0, true);
 				}
 				else
 				{
 					if(!originalDrawOrder)
 					{
-						lineColor = (currentKagiDirection == -1) ? this.kagiUpColor : color;
+						lineColor = (currentKagiDirection == -1) ? kagiUpColor : color;
 					}
 
 					// Draw verticla line as two segments
-					resultPathLine[segmentIndex] = new SKPath();
 					resultPathLine[segmentIndex] = graph.Draw3DSurface( 
 						area, matrix, lightStyle, SurfaceNames.Top, positionZ, depth, lineColor, 
 						pointAttr.dataPoint.BorderColor, pointAttr.dataPoint.BorderWidth, dashStyle, 
 						point1, vertSplitPoint, 
-						points, pointIndex, 0f, operationType, LineSegmentType.Middle, 
-						(this.showPointLines) ? true : false, false,
+						points, pointIndex, 0f, operationType, LineSegmentType.Middle,
+                        showPointLines, false,
                         area.ReverseSeriesOrder,
-						this.multiSeries, 0, true);
+						multiSeries, 0, true);
 
 					// No second draw of the prev. front line required
 					graph.frontLinePen = null;
@@ -876,26 +864,25 @@ namespace WebCharts.Services.Models.ChartTypes
 					// Set color
 					if(originalDrawOrder)
 					{
-						lineColor = (currentKagiDirection == 1) ? this.kagiUpColor : color;
+						lineColor = (currentKagiDirection == 1) ? kagiUpColor : color;
 					}
 					else
 					{
-						lineColor = (currentKagiDirection == -1) ? this.kagiUpColor : color;
+						lineColor = (currentKagiDirection == -1) ? kagiUpColor : color;
 					}
-
-					resultPathLine[2] = new SKPath();
+									
 					resultPathLine[2] = graph.Draw3DSurface( 
 						area, matrix, lightStyle, SurfaceNames.Top, positionZ, depth, lineColor, 
 						pointAttr.dataPoint.BorderColor, pointAttr.dataPoint.BorderWidth, dashStyle, 
 						vertSplitPoint, point2, 
 						points, pointIndex, 0f, operationType, lineSegmentType, 
-						(this.showPointLines) ? true : false, false,
+						showPointLines, false,
                         area.ReverseSeriesOrder,
-						this.multiSeries, 0, true);
+						multiSeries, 0, true);
 
 					if(!originalDrawOrder)
 					{
-						lineColor = (currentKagiDirection == 1) ? this.kagiUpColor : color;
+						lineColor = (currentKagiDirection == 1) ? kagiUpColor : color;
 					}
 
 				}
@@ -907,11 +894,11 @@ namespace WebCharts.Services.Models.ChartTypes
 			if(resultPath != null)
 			{
 				if(resultPathLine[0] != null)
-					resultPath.AddPath(resultPathLine[0], true);
+					resultPath.AddPath(resultPathLine[0]);
 				if(resultPathLine[1] != null)
-					resultPath.AddPath(resultPathLine[1], true);
+					resultPath.AddPath(resultPathLine[1]);
 				if(resultPathLine[2] != null)
-					resultPath.AddPath(resultPathLine[2], true);
+					resultPath.AddPath(resultPathLine[2]);
 			}
 			return resultPath;
 		}
@@ -930,9 +917,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		override public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+		override public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 		#endregion
 
@@ -948,7 +935,7 @@ namespace WebCharts.Services.Models.ChartTypes
 		public override void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw )
 		{	
 			// Reset current direction
-			this.currentKagiDirection = 0;
+			currentKagiDirection = 0;
 
 			// Call base class methods
 			base.Paint(graph, common, area, seriesToDraw);

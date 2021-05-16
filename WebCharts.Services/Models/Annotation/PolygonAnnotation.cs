@@ -15,7 +15,7 @@ using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     /// <summary>
     /// <b>PolylineAnnotation</b> is a class that represents a polyline annotation.
@@ -382,7 +382,7 @@ namespace WebCharts.Services.Models.Annotation
             set
             {
                 _SKPath = value;
-                this.pathChanged = true;
+                pathChanged = true;
             }
         }
 
@@ -403,9 +403,9 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> object, used to paint an annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> owner control.
+        /// Reference to the <see cref="ChartService"/> owner control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Check for empty path
             if (_SKPath.PointCount == 0)
@@ -465,28 +465,28 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             // Painting mode
-            if (this.Common.ProcessModePaint)
+            if (Common.ProcessModePaint)
             {
-                if (this.isPolygon)
+                if (isPolygon)
                 {
                     // Draw polygon
                     pathAbs.Close();
                     graphics.DrawPathAbs(
                         pathAbs,
-                        this.BackColor,
-                        this.BackHatchStyle,
+                        BackColor,
+                        BackHatchStyle,
                         String.Empty,
                         ChartImageWrapMode.Scaled,
                         SKColor.Empty,
                         ChartImageAlignmentStyle.Center,
-                        this.BackGradientStyle,
-                        this.BackSecondaryColor,
-                        this.LineColor,
-                        this.LineWidth,
-                        this.LineDashStyle,
+                        BackGradientStyle,
+                        BackSecondaryColor,
+                        LineColor,
+                        LineWidth,
+                        LineDashStyle,
                         PenAlignment.Center,
-                        this.ShadowOffset,
-                        this.ShadowColor);
+                        ShadowOffset,
+                        ShadowColor);
                 }
                 else
                 {
@@ -501,22 +501,22 @@ namespace WebCharts.Services.Models.Annotation
                         ChartImageAlignmentStyle.Center,
                         GradientStyle.None,
                         SKColor.Empty,
-                        this.LineColor,
-                        this.LineWidth,
-                        this.LineDashStyle,
+                        LineColor,
+                        LineWidth,
+                        LineDashStyle,
                         PenAlignment.Center,
-                        this.ShadowOffset,
-                        this.ShadowColor);
+                        ShadowOffset,
+                        ShadowColor);
                 }
             }
 
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions)
             {
                 // Create line graphics path
                 SKPath selectionPath = null;
                 SKPath newPath = null;
 
-                if (this.isPolygon)
+                if (isPolygon)
                 {
                     selectionPath = pathAbs;
                 }
@@ -531,11 +531,11 @@ namespace WebCharts.Services.Models.Annotation
                 }
 
                 // Add hot region
-                this.Common.HotRegionsList.AddHotRegion(
+                Common.HotRegionsList.AddHotRegion(
                     graphics,
                     selectionPath,
                     false,
-                    ReplaceKeywords(this.ToolTip),
+                    ReplaceKeywords(ToolTip),
                     String.Empty,
                     String.Empty,
                     String.Empty,
@@ -590,7 +590,7 @@ namespace WebCharts.Services.Models.Annotation
                 _SKPath.Transform(matrix);
 
                 // Set new position for annotation
-                this.SetPositionRelative(pathBoundary, anchorPoint);
+                SetPositionRelative(pathBoundary, anchorPoint);
             }
         }
         /// <summary>
@@ -618,15 +618,15 @@ namespace WebCharts.Services.Models.Annotation
             // Remember path before moving operation
             if (userInput == true && startMovePathRel == null)
             {
-                this.startMovePathRel = new SKPath(_SKPath);
-                this.startMovePositionRel = new SKRect(firstPoint.X, firstPoint.Y, firstPoint.X + size.Width, firstPoint.Y + size.Height);
-                this.startMoveAnchorLocationRel = new SKPoint(anchorPoint.X, anchorPoint.Y);
+                startMovePathRel = new SKPath(_SKPath);
+                startMovePositionRel = new SKRect(firstPoint.X, firstPoint.Y, firstPoint.X + size.Width, firstPoint.Y + size.Height);
+                startMoveAnchorLocationRel = new SKPoint(anchorPoint.X, anchorPoint.Y);
             }
 
             // Convert moving distance to coordinates relative to the anotation
             if (pixelCoord)
             {
-                movingDistance = this.GetGraphics().GetRelativeSize(movingDistance);
+                movingDistance = GetGraphics().GetRelativeSize(movingDistance);
             }
             movingDistance.Width /= startMovePositionRel.Width / 100.0f;
             movingDistance.Height /= startMovePositionRel.Height / 100.0f;
@@ -651,7 +651,7 @@ namespace WebCharts.Services.Models.Annotation
 
 
                 // Adjust annotation position to the boundary of the path
-                if (userInput && this.AllowResizing)
+                if (userInput && AllowResizing)
                 {
                     // Get path bounds in relative coordinates
                     _defaultSKPath.Dispose();
@@ -681,7 +681,7 @@ namespace WebCharts.Services.Models.Annotation
                     pathBounds.Bottom = pathBounds.Top + (h * startMovePositionRel.Height / 100f);
 
                     // Set new annotation position
-                    this.SetPositionRelative(pathBounds, anchorPoint);
+                    SetPositionRelative(pathBounds, anchorPoint);
 
                     // Adjust path point position
                     for (int pointIndex = 0; pointIndex < pathPoints.Length; pointIndex++)
@@ -697,7 +697,7 @@ namespace WebCharts.Services.Models.Annotation
 
 
                 // Position changed
-                this.positionChanged = true;
+                positionChanged = true;
 
                 // Recreate path with new points
                 _defaultSKPath.Dispose();
@@ -715,10 +715,10 @@ namespace WebCharts.Services.Models.Annotation
                 }
 
                 _SKPath = _defaultSKPath;
-                this.pathChanged = true;
+                pathChanged = true;
 
                 // Invalidate annotation
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -744,19 +744,19 @@ namespace WebCharts.Services.Models.Annotation
             base.EndPlacement();
 
             // Position was changed
-            if (this.Chart != null)
+            if (Chart != null)
             {
-                this.Chart.OnAnnotationPositionChanged(this);
+                Chart.OnAnnotationPositionChanged(this);
             }
 
             // Reset last placement position
-            this.lastPlacementPosition = SKPoint.Empty;
+            lastPlacementPosition = SKPoint.Empty;
 
             // Resize annotation to the boundary of the polygon
             ResizeToPathBoundary();
 
             // Position changed
-            this.positionChanged = true;
+            positionChanged = true;
         }
 
         #endregion // Placement Methods
@@ -806,7 +806,7 @@ namespace WebCharts.Services.Models.Annotation
         public PolygonAnnotation()
             : base()
         {
-            this.isPolygon = true;
+            isPolygon = true;
         }
 
         #endregion
@@ -1068,35 +1068,37 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         public override void Invalidate()
         {
-            if (this.annotation != null)
+            if (annotation != null)
             {
                 //Dispose previously instantiated graphics path
-                if (this._SKPath != null)
+                if (_SKPath != null)
                 {
-                    this._SKPath.Dispose();
-                    this._SKPath = null;
+                    _SKPath.Dispose();
+                    _SKPath = null;
                 }
 
                 // Recreate polyline annotation path
-                if (this.Count > 0)
+                if (Count > 0)
                 {
-                    SKPoint[] points = new SKPoint[this.Count];
-                    byte[] types = new byte[this.Count];
-                    for (int index = 0; index < this.Count; index++)
+                    _SKPath = new SKPath();
+                    for (int index = 0; index < Count; index++)
                     {
-                        points[index] = new SKPoint(this[index].X, this[index].Y);
+                        var p = new SKPoint(this[index].X, this[index].Y);
+                        if (index == 0)
+                            _SKPath.MoveTo(p);
+                        else
+                            _SKPath.LineTo(p);
                     }
-                    this._SKPath = new SKPath();
-                    _SKPath.AddPath(points);
+                    _SKPath.Close();
                 }
                 else
                 {
-                    this._SKPath = new SKPath();
+                    _SKPath = new SKPath();
                 }
 
                 // Invalidate annotation
-                this.annotation.SKPath = this._SKPath;
-                this.annotation.Invalidate();
+                annotation.SKPath = _SKPath;
+                annotation.Invalidate();
             }
             base.Invalidate();
         }
@@ -1113,10 +1115,10 @@ namespace WebCharts.Services.Models.Annotation
             if (disposing)
             {
                 // Free up managed resources
-                if (this._SKPath != null)
+                if (_SKPath != null)
                 {
-                    this._SKPath.Dispose();
-                    this._SKPath = null;
+                    _SKPath.Dispose();
+                    _SKPath = null;
                 }
             }
             base.Dispose(disposing);
@@ -1166,8 +1168,8 @@ namespace WebCharts.Services.Models.Annotation
         /// <param name="y">Point's Y value.</param>
         public AnnotationPathPoint(float x, float y)
         {
-            this._x = x;
-            this._y = y;
+            _x = x;
+            _y = y;
         }
 
         /// <summary>
@@ -1178,9 +1180,9 @@ namespace WebCharts.Services.Models.Annotation
         /// <param name="type">Point type.</param>
         public AnnotationPathPoint(float x, float y, byte type)
         {
-            this._x = x;
-            this._y = y;
-            this._pointType = type;
+            _x = x;
+            _y = y;
+            _pointType = type;
         }
 
         #endregion // Constructors

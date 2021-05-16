@@ -108,39 +108,7 @@ namespace WebCharts.Services.Models.General
             RenderingObject.DrawLine(pen, x1, y1, x2, y2);
         }
 
-        /// <summary>
-        /// Draws the specified portion of the specified Image object at the specified location and with the specified size.
-        /// </summary>
-        /// <param name="image">Image object to draw.</param>
-        /// <param name="destRect">Rectangle structure that specifies the location and size of the drawn image. The image is scaled to fit the rectangle.</param>
-        /// <param name="srcX">x-coordinate of the upper-left corner of the portion of the source image to draw.</param>
-        /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
-        /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
-        /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
-        ///// <param name="srcUnit">Member of the GraphicsUnit enumeration that specifies the units of measure used to determine the source rectangle.</param>
-        ///// <param name="imageAttr">ImageAttributes object that specifies recoloring and gamma information for the image object.</param>
-        internal void DrawImage(
-            SKImage image,
-            SKRect destRect,
-            int srcX,
-            int srcY,
-            int srcWidth,
-            int srcHeight
-            //GraphicsUnit srcUnit,
-            //ImageAttributes imageAttr
-            )
-        {
-            RenderingObject.DrawImage(
-                image,
-                destRect,
-                srcX,
-                srcY,
-                srcWidth,
-                srcHeight//,
-                         //srcUnit,
-                         //imageAttr
-                );
-        }
+   
 
         /// <summary>
         /// Draws an ellipse defined by a bounding rectangle specified by 
@@ -312,16 +280,32 @@ namespace WebCharts.Services.Models.General
         /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
         /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
         /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
+        /// <param name="paint"></param>
+        internal void DrawImage(SKImage image, SKRect destRect, int srcX, int srcY, int srcWidth, int srcHeight, SKPaint paint)
+        {
+            RenderingObject.DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, paint);
+        }
+
+        /// <summary>
+        /// Draws the specified portion of the specified Image object at the specified location and with the specified size.
+        /// </summary>
+        /// <param name="image">Image object to draw.</param>
+        /// <param name="destRect">Rectangle structure that specifies the location and size of the drawn image. The image is scaled to fit the rectangle.</param>
+        /// <param name="srcX">x-coordinate of the upper-left corner of the portion of the source image to draw.</param>
+        /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
+        /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
+        /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
         internal void DrawImage(
             SKImage image,
             SKRect destRect,
             float srcX,
             float srcY,
             float srcWidth,
-            float srcHeight
+            float srcHeight,
+            SKPaint paint
             )
         {
-            RenderingObject.DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight);
+            RenderingObject.DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight, paint);
         }
 
         /// <summary>

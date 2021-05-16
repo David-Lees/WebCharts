@@ -9,6 +9,7 @@ using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections;
+using WebCharts.Services.Models.Common;
 
 namespace WebCharts.Services.Models.General
 {
@@ -58,7 +59,7 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Gets the chart.
         /// </summary>
-        internal Chart Chart
+        internal ChartService Chart
         {
             get
             {
@@ -124,7 +125,7 @@ namespace WebCharts.Services.Models.General
                 _suspendUpdates--;
 
             if (_suspendUpdates==0)
-                this.Invalidate(); 
+                Invalidate(); 
         }
 
         /// <summary>
@@ -134,9 +135,9 @@ namespace WebCharts.Services.Models.General
         protected override void ClearItems()
         {
             SuspendUpdates();
-            while (this.Count > 0)
+            while (Count > 0)
             {
-                this.RemoveItem(0);
+                RemoveItem(0);
             }
             ResumeUpdates();
         }
@@ -166,7 +167,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void RemoveItem(int index)
         {
-            this.Deinitialize(this[index]);
+            Deinitialize(this[index]);
             this[index].Parent = null;
             base.RemoveItem(index);
             Invalidate();
@@ -180,7 +181,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void InsertItem(int index, T item)
         {
-            this.Initialize(item);
+            Initialize(item);
             item.Parent = this;
             base.InsertItem(index, item);
             Invalidate();
@@ -194,7 +195,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void SetItem(int index, T item)
         {
-            this.Initialize(item);
+            Initialize(item);
             item.Parent = this;
             base.SetItem(index, item);
             Invalidate();
@@ -206,18 +207,18 @@ namespace WebCharts.Services.Models.General
 
         IChartElement IChartElement.Parent
         {
-            get { return this.Parent; }
-            set { this.Parent = value; }
+            get { return Parent; }
+            set { Parent = value; }
         }
 
         void IChartElement.Invalidate()
         {
-            this.Invalidate();
+            Invalidate();
         }
 
         CommonElements IChartElement.Common
         {
-            get{ return this.Common; }
+            get{ return Common; }
         }
 
         #endregion
@@ -246,7 +247,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
         #endregion
@@ -285,31 +286,31 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                int index = this.IndexOf(name);
+                int index = IndexOf(name);
                 if (index != -1)
                 {
                     return this[index];
                 }
-                throw new ArgumentException(SR.ExceptionNameNotFound(name, this.GetType().Name));
+                throw new ArgumentException(SR.ExceptionNameNotFound(name, GetType().Name));
             }
             set
             {
-                int nameIndex = this.IndexOf(name);
-                int itemIndex = this.IndexOf(value);
+                int nameIndex = IndexOf(name);
+                int itemIndex = IndexOf(value);
                 bool nameFound = nameIndex > -1;
                 bool itemFound = itemIndex > -1;
 
                 if (!nameFound && !itemFound)
-                    this.Add(value);
+                    Add(value);
 
                 else if (nameFound && !itemFound)
                     this[nameIndex] = value;
 
                 else if (!nameFound && itemFound)
-                    throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, this.GetType().Name));
+                    throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, GetType().Name));
                     
                 else if (nameFound && itemFound && nameIndex != itemIndex)
-                    throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, this.GetType().Name));
+                    throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, GetType().Name));
                     
             }
         }
@@ -357,7 +358,7 @@ namespace WebCharts.Services.Models.General
         {
             // Find unique name
             string result = string.Empty;
-            string prefix = this.NamePrefix;
+            string prefix = NamePrefix;
             for (int i = 1; i < System.Int32.MaxValue; i++)
             {
                 result = prefix + i.ToString(CultureInfo.InvariantCulture);
@@ -394,7 +395,7 @@ namespace WebCharts.Services.Models.General
         internal void VerifyNameReference(string name)
         {
             if (Chart!=null && !Chart.serializing && !IsNameReferenceValid(name))
-                throw new ArgumentException(SR.ExceptionNameNotFound(name, this.GetType().Name));
+                throw new ArgumentException(SR.ExceptionNameNotFound(name, GetType().Name));
         }
 
         /// <summary>
@@ -431,16 +432,16 @@ namespace WebCharts.Services.Models.General
         protected override void InsertItem(int index, T item)
         {
             if (String.IsNullOrEmpty(item.Name))
-                item.Name = this.NextUniqueName();
+                item.Name = NextUniqueName();
             else if (!IsUniqueName(item.Name))
-                throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(item.Name, this.GetType().Name));
+                throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(item.Name, GetType().Name));
 
             //If the item references other named references we might need to fix the references
             FixNameReferences(item);
 
             base.InsertItem(index, item);
 
-            if (this.Count == 1 && item != null)
+            if (Count == 1 && item != null)
             { 
                 // First element is added to the list -> fire the NameReferenceChanged event to update all the dependent elements
                 ((INameController)this).OnNameReferenceChanged(new NameReferenceChangedEventArgs(null, item));
@@ -455,9 +456,9 @@ namespace WebCharts.Services.Models.General
         protected override void SetItem(int index, T item)
         {
             if (String.IsNullOrEmpty(item.Name))
-                item.Name = this.NextUniqueName();
+                item.Name = NextUniqueName();
             else if (!IsUniqueName(item.Name) && IndexOf(item.Name) != index)
-                throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(item.Name, this.GetType().Name));
+                throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(item.Name, GetType().Name));
 
             //If the item references other named references we might need to fix the references
             FixNameReferences(item);
@@ -488,7 +489,7 @@ namespace WebCharts.Services.Models.General
             {
                 // All elements referencing the removed element will be redirected to the first element in collection
                 // Fire the NameReferenceChanged event to update all the dependent elements
-                ChartNamedElement defaultElement = this.Count > 0 ? this[0] : null;
+                ChartNamedElement defaultElement = Count > 0 ? this[0] : null;
                 ((INameController)this).OnNameReferenceChanged(new NameReferenceChangedEventArgs(removedElement, defaultElement));
             }
         }
@@ -514,7 +515,7 @@ namespace WebCharts.Services.Models.General
         /// </returns>
         bool INameController.IsUniqueName(string name)
         {
-            return this.IsUniqueName(name);
+            return IsUniqueName(name);
         }
 
         /// <summary>
@@ -543,8 +544,8 @@ namespace WebCharts.Services.Models.General
         {
             if (!IsSuspended)
             {
-                if (this.NameReferenceChanging != null)
-                    this.NameReferenceChanging(this, e);
+                if (NameReferenceChanging != null)
+                    NameReferenceChanging(this, e);
             }
         }
 
@@ -556,8 +557,8 @@ namespace WebCharts.Services.Models.General
         {
             if (!IsSuspended)
             {
-                if (this.NameReferenceChanged != null)
-                    this.NameReferenceChanged(this, e);
+                if (NameReferenceChanged != null)
+                    NameReferenceChanged(this, e);
             }
         }
 
@@ -574,13 +575,13 @@ namespace WebCharts.Services.Models.General
             if (save)
             {
                 _cachedState = new List<T>(this);
-                if (changingCallback != null) this.NameReferenceChanging += changingCallback;
-                if (changedCallback  != null) this.NameReferenceChanged += changedCallback;
+                if (changingCallback != null) NameReferenceChanging += changingCallback;
+                if (changedCallback  != null) NameReferenceChanged += changedCallback;
             }
             else
             {
-                if (changingCallback != null) this.NameReferenceChanging -= changingCallback;
-                if (changedCallback != null) this.NameReferenceChanged -= changedCallback;
+                if (changingCallback != null) NameReferenceChanging -= changingCallback;
+                if (changedCallback != null) NameReferenceChanged -= changedCallback;
                 _cachedState.Clear();
                 _cachedState = null;
             }

@@ -8,6 +8,7 @@
 //
 
 
+using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
 using System;
 using System.Collections;
@@ -15,7 +16,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using WebCharts.Services.Models.Annotation;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Annotations;
 using WebCharts.Services.Models.Borders3D;
 using WebCharts.Services.Models.ChartTypes;
 using WebCharts.Services.Models.Common;
@@ -26,62 +29,28 @@ using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services
 {
-    #region Enumerations
-
-    /// <summary>
-    /// Specifies the format of the image
-    /// </summary>
-    public enum ChartImageFormat
+    public static class ChartServicesExtensions
     {
-        /// <summary>
-        /// Gets the Joint Photographic Experts Group (JPEG) image format.
-        /// </summary>
-        Jpeg,
-
-        /// <summary>
-        /// Gets the W3C Portable Network Graphics (PNG) image format.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Png")]
-        Png,
-
-        /// <summary>
-        /// Gets the bitmap image format (BMP).
-        /// </summary>
-        Bmp,
-
-        /// <summary>
-        /// Gets the Tag Image File Format (TIFF) image format.
-        /// </summary>
-        Tiff,
-
-        /// <summary>
-        /// Gets the Graphics Interchange Format (GIF) image format.
-        /// </summary>
-        Gif,
-
-        /// <summary>
-        /// Gets the Enhanced Meta File (Emf) image format.
-        /// </summary>
-        Emf,
-
-        /// <summary>
-        /// Enhanced Meta File (EmfDual) image format.
-        /// </summary>
-        EmfDual,
-
-        /// <summary>
-        /// Enhanced Meta File (Emf+) image format.
-        /// </summary>
-        EmfPlus,
+        public static IServiceCollection AddChartServices(this IServiceCollection services)
+        {
+            services.AddTransient<IChartService, ChartService>();
+            services.AddTransient<IChartTypeRegistry, ChartTypeRegistry>();
+            services.AddTransient<IBorderTypeRegistry, BorderTypeRegistry>();
+            services.AddTransient<ICustomPropertyRegistry, CustomPropertyRegistry>();
+            services.AddTransient<IKeywordsRegistry, KeywordsRegistry>();
+            services.AddTransient<IDataManager, DataManager>();
+            services.AddTransient<IImageLoader, ImageLoader>();
+            services.AddTransient<IChartImage, ChartImage>();
+            services.AddTransient<IFormulaRegistry, FormulaRegistry>();
+            return services;
+        }
     }
-
-    #endregion
 
     /// <summary>
     /// Chart windows forms control
     /// </summary>
     [SRDescription("DescriptionAttributeChart_Chart")]
-    public class Chart : IDisposable
+    public class ChartService : IDisposable, IChartService
     {
         #region Control fields
 
@@ -97,10 +66,6 @@ namespace WebCharts.Services
         private DataManager _dataManager = null;
         internal ChartImage chartPicture = null;
         private ImageLoader _imageLoader = null;
-        private ChartSerializer _chartSerializer = null;
-
-        // Selection class
-        internal Selection selection = null;
 
         // Named images collection
         private NamedImagesCollection _namedImages = null;
@@ -116,77 +81,27 @@ namespace WebCharts.Services
         // Indicates that chart is serializing the data
         internal bool serializing = false;
 
-        // Detailed serialization status which allows not only to determine if serialization
-        // is curently in process but also check if we are saving, loading or resetting the chart.
-        internal SerializationStatus serializationStatus = SerializationStatus.None;
-
         // Indicates that only chart area cursor/selection must be drawn during the next paint event
         internal bool paintTopLevelElementOnly = false;
 
         // Indicates that some chart properties where changed (used for painting)
         internal bool dirtyFlag = true;
 
-        // Keywords registry
-        private KeywordsRegistry _keywordsRegistry = null;
-
-        // Horizontal rendering resolution.
-        static internal double renderingDpiX = 96.0;
-
-        // Vertical rendering resolution.
-        static internal double renderingDpiY = 96.0;
-
-
-        #endregion
-
-        #region Component Designer generated code
-        /// <summary>
-        /// Required method for Designer support - do not modify 
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-        }
         #endregion
 
         #region Control constructors
 
+        private readonly IServiceProvider _provider;
+
         /// <summary>
         /// Chart control constructor.
         /// </summary>
-        public Chart()
+        public ChartService(IServiceProvider provider)
         {
-            //*********************************************************
-            //** Create services
-            //*********************************************************
-            serviceContainer = new ServiceContainer();
-            _chartTypeRegistry = new ChartTypeRegistry();
-            _borderTypeRegistry = new BorderTypeRegistry();
-            _customAttributeRegistry = new CustomPropertyRegistry();
-
-            _keywordsRegistry = new KeywordsRegistry();
-
-            _dataManager = new DataManager(serviceContainer);
-            _imageLoader = new ImageLoader(serviceContainer);
-
-            chartPicture = new ChartImage(serviceContainer);
-            _chartSerializer = new ChartSerializer(serviceContainer);
-            _formulaRegistry = new FormulaRegistry();
-
-            // Add services to the service container
-            serviceContainer.AddService(typeof(Chart), this);                           // Chart Control
-            serviceContainer.AddService(_chartTypeRegistry.GetType(), _chartTypeRegistry);// Chart types registry
-            serviceContainer.AddService(_borderTypeRegistry.GetType(), _borderTypeRegistry);// Border types registry
-            serviceContainer.AddService(_customAttributeRegistry.GetType(), _customAttributeRegistry);// Custom attribute registry
-            serviceContainer.AddService(_dataManager.GetType(), _dataManager);          // Data Manager service
-            serviceContainer.AddService(_imageLoader.GetType(), _imageLoader);          // Image Loader service
-            serviceContainer.AddService(chartPicture.GetType(), chartPicture);          // Chart image service
-            serviceContainer.AddService(_chartSerializer.GetType(), _chartSerializer);  // Chart serializer service
-            serviceContainer.AddService(_formulaRegistry.GetType(), _formulaRegistry);  // Formula modules service
-            serviceContainer.AddService(_keywordsRegistry.GetType(), _keywordsRegistry);    // Keywords registry
+            _provider = provider;
 
             // Initialize objects
             _dataManager.Initialize();
-
 
             // Register known chart types
             _chartTypeRegistry.Register(ChartTypeNames.Bar, typeof(BarChart));
@@ -209,8 +124,6 @@ namespace WebCharts.Services
             _chartTypeRegistry.Register(ChartTypeNames.OneHundredPercentStackedBar, typeof(HundredPercentStackedBarChart));
             _chartTypeRegistry.Register(ChartTypeNames.OneHundredPercentStackedArea, typeof(HundredPercentStackedAreaChart));
 
-
-
             _chartTypeRegistry.Register(ChartTypeNames.Range, typeof(RangeChart));
             _chartTypeRegistry.Register(ChartTypeNames.SplineRange, typeof(SplineRangeChart));
             _chartTypeRegistry.Register(ChartTypeNames.RangeBar, typeof(RangeBarChart));
@@ -219,29 +132,17 @@ namespace WebCharts.Services
             _chartTypeRegistry.Register(ChartTypeNames.ErrorBar, typeof(ErrorBarChart));
             _chartTypeRegistry.Register(ChartTypeNames.BoxPlot, typeof(BoxPlotChart));
 
-
-
             _chartTypeRegistry.Register(ChartTypeNames.Renko, typeof(RenkoChart));
             _chartTypeRegistry.Register(ChartTypeNames.ThreeLineBreak, typeof(ThreeLineBreakChart));
             _chartTypeRegistry.Register(ChartTypeNames.Kagi, typeof(KagiChart));
             _chartTypeRegistry.Register(ChartTypeNames.PointAndFigure, typeof(PointAndFigureChart));
-
-
-
-
 
             _chartTypeRegistry.Register(ChartTypeNames.Polar, typeof(PolarChart));
             _chartTypeRegistry.Register(ChartTypeNames.FastLine, typeof(FastLineChart));
             _chartTypeRegistry.Register(ChartTypeNames.Funnel, typeof(FunnelChart));
             _chartTypeRegistry.Register(ChartTypeNames.Pyramid, typeof(PyramidChart));
 
-
-
-
-
             _chartTypeRegistry.Register(ChartTypeNames.FastPoint, typeof(FastPointChart));
-
-
 
             // Register known formula modules
             _formulaRegistry.Register(SR.FormulaNamePriceIndicators, typeof(PriceIndicators));
@@ -251,8 +152,6 @@ namespace WebCharts.Services
             _formulaRegistry.Register(SR.FormulaNameGeneralFormulas, typeof(GeneralFormulas));
             _formulaRegistry.Register(SR.FormulaNameTimeSeriesAndForecasting, typeof(TimeSeriesAndForecasting));
             _formulaRegistry.Register(SR.FormulaNameStatisticalAnalysis, typeof(StatisticalAnalysis));
-
-
 
             // Register known 3D border types
             _borderTypeRegistry.Register("Emboss", typeof(EmbossBorder));
@@ -274,10 +173,7 @@ namespace WebCharts.Services
             _borderTypeRegistry.Register("FrameTitle8", typeof(FrameTitle8Border));
 
             // Enable chart invalidating
-            this.disableInvalidates = false;
-
-            // Create selection object
-            selection = new Selection(serviceContainer);
+            disableInvalidates = false;
 
             // Create named images collection
             _namedImages = new NamedImagesCollection();
@@ -286,7 +182,7 @@ namespace WebCharts.Services
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Series.ChartAreaNameReferenceChanged);
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Legends.ChartAreaNameReferenceChanged);
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Titles.ChartAreaNameReferenceChanged);
-            ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Annotations.ChartAreaNameReferenceChanged);
+            //ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Annotations.ChartAreaNameReferenceChanged);
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(ChartAreas.ChartAreaNameReferenceChanged);
             Legends.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Series.LegendNameReferenceChanged);
         }
@@ -295,235 +191,7 @@ namespace WebCharts.Services
 
         #endregion
 
-        #region Control painting methods
-
-        /// <summary>
-        /// Paint chart control.
-        /// </summary>
-        /// <param name="e">Paint event arguments.</param>
-        protected override void OnPaint(PaintEventArgs e)
-        {
-
-            //*******************************************************
-            //** Check control license
-
-            // Disable invalidates
-            this.disableInvalidates = true;
-
-            //*******************************************************
-            //** If chart background is transparent - draw without
-            //** double buffering.
-            //*******************************************************
-            if (this.IsBorderTransparent() ||
-                !this.BackColor.IsEmpty &&
-                (this.BackColor == Color.Transparent || this.BackColor.A != 255))
-            {
-
-                // Draw chart directly on the graphics
-                try
-                {
-                    if (this.paintTopLevelElementOnly)
-                    {
-                        chartPicture.Paint(e.Graphics, false);
-                    }
-                    chartPicture.Paint(e.Graphics, this.paintTopLevelElementOnly);
-                }
-                catch (Exception)
-                {
-                    // Draw exception method
-                    DrawException(e.Graphics);
-                    throw;
-                }
-
-            }
-            else
-            {
-
-                //*******************************************************
-                //** If nothing was changed in the chart and last image is stored in the buffer
-                //** there is no need to repaint the chart.
-                //*******************************************************
-                if (this.dirtyFlag || paintBufferBitmap == null)
-                {
-
-                    // Get scaling component from the drawing graphics
-                    float scaleX = e.Graphics.Transform.Elements[0];
-                    float scaleY = e.Graphics.Transform.Elements[3];
-
-                    // Create offscreen buffer bitmap
-                    if (paintBufferBitmap == null ||
-                        paintBufferBitmap.Width < scaleX * ClientRectangle.Width ||
-                        paintBufferBitmap.Height < scaleY * ClientRectangle.Height)
-                    {
-                        if (paintBufferBitmap != null)
-                        {
-                            paintBufferBitmap.Dispose();
-                            paintBufferBitmapGraphics.Dispose();
-                        }
-
-                        // Create offscreen bitmap taking in consideration graphics scaling
-                        paintBufferBitmap = new Bitmap((int)(ClientRectangle.Width * scaleX), (int)(ClientRectangle.Height * scaleY), e.Graphics);
-                        paintBufferBitmapGraphics = Graphics.FromImage(paintBufferBitmap);
-                        paintBufferBitmapGraphics.ScaleTransform(scaleX, scaleY);
-                    }
-
-                    //*******************************************************
-                    //** Draw chart in bitmap buffer
-                    //*******************************************************
-                    try
-                    {
-                        chartPicture.Paint(paintBufferBitmapGraphics, this.paintTopLevelElementOnly);
-                    }
-                    catch (Exception)
-                    {
-                        // Draw exception method
-                        DrawException(paintBufferBitmapGraphics);
-                    }
-                }
-
-                //*******************************************************
-                //** Push bitmap buffer forward into the screen
-                //*******************************************************
-                // Set drawing scale 1:1. Only persist the transformation from current matrix
-                SKMatrix drawingMatrix = new();
-                SKMatrix oldMatrix = e.Graphics.Transform;
-                drawingMatrix.TransX = oldMatrix.TransX;
-                drawingMatrix.TransY = oldMatrix.TransY;
-                e.Graphics.Transform = drawingMatrix;
-
-                // Draw image
-                e.Graphics.DrawImage(paintBufferBitmap, 0, 0);
-                e.Graphics.Transform = oldMatrix;
-            }
-
-            // Clears control dirty flag
-            this.dirtyFlag = false;
-            this.disableInvalidates = false;
-
-            // Call base class
-            base.OnPaint(e);
-
-            //*******************************************************
-            //** Check if smart client data must be loaded
-            //*******************************************************
-        }
-
-        /// <summary>
-        /// Paints control background.
-        /// </summary>
-        /// <param name="pevent">Event arguments.</param>
-        protected override void OnPaintBackground(PaintEventArgs pevent)
-        {
-            this.disableInvalidates = true;
-
-            //*********************************************************
-            //** Check if chart back ground has a transparent color
-            //*********************************************************
-            bool transpBack = false;
-            if (chartPicture.BackColor.A != 255 && chartPicture.BackColor != Color.Empty)
-            {
-                transpBack = true;
-            }
-            else if (chartPicture.BackImageTransparentColor.A != 255 &&
-                chartPicture.BackImageTransparentColor != Color.Empty &&
-                !String.IsNullOrEmpty(chartPicture.BackImage))
-            {
-                transpBack = true;
-            }
-
-            //*********************************************************
-            //** If chart or chart border page colr has transparent color
-            //*********************************************************
-            bool transpBorder = this.IsBorderTransparent();
-            if (transpBorder || transpBack)
-            {
-                Color oldBackColor = chartPicture.BackColor;
-                if (transpBorder)
-
-                {
-                    chartPicture.BackColor = Color.Transparent;
-                }
-
-                // Call base class 
-                base.OnPaintBackground(pevent);
-
-                chartPicture.BackColor = oldBackColor;
-            }
-
-            this.disableInvalidates = false;
-        }
-
-        /// <summary>
-        /// When user changes system color, the Chart redraws itself.
-        /// </summary>
-        /// <param name="e">Event arguments.</param>
-        protected override void OnSystemColorsChanged(EventArgs e)
-        {
-            base.OnSystemColorsChanged(e);
-
-            this.Invalidate();
-        }
-
-        /// <summary>
-        /// Checks if border skins is enabled in the chart and it uses transparency in the page color
-        /// </summary>
-        /// <returns>True if transparency is used in the border.</returns>
-        private bool IsBorderTransparent()
-        {
-            bool transpBorder = false;
-            if (chartPicture.BorderSkin.SkinStyle != BorderSkinStyle.None)
-            {
-                if (chartPicture.BorderSkin.PageColor.A != 255 &&
-                    chartPicture.BorderSkin.PageColor != SKColor.Empty)
-                {
-                    transpBorder = true;
-                }
-                if (chartPicture.BorderSkin.BackColor.A != 255 && chartPicture.BorderSkin.BackColor != Color.Empty)
-                {
-                    transpBorder = true;
-                }
-                else if (chartPicture.BorderSkin.BackImageTransparentColor.A != 255 &&
-                    chartPicture.BorderSkin.BackImageTransparentColor != SKColor.Empty &&
-                    !String.IsNullOrEmpty(chartPicture.BorderSkin.BackImage))
-                {
-                    transpBorder = true;
-                }
-            }
-
-            return transpBorder;
-        }
-
-        /// <summary>
-        /// Draws exception information at design-time.
-        /// </summary>
-        /// <param name="graphics">Chart graphics to use.</param>
-        private void DrawException(SKCanvas graphics)
-        {
-            // Fill background
-            graphics.Clear(SKColors.White);
-
-            string addMessage = SR.ExceptionChartPreviewNotAvailable;
-            // Get text rectangle
-            var rect = new SKRect(3, 3, this.Width - 6, this.Height - 6);
-            using var font = new SKFont(SKTypeface.FromFamilyName(FontCache.DefaultFamilyName), 8);
-            using var paint = new SKPaint(font);
-            graphics.DrawText(addMessage, rect.Location, paint);
-        }
-
-        #endregion
-
         #region Control size and location properties/methods
-
-        /// <summary>
-        /// Returns default control size.
-        /// </summary>
-        protected SKSize DefaultSize
-        {
-            get
-            {
-                return new SKSize(300, 300);
-            }
-        }
 
         #endregion
 
@@ -538,7 +206,7 @@ namespace WebCharts.Services
         {
             // Check arguments
             if (imageFileName == null)
-                throw new ArgumentNullException("imageFileName");
+                throw new ArgumentNullException(nameof(imageFileName));
 
             // Create file stream for the specified file name
             FileStream fileStream = new FileStream(imageFileName, FileMode.Create);
@@ -553,70 +221,6 @@ namespace WebCharts.Services
                 // Close file stream
                 fileStream.Close();
             }
-        }
-
-        /// <summary>
-        /// Saves chart image into the file.
-        /// </summary>
-        /// <param name="imageFileName">Image file name</param>
-        /// <param name="format">Image format.</param>
-        public void SaveImage(string imageFileName, ImageFormat format)
-        {
-            // Check arguments
-            if (imageFileName == null)
-                throw new ArgumentNullException("imageFileName");
-            if (format == null)
-                throw new ArgumentNullException("format");
-
-            // Create file stream for the specified file name
-            FileStream fileStream = new FileStream(imageFileName, FileMode.Create);
-
-            // Save into stream
-            try
-            {
-                SaveImage(fileStream, format);
-            }
-            finally
-            {
-                // Close file stream
-                fileStream.Close();
-            }
-        }
-
-        /// <summary>
-        /// Saves chart image into the stream.
-        /// </summary>
-        /// <param name="imageStream">Image stream.</param>
-        /// <param name="format">Image format.</param>
-        public void SaveImage(Stream imageStream, ImageFormat format)
-        {
-            // Check arguments
-            if (imageStream == null)
-                throw new ArgumentNullException("imageStream");
-            if (format == null)
-                throw new ArgumentNullException("format");
-
-            // Indicate that chart is saved into the image
-            this.chartPicture.isSavingAsImage = true;
-
-            if (format == ImageFormat.Emf || format == ImageFormat.Wmf)
-            {
-                this.chartPicture.SaveIntoMetafile(imageStream, EmfType.EmfOnly);
-            }
-            else
-            {
-                // Get chart image
-                Image chartImage = this.chartPicture.GetImage();
-
-                // Save image into the file
-                chartImage.Save(imageStream, format);
-
-                // Dispose image
-                chartImage.Dispose();
-            }
-
-            // Reset flag
-            this.chartPicture.isSavingAsImage = false;
         }
 
         /// <summary>
@@ -628,62 +232,41 @@ namespace WebCharts.Services
         {
             // Check arguments
             if (imageStream == null)
-                throw new ArgumentNullException("imageStream");
+                throw new ArgumentNullException(nameof(imageStream));
 
             // Indicate that chart is saved into the image
-            this.chartPicture.isSavingAsImage = true;
+            chartPicture.isSavingAsImage = true;
 
-            if (format == ChartImageFormat.Emf ||
-                format == ChartImageFormat.EmfPlus ||
-                format == ChartImageFormat.EmfDual)
+            // Get chart image
+            var chartImage = chartPicture.GetImage();
+
+            SKEncodedImageFormat standardImageFormat = SKEncodedImageFormat.Png;
+
+            switch (format)
             {
-                EmfType emfType = EmfType.EmfOnly;
-                if (format == ChartImageFormat.EmfDual)
-                {
-                    emfType = EmfType.EmfPlusDual;
-                }
-                else if (format == ChartImageFormat.EmfPlus)
-                {
-                    emfType = EmfType.EmfPlusOnly;
-                }
-
-                this.chartPicture.SaveIntoMetafile(imageStream, emfType);
+                case ChartImageFormat.Bmp:
+                    standardImageFormat = SKEncodedImageFormat.Bmp;
+                    break;
+                case ChartImageFormat.Gif:
+                    standardImageFormat = SKEncodedImageFormat.Gif;
+                    break;
+                case ChartImageFormat.Jpeg:
+                    standardImageFormat = SKEncodedImageFormat.Jpeg;
+                    break;
+                case ChartImageFormat.Png:
+                    standardImageFormat = SKEncodedImageFormat.Png;
+                    break;
             }
-            else
-            {
-                // Get chart image
-                Image chartImage = this.chartPicture.GetImage();
 
-                ImageFormat standardImageFormat = ImageFormat.Png;
-
-                switch (format)
-                {
-                    case ChartImageFormat.Bmp:
-                        standardImageFormat = ImageFormat.Bmp;
-                        break;
-                    case ChartImageFormat.Gif:
-                        standardImageFormat = ImageFormat.Gif;
-                        break;
-                    case ChartImageFormat.Jpeg:
-                        standardImageFormat = ImageFormat.Jpeg;
-                        break;
-                    case ChartImageFormat.Png:
-                        standardImageFormat = ImageFormat.Png;
-                        break;
-                    case ChartImageFormat.Tiff:
-                        standardImageFormat = ImageFormat.Tiff;
-                        break;
-                }
-
-                // Save image into the file
-                chartImage.Save(imageStream, standardImageFormat);
-
-                // Dispose image
-                chartImage.Dispose();
-            }
+            var image = SKImage.FromBitmap(chartImage);
+            image.Encode(standardImageFormat, 100).SaveTo(imageStream);
+          
+            // Dispose image
+            chartImage.Dispose();
+            image.Dispose();
 
             // Reset flag
-            this.chartPicture.isSavingAsImage = false;
+            chartPicture.isSavingAsImage = false;
         }
 
 
@@ -699,20 +282,17 @@ namespace WebCharts.Services
         /// </remarks>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        SerializationVisibilityAttribute(SerializationVisibility.Attribute),
         SRDescription("DescriptionAttributeChart_PaletteCustomColors"),
-        TypeConverter(typeof(ColorArrayConverter))
         ]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public SKColor[] PaletteCustomColors
         {
             set
             {
-                this._dataManager.PaletteCustomColors = value;
-                if (!this.disableInvalidates)
+                _dataManager.PaletteCustomColors = value;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
             }
             get
@@ -726,7 +306,7 @@ namespace WebCharts.Services
         /// </summary>
         internal void ResetPaletteCustomColors()
         {
-            this.PaletteCustomColors = new SKColor[0];
+            PaletteCustomColors = new SKColor[0];
         }
 
         /// <summary>
@@ -734,8 +314,8 @@ namespace WebCharts.Services
         /// </summary>
         internal bool ShouldSerializePaletteCustomColors()
         {
-            if (this.PaletteCustomColors == null ||
-                this.PaletteCustomColors.Length == 0)
+            if (PaletteCustomColors == null ||
+                PaletteCustomColors.Length == 0)
             {
                 return false;
             }
@@ -753,11 +333,11 @@ namespace WebCharts.Services
         {
             set
             {
-                this.chartPicture.SuppressExceptions = value;
+                chartPicture.SuppressExceptions = value;
             }
             get
             {
-                return this.chartPicture.SuppressExceptions;
+                return chartPicture.SuppressExceptions;
             }
         }
 
@@ -786,10 +366,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeChart"),
-        Bindable(false),
-        SRDescription("DescriptionAttributeChart_Images"),
-        Browsable(false),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
+        SRDescription("DescriptionAttributeChart_Images")
         ]
         public NamedImagesCollection Images
         {
@@ -800,25 +377,7 @@ namespace WebCharts.Services
         }
 
 
-        /// <summary>
-        /// Chart printing object.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeChart"),
-        Bindable(false),
-        SRDescription("DescriptionAttributeChart_Printing"),
-        Browsable(false),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
-        ]
-        public PrintingManager Printing
-        {
-            get
-            {
-                return _printingManager;
-            }
-        }
-
+   
 
         /// <summary>
         /// Chart series collection.
@@ -826,8 +385,6 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeChart"),
         SRDescription("DescriptionAttributeChart_Series"),
-        Editor(typeof(SeriesCollectionEditor), typeof(UITypeEditor)),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         ]
         public SeriesCollection Series
         {
@@ -843,8 +400,6 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeChart"),
         SRDescription("DescriptionAttributeLegends"),
-        Editor(typeof(LegendCollectionEditor), typeof(UITypeEditor)),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         ]
         public LegendCollection Legends
         {
@@ -860,8 +415,6 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeChart"),
         SRDescription("DescriptionAttributeTitles"),
-        Editor(typeof(ChartCollectionEditor), typeof(UITypeEditor)),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         ]
         public TitleCollection Titles
         {
@@ -877,8 +430,6 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeChart"),
         SRDescription("DescriptionAttributeAnnotations3"),
-        Editor(typeof(AnnotationCollectionEditor), typeof(UITypeEditor)),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         ]
         public AnnotationCollection Annotations
         {
@@ -889,35 +440,11 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// BackImage is not used. Use BackImage property instead.
-        /// </summary>
-        [
-        Browsable(false),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        EditorBrowsableAttribute(EditorBrowsableState.Never),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
-        ]
-        public override Image BackgroundImage
-        {
-            get
-            {
-                return base.BackgroundImage;
-            }
-            set
-            {
-                base.BackgroundImage = value;
-            }
-        }
-
-        /// <summary>
         /// Color palette to use
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributePalette"),
-        DefaultValue(ChartColorPalette.BrightPastel),
-        Editor(typeof(ColorPaletteEditor), typeof(UITypeEditor)),
         ]
         public ChartColorPalette Palette
         {
@@ -928,10 +455,10 @@ namespace WebCharts.Services
             set
             {
                 _dataManager.Palette = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -942,12 +469,9 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeImage"),
-        Bindable(true),
-        DefaultValue(typeof(AntiAliasingStyles), "All"),
         SRDescription("DescriptionAttributeAntiAlias"),
-        Editor(typeof(FlagsEnumUITypeEditor), typeof(UITypeEditor)),
         ]
-        public System.Windows.Forms.DataVisualization.Charting.AntiAliasingStyles AntiAliasing
+        public AntiAliasingStyles AntiAliasing
         {
             get
             {
@@ -959,10 +483,10 @@ namespace WebCharts.Services
                 {
                     chartPicture.AntiAliasing = value;
 
-                    this.dirtyFlag = true;
-                    if (!this.disableInvalidates)
+                    dirtyFlag = true;
+                    if (!disableInvalidates)
                     {
-                        this.Invalidate();
+                        Invalidate();
                     }
                 }
             }
@@ -973,8 +497,6 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeImage"),
-        Bindable(true),
-        DefaultValue(typeof(TextAntiAliasingQuality), "High"),
         SRDescription("DescriptionAttributeTextAntiAliasingQuality")
         ]
         public TextAntiAliasingQuality TextAntiAliasingQuality
@@ -986,10 +508,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.TextAntiAliasingQuality = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
             }
         }
@@ -999,8 +521,6 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeImage"),
-        Bindable(true),
-        DefaultValue(true),
         SRDescription("DescriptionAttributeChart_SoftShadows"),
         ]
         public bool IsSoftShadows
@@ -1012,10 +532,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.IsSoftShadows = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1026,10 +546,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeChart"),
-        Bindable(true),
         SRDescription("DescriptionAttributeChartAreas"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        Editor(typeof(ChartCollectionEditor), typeof(UITypeEditor)),
         ]
         public ChartAreaCollection ChartAreas
         {
@@ -1044,13 +561,9 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), "White"),
-        SRDescription("DescriptionAttributeBackColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
+        SRDescription("DescriptionAttributeBackColor")
         ]
-        public override Color BackColor
+        public SKColor BackColor
         {
             get
             {
@@ -1061,14 +574,11 @@ namespace WebCharts.Services
                 if (chartPicture.BackColor != value)
                 {
                     chartPicture.BackColor = value;
-                    this.dirtyFlag = true;
-                    if (!this.disableInvalidates)
+                    dirtyFlag = true;
+                    if (!disableInvalidates)
                     {
-                        this.Invalidate();
+                        Invalidate();
                     }
-
-                    // Call notification event
-                    this.OnBackColorChanged(EventArgs.Empty);
                 }
             }
         }
@@ -1078,43 +588,38 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(false),
-        Browsable(false),
-        DefaultValue(typeof(Color), ""),
-        SRDescription("DescriptionAttributeForeColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
+        SRDescription("DescriptionAttributeForeColor")
         ]
-        public override Color ForeColor
+        public SKColor ForeColor
         {
             get
             {
-                return Color.Empty;
+                return SKColor.Empty;
             }
             set
             {
             }
         }
 
+        private SKSize _size;
+
         /// <summary>
         /// Fore color propery (not used)
         /// </summary>
         [
         SRCategory("CategoryAttributeLayout"),
-        Bindable(true),
-        DefaultValue(typeof(Size), "300, 300"),
         SRDescription("DescriptionAttributeChart_Size"),
         ]
-        public new System.Drawing.Size Size
+        public SKSize Size
         {
             get
             {
-                return base.Size;
+                return _size;
             }
             set
             {
-                chartPicture.InspectChartDimensions(value.Width, value.Height);
-                base.Size = value;
+                chartPicture.InspectChartDimensions((int)value.Width, (int)value.Height);
+                _size = value;
             }
         }
 
@@ -1123,10 +628,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeData"),
-        SRDescription("DescriptionAttributeDataManipulator"),
-        Browsable(false),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
+        SRDescription("DescriptionAttributeDataManipulator")
         ]
         public DataManipulator DataManipulator
         {
@@ -1136,48 +638,14 @@ namespace WebCharts.Services
             }
         }
 
-        /// <summary>
-        /// Chart serializer object.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeSerializer"),
-        SRDescription("DescriptionAttributeChart_Serializer"),
-        Browsable(false),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
-        ]
-        public ChartSerializer Serializer
-        {
-            get
-            {
-                return _chartSerializer;
-            }
-        }
-
 
         /// <summary>
         /// Title font
         /// </summary>
         [
-        SRCategory("CategoryAttributeCharttitle"),
-        Bindable(false),
-        Browsable(false),
-        EditorBrowsableAttribute(EditorBrowsableState.Never),
-        DefaultValue(typeof(Font), "Microsoft Sans Serif, 8pt"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
+        SRCategory("CategoryAttributeCharttitle")
         ]
-        public new SKFont Font
-        {
-            get
-            {
-                return base.Font;
-            }
-            set
-            {
-                base.Font = value;
-            }
-        }
+        public SKFont Font { get; set; }
 
 
         /// <summary>
@@ -1185,10 +653,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartHatchStyle.None),
-        SRDescription("DescriptionAttributeBackHatchStyle"),
-        Editor(typeof(HatchStyleEditor), typeof(UITypeEditor)),
+        SRDescription("DescriptionAttributeBackHatchStyle"),        
         ]
         public ChartHatchStyle BackHatchStyle
         {
@@ -1199,13 +664,18 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackHatchStyle = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
+        }
+
+        public void Invalidate()
+        {
+            // Nothing to do
         }
 
 
@@ -1215,11 +685,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeBackImage"),
-        NotifyParentPropertyAttribute(true),
-        Editor(typeof(ImageValueEditor), typeof(UITypeEditor)),
         ]
         public string BackImage
         {
@@ -1230,10 +696,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackImage = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1244,9 +710,6 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartImageWrapMode.Tile),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeImageWrapMode"),
         ]
         public ChartImageWrapMode BackImageWrapMode
@@ -1258,10 +721,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackImageWrapMode = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1272,14 +735,9 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), ""),
-        NotifyParentPropertyAttribute(true),
-        SRDescription("DescriptionAttributeImageTransparentColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
+        SRDescription("DescriptionAttributeImageTransparentColor")
         ]
-        public Color BackImageTransparentColor
+        public SKColor BackImageTransparentColor
         {
             get
             {
@@ -1288,10 +746,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackImageTransparentColor = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1302,9 +760,6 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartImageAlignmentStyle.TopLeft),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeBackImageAlign"),
         ]
         public ChartImageAlignmentStyle BackImageAlignment
@@ -1316,10 +771,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackImageAlignment = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1330,10 +785,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(GradientStyle.None),
         SRDescription("DescriptionAttributeBackGradientStyle"),
-        Editor(typeof(GradientEditor), typeof(UITypeEditor)),
         ]
         public GradientStyle BackGradientStyle
         {
@@ -1344,10 +796,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackGradientStyle = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1358,13 +810,9 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeBackSecondaryColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
         ]
-        public Color BackSecondaryColor
+        public SKColor BackSecondaryColor
         {
             get
             {
@@ -1373,10 +821,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BackSecondaryColor = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1387,17 +835,9 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(false),
-        Browsable(false),
-        EditorBrowsable(EditorBrowsableState.Never),
-        DefaultValue(typeof(Color), "White"),
-        SRDescription("DescriptionAttributeBorderColor"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
+        SRDescription("DescriptionAttributeBorderColor")
         ]
-        public Color BorderColor
+        public SKColor BorderColor
         {
             get
             {
@@ -1406,10 +846,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderColor = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1420,13 +860,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(false),
-        Browsable(false),
-        EditorBrowsable(EditorBrowsableState.Never),
-        DefaultValue(1),
         SRDescription("DescriptionAttributeChart_BorderlineWidth"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
         public int BorderWidth
         {
@@ -1437,10 +871,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderWidth = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1451,13 +885,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(false),
-        Browsable(false),
-        EditorBrowsable(EditorBrowsableState.Never),
-        DefaultValue(ChartDashStyle.NotSet),
-        SRDescription("DescriptionAttributeBorderDashStyle"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
+        SRDescription("DescriptionAttributeBorderDashStyle")
         ]
         public ChartDashStyle BorderDashStyle
         {
@@ -1468,10 +896,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderDashStyle = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1482,13 +910,9 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), "White"),
-        SRDescription("DescriptionAttributeBorderColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
+        SRDescription("DescriptionAttributeBorderColor")
         ]
-        public Color BorderlineColor
+        public SKColor BorderlineColor
         {
             get
             {
@@ -1497,10 +921,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderColor = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1511,8 +935,6 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(1),
         SRDescription("DescriptionAttributeChart_BorderlineWidth"),
         ]
         public int BorderlineWidth
@@ -1524,10 +946,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderWidth = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1538,8 +960,6 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartDashStyle.NotSet),
         SRDescription("DescriptionAttributeBorderDashStyle"),
         ]
         public ChartDashStyle BorderlineDashStyle
@@ -1551,10 +971,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderDashStyle = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1566,12 +986,7 @@ namespace WebCharts.Services
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(BorderSkinStyle.None),
         SRDescription("DescriptionAttributeBorderSkin"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverterAttribute(typeof(LegendConverter)),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content)
         ]
         public BorderSkin BorderSkin
         {
@@ -1582,10 +997,10 @@ namespace WebCharts.Services
             set
             {
                 chartPicture.BorderSkin = value;
-                this.dirtyFlag = true;
-                if (!this.disableInvalidates)
+                dirtyFlag = true;
+                if (!disableInvalidates)
                 {
-                    this.Invalidate();
+                    Invalidate();
                 }
 
             }
@@ -1595,11 +1010,7 @@ namespace WebCharts.Services
         /// Build number of the control
         /// </summary>
         [
-        SRDescription("DescriptionAttributeChart_BuildNumber"),
-        Browsable(false),
-        EditorBrowsable(EditorBrowsableState.Never),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-        DefaultValue("")
+        SRDescription("DescriptionAttributeChart_BuildNumber")
         ]
         public string BuildNumber
         {
@@ -1633,24 +1044,9 @@ namespace WebCharts.Services
         /// This property is for the internal use only.
         /// </remarks>
         [
-        Browsable(false),
-        EditorBrowsable(EditorBrowsableState.Never),
         SRCategory("CategoryAttributeMisc"),
-        DefaultValue(96.0),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
-        public double RenderingDpiY
-        {
-            set
-            {
-                Chart.renderingDpiY = value;
-            }
-            get
-            {
-                return Chart.renderingDpiY;
-            }
-        }
+        public double RenderingDpiY { get; set; }  = 96.0;
 
         /// <summary>
         /// Horizontal resolution of the chart renderer.
@@ -1659,47 +1055,13 @@ namespace WebCharts.Services
         /// This property is for the internal use only.
         /// </remarks>
         [
-        Browsable(false),
-        EditorBrowsable(EditorBrowsableState.Never),
         SRCategory("CategoryAttributeMisc"),
-        DefaultValue(96.0),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
-        public double RenderingDpiX
-        {
-            set
-            {
-                Chart.renderingDpiX = value;
-            }
-            get
-            {
-                return Chart.renderingDpiX;
-            }
-        }
-
-
+        public double RenderingDpiX { get; set; }  = 96.0;
+       
         #endregion
 
         #region Control public methods
-
-        /// <summary>
-        /// Loads chart appearance template from file.
-        /// </summary>
-        /// <param name="name">Template file name to load from.</param>
-        public void LoadTemplate(string name)
-        {
-            chartPicture.LoadTemplate(name);
-        }
-
-        /// <summary>
-        /// Loads chart appearance template from stream.
-        /// </summary>
-        /// <param name="stream">Template stream to load from.</param>
-        public void LoadTemplate(Stream stream)
-        {
-            chartPicture.LoadTemplate(stream);
-        }
 
         /// <summary>
         /// Applies palette colors to series or data points.
@@ -1707,10 +1069,10 @@ namespace WebCharts.Services
         public void ApplyPaletteColors()
         {
             // Apply palette colors to series
-            this._dataManager.ApplyPaletteColors();
+            _dataManager.ApplyPaletteColors();
 
             // Apply palette colors to data Points in series
-            foreach (Series series in this.Series)
+            foreach (Series series in Series)
             {
                 // Check if palette colors should be aplied to the points
                 bool applyToPoints = false;
@@ -1720,7 +1082,7 @@ namespace WebCharts.Services
                 }
                 else
                 {
-                    IChartType chartType = this._chartTypeRegistry.GetChartType(series.ChartType);
+                    IChartType chartType = _chartTypeRegistry.GetChartType(series.ChartType);
                     applyToPoints = chartType.ApplyPaletteColorsToPoints;
                 }
 
@@ -1738,104 +1100,21 @@ namespace WebCharts.Services
         public void ResetAutoValues()
         {
             // Reset auto calculated series properties values 
-            foreach (Series series in this.Series)
+            foreach (Series series in Series)
             {
                 series.ResetAutoValues();
             }
 
             // Reset auto calculated axis properties values 
-            foreach (ChartArea chartArea in this.ChartAreas)
+            foreach (ChartArea chartArea in ChartAreas)
             {
                 chartArea.ResetAutoValues();
             }
 
         }
 
-        /// <summary>
-        /// This method performs the hit test and returns a HitTestResult objects.
-        /// </summary>
-        /// <param name="x">X coordinate</param>
-        /// <param name="y">Y coordinate</param>
-        /// <returns>Hit test result object</returns>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]
-        public HitTestResult HitTest(int x, int y)
-        {
-            return selection.HitTest(x, y);
-        }
-
-        /// <summary>
-        /// This method performs the hit test and returns a HitTestResult object.
-        /// </summary>
-        /// <param name="x">X coordinate</param>
-        /// <param name="y">Y coordinate</param>
-        /// <param name="ignoreTransparent">Indicates that transparent elements should be ignored.</param>
-        /// <returns>Hit test result object</returns>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]
-        public HitTestResult HitTest(int x, int y, bool ignoreTransparent)
-        {
-            return selection.HitTest(x, y, ignoreTransparent);
-        }
-
- 
-        /// <summary>
-        /// Gets the chart element outline.
-        /// </summary>
-        /// <param name="element">The chart object.</param>
-        /// <param name="elementType">Type of the element.</param>
-        /// <returns> A <see cref="ChartElementOutline"/> object which contains
-        /// 1) An array of points in absolute coordinates which can be used as outline markers arround this chart element.
-        /// 2) A SKPath for drawing aouline around this chart emenent.
-        /// </returns>
-        /// <remarks>
-        /// If the <paramref name="element"/> is not part of the chart or <paramref name="elementType"/> cannot be combined 
-        /// with <paramref name="element"/> then the result will contain empty array of marker points. 
-        /// The marker points are sorted clockwize.
-        /// </remarks>
-        public ChartElementOutline GetChartElementOutline(object element, ChartElementType elementType)
-        {
-            return this.selection.GetChartElementOutline(element, elementType);
-        }
-
         #endregion
 
-        #region Control protected methods
-
-        protected override void OnGotFocus(EventArgs e)
-        {
-            base.OnGotFocus(e);
-
-            using (Graphics g = Graphics.FromHwndInternal(Handle))
-            {
-                ControlPaint.DrawFocusRectangle(g, new Rectangle(1, 1, Size.Width - 2, Size.Height - 2));
-            }
-        }
-
-        protected override void OnLostFocus(EventArgs e)
-        {
-            base.OnLostFocus(e);
-
-            using (Graphics g = Graphics.FromHwndInternal(Handle))
-            {
-                using (Brush b = new SolidBrush(BackColor))
-                {
-                    Rectangle topBorder = new Rectangle(1, 1, Size.Width - 2, 1);
-                    g.FillRectangle(b, topBorder);
-
-                    Rectangle rightBorder = new Rectangle(Size.Width - 2, 1, 1, Size.Height - 2);
-                    g.FillRectangle(b, rightBorder);
-
-                    Rectangle bottomBorder = new Rectangle(1, Size.Height - 2, Size.Width - 2, 1);
-                    g.FillRectangle(b, bottomBorder);
-
-                    Rectangle leftBorder = new Rectangle(1, 1, 1, Size.Height - 2);
-                    g.FillRectangle(b, leftBorder);
-                }
-            }
-        }
-
-        #endregion
 
         #region ISupportInitialize implementation
 
@@ -1857,9 +1136,9 @@ namespace WebCharts.Services
             disableInvalidates = false;
 
             // If control is durty - invalidate it
-            if (this.dirtyFlag)
+            if (dirtyFlag)
             {
-                base.Invalidate();
+                Invalidate();
             }
 
         }
@@ -1969,7 +1248,7 @@ namespace WebCharts.Services
         /// <param name="e">Event arguments.</param>
         internal void CallOnPrePaint(ChartPaintEventArgs e)
         {
-            this.OnPrePaint(e);
+            OnPrePaint(e);
         }
 
         /// <summary>
@@ -1992,7 +1271,7 @@ namespace WebCharts.Services
         /// <param name="e">Event arguments.</param>
         internal void CallOnPostPaint(ChartPaintEventArgs e)
         {
-            this.OnPostPaint(e);
+            OnPostPaint(e);
         }
 
         #endregion
@@ -2027,7 +1306,7 @@ namespace WebCharts.Services
         /// </summary>
         internal void CallOnCustomize()
         {
-            this.OnCustomize();
+            OnCustomize();
         }
 
         /// <summary>
@@ -2058,7 +1337,7 @@ namespace WebCharts.Services
         /// </summary>
         internal void CallOnCustomizeLegend(LegendItemsCollection legendItems, string legendName)
         {
-            this.OnCustomizeLegend(legendItems, legendName);
+            OnCustomizeLegend(legendItems, legendName);
         }
         #endregion
 
@@ -2079,10 +1358,7 @@ namespace WebCharts.Services
         /// <param name="annotation">Annotation which text was changed.</param>
         internal void OnAnnotationTextChanged(Annotation annotation)
         {
-            if (AnnotationTextChanged != null)
-            {
-                AnnotationTextChanged(annotation, EventArgs.Empty);
-            }
+            AnnotationTextChanged?.Invoke(annotation, EventArgs.Empty);
         }
 
         /// <summary>
@@ -2127,11 +1403,7 @@ namespace WebCharts.Services
         /// <param name="annotation">Annotation which was placed.</param>
         internal void OnAnnotationPlaced(Annotation annotation)
         {
-            if (AnnotationPlaced != null)
-            {
-                AnnotationPlaced(annotation, EventArgs.Empty);
-
-            }
+            AnnotationPlaced?.Invoke(annotation, EventArgs.Empty);
         }
 
         /// <summary>
@@ -2140,10 +1412,7 @@ namespace WebCharts.Services
         /// <param name="annotation">Annotation which have it's selection changed.</param>
         internal void OnAnnotationSelectionChanged(Annotation annotation)
         {
-            if (AnnotationSelectionChanged != null)
-            {
-                AnnotationSelectionChanged(annotation, EventArgs.Empty);
-            }
+            AnnotationSelectionChanged?.Invoke(annotation, EventArgs.Empty);
         }
 
         /// <summary>
@@ -2179,7 +1448,7 @@ namespace WebCharts.Services
         /// </summary>
         public void DataBind()
         {
-            this.chartPicture.DataBind();
+            chartPicture.DataBind();
         }
 
         /// <summary>
@@ -2187,7 +1456,7 @@ namespace WebCharts.Services
         /// </summary>
         public void AlignDataPointsByAxisLabel()
         {
-            this.chartPicture.AlignDataPointsByAxisLabel(false, PointSortOrder.Ascending);
+            chartPicture.AlignDataPointsByAxisLabel(false, PointSortOrder.Ascending);
         }
 
         /// <summary>
@@ -2198,18 +1467,18 @@ namespace WebCharts.Services
         {
             //Check arguments
             if (series == null)
-                throw new ArgumentNullException("series");
+                throw new ArgumentNullException(nameof(series));
 
             // Create list of series
-            ArrayList seriesList = new ArrayList();
+            ArrayList seriesList = new();
             string[] seriesNames = series.Split(',');
             foreach (string name in seriesNames)
             {
-                seriesList.Add(this.Series[name.Trim()]);
+                seriesList.Add(Series[name.Trim()]);
             }
 
             // Align series
-            this.chartPicture.AlignDataPointsByAxisLabel(seriesList, false, PointSortOrder.Ascending);
+            chartPicture.AlignDataPointsByAxisLabel(seriesList, false, PointSortOrder.Ascending);
         }
 
         /// <summary>
@@ -2221,18 +1490,18 @@ namespace WebCharts.Services
         {
             //Check arguments
             if (series == null)
-                throw new ArgumentNullException("series");
+                throw new ArgumentNullException(nameof(series));
 
             // Create list of series
-            ArrayList seriesList = new ArrayList();
+            ArrayList seriesList = new();
             string[] seriesNames = series.Split(',');
             foreach (string name in seriesNames)
             {
-                seriesList.Add(this.Series[name.Trim()]);
+                seriesList.Add(Series[name.Trim()]);
             }
 
             // Align series
-            this.chartPicture.AlignDataPointsByAxisLabel(seriesList, true, sortingOrder);
+            chartPicture.AlignDataPointsByAxisLabel(seriesList, true, sortingOrder);
         }
 
         /// <summary>
@@ -2241,7 +1510,7 @@ namespace WebCharts.Services
         /// <param name="sortingOrder">Points sorting order by axis labels.</param>
         public void AlignDataPointsByAxisLabel(PointSortOrder sortingOrder)
         {
-            this.chartPicture.AlignDataPointsByAxisLabel(true, sortingOrder);
+            chartPicture.AlignDataPointsByAxisLabel(true, sortingOrder);
         }
 
         /// <summary>
@@ -2257,7 +1526,7 @@ namespace WebCharts.Services
             IEnumerable dataSource,
             string xField)
         {
-            this.chartPicture.DataBindTable(
+            chartPicture.DataBindTable(
                 dataSource,
                 xField);
         }
@@ -2269,7 +1538,7 @@ namespace WebCharts.Services
         /// <param name="dataSource">Data source.</param>
         public void DataBindTable(IEnumerable dataSource)
         {
-            this.chartPicture.DataBindTable(
+            chartPicture.DataBindTable(
                 dataSource,
                 String.Empty);
         }
@@ -2293,7 +1562,7 @@ namespace WebCharts.Services
             string yFields,
             string otherFields)
         {
-            this.chartPicture.DataBindCrossTab(
+            chartPicture.DataBindCrossTab(
                 dataSource,
                 seriesGroupByField,
                 xField,
@@ -2324,7 +1593,7 @@ namespace WebCharts.Services
             string otherFields,
             PointSortOrder sortingOrder)
         {
-            this.chartPicture.DataBindCrossTab(
+            chartPicture.DataBindCrossTab(
                 dataSource,
                 seriesGroupByField,
                 xField,
@@ -2344,21 +1613,16 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="serviceType">AxisName of requested service.</param>
         /// <returns>Instance of the service or null if it can't be found.</returns>
-        public new object GetService(Type serviceType)
+        public object GetService(Type serviceType)
         {
             // Check arguments
             if (serviceType == null)
-                throw new ArgumentNullException("serviceType");
+                throw new ArgumentNullException(nameof(serviceType));
 
             object service = null;
-            if (serviceContainer != null)
+            if (_provider != null)
             {
-                service = serviceContainer.GetService(serviceType);
-            }
-
-            if (service == null)
-            {
-                base.GetService(serviceType);
+                service = _provider.GetService(serviceType);
             }
 
             return service;
@@ -2379,10 +1643,7 @@ namespace WebCharts.Services
         /// <param name="e">Event arguemtns</param>
         private void OnFormatNumber(object caller, FormatNumberEventArgs e)
         {
-            if (FormatNumber != null)
-            {
-                FormatNumber(caller, e);
-            }
+            FormatNumber?.Invoke(caller, e);
         }
 
         /// <summary>
@@ -2401,55 +1662,26 @@ namespace WebCharts.Services
         /// <param name="e">Event arguments.</param>
         internal void CallOnFormatNumber(object caller, FormatNumberEventArgs e)
         {
-            this.OnFormatNumber(caller, e);
+            OnFormatNumber(caller, e);
         }
 
         #endregion
 
-        #region Accessibility
-
-        // Current chart accessibility object
-        private ChartAccessibleObject _chartAccessibleObject = null;
-
-        /// <summary>
-        /// Overridden to return the custom AccessibleObject for the entire chart.
-        /// </summary>
-        /// <returns>Chart accessibility object.</returns>
-        protected override AccessibleObject CreateAccessibilityInstance()
-        {
-            if (this._chartAccessibleObject == null)
-            {
-                this._chartAccessibleObject = new ChartAccessibleObject(this);
-            }
-            return this._chartAccessibleObject;
-        }
-
-        /// <summary>
-        /// Reset accessibility object children.
-        /// </summary>
-        private void ResetAccessibilityObject()
-        {
-            if (this._chartAccessibleObject != null)
-            {
-                this._chartAccessibleObject.ResetChildren();
-            }
-        }
-
-        #endregion // Accessibility
-
         #region IDisposable override
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         /// <summary>
         /// Disposing control resourses
         /// </summary>
-        protected override void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            // call first because font cache
-            base.Dispose(disposing);
-
             if (disposing)
             {
-
                 // Dispose managed objects here
                 if (_imageLoader != null)
                 {
@@ -2469,32 +1701,8 @@ namespace WebCharts.Services
                     _chartTypeRegistry = null;
                 }
 
-                if (serviceContainer != null)
-                {
-                    serviceContainer.RemoveService(typeof(Chart));
-                    serviceContainer.Dispose();
-                    serviceContainer = null;
-                }
 
-                // Dispose selection manager
-                if (selection != null)
-                {
-                    selection.Dispose();
-                    selection = null;
-                }
 
-                // Dispoase buffer
-                if (paintBufferBitmap != null)
-                {
-                    paintBufferBitmap.Dispose();
-                    paintBufferBitmap = null;
-                }
-
-                if (paintBufferBitmapGraphics != null)
-                {
-                    paintBufferBitmapGraphics.Dispose();
-                    paintBufferBitmapGraphics = null;
-                }
             }
 
 
@@ -2523,8 +1731,8 @@ namespace WebCharts.Services
     /// </summary>
     public class CustomizeLegendEventArgs : EventArgs
     {
-        private LegendItemsCollection _legendItems = null;
-        private string _legendName = "";
+        private readonly LegendItemsCollection _legendItems = null;
+        private readonly string _legendName = "";
 
         /// <summary>
         /// Default construvtor is not accessible
@@ -2539,7 +1747,7 @@ namespace WebCharts.Services
         /// <param name="legendItems">Legend items collection.</param>
         public CustomizeLegendEventArgs(LegendItemsCollection legendItems)
         {
-            this._legendItems = legendItems;
+            _legendItems = legendItems;
         }
 
         /// <summary>
@@ -2549,8 +1757,8 @@ namespace WebCharts.Services
         /// <param name="legendName">Legend name.</param>
         public CustomizeLegendEventArgs(LegendItemsCollection legendItems, string legendName)
         {
-            this._legendItems = legendItems;
-            this._legendName = legendName;
+            _legendItems = legendItems;
+            _legendName = legendName;
         }
 
         /// <summary>

@@ -19,9 +19,8 @@
 
 
 using SkiaSharp;
-using System.ComponentModel;
+using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
@@ -34,181 +33,113 @@ namespace WebCharts.Services.Models.Utilities
     /// from (0,0) to (100,100).
     /// </summary>
     [
-		SRDescription("DescriptionAttributeElementPosition_ElementPosition"),
-		DefaultProperty("Data"),
-	]
+        SRDescription("DescriptionAttributeElementPosition_ElementPosition"),
+    ]
     public class ElementPosition : ChartElement
-	{
-		#region Fields
+    {
+        #region Fields
 
-		// Private data members, which store properties values
-		private		float	_x = 0;
-		private		float	_y = 0;
-		private		float	_width = 0;
-		private		float	_height = 0;
-		internal	bool	_auto = true;
+        // Private data members, which store properties values
+        private float _x = 0;
+        private float _y = 0;
+        private float _width = 0;
+        private float _height = 0;
+        internal bool _auto = true;
 
-		// Indicates the auto position of all areas must be reset
-		internal	bool			resetAreaAutoPosition = false;
+        // Indicates the auto position of all areas must be reset
+        internal bool resetAreaAutoPosition = false;
 
-		#endregion
+        #endregion
 
-		#region Constructors
-
-		/// <summary>
-		/// ElementPosition default constructor
-		/// </summary>
-		public ElementPosition()
-		{
-		}
+        #region Constructors
 
         /// <summary>
         /// ElementPosition default constructor
         /// </summary>
-        internal ElementPosition(IChartElement parent) 
+        public ElementPosition()
+        {
+        }
+
+        /// <summary>
+        /// ElementPosition default constructor
+        /// </summary>
+        internal ElementPosition(IChartElement parent)
             : base(parent)
         {
         }
 
 
-		/// <summary>
+        /// <summary>
         /// ElementPosition constructor.
-		/// </summary>
-		/// <param name="x">X position.</param>
-		/// <param name="y">Y position.</param>
-		/// <param name="width">Width.</param>
-		/// <param name="height">Height.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]       
-		public ElementPosition(float x, float y, float width, float height)
-		{
-			this._auto = false;
-			this._x = x;
-			this._y = y;
-			this._width = width;
-			this._height = height;
-		}
+        /// </summary>
+        /// <param name="x">X position.</param>
+        /// <param name="y">Y position.</param>
+        /// <param name="width">Width.</param>
+        /// <param name="height">Height.</param>
+        public ElementPosition(float x, float y, float width, float height)
+        {
+            _auto = false;
+            _x = x;
+            _y = y;
+            _width = width;
+            _height = height;
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// Asks the user at design-time if he wants to change the Auto position
-		/// of all areas at the same time.
-		/// </summary>
-		/// <param name="autoValue">Value to be set for the Auto property.</param>
-		private void ResetAllAreasAutoPosition(bool autoValue)
-		{
-			if(resetAreaAutoPosition)
-			{
-				// Proceed only if at design time
-				if(Chart != null && Chart.IsDesignMode() && !Chart.serializing && Chart.Site != null)
-				{
-					// Check if there is more than one area and Auto position set to the same value
-					if(Chart.ChartAreas.Count > 1)
-					{
-						bool	firstAutoValue = Chart.ChartAreas[0].Position.Auto;
-						bool	sameAutoValue = true;
-						foreach(ChartArea area in Chart.ChartAreas)
-						{
-							if(area.Position.Auto != firstAutoValue)
-							{
-								sameAutoValue = false;
-								break;
-							}
-						}
+        /// <summary>
+        /// Convert element position into SKRect
+        /// </summary>
+        /// <returns>SKRect structure.</returns>
+        public SKRect ToSKRect()
+        {
+            return new SKRect(_x, _y, _x + _width, _y + _height);
+        }
 
-						// Proceed only all Auto values are the same
-						if(sameAutoValue)
-						{
-                            string message = SR.MessageChangingChartAreaPositionProperty;
-                            if (autoValue)
-                            {
-                                message += SR.MessageChangingChartAreaPositionConfirmAutomatic;
-                            }
-                            else
-                            {
-                                message += SR.MessageChangingChartAreaPositionConfirmCustom;
-                            }
-
-                            
-                            IDesignerMessageBoxDialog confirm = Chart.Site.GetService(typeof(IDesignerMessageBoxDialog)) as IDesignerMessageBoxDialog;
-                            if (confirm != null && confirm.ShowQuestion(message))
-                            {
-                                foreach (ChartArea area in Chart.ChartAreas)
-                                {
-                                    if (autoValue)
-                                    {
-                                        this.SetPositionNoAuto(0f, 0f, 0f, 0f);
-                                    }
-                                    area.Position._auto = autoValue;
-                                }
-
-                            }
-						}
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Convert element position into SKRect
-		/// </summary>
-		/// <returns>SKRect structure.</returns>
-		public SKRect ToSKRect()
-		{
-			return new SKRect(_x, _y, _width, _height);
-		}
-
-		/// <summary>
+        /// <summary>
         /// Initializes ElementPosition from SKRect
-		/// </summary>
+        /// </summary>
         /// <param name="rect">SKRect structure.</param>
-		public void FromSKRect(SKRect rect)
-		{
-            if (rect == null)
-                throw new ArgumentNullException("rect");
+        public void FromSKRect(SKRect rect)
+        {
+            if (rect == SKRect.Empty)
+                throw new ArgumentNullException(nameof(rect));
 
-			this._x = rect.X;
-			this._y = rect.Y;
-			this._width = rect.Width;
-			this._height = rect.Height;
-			this._auto = false;
-		}
+            _x = rect.Left;
+            _y = rect.Top;
+            _width = rect.Width;
+            _height = rect.Height;
+            _auto = false;
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets the size of the ElementPosition object.
-		/// </summary>
+        /// </summary>
         /// <returns>The size of the ElementPosition object.</returns>
-		[Browsable(false)]
-        [Utilities.SerializationVisibility(Utilities.SerializationVisibility.Hidden)]
         public SKSize Size
-		{
-            get { return new SKSize(this._width, this._height); }
-		}
+        {
+            get { return new SKSize(_width, _height); }
+        }
 
-		/// <summary>
-		/// Gets the bottom position in relative coordinates.
-		/// </summary>
-		/// <returns>Bottom position.</returns>
-        [Browsable(false)]
-        [Utilities.SerializationVisibility(Utilities.SerializationVisibility.Hidden)]
+        /// <summary>
+        /// Gets the bottom position in relative coordinates.
+        /// </summary>
+        /// <returns>Bottom position.</returns>
         public float Bottom
-		{
-            get { return this._y + this._height; }
-		}
+        {
+            get { return _y + _height; }
+        }
 
-		/// <summary>
-		/// Gets the right position in relative coordinates.
-		/// </summary>
-		/// <returns>Right position.</returns>
-        [Browsable(false)]
-        [Utilities.SerializationVisibility(Utilities.SerializationVisibility.Hidden)]
+        /// <summary>
+        /// Gets the right position in relative coordinates.
+        /// </summary>
+        /// <returns>Right position.</returns>
         public float Right
-		{
-			get{ return this._x + this._width; }
-		}
+        {
+            get { return _x + _width; }
+        }
 
         /// <summary>
         /// Determines whether the specified Object is equal to the current Object.
@@ -216,249 +147,224 @@ namespace WebCharts.Services.Models.Utilities
         /// <param name="obj">The Object to compare with the current Object.</param>
         /// <returns>true if the specified Object is equal to the current Object; otherwise, false.</returns>
 		internal override bool EqualsInternal(object obj)
-		{
-            ElementPosition pos = obj as ElementPosition;
-			if(pos != null)
-			{
-				if(this._auto == true && this._auto == pos._auto)
-				{
-					return true;
-				}
-				else if(this._x == pos._x && this._y == pos._y &&
-						this._width == pos._width && this._height == pos._height)
-				{
-					return true;
-				}
+        {
+            if (obj is ElementPosition pos)
+            {
+                if (_auto && _auto == pos._auto)
+                {
+                    return true;
+                }
+                else if (_x == pos._x && _y == pos._y &&
+                        _width == pos._width && _height == pos._height)
+                {
+                    return true;
+                }
 
-			}
+            }
             return false;
-		}
+        }
 
-		/// <summary>
-		/// Returns a string that represents the element position data.
-		/// </summary>
-		/// <returns>Element position data as a string.</returns>
-		internal override string ToStringInternal()
-		{
+        /// <summary>
+        /// Returns a string that represents the element position data.
+        /// </summary>
+        /// <returns>Element position data as a string.</returns>
+        internal override string ToStringInternal()
+        {
             string posString = Constants.AutoValue;
-			if(!this._auto)
-			{
-				posString = 
-					this._x.ToString(System.Globalization.CultureInfo.CurrentCulture)+", "+
-					this._y.ToString(System.Globalization.CultureInfo.CurrentCulture)+", "+
-					this._width.ToString(System.Globalization.CultureInfo.CurrentCulture)+", "+
-					this._height.ToString(System.Globalization.CultureInfo.CurrentCulture);
-			}
-			return posString;
-		}
+            if (!_auto)
+            {
+                posString =
+                    _x.ToString(System.Globalization.CultureInfo.CurrentCulture) + ", " +
+                    _y.ToString(System.Globalization.CultureInfo.CurrentCulture) + ", " +
+                    _width.ToString(System.Globalization.CultureInfo.CurrentCulture) + ", " +
+                    _height.ToString(System.Globalization.CultureInfo.CurrentCulture);
+            }
+            return posString;
+        }
 
-		/// <summary>
-		/// Set the element position without modifying the "Auto" property
-		/// </summary>
-		/// <param name="x">X position.</param>
-		/// <param name="y">Y position.</param>
-		/// <param name="width">Width.</param>
-		/// <param name="height">Height.</param>
-		internal void SetPositionNoAuto(float x, float y, float width, float height)
-		{
-			bool oldValue = this._auto;
-			this._x = x;
-			this._y = y;
-			this._width = width;
-			this._height = height;
-			this._auto = oldValue;
-		}
+        /// <summary>
+        /// Set the element position without modifying the "Auto" property
+        /// </summary>
+        /// <param name="x">X position.</param>
+        /// <param name="y">Y position.</param>
+        /// <param name="width">Width.</param>
+        /// <param name="height">Height.</param>
+        internal void SetPositionNoAuto(float x, float y, float width, float height)
+        {
+            bool oldValue = _auto;
+            _x = x;
+            _y = y;
+            _width = width;
+            _height = height;
+            _auto = oldValue;
+        }
 
-		#endregion
+        #endregion
 
-		#region Element Position properties
+        #region Element Position properties
 
-		/// <summary>
-		/// X position of element.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeMisc"),
-		Bindable(true),
-		DefaultValue(0.0F),
-		SRDescription("DescriptionAttributeElementPosition_X"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All),
-        SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "X")
+        /// <summary>
+        /// X position of element.
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeMisc"),
+        SRDescription("DescriptionAttributeElementPosition_X"),
         ]
-		public float X
-		{
-			get
-			{
-				return _x;
-			}
-			set
-			{
-				if(value < 0.0 || value > 100.0)
-				{
-					throw(new ArgumentOutOfRangeException("value", SR.ExceptionElementPositionArgumentOutOfRange));
-				}
-				_x = value;
-				Auto = false;
+        public float X
+        {
+            get
+            {
+                return _x;
+            }
+            set
+            {
+                if (value < 0.0 || value > 100.0)
+                {
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionElementPositionArgumentOutOfRange));
+                }
+                _x = value;
+                Auto = false;
 
-				// Adjust width
-				if( (_x + Width) > 100)
-				{
-					Width = 100 - _x;
-				}
+                // Adjust width
+                if ((_x + Width) > 100)
+                {
+                    Width = 100 - _x;
+                }
 
-				this.Invalidate();
-			}
-		}
+                Invalidate();
+            }
+        }
 
-		/// <summary>
-		/// Y position of element.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeMisc"),
-		Bindable(true),
-		DefaultValue(0.0F),
-		SRDescription("DescriptionAttributeElementPosition_Y"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All),
-        SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Y")
+        /// <summary>
+        /// Y position of element.
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeMisc"),
+        SRDescription("DescriptionAttributeElementPosition_Y"),
         ]
-		public float Y
-		{
-			get
-			{
-				return _y;
-			}
-			set
-			{
-				if(value < 0.0 || value > 100.0)
-				{
-					throw(new ArgumentOutOfRangeException("value", SR.ExceptionElementPositionArgumentOutOfRange));
-				}
-				_y = value;
-				Auto = false;
+        public float Y
+        {
+            get
+            {
+                return _y;
+            }
+            set
+            {
+                if (value < 0.0 || value > 100.0)
+                {
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionElementPositionArgumentOutOfRange));
+                }
+                _y = value;
+                Auto = false;
 
-				// Adjust heigth
-				if( (_y + Height) > 100)
-				{
-					Height = 100 - _y;
-				}
+                // Adjust heigth
+                if ((_y + Height) > 100)
+                {
+                    Height = 100 - _y;
+                }
 
-				this.Invalidate();
-			}
-		}
+                Invalidate();
+            }
+        }
 
-		/// <summary>
-		/// Width of element.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeMisc"),
-		Bindable(true),
-		DefaultValue(0.0F),
-		SRDescription("DescriptionAttributeElementPosition_Width"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All)
-		]
-		public float Width
-		{
-			get
-			{
-				return _width;
-			}
-			set
-			{
-				if(value < 0.0 || value > 100.0)
-				{
-					throw(new ArgumentOutOfRangeException("value", SR.ExceptionElementPositionArgumentOutOfRange));
-				}
-				_width = value;
-				Auto = false;
+        /// <summary>
+        /// Width of element.
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeMisc"),
+        SRDescription("DescriptionAttributeElementPosition_Width"),
+        ]
+        public float Width
+        {
+            get
+            {
+                return _width;
+            }
+            set
+            {
+                if (value < 0.0 || value > 100.0)
+                {
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionElementPositionArgumentOutOfRange));
+                }
+                _width = value;
+                Auto = false;
 
-				// Adjust x
-				if( (_x + Width) > 100)
-				{
-					_x = 100 - Width;
-				}
+                // Adjust x
+                if ((_x + Width) > 100)
+                {
+                    _x = 100 - Width;
+                }
 
-				this.Invalidate();
-			}
-		}
+                Invalidate();
+            }
+        }
 
-		/// <summary>
-		/// Height of element.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeMisc"),
-		Bindable(true),
-		DefaultValue(0.0F),
-		SRDescription("DescriptionAttributeElementPosition_Height"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All)
-		]
-		public float Height
-		{
-			get
-			{
-				return _height;
-			}
-			set
-			{
-				if(value < 0.0 || value > 100.0)
-				{
-					throw(new ArgumentOutOfRangeException("value", SR.ExceptionElementPositionArgumentOutOfRange));
-				}
-				_height = value;
-				Auto = false;
+        /// <summary>
+        /// Height of element.
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeMisc"),
+        SRDescription("DescriptionAttributeElementPosition_Height"),
+        ]
+        public float Height
+        {
+            get
+            {
+                return _height;
+            }
+            set
+            {
+                if (value < 0.0 || value > 100.0)
+                {
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionElementPositionArgumentOutOfRange));
+                }
+                _height = value;
+                Auto = false;
 
-				// Adjust y
-				if( (_y + Height) > 100)
-				{
-					_y = 100 - Height;
+                // Adjust y
+                if ((_y + Height) > 100)
+                {
+                    _y = 100 - Height;
 
-				}
+                }
 
-				this.Invalidate();
-			}
-		}
+                Invalidate();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a flag which indicates whether positioning is on.
         /// </summary>
 		[
-		SRCategory("CategoryAttributeMisc"),
-		Bindable(true),
-		DefaultValue(true),
-		SRDescription("DescriptionAttributeElementPosition_Auto"),
-		NotifyParentPropertyAttribute(true),
-		RefreshPropertiesAttribute(RefreshProperties.All)
-		]
-		public bool Auto
-		{
-			get
-			{
-				return _auto;
-			}
-			set
-			{
-				if(value != _auto)
-				{
-					ResetAllAreasAutoPosition(value);
+        SRCategory("CategoryAttributeMisc"),
+        SRDescription("DescriptionAttributeElementPosition_Auto"),
+        ]
+        public bool Auto
+        {
+            get
+            {
+                return _auto;
+            }
+            set
+            {
+                if (value != _auto)
+                {
+                    if (value)
+                    {
+                        _x = 0;
+                        _y = 0;
+                        _width = 0;
+                        _height = 0;
+                    }
+                    _auto = value;
 
-					if(value)
-					{
-						this._x = 0;
-						this._y = 0;
-						this._width = 0;
-						this._height = 0;
-					}
-					_auto = value;
+                    Invalidate();
+                }
+            }
+        }
 
-					this.Invalidate();
-				}
-			}
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 
     /// <summary>
     /// Used for invoking windows forms MesageBox dialog.

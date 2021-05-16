@@ -11,8 +11,12 @@
 //
 
 
+using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Windows.Forms.DataVisualization.Charting.Formulas;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.Formulas;
 
 namespace WebCharts.Services.Models.General
 {
@@ -47,7 +51,6 @@ namespace WebCharts.Services.Models.General
         /// exponential moving average and a 10-day exponential moving average 
         /// applied to the Accumulation Distribution.
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Chaikin")]
         ChaikinOscillator,
 
         /// <summary>
@@ -58,7 +61,6 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Detrended Price Oscillator.  It attempts to remove trend from prices. 
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Detrended")]
         DetrendedPriceOscillator,
 
         /// <summary>
@@ -232,13 +234,7 @@ namespace WebCharts.Services.Models.General
         #region Data Formulas fields
 
         internal const string IndexedSeriesLabelsSourceAttr = "__IndexedSeriesLabelsSource__";
-
-        //***********************************************************
-        //** Private data members, which store properties values
-        //***********************************************************
-        private bool _isEmptyPointIgnored = true;
-
-        private string[] _extraParameters;
+        private readonly string[] _extraParameters;
 
         /// <summary>
         /// All X values are zero.
@@ -280,39 +276,21 @@ namespace WebCharts.Services.Models.General
         /// <param name="inputSeries">Comma separated input data series names and optional X and Y values names.</param>
         /// <param name="outputSeries">Comma separated output data series names and optional X and Y values names.</param>
         internal void Formula(string formulaName, string parameters, string inputSeries, string outputSeries)
-        {            
-            // Array of series
-            Series[] inSeries;
-            Series[] outSeries;
-
-            // Commented out as InsertEmptyDataPoints is currently commented out.
-            // This field is not used anywhere else, but we might need it if we uncomment all the disabled code parts in this method. (krisztb 4/29/08)
-            // True if formulas are statistical
-            //bool statisticalFormulas = false;
-
-            // Array of Y value indexes
-            int[] inValueIndexes;
-            int[] outValueIndexes;
-
+        {
             // Matrix with double values ( used in formula modules )
-            double[][] inValues;
             double[][] inNoEmptyValues;
             double[][] outValues = null;
             string[][] outLabels = null;
 
             // Array with parameters
-            string[] parameterList;
 
             // Split comma separated parameter list in the array of strings.
-            SplitParameters(parameters, out parameterList);
+            SplitParameters(parameters, out string[] parameterList);
 
             // Split comma separated series and Y values list in the array of 
             // Series and indexes to Y values.
-            ConvertToArrays(inputSeries, out inSeries, out inValueIndexes, true);
-            ConvertToArrays(outputSeries, out outSeries, out outValueIndexes, false);
-
-            // Create indexes if all x values are 0
-            //ConvertZeroXToIndex( ref inSeries );
+            ConvertToArrays(inputSeries, out Series[] inSeries, out int[] inValueIndexes, true);
+            ConvertToArrays(outputSeries, out Series[] outSeries, out int[] outValueIndexes, false);
 
             // Set X value AxisName for output series. 
             foreach (Series outSeriesItem in outSeries)
@@ -325,7 +303,7 @@ namespace WebCharts.Services.Models.General
 
             // This method will convert array of Series and array of Y value 
             // indexes to matrix of double values.
-            GetDoubleArray(inSeries, inValueIndexes, out inValues);
+            GetDoubleArray(inSeries, inValueIndexes, out double[][] inValues);
 
             // Remove columns with empty values from matrix
             if (!DifferentNumberOfSeries(inValues))
@@ -389,8 +367,8 @@ namespace WebCharts.Services.Models.General
                     if (series.Points.Count > 0)
                     {
                         // get the last xValue: the formula processing is 
-                        double topXValue = series.Points[series.Points.Count - 1].XValue;
-                        this.Common.Chart.DataManipulator.InsertEmptyPoints(1, IntervalType.Number, 0, IntervalType.Number, 1, topXValue, series);
+                        double topXValue = series.Points[^1].XValue;
+                        Common.Chart.DataManipulator.InsertEmptyPoints(1, IntervalType.Number, 0, IntervalType.Number, 1, topXValue, series);
                         foreach (DataPoint point in series.Points)
                         {
                             point.XValue = 0;
@@ -1050,7 +1028,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         /// <param name="parameters">a string with comma separated parameters</param>
         /// <param name="parameterList">the array of strings with parameters</param>
-        private void SplitParameters(string parameters, out string[] parameterList)
+        private static void SplitParameters(string parameters, out string[] parameterList)
         {
             // Split string by comma
             parameterList = parameters.Split(',');
@@ -1084,7 +1062,7 @@ namespace WebCharts.Services.Models.General
         /// are aligned.
         /// </summary>
         /// <param name="series">Array of series</param>
-        internal void CheckXValuesAlignment(Series[] series)
+        internal static void CheckXValuesAlignment(Series[] series)
         {
             // Check aligment only if more than 1 series provided
             if (series.Length > 1)
@@ -1120,7 +1098,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
         /// <param name="inputSeries">Input series</param>
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         public void FinancialFormula(FinancialFormula formulaName, Series inputSeries)        
         {
             FinancialFormula(formulaName, inputSeries, inputSeries);
@@ -1133,7 +1110,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="formulaName">Formula Name</param>
         /// <param name="inputSeries">Input series</param>
         /// <param name="outputSeries">Output series</param>
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         public void FinancialFormula(FinancialFormula formulaName, Series inputSeries, Series outputSeries)
         {
             FinancialFormula(formulaName, "", inputSeries, outputSeries);
@@ -1148,13 +1124,12 @@ namespace WebCharts.Services.Models.General
         /// <param name="parameters">Formula parameters</param>
         /// <param name="inputSeries">Input series</param>
         /// <param name="outputSeries">Output series</param>
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         public void FinancialFormula(FinancialFormula formulaName, string parameters, Series inputSeries, Series outputSeries)
         {
             if (inputSeries == null)
-                throw new ArgumentNullException("inputSeries");
+                throw new ArgumentNullException(nameof(inputSeries));
             if (outputSeries == null)
-                throw new ArgumentNullException("outputSeries");
+                throw new ArgumentNullException(nameof(outputSeries));
             FinancialFormula(formulaName, parameters, inputSeries.Name, outputSeries.Name);
         }
 
@@ -1165,7 +1140,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
         /// <param name="inputSeries">Comma separated list of input series names and optional X and Y values names.</param>
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         public void FinancialFormula(FinancialFormula formulaName, string inputSeries)
         {
             FinancialFormula(formulaName, inputSeries, inputSeries);
@@ -1179,7 +1153,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="formulaName">Formula Name</param>
         /// <param name="inputSeries">Comma separated list of input series names and optional X and Y values names.</param>
         /// <param name="outputSeries">Comma separated list of output series names and optional X and Y values names.</param>
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         public void FinancialFormula(FinancialFormula formulaName, string inputSeries, string outputSeries)
         {
             FinancialFormula(formulaName, "", inputSeries, outputSeries);
@@ -1196,9 +1169,9 @@ namespace WebCharts.Services.Models.General
         public void FinancialFormula(FinancialFormula formulaName, string parameters, string inputSeries, string outputSeries)
         {
             if (inputSeries == null)
-                throw new ArgumentNullException("inputSeries");
+                throw new ArgumentNullException(nameof(inputSeries));
             if (outputSeries == null)
-                throw new ArgumentNullException("outputSeries");
+                throw new ArgumentNullException(nameof(outputSeries));
 
             // Get formula info
             FormulaInfo formulaInfo = FormulaHelper.GetFormulaInfo(formulaName);
@@ -1214,8 +1187,8 @@ namespace WebCharts.Services.Models.General
             }
 
             // Fix the InputSeries and Outputseries for cases when the series field names are not provided
-            SeriesFieldList inputFields = SeriesFieldList.FromString(this.Common.Chart, inputSeries, formulaInfo.InputFields);
-            SeriesFieldList outputFields = SeriesFieldList.FromString(this.Common.Chart, outputSeries, formulaInfo.OutputFields);
+            SeriesFieldList inputFields = SeriesFieldList.FromString(Common.Chart, inputSeries, formulaInfo.InputFields);
+            SeriesFieldList outputFields = SeriesFieldList.FromString(Common.Chart, outputSeries, formulaInfo.OutputFields);
 
             if (inputFields != null) inputSeries = inputFields.ToString();
             if (outputFields != null) outputSeries = outputFields.ToString();
@@ -1231,19 +1204,7 @@ namespace WebCharts.Services.Models.General
         /// empty points are ignored while performing calculations; 
         /// otherwise, empty points are treated as zeros. 
         /// </summary>
-        public bool IsEmptyPointIgnored
-        {
-            get
-            {
-                return _isEmptyPointIgnored;
-            }
-            set
-            {
-                _isEmptyPointIgnored = value;
-            }
-        }
-
-
+        public bool IsEmptyPointIgnored { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a flag which indicates whether 

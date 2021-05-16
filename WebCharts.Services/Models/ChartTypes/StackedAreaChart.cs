@@ -8,10 +8,14 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Collections;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -68,7 +72,7 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// <param name="seriesToDraw">Chart series to draw.</param>
 		override public void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw )
 		{
-            this.Common = common;
+            Common = common;
             // Reset total per point value
 			_totalPerPoint = null;
             _seriesCount = -1;
@@ -135,9 +139,9 @@ namespace WebCharts.Services.Models.ChartTypes
 						seriesArray[seriesIndex++] = ser;
 					}
 				}
-				
+
 				// Check if series are aligned
-				common.DataManipulator.CheckXValuesAlignment(seriesArray);
+				DataFormula.CheckXValuesAlignment(seriesArray);
 
 				// Allocate memory for the array
 				_totalPerPoint = new double[series.Points.Count];
@@ -351,9 +355,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		override public System.Drawing.Image GetImage(ChartTypeRegistry registry)
-		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+		override public SKImage GetImage(ChartTypeRegistry registry)
+        {
+            return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 
 		#endregion
@@ -369,7 +373,7 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// <param name="seriesToDraw">Chart series to draw.</param>
 		public override void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw  )
 		{
-            this.Common = common;
+            Common = common;
             // Set Clip Region
 			graph.SetClip( area.PlotAreaPosition.ToSKRect() );
 
@@ -395,7 +399,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			ChartArea area, 
 			Series seriesToDraw)
 		{
-            this.Common = common;
+            Common = common;
 			ArrayList	prevPointsArray = null;
 			ArrayList	curentPointsArray = null;
 
@@ -412,7 +416,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Zero X values mode.
-			bool	indexedSeries = ChartHelper.IndexedSeries(this.Common, area.GetSeriesFromChartType(this.Name).ToArray() );
+			bool	indexedSeries = ChartHelper.IndexedSeries(Common, area.GetSeriesFromChartType(Name).ToArray() );
 
 			// Indicates that the second point loop for drawing lines or labels is required
 			bool	requiresSecondPointLoop = false;
@@ -425,7 +429,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			foreach( Series ser in common.DataManager.Series )
 			{
 				// Process non empty series of the area with area chart type
-				if( String.Compare( ser.ChartTypeName, this.Name, StringComparison.OrdinalIgnoreCase ) != 0 
+				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
 					|| ser.ChartArea != area.Name || !ser.IsVisible())
 				{
 					continue;
@@ -459,8 +463,8 @@ namespace WebCharts.Services.Models.ChartTypes
 
 
 				// Get axis position
-				axisPos.X = (float)VAxis.GetPosition(this.VAxis.Crossing);
-				axisPos.Y = (float)VAxis.GetPosition(this.VAxis.Crossing);
+				axisPos.X = (float)VAxis.GetPosition(VAxis.Crossing);
+				axisPos.Y = (float)VAxis.GetPosition(VAxis.Crossing);
 				axisPos = graph.GetAbsolutePoint(axisPos);
 
 				// Fill previous series values array 
@@ -573,33 +577,33 @@ namespace WebCharts.Services.Models.ChartTypes
                             }
 
                             // Create area brush
-                            Brush areaBrush = null;
+                            SKPaint areaBrush = null;
                             if (point.BackHatchStyle != ChartHatchStyle.None)
                             {
-                                areaBrush = graph.GetHatchBrush(point.BackHatchStyle, point.Color, point.BackSecondaryColor);
+                                areaBrush = ChartGraphics.GetHatchBrush(point.BackHatchStyle, point.Color, point.BackSecondaryColor);
                             }
                             else if (point.BackGradientStyle != GradientStyle.None)
                             {
-                                this.gradientFill = true;
-                                this.Series = point.series;
+                                gradientFill = true;
+                                Series = point.series;
                             }
                             else if (point.BackImage.Length > 0 && point.BackImageWrapMode != ChartImageWrapMode.Unscaled && point.BackImageWrapMode != ChartImageWrapMode.Scaled)
                             {
                                 areaBrush = graph.GetTextureBrush(point.BackImage, point.BackImageTransparentColor, point.BackImageWrapMode, point.Color);
                             }
-                            else if (point.IsEmpty && point.Color == Color.Empty)
+                            else if (point.IsEmpty && point.Color == SKColor.Empty)
                             {
                                 // Stacked area chart empty points should always use 
                                 // series color, otherwise chart will have empty 'holes'.
-                                areaBrush = new SolidBrush(ser.Color);
+                                areaBrush = new() { Style = SKPaintStyle.Fill, Color = ser.Color };
                             }
                             else
                             {
-                                areaBrush = new SolidBrush(point.Color);
+                                areaBrush = new() { Style = SKPaintStyle.Fill, Color = point.Color };
                             }
 
                             // Check if we need second loop to draw area border
-                            if ((point.BorderColor != Color.Empty && point.BorderWidth > 0))
+                            if ((point.BorderColor != SKColor.Empty && point.BorderWidth > 0))
                             {
                                 requiresSecondPointLoop = true;
                             }
@@ -611,11 +615,8 @@ namespace WebCharts.Services.Models.ChartTypes
                             }
 
                             // Draw area
-                            if (!this.gradientFill)
+                            if (!gradientFill)
                             {
-                                // Start Svg Selection mode
-                                graph.StartHotRegion(point);
-
                                 // Turn off anti aliasing and fill area
                                 SmoothingMode oldMode = graph.SmoothingMode;
                                 graph.SmoothingMode = SmoothingMode.None;
@@ -624,7 +625,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                                 // Draw top and bottom lines with antialiasing turned On.
                                 // Process only if line is drawn by an angle
-                                Pen areaLinePen = new Pen(areaBrush, 1);
+                                SKPaint areaLinePen = new() { Style = SKPaintStyle.Stroke, Color = areaBrush.Color, StrokeWidth = 1 };
                                 if (!(firstPoint.X == secondPoint.X || firstPoint.Y == secondPoint.Y))
                                 {
                                     graph.DrawLine(areaLinePen, firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
@@ -633,9 +634,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                 {
                                     graph.DrawLine(areaLinePen, secondPoint.X, prevYValue2, firstPoint.X, prevYValue1);
                                 }
-
-                                // End Svg Selection mode
-                                graph.EndHotRegion();
                             }
 
                             if (areaPath == null)
@@ -659,7 +657,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             // Allocate array of floats
                             SKPoint pointNew = SKPoint.Empty;
                             float[] coord = new float[path.PointCount * 2];
-                            SKPoint[] pathPoints = path.PathPoints;
+                            SKPoint[] pathPoints = path.Points;
                             for (int i = 0; i < path.PointCount; i++)
                             {
                                 pointNew = graph.GetRelativePoint(pathPoints[i]);
@@ -678,45 +676,44 @@ namespace WebCharts.Services.Models.ChartTypes
                             //**************************************************************
                             //** Add area for the top line (with thickness)
                             //**************************************************************
-                            if (point.BorderWidth > 1 && point.BorderDashStyle != ChartDashStyle.NotSet && point.BorderColor != Color.Empty)
+                            if (point.BorderWidth > 1 && point.BorderDashStyle != ChartDashStyle.NotSet && point.BorderColor != SKColor.Empty)
                             {
                                 // Create grapics path object dor the curve
-                                using (SKPath linePath = new SKPath())
+                                using SKPath linePath = new();
+                                try
                                 {
-                                    try
-                                    {
-                                        linePath.AddLine(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
+                                    linePath.AddLine(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
 
-                                        // Widen the lines to the size of pen plus 2
-                                        linePath.Widen(new Pen(point.Color, point.BorderWidth + 2));
-                                    }
-                                    catch (OutOfMemoryException)
-                                    {
-                                        // SKPath.Widen incorrectly throws OutOfMemoryException
-                                        // catching here and reacting by not widening
-                                    }
-                                    catch (ArgumentException)
-                                    {
-                                    }
-
-                                    // Allocate array of floats
-                                    pointNew = SKPoint.Empty;
-                                    coord = new float[linePath.PointCount * 2];
-                                    for (int i = 0; i < linePath.PointCount; i++)
-                                    {
-                                        pointNew = graph.GetRelativePoint(linePath.PathPoints[i]);
-                                        coord[2 * i] = pointNew.X;
-                                        coord[2 * i + 1] = pointNew.Y;
-                                    }
-
-                                    common.HotRegionsList.AddHotRegion(
-                                        linePath,
-                                        false,
-                                        coord,
-                                        point,
-                                        ser.Name,
-                                        index);
+                                    // Widen the lines to the size of pen plus 2
+                                    // linePath.Widen(new Pen(point.Color, point.BorderWidth + 2))
                                 }
+                                catch (OutOfMemoryException)
+                                {
+                                    // SKPath.Widen incorrectly throws OutOfMemoryException
+                                    // catching here and reacting by not widening
+                                }
+                                catch (ArgumentException)
+                                {
+									// Do nothing
+                                }
+
+                                // Allocate array of floats
+                                pointNew = SKPoint.Empty;
+                                coord = new float[linePath.PointCount * 2];
+                                for (int i = 0; i < linePath.PointCount; i++)
+                                {
+                                    pointNew = graph.GetRelativePoint(linePath.Points[i]);
+                                    coord[2 * i] = pointNew.X;
+                                    coord[2 * i + 1] = pointNew.Y;
+                                }
+
+                                common.HotRegionsList.AddHotRegion(
+                                    linePath,
+                                    false,
+                                    coord,
+                                    point,
+                                    ser.Name,
+                                    index);
                             }
                         }
                     }
@@ -733,18 +730,16 @@ namespace WebCharts.Services.Models.ChartTypes
 				if(gradientFill && areaPath != null)
 				{
 					// Create gradient path
-                    using (SKPath gradientPath = new SKPath())
+                    using (SKPath gradientPath = new())
                     {
-                        gradientPath.AddPath(areaPath, true);
+                        gradientPath.AddPath(areaPath);
                         areaBottomPath.Reverse();
-                        gradientPath.AddPath(areaBottomPath, true);
+                        gradientPath.AddPath(areaBottomPath);
 
                         // Create brush
-                        using (Brush areaBrush = graph.GetGradientBrush(gradientPath.GetBounds(), this.Series.Color, this.Series.BackSecondaryColor, this.Series.BackGradientStyle))
-                        {
-                            // Fill area with gradient
-                            graph.FillPath(areaBrush, gradientPath);
-                        }
+                        using SKPaint areaBrush = ChartGraphics.GetGradientBrush(gradientPath.GetBounds(), Series.Color, Series.BackSecondaryColor, Series.BackGradientStyle);
+                        // Fill area with gradient
+                        graph.FillPath(areaBrush, gradientPath);
                     }
 
 					areaPath.Dispose();
@@ -770,7 +765,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				curentPointsArray = null;
 				foreach( Series ser in common.DataManager.Series )
 				{
-					if( String.Compare( ser.ChartTypeName, this.Name, StringComparison.OrdinalIgnoreCase ) != 0 
+					if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
 						|| ser.ChartArea != area.Name || !ser.IsVisible())
 					{
 						continue;
@@ -781,8 +776,8 @@ namespace WebCharts.Services.Models.ChartTypes
 					VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
 
 					// Get axis position
-					axisPos.X = (float)VAxis.GetPosition(this.VAxis.Crossing);
-					axisPos.Y = (float)VAxis.GetPosition(this.VAxis.Crossing);
+					axisPos.X = (float)VAxis.GetPosition(VAxis.Crossing);
+					axisPos.Y = (float)VAxis.GetPosition(VAxis.Crossing);
 					axisPos = graph.GetAbsolutePoint(axisPos);
 
 					// Fill previous series values array 
@@ -876,7 +871,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				curentPointsArray = null;
 				foreach( Series ser in common.DataManager.Series )
 				{
-					if( String.Compare( ser.ChartTypeName, this.Name, StringComparison.OrdinalIgnoreCase ) != 0 
+					if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
 						|| ser.ChartArea != area.Name || !ser.IsVisible())
 					{
 						continue;
@@ -887,8 +882,8 @@ namespace WebCharts.Services.Models.ChartTypes
 					VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
 
 					// Get axis position
-					axisPos.X = (float)VAxis.GetPosition(this.VAxis.Crossing);
-					axisPos.Y = (float)VAxis.GetPosition(this.VAxis.Crossing);
+					axisPos.X = (float)VAxis.GetPosition(VAxis.Crossing);
+					axisPos.Y = (float)VAxis.GetPosition(VAxis.Crossing);
 					axisPos = graph.GetAbsolutePoint(axisPos);
 
 					// Fill previous series values array 
@@ -966,7 +961,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 {
                                     double pointLabelValue = GetYValue(common, area, ser, point, index, 0);
                                     // Round Y values for 100% stacked area
-                                    if (this.hundredPercentStacked && point.LabelFormat.Length == 0)
+                                    if (hundredPercentStacked && point.LabelFormat.Length == 0)
                                     {
                                         pointLabelValue = Math.Round(pointLabelValue, 2);
                                     }
@@ -985,8 +980,8 @@ namespace WebCharts.Services.Models.ChartTypes
                                 }
 
                                 // Disable the clip region
-                                Region oldClipRegion = graph.Clip;
-                                graph.Clip = new Region();
+                                SKRegion oldClipRegion = graph.Clip;
+                                graph.Clip = new();
 
                                 // Draw label
                                 SKPoint labelPosition = SKPoint.Empty;
@@ -1014,7 +1009,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                     sizeLabel.Height);
 
                                 // Draw label text
-                                using (Brush brush = new SolidBrush(point.LabelForeColor))
+                                using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor })
                                 {
                                     graph.DrawPointLabelStringRel(
                                         common,
@@ -1198,7 +1193,7 @@ namespace WebCharts.Services.Models.ChartTypes
 							{
                                 pointProperties = ser.EmptyPointStyle;
 							}
-                            if (pointProperties.Color.A == 255)
+                            if (pointProperties.Color.Alpha == 255)
 							{
 								visibleSurfaces ^= SurfaceNames.Top;
 							}
@@ -1226,7 +1221,7 @@ namespace WebCharts.Services.Models.ChartTypes
 						// Check series name
                         if (pointProperties != null && String.Compare(ser.Name, secondPoint.dataPoint.series.Name, StringComparison.Ordinal) == 0)
 						{
-                            if (pointProperties.Color.A != 255)
+                            if (pointProperties.Color.Alpha != 255)
 							{
 								visibleSurfaces |= SurfaceNames.Bottom;
 							}
@@ -1277,26 +1272,26 @@ namespace WebCharts.Services.Models.ChartTypes
 			double xValue = (float)firstPoint.xPosition;
 			if(yValue >= 0.0)
 			{
-				if(double.IsNaN(this.prevPosY))
+				if(double.IsNaN(prevPosY))
 				{
 					yValue = axisPosition;
 				}
 				else
 				{
-					yValue = vAxis.GetPosition(this.prevPosY);
-					xValue = hAxis.GetPosition(this.prevPositionX);
+					yValue = vAxis.GetPosition(prevPosY);
+					xValue = hAxis.GetPosition(prevPositionX);
 				}
 			}
 			else
 			{
-				if(double.IsNaN(this.prevNegY))
+				if(double.IsNaN(prevNegY))
 				{
 					yValue = axisPosition;
 				}
 				else
 				{
-					yValue = vAxis.GetPosition(this.prevNegY);
-					xValue = hAxis.GetPosition(this.prevPositionX);
+					yValue = vAxis.GetPosition(prevNegY);
+					xValue = hAxis.GetPosition(prevPositionX);
 				}
 			}
 			thirdPoint = new SKPoint((float)xValue, (float)yValue);
@@ -1306,26 +1301,26 @@ namespace WebCharts.Services.Models.ChartTypes
 			xValue = (float)secondPoint.xPosition;
 			if(yValue >= 0.0)
 			{
-				if(double.IsNaN(this.prevPosY))
+				if(double.IsNaN(prevPosY))
 				{
 					yValue = axisPosition;
 				}
 				else
 				{
-					yValue = vAxis.GetPosition(this.prevPosY);
-					xValue = hAxis.GetPosition(this.prevPositionX);
+					yValue = vAxis.GetPosition(prevPosY);
+					xValue = hAxis.GetPosition(prevPositionX);
 				}
 			}
 			else
 			{
-				if(double.IsNaN(this.prevNegY))
+				if(double.IsNaN(prevNegY))
 				{
 					yValue = axisPosition;
 				}
 				else
 				{
-					yValue = vAxis.GetPosition(this.prevNegY);
-					xValue = hAxis.GetPosition(this.prevPositionX);
+					yValue = vAxis.GetPosition(prevNegY);
+					xValue = hAxis.GetPosition(prevPositionX);
 				}
 			}
 			fourthPoint = new SKPoint((float)xValue, (float)yValue);
@@ -1393,7 +1388,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				DataPoint3D	pointEx = (DataPoint3D) obj;
 
 				// Check properties
-				if(pointEx.dataPoint.Color.A != 255)
+				if(pointEx.dataPoint.Color.Alpha != 255)
 				{
 					loopNumber = 2;
 				}
@@ -1452,7 +1447,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     {
                         // Round Y values for 100% stacked area
                         double pointLabelValue = pointEx.dataPoint.YValues[(labelYValueIndex == -1) ? YValueIndex : labelYValueIndex];
-                        if (this.hundredPercentStacked && pointEx.dataPoint.LabelFormat.Length == 0)
+                        if (hundredPercentStacked && pointEx.dataPoint.LabelFormat.Length == 0)
                         {
                             pointLabelValue = Math.Round(pointLabelValue, 2);
                         }
@@ -1496,25 +1491,23 @@ namespace WebCharts.Services.Models.ChartTypes
                         sizeLabel.Height);
 
                     // Draw label text
-                    using (Brush brush = new SolidBrush(pointEx.dataPoint.LabelForeColor))
-                    {
-                        graph.DrawPointLabelStringRel(
-                            common,
-                            text,
-                            pointEx.dataPoint.Font,
-                            brush,
-                            points[0].SKPoint,
-                            format,
-                            pointEx.dataPoint.LabelAngle,
-                            labelBackPosition,
-                            pointEx.dataPoint.LabelBackColor,
-                            pointEx.dataPoint.LabelBorderColor,
-                            pointEx.dataPoint.LabelBorderWidth,
-                            pointEx.dataPoint.LabelBorderDashStyle,
-                            pointEx.dataPoint.series,
-                            pointEx.dataPoint,
-                            pointEx.index - 1);
-                    }
+                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = pointEx.dataPoint.LabelForeColor };
+                    graph.DrawPointLabelStringRel(
+                        common,
+                        text,
+                        pointEx.dataPoint.Font,
+                        brush,
+                        points[0].SKPoint,
+                        format,
+                        pointEx.dataPoint.LabelAngle,
+                        labelBackPosition,
+                        pointEx.dataPoint.LabelBackColor,
+                        pointEx.dataPoint.LabelBorderColor,
+                        pointEx.dataPoint.LabelBorderWidth,
+                        pointEx.dataPoint.LabelBorderDashStyle,
+                        pointEx.dataPoint.series,
+                        pointEx.dataPoint,
+                        pointEx.index - 1);
                 }
 			}
 		}
@@ -1646,10 +1639,10 @@ namespace WebCharts.Services.Models.ChartTypes
             if (disposing)
             {
                 // Dispose managed resources
-                if (this.areaBottomPath != null)
+                if (areaBottomPath != null)
                 {
-                    this.areaBottomPath.Dispose();
-                    this.areaBottomPath = null;
+                    areaBottomPath.Dispose();
+                    areaBottomPath = null;
                 }
             }
             base.Dispose(disposing);

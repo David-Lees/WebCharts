@@ -13,8 +13,9 @@ using System;
 using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     #region Enumeration
 
@@ -129,11 +130,11 @@ namespace WebCharts.Services.Models.Annotation
             {
                 if (value <= 0)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionAnnotationArrowSizeIsZero));
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAnnotationArrowSizeIsZero));
                 }
                 if (value > 100)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionAnnotationArrowSizeMustBeLessThen100));
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAnnotationArrowSizeMustBeLessThen100));
                 }
                 _arrowSize = value;
                 Invalidate();
@@ -239,19 +240,16 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> used to paint annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> control.
+        /// Reference to the <see cref="ChartService"/> control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
-            SKPoint secondPoint = new SKPoint(firstPoint.X + size.Width, firstPoint.Y + size.Height);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out _);
+            SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
-            SKRect selectionRect = new SKRect(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
+            SKRect selectionRect = new(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
 
             // Check if text position is valid
             if (float.IsNaN(firstPoint.X) ||
@@ -287,14 +285,14 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             // Process hot region
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions)
             {
                 // Use callout defined hot region
-                this.Common.HotRegionsList.AddHotRegion(
+                Common.HotRegionsList.AddHotRegion(
                     graphics,
                     arrowPathAbs,
                     false,
-                    ReplaceKeywords(this.ToolTip),
+                    ReplaceKeywords(ToolTip),
                     String.Empty,
                     String.Empty,
                     String.Empty,
@@ -319,7 +317,7 @@ namespace WebCharts.Services.Models.Annotation
             // Get absolute position
             SKRect positionAbs = graphics.GetAbsoluteRectangle(position);
             SKPoint firstPoint = positionAbs.Location;
-            SKPoint secondPoint = new SKPoint(positionAbs.Right, positionAbs.Bottom);
+            SKPoint secondPoint = new(positionAbs.Right, positionAbs.Bottom);
 
             // Calculate arrow length
             float deltaX = secondPoint.X - firstPoint.X;
@@ -328,47 +326,47 @@ namespace WebCharts.Services.Models.Annotation
 
             // Create unrotated graphics path for the arrow started at the annotation location
             // and going to the right for the length of the rotated arrow.
-            SKPath path = new SKPath();
-
-            SKPoint[] points = null;
+            SKPath path = new();
             float pointerRatio = 2.1f;
-            if (this.ArrowStyle == ArrowStyle.Simple)
+
+            SKPoint[] points;
+            if (ArrowStyle == ArrowStyle.Simple)
             {
                 points = new SKPoint[] {
                                           firstPoint,
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize*pointerRatio),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize),
-                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y - this.ArrowSize),
-                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y + this.ArrowSize),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize*pointerRatio) };
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y - ArrowSize*pointerRatio),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y - ArrowSize),
+                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y - ArrowSize),
+                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y + ArrowSize),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y + ArrowSize),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y + ArrowSize*pointerRatio) };
             }
-            else if (this.ArrowStyle == ArrowStyle.DoubleArrow)
+            else if (ArrowStyle == ArrowStyle.DoubleArrow)
             {
                 points = new SKPoint[] {
                                           firstPoint,
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize*pointerRatio),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize),
-                                          new SKPoint(firstPoint.X + arrowLength - this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize),
-                                          new SKPoint(firstPoint.X + arrowLength - this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize*pointerRatio),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y - ArrowSize*pointerRatio),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y - ArrowSize),
+                                          new SKPoint(firstPoint.X + arrowLength - ArrowSize*pointerRatio, firstPoint.Y - ArrowSize),
+                                          new SKPoint(firstPoint.X + arrowLength - ArrowSize*pointerRatio, firstPoint.Y - ArrowSize*pointerRatio),
                                           new SKPoint(firstPoint.X + arrowLength, firstPoint.Y),
-                                          new SKPoint(firstPoint.X + arrowLength - this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize*pointerRatio),
-                                          new SKPoint(firstPoint.X + arrowLength - this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize*pointerRatio) };
+                                          new SKPoint(firstPoint.X + arrowLength - ArrowSize*pointerRatio, firstPoint.Y + ArrowSize*pointerRatio),
+                                          new SKPoint(firstPoint.X + arrowLength - ArrowSize*pointerRatio, firstPoint.Y + ArrowSize),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y + ArrowSize),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y + ArrowSize*pointerRatio) };
             }
-            else if (this.ArrowStyle == ArrowStyle.Tailed)
+            else if (ArrowStyle == ArrowStyle.Tailed)
             {
                 float tailRatio = 2.1f;
                 points = new SKPoint[] {
                                           firstPoint,
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize*pointerRatio),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y - this.ArrowSize),
-                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y - this.ArrowSize*tailRatio),
-                                          new SKPoint(firstPoint.X + arrowLength - this.ArrowSize*tailRatio, firstPoint.Y),
-                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y + this.ArrowSize*tailRatio),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize),
-                                          new SKPoint(firstPoint.X + this.ArrowSize*pointerRatio, firstPoint.Y + this.ArrowSize*pointerRatio) };
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y - ArrowSize*pointerRatio),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y - ArrowSize),
+                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y - ArrowSize*tailRatio),
+                                          new SKPoint(firstPoint.X + arrowLength - ArrowSize*tailRatio, firstPoint.Y),
+                                          new SKPoint(firstPoint.X + arrowLength, firstPoint.Y + ArrowSize*tailRatio),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y + ArrowSize),
+                                          new SKPoint(firstPoint.X + ArrowSize*pointerRatio, firstPoint.Y + ArrowSize*pointerRatio) };
             }
             else
             {
@@ -376,7 +374,7 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             path.AddLines(points);
-            path.CloseAllFigures();
+            path.Close();
 
             // Calculate arrow angle
             float angle = (float)(Math.Atan(deltaY / deltaX) * 180f / Math.PI);
@@ -386,11 +384,8 @@ namespace WebCharts.Services.Models.Annotation
             }
 
             // Rotate arrow path around the first point
-            using (SKMatrix matrix = new())
-            {
-                matrix.RotateAt(angle, firstPoint);
-                path.Transform(matrix);
-            }
+            SKMatrix matrix = SKMatrix.CreateRotationDegrees(angle, firstPoint.X, firstPoint.Y);
+            path.Transform(matrix);
 
             return path;
         }

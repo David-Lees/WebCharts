@@ -16,7 +16,10 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Drawing;
+using WebCharts.Services.Models.Common;
 
 namespace WebCharts.Services.Models.Utilities
 {
@@ -112,65 +115,65 @@ namespace WebCharts.Services.Models.Utilities
 		#region Fields
 
 		// Fields which store the palette color values
-        private static Color[] _colorsGrayScale = InitializeGrayScaleColors();
-		private static	Color[] _colorsDefault = {
-			Color.Green,
-			Color.Blue,
-			Color.Purple,
-			Color.Lime,
-			Color.Fuchsia,
-			Color.Teal,
-			Color.Yellow,
-			Color.Gray,
-			Color.Aqua,
-			Color.Navy,
-			Color.Maroon,
-			Color.Red,
-			Color.Olive,
-			Color.Silver,
-			Color.Tomato,
-			Color.Moccasin
+        private static readonly SKColor[] _colorsGrayScale = InitializeGrayScaleColors();
+		private static readonly SKColor[] _colorsDefault = {
+			SKColors.Green,
+			SKColors.Blue,
+			SKColors.Purple,
+			SKColors.Lime,
+			SKColors.Fuchsia,
+			SKColors.Teal,
+			SKColors.Yellow,
+			SKColors.Gray,
+			SKColors.Aqua,
+			SKColors.Navy,
+			SKColors.Maroon,
+			SKColors.Red,
+			SKColors.Olive,
+			SKColors.Silver,
+			SKColors.Tomato,
+			SKColors.Moccasin
 			};
 		
-		private static	Color[] _colorsPastel = {
-													Color.SkyBlue,
-													Color.LimeGreen,
-													Color.MediumOrchid,
-													Color.LightCoral,
-													Color.SteelBlue,
-													Color.YellowGreen,
-													Color.Turquoise,
-													Color.HotPink,
-													Color.Khaki,
-													Color.Tan,
-													Color.DarkSeaGreen,
-													Color.CornflowerBlue,
-													Color.Plum,
-													Color.CadetBlue,
-													Color.PeachPuff,
-													Color.LightSalmon
+		private static readonly SKColor[] _colorsPastel = {
+													SKColors.SkyBlue,
+													SKColors.LimeGreen,
+													SKColors.MediumOrchid,
+													SKColors.LightCoral,
+													SKColors.SteelBlue,
+													SKColors.YellowGreen,
+													SKColors.Turquoise,
+													SKColors.HotPink,
+													SKColors.Khaki,
+													SKColors.Tan,
+													SKColors.DarkSeaGreen,
+													SKColors.CornflowerBlue,
+													SKColors.Plum,
+													SKColors.CadetBlue,
+													SKColors.PeachPuff,
+													SKColors.LightSalmon
 												};
 
-		private static	Color[] _colorsEarth = {
+		private static readonly SKColor[] _colorsEarth = {
 												   Color.FromArgb(255, 128, 0),
-												   Color.DarkGoldenrod,
+												   SKColors.DarkGoldenrod,
 												   Color.FromArgb(192, 64, 0),
-												   Color.OliveDrab,
-												   Color.Peru,
+												   SKColors.OliveDrab,
+												   SKColors.Peru,
 												   Color.FromArgb(192, 192, 0),
-												   Color.ForestGreen,
-												   Color.Chocolate,
-												   Color.Olive,
-												   Color.LightSeaGreen,
-												   Color.SandyBrown,
+												   SKColors.ForestGreen,
+												   SKColors.Chocolate,
+												   SKColors.Olive,
+												   SKColors.LightSeaGreen,
+												   SKColors.SandyBrown,
 												   Color.FromArgb(0, 192, 0),
-												   Color.DarkSeaGreen,
-												   Color.Firebrick,
-												   Color.SaddleBrown,
+												   SKColors.DarkSeaGreen,
+												   SKColors.Firebrick,
+												   SKColors.SaddleBrown,
 												   Color.FromArgb(192, 0, 0)
 											   };
 
-		private static	Color[] _colorsSemiTransparent = {
+		private static readonly SKColor[] _colorsSemiTransparent = {
 													Color.FromArgb(150, 255, 0, 0),
 													Color.FromArgb(150, 0, 255, 0),
 													Color.FromArgb(150, 0, 0, 255),
@@ -189,20 +192,20 @@ namespace WebCharts.Services.Models.Utilities
 													Color.FromArgb(150, 40, 90, 150)
 											  };
 		
-		private static	Color[] _colorsLight = {
-												   Color.Lavender,
-												   Color.LavenderBlush,
-												   Color.PeachPuff,
-												   Color.LemonChiffon,
-												   Color.MistyRose,
-												   Color.Honeydew,
-												   Color.AliceBlue,
-												   Color.WhiteSmoke,
-												   Color.AntiqueWhite,
-												   Color.LightCyan
+		private static readonly SKColor[] _colorsLight = {
+												   SKColors.Lavender,
+												   SKColors.LavenderBlush,
+												   SKColors.PeachPuff,
+												   SKColors.LemonChiffon,
+												   SKColors.MistyRose,
+												   SKColors.Honeydew,
+												   SKColors.AliceBlue,
+												   SKColors.WhiteSmoke,
+												   SKColors.AntiqueWhite,
+												   SKColors.LightCyan
 											   };
 
-		private static	Color[] _colorsExcel = {
+		private static readonly SKColor[] _colorsExcel = {
 			Color.FromArgb(153,153,255),
 			Color.FromArgb(153,51,102),
 			Color.FromArgb(255,255,204),
@@ -220,60 +223,60 @@ namespace WebCharts.Services.Models.Utilities
 			Color.FromArgb(0,128,128),
 			Color.FromArgb(0,0,255)};
 
-		private static	Color[] _colorsBerry = {
-												  Color.BlueViolet,
-												  Color.MediumOrchid,
-												  Color.RoyalBlue,
-												  Color.MediumVioletRed,
-												  Color.Blue,
-												  Color.BlueViolet,
-												  Color.Orchid,
-												  Color.MediumSlateBlue,
+		private static readonly SKColor[] _colorsBerry = {
+												  SKColors.BlueViolet,
+												  SKColors.MediumOrchid,
+												  SKColors.RoyalBlue,
+												  SKColors.MediumVioletRed,
+												  SKColors.Blue,
+												  SKColors.BlueViolet,
+												  SKColors.Orchid,
+												  SKColors.MediumSlateBlue,
 												  Color.FromArgb(192, 0, 192),
-												  Color.MediumBlue,
-												  Color.Purple
+												  SKColors.MediumBlue,
+												  SKColors.Purple
 											  };
 
-		private static	Color[] _colorsChocolate = {
-												  Color.Sienna,
-												  Color.Chocolate,
-												  Color.DarkRed,
-												  Color.Peru,
-												  Color.Brown,
-												  Color.SandyBrown,
-												  Color.SaddleBrown,
+		private static readonly SKColor[] _colorsChocolate = {
+												  SKColors.Sienna,
+												  SKColors.Chocolate,
+												  SKColors.DarkRed,
+												  SKColors.Peru,
+												  SKColors.Brown,
+												  SKColors.SandyBrown,
+												  SKColors.SaddleBrown,
 												  Color.FromArgb(192, 64, 0),
-												  Color.Firebrick,
+												  SKColors.Firebrick,
 												  Color.FromArgb(182, 92, 58)
 											  };
 
-		private static	Color[] _colorsFire = {
-													  Color.Gold,
-													  Color.Red,
-													  Color.DeepPink,
-													  Color.Crimson,
-													  Color.DarkOrange,
-													  Color.Magenta,
-													  Color.Yellow,
-													  Color.OrangeRed,
-													  Color.MediumVioletRed,
+		private static readonly SKColor[] _colorsFire = {
+													  SKColors.Gold,
+													  SKColors.Red,
+													  SKColors.DeepPink,
+													  SKColors.Crimson,
+													  SKColors.DarkOrange,
+													  SKColors.Magenta,
+													  SKColors.Yellow,
+													  SKColors.OrangeRed,
+													  SKColors.MediumVioletRed,
 													  Color.FromArgb(221, 226, 33)
 												  };
 
-		private static	Color[] _colorsSeaGreen = {
-												 Color.SeaGreen,
-												 Color.MediumAquamarine,
-												 Color.SteelBlue,
-												 Color.DarkCyan,
-												 Color.CadetBlue,
-												 Color.MediumSeaGreen,
-												 Color.MediumTurquoise,
-												 Color.LightSteelBlue,
-												 Color.DarkSeaGreen,
-												 Color.SkyBlue
+		private static readonly SKColor[] _colorsSeaGreen = {
+												 SKColors.SeaGreen,
+												 SKColors.MediumAquamarine,
+												 SKColors.SteelBlue,
+												 SKColors.DarkCyan,
+												 SKColors.CadetBlue,
+												 SKColors.MediumSeaGreen,
+												 SKColors.MediumTurquoise,
+												 SKColors.LightSteelBlue,
+												 SKColors.DarkSeaGreen,
+												 SKColors.SkyBlue
 											 };
 
-        private static Color[] _colorsBrightPastel = {
+        private static readonly SKColor[] _colorsBrightPastel = {
 												   Color.FromArgb(65, 140, 240),
 												   Color.FromArgb(252, 180, 65),
 												   Color.FromArgb(224, 64, 10),
@@ -298,10 +301,10 @@ namespace WebCharts.Services.Models.Utilities
 		/// <summary>
 		/// Initializes the GrayScale color array
 		/// </summary>
-		private static Color[] InitializeGrayScaleColors()
+		private static SKColor[] InitializeGrayScaleColors()
 		{
 			// Define gray scale colors
-			Color[] grayScale = new Color[16];
+			SKColor[] grayScale = new SKColor[16];
 			for(int i = 0; i < grayScale.Length; i++)
 			{
 				int colorValue = 200 - i * (180/16);
@@ -321,13 +324,13 @@ namespace WebCharts.Services.Models.Utilities
         /// </summary>
         /// <param name="palette">Palette to get the colors for.</param>
         /// <returns>Array of colors.</returns>
-		public static Color[] GetPaletteColors(ChartColorPalette palette)
+		public static SKColor[] GetPaletteColors(ChartColorPalette palette)
 		{
 			switch(palette)
 			{
 				case(ChartColorPalette.None):
 				{
-                    throw (new ArgumentException(SR.ExceptionPaletteIsEmpty));
+                    throw new ArgumentException(SR.ExceptionPaletteIsEmpty);
 				}
 				case(ChartColorPalette.Bright):
 					return _colorsDefault;

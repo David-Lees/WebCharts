@@ -12,9 +12,13 @@
 //
 
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
 
 namespace WebCharts.Services.Models.General
 {
@@ -380,7 +384,7 @@ namespace WebCharts.Services.Models.General
 			if(series.Length > 1)
 			{
 				// Check if series X values are aligned
-				this.CheckXValuesAlignment(series);
+				CheckXValuesAlignment(series);
 
 				// Apply points indexes to the first series
 				int pointIndex = 0;
@@ -968,7 +972,7 @@ namespace WebCharts.Services.Models.General
 					double pointIndex = 1.0;
 					foreach(DataPoint point in ser.Points)
 					{
-						if(!point.IsEmpty || !this.IsEmptyPointIgnored)
+						if(!point.IsEmpty || !IsEmptyPointIgnored)
 						{
 							DataRow dataRow = seriesTable.NewRow();
 					
@@ -1005,7 +1009,7 @@ namespace WebCharts.Services.Models.General
 										yValue = point.AxisLabel;
 									}
 								}
-								else if(!this.IsEmptyPointIgnored)
+								else if(!IsEmptyPointIgnored)
 								{
 									// Special handling of empty points
 									yValue = DBNull.Value;
@@ -1219,7 +1223,7 @@ namespace WebCharts.Services.Models.General
 				// Only keep N first points
 				while(output[seriesIndex].Points.Count > pointCount)
 				{
-					if(this.FilterSetEmptyPoints)
+					if(FilterSetEmptyPoints)
 					{
 						output[seriesIndex].Points[pointCount].IsEmpty = true;
 						++pointCount;
@@ -1312,7 +1316,7 @@ namespace WebCharts.Services.Models.General
 				bool matchCriteria = filterInterface.FilterDataPoint(
 					inputSeries[0].Points[pointIndex],
 					inputSeries[0],
-					originalPointIndex) == this.FilterMatchedPoints;
+					originalPointIndex) == FilterMatchedPoints;
 
 
 				// Process all series
@@ -1321,7 +1325,7 @@ namespace WebCharts.Services.Models.General
 					bool seriesMatchCriteria = matchCriteria;
 					if(output[seriesIndex] != inputSeries[seriesIndex])
 					{
-						if(seriesMatchCriteria && !this.FilterSetEmptyPoints)
+						if(seriesMatchCriteria && !FilterSetEmptyPoints)
 						{
 							// Don't do anything...
 							seriesMatchCriteria = false;
@@ -1338,7 +1342,7 @@ namespace WebCharts.Services.Models.General
 					if(seriesMatchCriteria)
 					{
 						// Set point's empty flag
-						if(this.FilterSetEmptyPoints)
+						if(FilterSetEmptyPoints)
 						{
 							output[seriesIndex].Points[pointIndex].IsEmpty = true;
 							for(int valueIndex = 0; valueIndex <  output[seriesIndex].Points[pointIndex].YValues.Length; valueIndex++)
@@ -1388,9 +1392,9 @@ namespace WebCharts.Services.Models.General
 			/// <param name="rangeElements">Range elements to filter.</param>
 			public PointElementFilter(DataManipulator dataManipulator, DateRangeType dateRange, string rangeElements)
 			{
-				this._dataManipulator = dataManipulator;
-				this._dateRange = dateRange;
-				this._rangeElements = dataManipulator.ConvertElementIndexesToArray(rangeElements);
+				_dataManipulator = dataManipulator;
+				_dateRange = dateRange;
+				_rangeElements = dataManipulator.ConvertElementIndexesToArray(rangeElements);
 			}
 			
 			/// <summary>
@@ -1403,8 +1407,8 @@ namespace WebCharts.Services.Models.General
 			public bool FilterDataPoint(DataPoint point, Series series, int pointIndex)
 			{
 				return _dataManipulator.CheckFilterElementCriteria(
-					this._dateRange,
-					this._rangeElements,
+					_dateRange,
+					_rangeElements,
 					point);
 			}
 		}
@@ -1437,9 +1441,9 @@ namespace WebCharts.Services.Models.General
 				double compareValue,
 				string usingValue)
 			{
-				this._compareMethod = compareMethod;
-				this._usingValue = usingValue;
-				this._compareValue = compareValue;
+				_compareMethod = compareMethod;
+				_usingValue = usingValue;
+				_compareValue = compareValue;
 			}
 			
 			/// <summary>
@@ -1499,7 +1503,7 @@ namespace WebCharts.Services.Models.General
 			// Check if there are items in the array
 			if(indexes.Length == 0)
 			{
-                throw (new ArgumentException(SR.ExceptionDataManipulatorIndexUndefined, "rangeElements"));
+                throw (new ArgumentException(SR.ExceptionDataManipulatorIndexUndefined, nameof(rangeElements)));
 			}
 
 			// Allocate memory for the result array
@@ -1518,8 +1522,8 @@ namespace WebCharts.Services.Models.General
 						// Convert to integer
 						try
 						{
-							result[index] = Int32.Parse(rangeIndex[0], System.Globalization.CultureInfo.InvariantCulture);
-							result[index + 1] = Int32.Parse(rangeIndex[1], System.Globalization.CultureInfo.InvariantCulture);
+							result[index] = int.Parse(rangeIndex[0], System.Globalization.CultureInfo.InvariantCulture);
+							result[index + 1] = int.Parse(rangeIndex[1], System.Globalization.CultureInfo.InvariantCulture);
 
 							if(result[index + 1] < result[index])
 							{
@@ -2783,7 +2787,7 @@ namespace WebCharts.Services.Models.General
 				//*******************************************************************
 				//** Ignore empty points
 				//*******************************************************************
-				if(point.IsEmpty && this.IsEmptyPointIgnored)
+				if(point.IsEmpty && IsEmptyPointIgnored)
 				{
 					++numberOfEmptyPoints;
 					return;
@@ -2803,7 +2807,7 @@ namespace WebCharts.Services.Models.General
 
 					// Process point values depending on the formula
 					if(functionInfo.function == GroupingFunction.Min &&
-						(!point.IsEmpty && this.IsEmptyPointIgnored))
+						(!point.IsEmpty && IsEmptyPointIgnored))
 					{
 						pointTempValues[functionInfo.outputIndex] = 
 							Math.Min(pointTempValues[functionInfo.outputIndex], point.YValues[funcIndex-1]);
@@ -2904,7 +2908,7 @@ namespace WebCharts.Services.Models.General
 						for(int secondPassIndex = intervalFirstIndex; secondPassIndex <= intervalLastIndex; secondPassIndex++)
 						{
 							// Ignore empty points
-							if(series.Points[secondPassIndex].IsEmpty && this.IsEmptyPointIgnored)
+							if(series.Points[secondPassIndex].IsEmpty && IsEmptyPointIgnored)
 							{
 								continue;
 							}
@@ -2931,7 +2935,7 @@ namespace WebCharts.Services.Models.General
 						for(int secondPassIndex = intervalFirstIndex; secondPassIndex <= intervalLastIndex; secondPassIndex++)
 						{
 							// Ignore empty points
-							if(series.Points[secondPassIndex].IsEmpty && this.IsEmptyPointIgnored)
+							if(series.Points[secondPassIndex].IsEmpty && IsEmptyPointIgnored)
 							{
 								continue;
 							}

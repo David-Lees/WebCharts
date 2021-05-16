@@ -24,11 +24,17 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -225,9 +231,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-        virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+        virtual public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 
 		#endregion
@@ -270,7 +276,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// All data series from chart area which have Error bar chart type
-			List<string>	typeSeries = area.GetSeriesFromChartType(this.Name);
+			List<string>	typeSeries = area.GetSeriesFromChartType(Name);
 
 			// Zero X values mode.
             bool indexedSeries = ChartHelper.IndexedSeries(common, typeSeries.ToArray());
@@ -282,7 +288,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			foreach( Series ser in common.DataManager.Series )
 			{
 				// Process non empty series of the area with error bar chart type
-				if( String.Compare( ser.ChartTypeName, this.Name, StringComparison.OrdinalIgnoreCase ) != 0 
+				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
 					|| ser.ChartArea != area.Name || !ser.IsVisible())
 				{
 					continue;
@@ -422,9 +428,9 @@ namespace WebCharts.Services.Models.ChartTypes
 				foreach( DataPoint point in ser.Points )
 				{
 					// Check required Y values number
-					if(point.YValues.Length < this.YValuesPerPoint)
+					if(point.YValues.Length < YValuesPerPoint)
 					{
-						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(this.Name, this.YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
+						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
 					}
 
 					// Reset pre-calculated point position
@@ -534,9 +540,6 @@ namespace WebCharts.Services.Models.ChartTypes
 							clipRegionSet = true;
 						}
 
-                        // Start Svg Selection mode
-						graph.StartHotRegion( point );
-
 						// Draw error bar line
 						graph.DrawLineRel( 
 							point.Color, 
@@ -550,9 +553,6 @@ namespace WebCharts.Services.Models.ChartTypes
 						// Draw Error Bar marks
 						DrawErrorBarMarks(graph, barStyle, area, ser, point, xPosition, width);
 
-						// End Svg Selection mode
-						graph.EndHotRegion( );
-
 						// Reset Clip Region
 						if(clipRegionSet)
 						{
@@ -564,10 +564,9 @@ namespace WebCharts.Services.Models.ChartTypes
 					{
 						// Calculate rect around the error bar marks
 						SKRect	areaRect = SKRect.Empty;
-						areaRect.X = xPosition - width / 2f;
-						areaRect.Y = (float)Math.Min(high, low);
-						areaRect.Width = width;
-						areaRect.Height = (float)Math.Max(high, low) - areaRect.Y;
+						areaRect.Left = xPosition - width / 2f;
+						areaRect.Top = (float)Math.Min(high, low);
+						areaRect.Size = new(width,(float)Math.Max(high, low) - areaRect.Top);
 
 						// Add area
 						common.HotRegionsList.AddHotRegion( areaRect, point, ser.Name, index - 1 );
@@ -667,14 +666,8 @@ namespace WebCharts.Services.Models.ChartTypes
 						}
 						low = vAxis.GetLinearPosition(low);
 
-						// Start Svg Selection mode
-						graph.StartHotRegion( point, true );
-
 						// Draw label
 						DrawLabel(common, area, graph, ser, point, new SKPoint(xPosition, (float)Math.Min(high, low)), index);
-
-						// End Svg Selection mode
-						graph.EndHotRegion( );
 
 						++index;
 					}
@@ -817,7 +810,7 @@ namespace WebCharts.Services.Models.ChartTypes
 						point.BorderDashStyle, 
 						new SKPoint(xPosition - width/2f, yPosition), 
 						new SKPoint(xPosition + width/2f, yPosition),
-						(point.series != null) ? point.series.ShadowColor : Color.Empty, 
+						(point.series != null) ? point.series.ShadowColor : SKColor.Empty, 
 						(point.series != null) ? point.series.ShadowOffset : 0 );
 				}
 
@@ -836,7 +829,7 @@ namespace WebCharts.Services.Models.ChartTypes
 						point.MarkerImage);
 
 					// Get marker color
-					Color markerColor = (point.MarkerColor == Color.Empty) ? point.Color : point.MarkerColor;
+					SKColor markerColor = (point.MarkerColor == SKColor.Empty) ? point.Color : point.MarkerColor;
 
 					// Draw the marker
 					graph.DrawMarkerRel(
@@ -849,7 +842,7 @@ namespace WebCharts.Services.Models.ChartTypes
 						point.MarkerImage,
 						point.MarkerImageTransparentColor,
 						(point.series != null) ? point.series.ShadowOffset : 0,
-						(point.series != null) ? point.series.ShadowColor : Color.Empty,
+						(point.series != null) ? point.series.ShadowColor : SKColor.Empty,
 						new SKRect(xPosition, yPosition, markerSize.Width, markerSize.Height));
 				}
 			}
@@ -877,8 +870,8 @@ namespace WebCharts.Services.Models.ChartTypes
             if (graph != null && graph.Graphics != null)
             {
                 // Marker size is in pixels and we do the mapping for higher DPIs
-                size.Width = markerSize * graph.Graphics.DpiX / 96;
-                size.Height = markerSize * graph.Graphics.DpiY / 96;
+                size.Width = markerSize;
+                size.Height = markerSize;
             }
 
             if(markerImage.Length > 0)
@@ -1004,25 +997,23 @@ namespace WebCharts.Services.Models.ChartTypes
                                 true);
 
                             // Draw label text
-                            using (Brush brush = new SolidBrush(point.LabelForeColor))
-                            {
-                                graph.DrawPointLabelStringRel(
-                                    common,
-                                    text,
-                                    point.Font,
-                                    brush,
-                                    position,
-                                    format,
-                                    textAngle,
-                                    labelBackPosition,
-                                    point.LabelBackColor,
-                                    point.LabelBorderColor,
-                                    point.LabelBorderWidth,
-                                    point.LabelBorderDashStyle,
-                                    ser,
-                                    point,
-                                    pointIndex - 1);
-                            }
+                            using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
+                            graph.DrawPointLabelStringRel(
+                                common,
+                                text,
+                                point.Font,
+                                brush,
+                                position,
+                                format,
+                                textAngle,
+                                labelBackPosition,
+                                point.LabelBackColor,
+                                point.LabelBorderColor,
+                                point.LabelBorderWidth,
+                                point.LabelBorderDashStyle,
+                                ser,
+                                point,
+                                pointIndex - 1);
                         }
                     }
                 }
@@ -1050,7 +1041,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			Series seriesToDraw )
 		{
 			// All data series from chart area which have Error Bar chart type
-			List<string>	typeSeries = area.GetSeriesFromChartType(this.Name);
+			List<string>	typeSeries = area.GetSeriesFromChartType(Name);
 
 			// Zero X values mode.
             bool indexedSeries = ChartHelper.IndexedSeries(common, typeSeries.ToArray());
@@ -1061,7 +1052,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			foreach( Series ser in common.DataManager.Series )
 			{
 				// Process non empty series of the area with stock chart type
-				if( String.Compare( ser.ChartTypeName, this.Name, StringComparison.OrdinalIgnoreCase ) != 0 
+				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
 					|| ser.ChartArea != area.Name || !ser.IsVisible())
 				{
 					continue;
@@ -1176,9 +1167,9 @@ namespace WebCharts.Services.Models.ChartTypes
 				foreach( DataPoint point in ser.Points )
 				{
 					// Check required Y values number
-					if(point.YValues.Length < this.YValuesPerPoint)
+					if(point.YValues.Length < YValuesPerPoint)
 					{
-						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues( this.Name, this.YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
+						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues( Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
 					}
 
 					// Reset pre-calculated point position
@@ -1291,9 +1282,6 @@ namespace WebCharts.Services.Models.ChartTypes
 							clipRegionSet = true;
 						}
 
-                        // Start Svg Selection mode
-						graph.StartHotRegion( point );
-
 						// Draw error bar line
 						graph.DrawLineRel( 
 							point.Color, 
@@ -1310,9 +1298,6 @@ namespace WebCharts.Services.Models.ChartTypes
 						high = points[0].Y;
 						low = points[1].Y;
 
-						// End Svg Selection mode
-						graph.EndHotRegion( );
-
 						// Reset Clip Region
 						if(clipRegionSet)
 						{
@@ -1328,10 +1313,9 @@ namespace WebCharts.Services.Models.ChartTypes
 
 						// Calculate rect around the error bar marks
 						SKRect	areaRect = SKRect.Empty;
-						areaRect.X = xPosition - width / 2f;
-						areaRect.Y = (float)Math.Min(high, low);
-						areaRect.Width = width;
-						areaRect.Height = (float)Math.Max(high, low) - areaRect.Y;
+						areaRect.Left = xPosition - width / 2f;
+						areaRect.Top = (float)Math.Min(high, low);
+						areaRect.Size = new(width,(float)Math.Max(high, low) - areaRect.Top);
 
 						// Add area
 						common.HotRegionsList.AddHotRegion( 
@@ -1784,7 +1768,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
 			// Get series and value name
 			string	linkedSeriesName = errorBarSeries[CustomPropertyName.ErrorBarSeries];
-			String	valueName = "Y";
+			string	valueName = "Y";
 			int valueTypeIndex = linkedSeriesName.IndexOf(":", StringComparison.Ordinal);
 			if(valueTypeIndex >= 0)
 			{
@@ -1793,7 +1777,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Get reference to the chart control
-			Chart control = errorBarSeries.Chart;
+			ChartService control = errorBarSeries.Chart;
 			if(control != null)
 			{
 				// Get linked series and check existance

@@ -12,7 +12,7 @@
 
 
 using SkiaSharp;
-using System.ComponentModel;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using WebCharts.Services.Enums;
@@ -78,10 +78,10 @@ namespace WebCharts.Services.Models.General
         #region Fields
 
         // Legend column type
-        private LegendCellColumnType _columnType = LegendCellColumnType.Text;
+        private LegendCellColumnType _columnType;
 
         // Legend column text
-        private string _text = KeywordName.LegendText;
+        private string _text;
 
         // Legend column text color
         private SKColor _foreColor = SKColor.Empty;
@@ -99,16 +99,13 @@ namespace WebCharts.Services.Models.General
         private SKSize _seriesSymbolSize = new(200, 70);
 
         // Legend column content allignment
-        private ContentAlignment _alignment = ContentAlignment.MiddleCenter;
-
-        // Legend column tooltip
-        private string _toolTip = string.Empty;
+        private ContentAlignment _alignment;
 
         // Legend column margins
-        private Margins _margins = new Margins(0, 0, 15, 15);
+        private Margins _margins = new(0, 0, 15, 15);
 
         // Legend column header text
-        private string _headerText = string.Empty;
+        private string _headerText;
 
         // Legend column/cell content allignment
         private StringAlignment _headerAlignment = StringAlignment.Center;
@@ -162,10 +159,10 @@ namespace WebCharts.Services.Models.General
         /// <param name="alignment">Column cell content alignment.</param>
         public LegendCellColumn(string headerText, LegendCellColumnType columnType, string text, ContentAlignment alignment)
         {
-            this._headerText = headerText;
-            this._columnType = columnType;
-            this._text = text;
-            this._alignment = alignment;
+            _headerText = headerText;
+            _columnType = columnType;
+            _text = text;
+            _alignment = alignment;
         }
 
 
@@ -196,11 +193,6 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Gets legend this column belongs too.
         /// </summary>
-        [
-        Browsable(false),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden),
-        ]
         public virtual Legend Legend
         {
             get
@@ -218,20 +210,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(LegendCellColumnType.Text),
         SRDescription("DescriptionAttributeLegendCellColumn_ColumnType"),
-        ParenthesizePropertyNameAttribute(true)
         ]
         public virtual LegendCellColumnType ColumnType
         {
             get
             {
-                return this._columnType;
+                return _columnType;
             }
             set
             {
-                this._columnType = value;
-                this.Invalidate();
+                _columnType = value;
+                Invalidate();
             }
         }
 
@@ -241,20 +231,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(KeywordName.LegendText),
         SRDescription("DescriptionAttributeLegendCellColumn_Text"),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
         ]
         public virtual string Text
         {
             get
             {
-                return this._text;
+                return _text;
             }
             set
             {
-                this._text = value;
-                this.Invalidate();
+                _text = value;
+                Invalidate();
             }
         }
 
@@ -263,21 +251,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeForeColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color ForeColor
+        public virtual SKColor ForeColor
         {
             get
             {
-                return this._foreColor;
+                return _foreColor;
             }
             set
             {
-                this._foreColor = value;
-                this.Invalidate();
+                _foreColor = value;
+                Invalidate();
             }
         }
 
@@ -286,21 +271,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeBackColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color BackColor
+        public virtual SKColor BackColor
         {
             get
             {
-                return this._backColor;
+                return _backColor;
             }
             set
             {
-                this._backColor = value;
-                this.Invalidate();
+                _backColor = value;
+                Invalidate();
             }
         }
 
@@ -310,19 +292,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(null),
         SRDescription("DescriptionAttributeLegendCellColumn_Font"),
         ]
-        public virtual Font Font
+        public virtual SKFont Font
         {
             get
             {
-                return this._font;
+                return _font;
             }
             set
             {
-                this._font = value;
-                this.Invalidate();
+                _font = value;
+                Invalidate();
             }
         }
 
@@ -332,23 +313,22 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(typeof(Size), "200, 70"),
         SRDescription("DescriptionAttributeLegendCellColumn_SeriesSymbolSize"),
         ]
-        public virtual Size SeriesSymbolSize
+        public virtual SKSize SeriesSymbolSize
         {
             get
             {
-                return this._seriesSymbolSize;
+                return _seriesSymbolSize;
             }
             set
             {
                 if (value.Width < 0 || value.Height < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionSeriesSymbolSizeIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionSeriesSymbolSizeIsNegative, nameof(value)));
                 }
-                this._seriesSymbolSize = value;
-                this.Invalidate();
+                _seriesSymbolSize = value;
+                Invalidate();
             }
         }
 
@@ -358,19 +338,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(ContentAlignment.MiddleCenter),
         SRDescription("DescriptionAttributeLegendCellColumn_Alignment"),
         ]
         public virtual ContentAlignment Alignment
         {
             get
             {
-                return this._alignment;
+                return _alignment;
             }
             set
             {
-                this._alignment = value;
-                this.Invalidate();
+                _alignment = value;
+                Invalidate();
             }
         }
 
@@ -380,27 +359,23 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSeriesItems"),
-        DefaultValue(typeof(Margins), "0,0,15,15"),
         SRDescription("DescriptionAttributeLegendCellColumn_Margins"),
-        SerializationVisibilityAttribute(SerializationVisibility.Attribute),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        NotifyParentPropertyAttribute(true),
         ]
         public virtual Margins Margins
         {
             get
             {
-                return this._margins;
+                return _margins;
             }
             set
             {
-                this._margins = value;
-                this.Invalidate();
+                _margins = value;
+                Invalidate();
 
                 // Set common elements of the new margins class
-                if (this.Legend != null)
+                if (Legend != null)
                 {
-                    this._margins.Common = this.Legend.Common;
+                    _margins.Common = Legend.Common;
                 }
             }
         }
@@ -408,13 +383,12 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Returns true if property should be serialized.  This is for internal use only.
         /// </summary>
-        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         public bool ShouldSerializeMargins()
         {
-            if (this._margins.Top == 0 &&
-                this._margins.Bottom == 0 &&
-                this._margins.Left == 15 &&
-                this._margins.Right == 15)
+            if (_margins.Top == 0 &&
+                _margins.Bottom == 0 &&
+                _margins.Left == 15 &&
+                _margins.Right == 15)
             {
                 return false;
             }
@@ -422,49 +396,22 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the legend column tooltip. This is only applicable to items that are automatically generated for the series.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeSeriesItems"),
-        SRDescription("DescriptionAttributeToolTip"),
-        DefaultValue(""),
-        Editor(typeof(KeywordsStringEditor), typeof(UITypeEditor)),
-        ]
-        public virtual string ToolTip
-        {
-            set
-            {
-                this._toolTip = value;
-                if (Chart != null &&
-                   Chart.selection != null)
-                {
-                    Chart.selection.enabledChecked = false;
-                }
-            }
-            get
-            {
-                return this._toolTip;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the legend column header text.
         /// </summary>
         [
         SRCategory("CategoryAttributeHeader"),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeLegendCellColumn_HeaderText"),
         ]
         public virtual string HeaderText
         {
             get
             {
-                return this._headerText;
+                return _headerText;
             }
             set
             {
-                this._headerText = value;
-                this.Invalidate();
+                _headerText = value;
+                Invalidate();
             }
         }
 
@@ -473,21 +420,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeHeader"),
-        DefaultValue(typeof(Color), "Black"),
         SRDescription("DescriptionAttributeLegendCellColumn_HeaderColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color HeaderForeColor
+        public virtual SKColor HeaderForeColor
         {
             get
             {
-                return this._headerForeColor;
+                return _headerForeColor;
             }
             set
             {
-                this._headerForeColor = value;
-                this.Invalidate();
+                _headerForeColor = value;
+                Invalidate();
             }
         }
 
@@ -496,21 +440,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeHeader"),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeHeaderBackColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color HeaderBackColor
+        public virtual SKColor HeaderBackColor
         {
             get
             {
-                return this._headerBackColor;
+                return _headerBackColor;
             }
             set
             {
-                this._headerBackColor = value;
-                this.Invalidate();
+                _headerBackColor = value;
+                Invalidate();
             }
         }
 
@@ -518,20 +459,19 @@ namespace WebCharts.Services.Models.General
         /// Gets or sets the font of the legend column header.
         /// </summary>
         [
-        SRCategory("CategoryAttributeHeader"),
-        DefaultValue(typeof(Font), "Microsoft Sans Serif, 8pt, style=Bold"),
+        SRCategory("CategoryAttributeHeader"),        
         SRDescription("DescriptionAttributeLegendCellColumn_HeaderFont"),
         ]
-        public virtual Font HeaderFont
+        public virtual SKFont HeaderFont
         {
             get
             {
-                return this._headerFont;
+                return _headerFont;
             }
             set
             {
-                this._headerFont = value;
-                this.Invalidate();
+                _headerFont = value;
+                Invalidate();
             }
         }
 
@@ -540,21 +480,20 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeHeader"),
-        DefaultValue(typeof(StringAlignment), "Center"),
         SRDescription("DescriptionAttributeLegendCellColumn_HeaderTextAlignment"),
         ]
         public StringAlignment HeaderAlignment
         {
             get
             {
-                return this._headerAlignment;
+                return _headerAlignment;
             }
             set
             {
-                if (value != this._headerAlignment)
+                if (value != _headerAlignment)
                 {
-                    this._headerAlignment = value;
-                    this.Invalidate();
+                    _headerAlignment = value;
+                    Invalidate();
                 }
             }
         }
@@ -564,25 +503,23 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSize"),
-        DefaultValue(-1),
-        TypeConverter(typeof(IntNanValueConverter)),
         SRDescription("DescriptionAttributeLegendCellColumn_MinimumWidth"),
         ]
         public virtual int MinimumWidth
         {
             get
             {
-                return this._minimumCellWidth;
+                return _minimumCellWidth;
             }
             set
             {
                 if (value < -1)
                 {
-                    throw (new ArgumentException(SR.ExceptionMinimumCellWidthIsWrong, "value"));
+                    throw new ArgumentException(SR.ExceptionMinimumCellWidthIsWrong, nameof(value));
                 }
 
-                this._minimumCellWidth = value;
-                this.Invalidate();
+                _minimumCellWidth = value;
+                Invalidate();
             }
         }
 
@@ -591,24 +528,22 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeSize"),
-        DefaultValue(-1),
-        TypeConverter(typeof(IntNanValueConverter)),
         SRDescription("DescriptionAttributeLegendCellColumn_MaximumWidth"),
         ]
         public virtual int MaximumWidth
         {
             get
             {
-                return this._maximumCellWidth;
+                return _maximumCellWidth;
             }
             set
             {
                 if (value < -1)
                 {
-                    throw (new ArgumentException(SR.ExceptionMaximumCellWidthIsWrong, "value"));
+                    throw new ArgumentException(SR.ExceptionMaximumCellWidthIsWrong, nameof(value));
                 }
-                this._maximumCellWidth = value;
-                this.Invalidate();
+                _maximumCellWidth = value;
+                Invalidate();
             }
         }
 
@@ -623,13 +558,12 @@ namespace WebCharts.Services.Models.General
         /// <returns>A new copy of the LegendCell</returns>
         internal LegendCell CreateNewCell()
         {
-            LegendCell newCell = new LegendCell();
-            newCell.CellType = (this.ColumnType == LegendCellColumnType.SeriesSymbol) ? LegendCellType.SeriesSymbol : LegendCellType.Text;
-            newCell.Text = this.Text;
-            newCell.ToolTip = this.ToolTip;
-            newCell.SeriesSymbolSize = this.SeriesSymbolSize;
-            newCell.Alignment = this.Alignment;
-            newCell.Margins = new Margins(this.Margins.Top, this.Margins.Bottom, this.Margins.Left, this.Margins.Right);
+            LegendCell newCell = new();
+            newCell.CellType = (ColumnType == LegendCellColumnType.SeriesSymbol) ? LegendCellType.SeriesSymbol : LegendCellType.Text;
+            newCell.Text = Text;
+            newCell.SeriesSymbolSize = SeriesSymbolSize;
+            newCell.Alignment = Alignment;
+            newCell.Margins = new Margins(Margins.Top, Margins.Bottom, Margins.Left, Margins.Right);
             return newCell;
         }
 
@@ -643,13 +577,10 @@ namespace WebCharts.Services.Models.General
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _fontCache != null)
             {
-                if (_fontCache != null)
-                {
-                    _fontCache.Dispose();
-                    _fontCache = null;
-                }
+                _fontCache.Dispose();
+                _fontCache = null;
             }
         }
 
@@ -679,28 +610,28 @@ namespace WebCharts.Services.Models.General
         private string _text = string.Empty;
 
         // Legend cell text color
-        private Color _foreColor = Color.Empty;
+        private SKColor _foreColor = SKColor.Empty;
 
         // Legend cell back color
-        private Color _backColor = Color.Empty;
+        private SKColor _backColor = SKColor.Empty;
 
         // Font cache
         private FontCache _fontCache = new FontCache();
 
         // Legend cell text font
-        private Font _font = null;
+        private SKFont _font = null;
 
         // Legend cell image name
         private string _image = string.Empty;
 
         // Legend cell image transparent color
-        private Color _imageTransparentColor = Color.Empty;
+        private SKColor _imageTransparentColor = SKColor.Empty;
 
         // Legend cell image size
-        private Size _imageSize = Size.Empty;
+        private SKSize _imageSize = SKSize.Empty;
 
         // Legend cell series symbol size
-        private Size _seriesSymbolSize = new Size(200, 70);
+        private SKSize _seriesSymbolSize = new(200, 70);
 
         // Legend cell content allignment
         private ContentAlignment _alignment = ContentAlignment.MiddleCenter;
@@ -719,14 +650,14 @@ namespace WebCharts.Services.Models.General
 
         // Position where cell is drawn in pixel coordinates.
         // Exncludes margins and space required for separators
-        internal Rectangle cellPosition = Rectangle.Empty;
+        internal SKRect cellPosition = SKRect.Empty;
 
         // Position where cell is drawn in pixel coordinates. 
         // Includes margins and space required for separators
-        internal Rectangle cellPositionWithMargins = Rectangle.Empty;
+        internal SKRect cellPositionWithMargins = SKRect.Empty;
 
         // Last cached cell size.
-        private Size _cachedCellSize = Size.Empty;
+        private SKSize _cachedCellSize = SKSize.Empty;
 
         // Font reduced value used to calculate last cached cell size
         private int _cachedCellSKSizeontReducedBy = 0;
@@ -740,7 +671,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public LegendCell()
         {
-            this.Intitialize(LegendCellType.Text, string.Empty, ContentAlignment.MiddleCenter);
+            Intitialize(LegendCellType.Text, string.Empty, ContentAlignment.MiddleCenter);
         }
 
         /// <summary>
@@ -749,7 +680,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="text">Cell text or image name, depending on the type.</param>
         public LegendCell(string text)
         {
-            this.Intitialize(LegendCellType.Text, text, ContentAlignment.MiddleCenter);
+            Intitialize(LegendCellType.Text, text, ContentAlignment.MiddleCenter);
         }
 
         /// <summary>
@@ -759,7 +690,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="text">Cell text or image name, depending on the type.</param>
         public LegendCell(LegendCellType cellType, string text)
         {
-            this.Intitialize(cellType, text, ContentAlignment.MiddleCenter);
+            Intitialize(cellType, text, ContentAlignment.MiddleCenter);
         }
 
         /// <summary>
@@ -770,7 +701,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="alignment">Cell content alignment.</param>
         public LegendCell(LegendCellType cellType, string text, ContentAlignment alignment)
         {
-            this.Intitialize(cellType, text, alignment);
+            Intitialize(cellType, text, alignment);
         }
 
         /// <summary>
@@ -781,16 +712,16 @@ namespace WebCharts.Services.Models.General
         /// <param name="alignment">Cell content alignment.</param>
         private void Intitialize(LegendCellType cellType, string text, ContentAlignment alignment)
         {
-            this._cellType = cellType;
-            if (this._cellType == LegendCellType.Image)
+            _cellType = cellType;
+            if (_cellType == LegendCellType.Image)
             {
-                this._image = text;
+                _image = text;
             }
             else
             {
-                this._text = text;
+                _text = text;
             }
-            this._alignment = alignment;
+            _alignment = alignment;
         }
 
         #endregion // Constructors
@@ -821,36 +752,29 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(LegendCellType.Text),
         SRDescription("DescriptionAttributeLegendCell_CellType"),
-        ParenthesizePropertyNameAttribute(true)
         ]
         public virtual LegendCellType CellType
         {
             get
             {
-                return this._cellType;
+                return _cellType;
             }
             set
             {
-                this._cellType = value;
-                this.Invalidate();
+                _cellType = value;
+                Invalidate();
             }
         }
 
         /// <summary>
         /// Gets legend this column/cell belongs too.
         /// </summary>
-        [
-        Browsable(false),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden),
-        ]
         public virtual Legend Legend
         {
             get
             {
-                LegendItem item = this.LegendItem;
+                LegendItem item = LegendItem;
                 if (item != null)
                     return item.Legend;
                 else
@@ -861,11 +785,6 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Gets legend item this cell belongs too.
         /// </summary>
-        [
-        Browsable(false),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden),
-        ]
         public virtual LegendItem LegendItem
         {
             get
@@ -884,19 +803,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeLegendCell_Text"),
         ]
         public virtual string Text
         {
             get
             {
-                return this._text;
+                return _text;
             }
             set
             {
-                this._text = value;
-                this.Invalidate();
+                _text = value;
+                Invalidate();
             }
         }
 
@@ -905,21 +823,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeForeColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color ForeColor
+        public virtual SKColor ForeColor
         {
             get
             {
-                return this._foreColor;
+                return _foreColor;
             }
             set
             {
-                this._foreColor = value;
-                this.Invalidate();
+                _foreColor = value;
+                Invalidate();
             }
         }
 
@@ -928,21 +843,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeBackColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color BackColor
+        public virtual SKColor BackColor
         {
             get
             {
-                return this._backColor;
+                return _backColor;
             }
             set
             {
-                this._backColor = value;
-                this.Invalidate();
+                _backColor = value;
+                Invalidate();
             }
         }
 
@@ -951,19 +863,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(null),
         SRDescription("DescriptionAttributeLegendCell_Font"),
         ]
-        public virtual Font Font
+        public virtual SKFont Font
         {
             get
             {
-                return this._font;
+                return _font;
             }
             set
             {
-                this._font = value;
-                this.Invalidate();
+                _font = value;
+                Invalidate();
             }
         }
 
@@ -972,20 +883,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeLegendCell_Image"),
-        Editor(typeof(ImageValueEditor), typeof(UITypeEditor)),
         ]
         public virtual string Image
         {
             get
             {
-                return this._image;
+                return _image;
             }
             set
             {
-                this._image = value;
-                this.Invalidate();
+                _image = value;
+                Invalidate();
             }
         }
 
@@ -994,21 +903,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeImageTransparentColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public virtual Color ImageTransparentColor
+        public virtual SKColor ImageTransparentColor
         {
             get
             {
-                return this._imageTransparentColor;
+                return _imageTransparentColor;
             }
             set
             {
-                this._imageTransparentColor = value;
-                this.Invalidate();
+                _imageTransparentColor = value;
+                Invalidate();
             }
         }
 
@@ -1021,15 +927,13 @@ namespace WebCharts.Services.Models.General
         /// </remarks>
         [
         SRCategory("CategoryAttributeLayout"),
-        DefaultValue(typeof(Size), "0, 0"),
-        TypeConverter(typeof(SizeEmptyValueConverter)),
         SRDescription("DescriptionAttributeLegendCell_ImageSize"),
         ]
-        public virtual Size ImageSize
+        public virtual SKSize ImageSize
         {
             get
             {
-                return this._imageSize;
+                return _imageSize;
             }
             set
             {
@@ -1037,8 +941,8 @@ namespace WebCharts.Services.Models.General
                 {
                     throw (new ArgumentException(SR.ExceptionLegendCellImageSizeIsNegative, "value"));
                 }
-                this._imageSize = value;
-                this.Invalidate();
+                _imageSize = value;
+                Invalidate();
             }
         }
 
@@ -1048,14 +952,13 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeLayout"),
-        DefaultValue(typeof(Size), "200, 70"),
         SRDescription("DescriptionAttributeLegendCell_SeriesSymbolSize"),
         ]
-        public virtual Size SeriesSymbolSize
+        public virtual SKSize SeriesSymbolSize
         {
             get
             {
-                return this._seriesSymbolSize;
+                return _seriesSymbolSize;
             }
             set
             {
@@ -1063,8 +966,8 @@ namespace WebCharts.Services.Models.General
                 {
                     throw (new ArgumentException(SR.ExceptionLegendCellSeriesSymbolSizeIsNegative, "value"));
                 }
-                this._seriesSymbolSize = value;
-                this.Invalidate();
+                _seriesSymbolSize = value;
+                Invalidate();
             }
         }
 
@@ -1073,19 +976,18 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeLayout"),
-        DefaultValue(ContentAlignment.MiddleCenter),
         SRDescription("DescriptionAttributeLegendCell_Alignment"),
         ]
         public virtual ContentAlignment Alignment
         {
             get
             {
-                return this._alignment;
+                return _alignment;
             }
             set
             {
-                this._alignment = value;
-                this.Invalidate();
+                _alignment = value;
+                Invalidate();
             }
         }
 
@@ -1094,14 +996,13 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeLayout"),
-        DefaultValue(1),
         SRDescription("DescriptionAttributeLegendCell_CellSpan"),
         ]
         public virtual int CellSpan
         {
             get
             {
-                return this._cellSpan;
+                return _cellSpan;
             }
             set
             {
@@ -1109,8 +1010,8 @@ namespace WebCharts.Services.Models.General
                 {
                     throw (new ArgumentException(SR.ExceptionLegendCellSpanIsLessThenOne, "value"));
                 }
-                this._cellSpan = value;
-                this.Invalidate();
+                _cellSpan = value;
+                Invalidate();
             }
         }
 
@@ -1119,26 +1020,23 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeLayout"),
-        DefaultValue(typeof(Margins), "0,0,15,15"),
         SRDescription("DescriptionAttributeLegendCell_Margins"),
-        SerializationVisibilityAttribute(SerializationVisibility.Attribute),
-        NotifyParentPropertyAttribute(true),
         ]
         public virtual Margins Margins
         {
             get
             {
-                return this._margins;
+                return _margins;
             }
             set
             {
-                this._margins = value;
-                this.Invalidate();
+                _margins = value;
+                Invalidate();
 
                 // Set common elements of the new margins class
-                if (this.Legend != null)
+                if (Legend != null)
                 {
-                    this._margins.Common = this.Common;
+                    _margins.Common = Common;
                 }
             }
         }
@@ -1146,13 +1044,12 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Returns true if property should be serialized.  This method is for internal use only.
         /// </summary>
-        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         internal bool ShouldSerializeMargins()
         {
-            if (this._margins.Top == 0 &&
-                this._margins.Bottom == 0 &&
-                this._margins.Left == 15 &&
-                this._margins.Right == 15)
+            if (_margins.Top == 0 &&
+                _margins.Bottom == 0 &&
+                _margins.Left == 15 &&
+                _margins.Right == 15)
             {
                 return false;
             }
@@ -1165,22 +1062,16 @@ namespace WebCharts.Services.Models.General
         [
         SRCategory("CategoryAttributeMapArea"),
         SRDescription("DescriptionAttributeToolTip"),
-        DefaultValue(""),
         ]
         public virtual string ToolTip
         {
             set
             {
-                this._toolTip = value;
-                if (this.Chart != null &&
-                   this.Chart.selection != null)
-                {
-                    this.Chart.selection.enabledChecked = false;
-                }
+                _toolTip = value;
             }
             get
             {
-                return this._toolTip;
+                return _toolTip;
             }
         }
 
@@ -1193,8 +1084,8 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal void ResetCache()
         {
-            this._cachedCellSize = Size.Empty;
-            this._cachedCellSKSizeontReducedBy = 0;
+            _cachedCellSize = SKSize.Empty;
+            _cachedCellSKSizeontReducedBy = 0;
         }
 
         /// <summary>
@@ -1205,27 +1096,27 @@ namespace WebCharts.Services.Models.General
         /// <param name="singleWCharacterSize">Size of the 'W' character used to calculate elements.</param>
         internal void SetCellPosition(
             int rowIndex,
-            Rectangle position,
-            Size singleWCharacterSize)
+            SKRect position,
+            SKSize singleWCharacterSize)
         {
             // Set cell position 
-            this.cellPosition = position;
-            this.cellPositionWithMargins = position;
-            this._rowIndex = rowIndex;
+            cellPosition = position;
+            cellPositionWithMargins = position;
+            _rowIndex = rowIndex;
 
             // Adjust cell position by specified margin
-            this.cellPosition.X += (int)(this.Margins.Left * singleWCharacterSize.Width / 100f);
-            this.cellPosition.Y += (int)(this.Margins.Top * singleWCharacterSize.Height / 100f);
-            this.cellPosition.Width -= (int)(this.Margins.Left * singleWCharacterSize.Width / 100f)
-                + (int)(this.Margins.Right * singleWCharacterSize.Width / 100f);
-            this.cellPosition.Height -= (int)(this.Margins.Top * singleWCharacterSize.Height / 100f)
-                + (int)(this.Margins.Bottom * singleWCharacterSize.Height / 100f);
+            cellPosition.Left += (int)(Margins.Left * singleWCharacterSize.Width / 100f);
+            cellPosition.Top += (int)(Margins.Top * singleWCharacterSize.Height / 100f);
+            cellPosition.Right -= (int)(Margins.Left * singleWCharacterSize.Width / 100f)
+                + (int)(Margins.Right * singleWCharacterSize.Width / 100f);
+            cellPosition.Bottom -= (int)(Margins.Top * singleWCharacterSize.Height / 100f)
+                + (int)(Margins.Bottom * singleWCharacterSize.Height / 100f);
 
             // Adjust cell position by space required for the separatorType
             if (LegendItem != null &&
                 LegendItem.SeparatorType != LegendSeparatorStyle.None)
             {
-                this.cellPosition.Height -= this.Legend.GetSeparatorSize(LegendItem.SeparatorType).Height;
+                cellPosition.Bottom -= Legend.GetSeparatorSize(LegendItem.SeparatorType).Height;
             }
         }
 
@@ -1246,38 +1137,38 @@ namespace WebCharts.Services.Models.General
         /// Size of the 'W' character used to calculate elements.
         /// </param>
         /// <returns>Legend cell size.</returns>
-        internal Size MeasureCell(
+        internal SKSize MeasureCell(
             ChartGraphics graph,
             int fontSizeReducedBy,
-            Font legendAutoFont,
-            Size singleWCharacterSize)
+            SKFont legendAutoFont,
+            SKSize singleWCharacterSize)
         {
             // Check if cached size may be reused
-            if (this._cachedCellSKSizeontReducedBy == fontSizeReducedBy &&
-                !this._cachedCellSize.IsEmpty)
+            if (_cachedCellSKSizeontReducedBy == fontSizeReducedBy &&
+                !_cachedCellSize.IsEmpty)
             {
-                return this._cachedCellSize;
+                return _cachedCellSize;
             }
 
             // Get cell font
-            Size cellSize = Size.Empty;
+            SKSize cellSize = SKSize.Empty;
             bool disposeFont = false;
-            Font cellFont = this.GetCellFont(legendAutoFont, fontSizeReducedBy, out disposeFont);
+            SKFont cellFont = GetCellFont(legendAutoFont, fontSizeReducedBy, out disposeFont);
 
             // Measure cell content size based on the type
-            if (this.CellType == LegendCellType.SeriesSymbol)
+            if (CellType == LegendCellType.SeriesSymbol)
             {
-                cellSize.Width = (int)(Math.Abs(this.SeriesSymbolSize.Width) * singleWCharacterSize.Width / 100f);
-                cellSize.Height = (int)(Math.Abs(this.SeriesSymbolSize.Height) * singleWCharacterSize.Height / 100f);
+                cellSize.Width = (int)(Math.Abs(SeriesSymbolSize.Width) * singleWCharacterSize.Width / 100f);
+                cellSize.Height = (int)(Math.Abs(SeriesSymbolSize.Height) * singleWCharacterSize.Height / 100f);
             }
-            else if (this.CellType == LegendCellType.Image)
+            else if (CellType == LegendCellType.Image)
             {
-                if (this.ImageSize.IsEmpty && this.Image.Length > 0)
+                if (ImageSize.IsEmpty && Image.Length > 0)
                 {
                     SKSize imageSize = new SKSize();
 
                     // Use original image size
-                    if (this.Common.ImageLoader.GetAdjustedImageSize(this.Image, graph.Graphics, ref imageSize))
+                    if (Common.ImageLoader.GetAdjustedImageSize(Image, graph.Graphics, ref imageSize))
                     {
                         cellSize.Width = (int)imageSize.Width;
                         cellSize.Height = (int)imageSize.Height;
@@ -1285,15 +1176,15 @@ namespace WebCharts.Services.Models.General
                 }
                 else
                 {
-                    cellSize.Width = (int)(Math.Abs(this.ImageSize.Width) * singleWCharacterSize.Width / 100f);
-                    cellSize.Height = (int)(Math.Abs(this.ImageSize.Height) * singleWCharacterSize.Height / 100f);
+                    cellSize.Width = (int)(Math.Abs(ImageSize.Width) * singleWCharacterSize.Width / 100f);
+                    cellSize.Height = (int)(Math.Abs(ImageSize.Height) * singleWCharacterSize.Height / 100f);
                 }
             }
-            else if (this.CellType == LegendCellType.Text)
+            else if (CellType == LegendCellType.Text)
             {
                 // Get current cell text taking in consideration keywords
                 // and automatic text wrapping.
-                string cellText = this.GetCellText();
+                string cellText = GetCellText();
 
                 // Measure text size.
                 // Note that extra "I" character added to add more horizontal spacing
@@ -1301,18 +1192,18 @@ namespace WebCharts.Services.Models.General
             }
             else
             {
-                throw (new InvalidOperationException(SR.ExceptionLegendCellTypeUnknown(this.CellType.ToString())));
+                throw (new InvalidOperationException(SR.ExceptionLegendCellTypeUnknown(CellType.ToString())));
             }
 
             // Add cell margins 
-            cellSize.Width += (int)((this.Margins.Left + this.Margins.Right) * singleWCharacterSize.Width / 100f);
-            cellSize.Height += (int)((this.Margins.Top + this.Margins.Bottom) * singleWCharacterSize.Height / 100f);
+            cellSize.Width += (int)((Margins.Left + Margins.Right) * singleWCharacterSize.Width / 100f);
+            cellSize.Height += (int)((Margins.Top + Margins.Bottom) * singleWCharacterSize.Height / 100f);
 
             // Add space required for the separatorType
             if (LegendItem != null &&
                 LegendItem.SeparatorType != LegendSeparatorStyle.None)
             {
-                cellSize.Height += this.Legend.GetSeparatorSize(LegendItem.SeparatorType).Height;
+                cellSize.Height += Legend.GetSeparatorSize(LegendItem.SeparatorType).Height;
             }
 
             // Dispose created font object
@@ -1323,8 +1214,8 @@ namespace WebCharts.Services.Models.General
             }
 
             // Save calculated size
-            this._cachedCellSize = cellSize;
-            this._cachedCellSKSizeontReducedBy = fontSizeReducedBy;
+            _cachedCellSize = cellSize;
+            _cachedCellSKSizeontReducedBy = fontSizeReducedBy;
 
             return cellSize;
         }
@@ -1333,60 +1224,57 @@ namespace WebCharts.Services.Models.General
         /// Gets cell background color.
         /// </summary>
         /// <returns></returns>
-        private Color GetCellBackColor()
+        private SKColor GetCellBackColor()
         {
-            Color resultColor = this.BackColor;
-            if (this.BackColor.IsEmpty && this.Legend != null)
+            SKColor resultColor = BackColor;
+            if (BackColor == SKColor.Empty && Legend != null)
             {
                 // Try getting back color from the associated column
-                if (this.LegendItem != null)
+                if (LegendItem != null)
                 {
                     // Get index of this cell
-                    int cellIndex = this.LegendItem.Cells.IndexOf(this);
-                    if (cellIndex >= 0)
+                    int cellIndex = LegendItem.Cells.IndexOf(this);
+                    // Check if associated column exsists
+                    if (cellIndex >= 0 && cellIndex < Legend.CellColumns.Count &&
+                            Legend.CellColumns[cellIndex].BackColor != SKColor.Empty)
                     {
-                        // Check if associated column exsists
-                        if (cellIndex < this.Legend.CellColumns.Count &&
-                            !this.Legend.CellColumns[cellIndex].BackColor.IsEmpty)
-                        {
-                            resultColor = this.Legend.CellColumns[cellIndex].BackColor;
-                        }
+                        resultColor = Legend.CellColumns[cellIndex].BackColor;
                     }
                 }
 
                 // Get font from the legend isInterlaced 
-                if (resultColor.IsEmpty &&
-                    this.Legend.InterlacedRows &&
-                    this._rowIndex % 2 != 0)
+                if (resultColor == SKColor.Empty &&
+                    Legend.InterlacedRows &&
+                    _rowIndex % 2 != 0)
                 {
-                    if (this.Legend.InterlacedRowsColor.IsEmpty)
+                    if (Legend.InterlacedRowsColor == SKColor.Empty)
                     {
                         // Automatically determine background color
                         // If isInterlaced strips color is not set - use darker color of the area
-                        if (this.Legend.BackColor == Color.Empty)
+                        if (Legend.BackColor == SKColor.Empty)
                         {
-                            resultColor = Color.LightGray;
+                            resultColor = SKColors.LightGray;
                         }
-                        else if (this.Legend.BackColor == Color.Transparent)
+                        else if (Legend.BackColor == SKColors.Transparent)
                         {
-                            if (Chart.BackColor != Color.Transparent &&
-                                Chart.BackColor != Color.Black)
+                            if (Chart.BackColor != SKColors.Transparent &&
+                                Chart.BackColor != SKColors.Black)
                             {
-                                resultColor = ChartGraphics.GetGradientColor(Chart.BackColor, Color.Black, 0.2);
+                                resultColor = ChartGraphics.GetGradientColor(Chart.BackColor, SKColors.Black, 0.2);
                             }
                             else
                             {
-                                resultColor = Color.LightGray;
+                                resultColor = SKColors.LightGray;
                             }
                         }
                         else
                         {
-                            resultColor = ChartGraphics.GetGradientColor(this.Legend.BackColor, Color.Black, 0.2);
+                            resultColor = ChartGraphics.GetGradientColor(Legend.BackColor, SKColors.Black, 0.2);
                         }
                     }
                     else
                     {
-                        resultColor = this.Legend.InterlacedRowsColor;
+                        resultColor = Legend.InterlacedRowsColor;
                     }
                 }
             }
@@ -1400,28 +1288,24 @@ namespace WebCharts.Services.Models.General
         /// <param name="fontSizeReducedBy">Number of points legend auto-font reduced by.</param>
         /// <param name="disposeFont">Returns a flag if result font object should be disposed.</param>
         /// <returns>Default cell font.</returns>
-        private Font GetCellFont(Font legendAutoFont, int fontSizeReducedBy, out bool disposeFont)
+        private SKFont GetCellFont(SKFont legendAutoFont, int fontSizeReducedBy, out bool disposeFont)
         {
-            Font cellFont = this.Font;
+            SKFont cellFont = Font;
             disposeFont = false;
 
             // Check if font is not set in the cell and legend object reference is valid
             if (cellFont == null &&
-                this.Legend != null)
+                Legend != null)
             {
                 // Try getting font from the associated column
-                if (this.LegendItem != null)
+                if (LegendItem != null)
                 {
                     // Get index of this cell
-                    int cellIndex = this.LegendItem.Cells.IndexOf(this);
-                    if (cellIndex >= 0)
+                    int cellIndex = LegendItem.Cells.IndexOf(this);
+                    if (cellIndex >= 0 && cellIndex < Legend.CellColumns.Count &&
+                            Legend.CellColumns[cellIndex].Font != null)
                     {
-                        // Check if associated column exsists
-                        if (cellIndex < this.Legend.CellColumns.Count &&
-                            this.Legend.CellColumns[cellIndex].Font != null)
-                        {
-                            cellFont = this.Legend.CellColumns[cellIndex].Font;
-                        }
+                        cellFont = Legend.CellColumns[cellIndex].Font;
                     }
                 }
 
@@ -1451,11 +1335,7 @@ namespace WebCharts.Services.Models.General
                 }
 
                 // Create new font
-                cellFont = new Font(
-                    cellFont.FontFamily,
-                    newFontSize,
-                    cellFont.Style,
-                    cellFont.Unit);
+                cellFont = new(cellFont.Typeface, newFontSize);
             }
 
             return cellFont;
@@ -1472,15 +1352,15 @@ namespace WebCharts.Services.Models.General
         private string GetCellToolTip()
         {
             // Check if tooltip is set in the cell (highest priority)
-            if (this.ToolTip.Length > 0)
+            if (ToolTip.Length > 0)
             {
-                return this.ToolTip;
+                return ToolTip;
             }
 
             // Check if tooltip is set in associated legend item
-            if (this.LegendItem != null)
+            if (LegendItem != null)
             {
-                return this.LegendItem.ToolTip;
+                return LegendItem.ToolTip;
             }
 
             return string.Empty;
@@ -1536,12 +1416,12 @@ namespace WebCharts.Services.Models.General
         private string GetCellText()
         {
             // Replace all "\n" strings with the new line character
-            string resultString = this.Text.Replace("\\n", "\n");
+            string resultString = Text.Replace("\\n", "\n");
 
             // Replace the KeywordName.LegendText keyword with legend item Name property
-            if (this.LegendItem != null)
+            if (LegendItem != null)
             {
-                resultString = resultString.Replace(KeywordName.LegendText, this.LegendItem.Name);
+                resultString = resultString.Replace(KeywordName.LegendText, LegendItem.Name);
             }
             else
             {
@@ -1549,9 +1429,9 @@ namespace WebCharts.Services.Models.General
             }
 
             // Check if text width exceeds recomended character length
-            if (this.Legend != null)
+            if (Legend != null)
             {
-                int recomendedTextLength = this.Legend.TextWrapThreshold;
+                int recomendedTextLength = Legend.TextWrapThreshold;
 
                 if (recomendedTextLength > 0 &&
                     resultString.Length > recomendedTextLength)
@@ -1591,38 +1471,35 @@ namespace WebCharts.Services.Models.General
         /// Helper function that returns cell text color.
         /// </summary>
         /// <returns>Cell text color.</returns>
-        private Color GetCellForeColor()
+        private SKColor GetCellForeColor()
         {
             // Check if cell text color defined in the cell
-            if (!this.ForeColor.IsEmpty)
+            if (ForeColor != SKColor.Empty)
             {
-                return this.ForeColor;
+                return ForeColor;
             }
 
             // Check if color from the Column or legend should be used
-            if (this.Legend != null)
+            if (Legend != null)
             {
                 // Try getting font from the associated column
-                if (this.LegendItem != null)
+                if (LegendItem != null)
                 {
                     // Get index of this cell
-                    int cellIndex = this.LegendItem.Cells.IndexOf(this);
-                    if (cellIndex >= 0)
+                    int cellIndex = LegendItem.Cells.IndexOf(this);
+                    // Check if associated column exsists
+                    if (cellIndex >= 0 && cellIndex < Legend.CellColumns.Count &&
+                            Legend.CellColumns[cellIndex].ForeColor != SKColor.Empty)
                     {
-                        // Check if associated column exsists
-                        if (cellIndex < this.Legend.CellColumns.Count &&
-                            !this.Legend.CellColumns[cellIndex].ForeColor.IsEmpty)
-                        {
-                            return this.Legend.CellColumns[cellIndex].ForeColor;
-                        }
+                        return Legend.CellColumns[cellIndex].ForeColor;
                     }
                 }
 
                 // Use legend text color
-                return this.Legend.ForeColor;
+                return Legend.ForeColor;
             }
 
-            return Color.Black;
+            return SKColors.Black;
         }
 
         #endregion // Methods
@@ -1639,22 +1516,22 @@ namespace WebCharts.Services.Models.General
         internal void Paint(
             ChartGraphics chartGraph,
             int fontSizeReducedBy,
-            Font legendAutoFont,
-            Size singleWCharacterSize)
+            SKFont legendAutoFont,
+            SKSize singleWCharacterSize)
         {
             // Check cell size before painting
-            if (this.cellPosition.Width <= 0 || this.cellPosition.Height <= 0)
+            if (cellPosition.Width <= 0 || cellPosition.Height <= 0)
             {
                 return;
             }
 
             // Chart elements painting mode
-            if (this.Common.ProcessModePaint)
+            if (Common.ProcessModePaint)
             {
                 // Check if cell background should be painted
-                Color cellBackColor = this.GetCellBackColor();
-                SKRect rectRelative = chartGraph.GetRelativeRectangle(this.cellPositionWithMargins);
-                if (!cellBackColor.IsEmpty)
+                SKColor cellBackColor = GetCellBackColor();
+                SKRect rectRelative = chartGraph.GetRelativeRectangle(cellPositionWithMargins);
+                if (cellBackColor != SKColor.Empty)
                 {
                     chartGraph.FillRectangleRel(
                         rectRelative,
@@ -1675,26 +1552,26 @@ namespace WebCharts.Services.Models.General
                 }
 
                 // Fire an event for custom cell back drawing
-                this.Chart.CallOnPrePaint(new ChartPaintEventArgs(this, chartGraph, this.Common, new ElementPosition(rectRelative.X, rectRelative.Y, rectRelative.Width, rectRelative.Height)));
+                Chart.CallOnPrePaint(new ChartPaintEventArgs(this, chartGraph, Common, new ElementPosition(rectRelative.Left, rectRelative.Top, rectRelative.Width, rectRelative.Height)));
 
                 // Check legend cell type
-                switch (this.CellType)
+                switch (CellType)
                 {
                     case (LegendCellType.Text):
                         this.PaintCellText(chartGraph, fontSizeReducedBy, legendAutoFont);
                         break;
                     case (LegendCellType.Image):
-                        this.PaintCellImage(chartGraph, singleWCharacterSize);
+                        PaintCellImage(chartGraph, singleWCharacterSize);
                         break;
                     case (LegendCellType.SeriesSymbol):
                         this.PaintCellSeriesSymbol(chartGraph, singleWCharacterSize);
                         break;
                     default:
-                        throw (new InvalidOperationException(SR.ExceptionLegendCellTypeUnknown(this.CellType.ToString())));
+                        throw (new InvalidOperationException(SR.ExceptionLegendCellTypeUnknown(CellType.ToString())));
                 }
 
                 // Fire an event for custom cell drawing
-                this.Chart.CallOnPostPaint(new ChartPaintEventArgs(this, chartGraph, this.Common, new ElementPosition(rectRelative.X, rectRelative.Y, rectRelative.Width, rectRelative.Height)));
+                Chart.CallOnPostPaint(new ChartPaintEventArgs(this, chartGraph, Common, new ElementPosition(rectRelative.Left, rectRelative.Top, rectRelative.Width, rectRelative.Height)));
             }
 #if DEBUG
             // Draw bounding rectangle for debug purpose
@@ -1703,20 +1580,20 @@ namespace WebCharts.Services.Models.General
 #endif // DEBUG
 
             // Legend cell selection mode
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions)
             {
                 // Add hot region.
                 // Note that legend cell is passed as sub-object of legend item
-                this.Common.HotRegionsList.AddHotRegion(
-                    chartGraph.GetRelativeRectangle(this.cellPositionWithMargins),
-                    this.GetCellToolTip(),
-                    this.GetCellUrl(),
-                    this.GetCellMapAreaAttributes(),
-                    this.GetCellPostBackValue(),
-                    this.LegendItem,
+                Common.HotRegionsList.AddHotRegion(
+                    chartGraph.GetRelativeRectangle(cellPositionWithMargins),
+                    GetCellToolTip(),
+                    GetCellUrl(),
+                    GetCellMapAreaAttributes(),
+                    GetCellPostBackValue(),
+                    LegendItem,
                     this,
                     ChartElementType.LegendItem,
-                    this.LegendItem.SeriesName);
+                    LegendItem.SeriesName);
             }
         }
 
@@ -1735,11 +1612,8 @@ namespace WebCharts.Services.Models.General
             bool disposeFont = false;
             SKFont cellFont = this.GetCellFont(legendAutoFont, fontSizeReducedBy, out disposeFont);
 
-            // Start Svg Selection mode
-            chartGraph.StartHotRegion(this.GetCellUrl(), this.GetCellToolTip());
-
             // Create font brush
-            using (SolidBrush fontBrush = new SolidBrush(this.GetCellForeColor()))
+            using (SKPaint fontBrush = new() { Color = GetCellForeColor(), Style = SKPaintStyle.Fill })
             {
                 // Create cell text format
                 using (StringFormat format = new StringFormat(StringFormat.GenericDefault))
@@ -1747,64 +1621,60 @@ namespace WebCharts.Services.Models.General
                     format.FormatFlags = StringFormatFlags.LineLimit;
                     format.Trimming = StringTrimming.EllipsisCharacter;
                     format.Alignment = StringAlignment.Center;
-                    if (this.Alignment == ContentAlignment.BottomLeft ||
-                        this.Alignment == ContentAlignment.MiddleLeft ||
-                        this.Alignment == ContentAlignment.TopLeft)
+                    if (Alignment == ContentAlignment.BottomLeft ||
+                        Alignment == ContentAlignment.MiddleLeft ||
+                        Alignment == ContentAlignment.TopLeft)
                     {
                         format.Alignment = StringAlignment.Near;
                     }
-                    else if (this.Alignment == ContentAlignment.BottomRight ||
-                        this.Alignment == ContentAlignment.MiddleRight ||
-                        this.Alignment == ContentAlignment.TopRight)
+                    else if (Alignment == ContentAlignment.BottomRight ||
+                        Alignment == ContentAlignment.MiddleRight ||
+                        Alignment == ContentAlignment.TopRight)
                     {
                         format.Alignment = StringAlignment.Far;
                     }
                     format.LineAlignment = StringAlignment.Center;
-                    if (this.Alignment == ContentAlignment.BottomCenter ||
-                        this.Alignment == ContentAlignment.BottomLeft ||
-                        this.Alignment == ContentAlignment.BottomRight)
+                    if (Alignment == ContentAlignment.BottomCenter ||
+                        Alignment == ContentAlignment.BottomLeft ||
+                        Alignment == ContentAlignment.BottomRight)
                     {
                         format.LineAlignment = StringAlignment.Far;
                     }
-                    else if (this.Alignment == ContentAlignment.TopCenter ||
-                        this.Alignment == ContentAlignment.TopLeft ||
-                        this.Alignment == ContentAlignment.TopRight)
+                    else if (Alignment == ContentAlignment.TopCenter ||
+                        Alignment == ContentAlignment.TopLeft ||
+                        Alignment == ContentAlignment.TopRight)
                     {
                         format.LineAlignment = StringAlignment.Near;
                     }
 
                     // Measure string height out of one character
-                    SKSize charSize = chartGraph.MeasureStringAbs(this.GetCellText(), cellFont, new SKSize(10000f, 10000f), format);
+                    SKSize charSize = chartGraph.MeasureStringAbs(GetCellText(), cellFont, new SKSize(10000f, 10000f), format);
 
                     // If height of one characte is more than rectangle heigjt - remove LineLimit flag
-                    if (charSize.Height > this.cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) != 0)
+                    if (charSize.Height > cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) != 0)
                     {
                         format.FormatFlags ^= StringFormatFlags.LineLimit;
                     }
 
-                    else if (charSize.Height < this.cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) == 0)
+                    else if (charSize.Height < cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) == 0)
                     {
                         format.FormatFlags |= StringFormatFlags.LineLimit;
                     }
 
                     // Draw text
                     chartGraph.DrawStringRel(
-                        this.GetCellText(),
+                        GetCellText(),
                         cellFont,
                         fontBrush,
-                        chartGraph.GetRelativeRectangle(this.cellPosition),
+                        chartGraph.GetRelativeRectangle(cellPosition),
                         format);
                 }
             }
-
-            // End Svg Selection mode
-            chartGraph.EndHotRegion();
 
             // Dispose created cell font object
             if (disposeFont)
             {
                 cellFont.Dispose();
-                cellFont = null;
             }
         }
 
@@ -1815,45 +1685,43 @@ namespace WebCharts.Services.Models.General
         /// <param name="singleWCharacterSize">Size of the 'W' character in auto-fit font.</param>
         private void PaintCellImage(
             ChartGraphics chartGraph,
-            Size singleWCharacterSize)
+            SKSize singleWCharacterSize)
         {
-            if (this.Image.Length > 0)
+            if (Image.Length > 0)
             {
                 // Get image size in relative coordinates
-                Rectangle imagePosition = Rectangle.Empty;
-                System.Drawing.Image image = this.Common.ImageLoader.LoadImage(this.Image);
+                SKRect imagePosition = SKRect.Empty;
+                SKImage image = Common.ImageLoader.LoadImage(Image);
 
                 SKSize imageSize = new SKSize();
 
                 ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
 
-                imagePosition.Width = (int)imageSize.Width;
-                imagePosition.Height = (int)imageSize.Height;
+                imagePosition.Size = new( (int)imageSize.Width,(int)imageSize.Height);
 
                 // Calculate cell position
-                Rectangle imageCellPosition = this.cellPosition;
-                imageCellPosition.Width = imagePosition.Width;
-                imageCellPosition.Height = imagePosition.Height;
-                if (!this.ImageSize.IsEmpty)
+                SKRect imageCellPosition = cellPosition;
+                imageCellPosition.Size = new(imagePosition.Width,imagePosition.Height);
+                if (!ImageSize.IsEmpty)
                 {
                     // Adjust cell size using image symbol size specified
-                    if (this.ImageSize.Width > 0)
+                    if (ImageSize.Width > 0)
                     {
-                        int newWidth = (int)(this.ImageSize.Width * singleWCharacterSize.Width / 100f);
-                        if (newWidth > this.cellPosition.Width)
+                        int newWidth = (int)(ImageSize.Width * singleWCharacterSize.Width / 100f);
+                        if (newWidth > cellPosition.Width)
                         {
-                            newWidth = this.cellPosition.Width;
+                            newWidth = (int)cellPosition.Width;
                         }
-                        imageCellPosition.Width = newWidth;
+                        imageCellPosition.Size = new(newWidth, imageCellPosition.Height);
                     }
-                    if (this.ImageSize.Height > 0)
+                    if (ImageSize.Height > 0)
                     {
-                        int newHeight = (int)(this.ImageSize.Height * singleWCharacterSize.Height / 100f);
-                        if (newHeight > this.cellPosition.Height)
+                        int newHeight = (int)(ImageSize.Height * singleWCharacterSize.Height / 100f);
+                        if (newHeight > cellPosition.Height)
                         {
-                            newHeight = this.cellPosition.Height;
+                            newHeight = (int)cellPosition.Height;
                         }
-                        imageCellPosition.Height = newHeight;
+                        imageCellPosition.Size = new(imageCellPosition.Width, newHeight);
                     }
                 }
 
@@ -1861,62 +1729,46 @@ namespace WebCharts.Services.Models.General
                 float scaleValue = 1f;
                 if (imagePosition.Height > imageCellPosition.Height)
                 {
-                    scaleValue = (float)imagePosition.Height / (float)imageCellPosition.Height;
+                    scaleValue = imagePosition.Height / imageCellPosition.Height;
                 }
                 if (imagePosition.Width > imageCellPosition.Width)
                 {
-                    scaleValue = Math.Max(scaleValue, (float)imagePosition.Width / (float)imageCellPosition.Width);
+                    scaleValue = Math.Max(scaleValue, imagePosition.Width / imageCellPosition.Width);
                 }
 
                 // Scale image size
-                imagePosition.Height = (int)(imagePosition.Height / scaleValue);
-                imagePosition.Width = (int)(imagePosition.Width / scaleValue);
+                imagePosition.Size = new((int)(imagePosition.Width / scaleValue), (int)(imagePosition.Height / scaleValue));
 
                 // Get image location
-                imagePosition.X = (int)((this.cellPosition.X + this.cellPosition.Width / 2f) - imagePosition.Width / 2f);
-                imagePosition.Y = (int)((this.cellPosition.Y + this.cellPosition.Height / 2f) - imagePosition.Height / 2f);
+                imagePosition.Left = (int)((cellPosition.Left + cellPosition.Width / 2f) - imagePosition.Width / 2f);
+                imagePosition.Top = (int)((cellPosition.Top + cellPosition.Height / 2f) - imagePosition.Height / 2f);
 
                 // Adjust image location based on the cell content alignment
-                if (this.Alignment == ContentAlignment.BottomLeft ||
-                    this.Alignment == ContentAlignment.MiddleLeft ||
-                    this.Alignment == ContentAlignment.TopLeft)
+                if (Alignment == ContentAlignment.BottomLeft ||
+                    Alignment == ContentAlignment.MiddleLeft ||
+                    Alignment == ContentAlignment.TopLeft)
                 {
-                    imagePosition.X = this.cellPosition.X;
+                    imagePosition.Left = cellPosition.Left;
                 }
-                else if (this.Alignment == ContentAlignment.BottomRight ||
-                    this.Alignment == ContentAlignment.MiddleRight ||
-                    this.Alignment == ContentAlignment.TopRight)
+                else if (Alignment == ContentAlignment.BottomRight ||
+                    Alignment == ContentAlignment.MiddleRight ||
+                    Alignment == ContentAlignment.TopRight)
                 {
-                    imagePosition.X = this.cellPosition.Right - imagePosition.Width;
-                }
-
-                if (this.Alignment == ContentAlignment.BottomCenter ||
-                    this.Alignment == ContentAlignment.BottomLeft ||
-                    this.Alignment == ContentAlignment.BottomRight)
-                {
-                    imagePosition.Y = this.cellPosition.Bottom - imagePosition.Height;
-                }
-                else if (this.Alignment == ContentAlignment.TopCenter ||
-                    this.Alignment == ContentAlignment.TopLeft ||
-                    this.Alignment == ContentAlignment.TopRight)
-                {
-                    imagePosition.Y = this.cellPosition.Y;
+                    imagePosition.Left = cellPosition.Right - imagePosition.Width;
                 }
 
-                // Set image transparent color
-                System.Drawing.Imaging.ImageAttributes imageAttributes = new System.Drawing.Imaging.ImageAttributes();
-                if (this.ImageTransparentColor != Color.Empty)
+                if (Alignment == ContentAlignment.BottomCenter ||
+                    Alignment == ContentAlignment.BottomLeft ||
+                    Alignment == ContentAlignment.BottomRight)
                 {
-                    imageAttributes.SetColorKey(this.ImageTransparentColor, this.ImageTransparentColor, System.Drawing.Imaging.ColorAdjustType.Default);
+                    imagePosition.Top = cellPosition.Bottom - imagePosition.Height;
                 }
-
-                // Increase quality of image scaling
-                SmoothingMode oldSmoothingMode = chartGraph.SmoothingMode;
-                CompositingQuality oldCompositingQuality = chartGraph.Graphics.CompositingQuality;
-                InterpolationMode oldInterpolationMode = chartGraph.Graphics.InterpolationMode;
-                chartGraph.SmoothingMode = SmoothingMode.AntiAlias;
-                chartGraph.Graphics.CompositingQuality = CompositingQuality.HighQuality;
-                chartGraph.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                else if (Alignment == ContentAlignment.TopCenter ||
+                    Alignment == ContentAlignment.TopLeft ||
+                    Alignment == ContentAlignment.TopRight)
+                {
+                    imagePosition.Top = cellPosition.Top;
+                }
 
                 // Draw image
                 chartGraph.DrawImage(
@@ -1926,13 +1778,7 @@ namespace WebCharts.Services.Models.General
                     0,
                     image.Width,
                     image.Height,
-                    GraphicsUnit.Pixel,
-                    imageAttributes);
-
-                // Restore graphics settings
-                chartGraph.SmoothingMode = oldSmoothingMode;
-                chartGraph.Graphics.CompositingQuality = oldCompositingQuality;
-                chartGraph.Graphics.InterpolationMode = oldInterpolationMode;
+                    new SKPaint() { Style = SKPaintStyle.Fill });
             }
         }
 
@@ -1946,29 +1792,29 @@ namespace WebCharts.Services.Models.General
             SKSize singleWCharacterSize)
         {
             //Cache legend item
-            LegendItem legendItem = this.LegendItem;
+            LegendItem legendItem = LegendItem;
 
             // Calculate cell position
-            Rectangle seriesMarkerPosition = this.cellPosition;
+            SKRect seriesMarkerPosition = cellPosition;
 
             // Adjust cell size using image symbol size specified
-            if (this.SeriesSymbolSize.Width >= 0)
+            if (SeriesSymbolSize.Width >= 0)
             {
-                int newWidth = (int)(this.SeriesSymbolSize.Width * singleWCharacterSize.Width / 100f);
-                if (newWidth > this.cellPosition.Width)
+                int newWidth = (int)(SeriesSymbolSize.Width * singleWCharacterSize.Width / 100f);
+                if (newWidth > cellPosition.Width)
                 {
-                    newWidth = this.cellPosition.Width;
+                    newWidth = (int)cellPosition.Width;
                 }
-                seriesMarkerPosition.Width = newWidth;
+                seriesMarkerPosition.Size = new(newWidth, seriesMarkerPosition.Height);
             }
-            if (this.SeriesSymbolSize.Height >= 0)
+            if (SeriesSymbolSize.Height >= 0)
             {
-                int newHeight = (int)(this.SeriesSymbolSize.Height * singleWCharacterSize.Height / 100f);
-                if (newHeight > this.cellPosition.Height)
+                int newHeight = (int)(SeriesSymbolSize.Height * singleWCharacterSize.Height / 100f);
+                if (newHeight > cellPosition.Height)
                 {
-                    newHeight = this.cellPosition.Height;
+                    newHeight = (int)cellPosition.Height;
                 }
-                seriesMarkerPosition.Height = newHeight;
+                seriesMarkerPosition.Size = new(seriesMarkerPosition.Width, newHeight);
             }
 
             // Check for empty size
@@ -1978,79 +1824,68 @@ namespace WebCharts.Services.Models.General
             }
 
             // Get symbol location
-            seriesMarkerPosition.X = (int)((this.cellPosition.X + this.cellPosition.Width / 2f) - seriesMarkerPosition.Width / 2f);
-            seriesMarkerPosition.Y = (int)((this.cellPosition.Y + this.cellPosition.Height / 2f) - seriesMarkerPosition.Height / 2f);
+            seriesMarkerPosition.Left = (int)((cellPosition.Left + cellPosition.Width / 2f) - seriesMarkerPosition.Width / 2f);
+            seriesMarkerPosition.Top = (int)((cellPosition.Top + cellPosition.Height / 2f) - seriesMarkerPosition.Height / 2f);
 
             // Adjust image location based on the cell content alignment
-            if (this.Alignment == ContentAlignment.BottomLeft ||
-                this.Alignment == ContentAlignment.MiddleLeft ||
-                this.Alignment == ContentAlignment.TopLeft)
+            if (Alignment == ContentAlignment.BottomLeft ||
+                Alignment == ContentAlignment.MiddleLeft ||
+                Alignment == ContentAlignment.TopLeft)
             {
-                seriesMarkerPosition.X = this.cellPosition.X;
+                seriesMarkerPosition.Left = cellPosition.Left;
             }
-            else if (this.Alignment == ContentAlignment.BottomRight ||
-                this.Alignment == ContentAlignment.MiddleRight ||
-                this.Alignment == ContentAlignment.TopRight)
+            else if (Alignment == ContentAlignment.BottomRight ||
+                Alignment == ContentAlignment.MiddleRight ||
+                Alignment == ContentAlignment.TopRight)
             {
-                seriesMarkerPosition.X = this.cellPosition.Right - seriesMarkerPosition.Width;
-            }
-
-            if (this.Alignment == ContentAlignment.BottomCenter ||
-                this.Alignment == ContentAlignment.BottomLeft ||
-                this.Alignment == ContentAlignment.BottomRight)
-            {
-                seriesMarkerPosition.Y = this.cellPosition.Bottom - seriesMarkerPosition.Height;
-            }
-            else if (this.Alignment == ContentAlignment.TopCenter ||
-                this.Alignment == ContentAlignment.TopLeft ||
-                this.Alignment == ContentAlignment.TopRight)
-            {
-                seriesMarkerPosition.Y = this.cellPosition.Y;
+                seriesMarkerPosition.Left = cellPosition.Right - seriesMarkerPosition.Width;
             }
 
-            // Start Svg Selection mode
-            chartGraph.StartHotRegion(this.GetCellUrl(), this.GetCellToolTip());
+            if (Alignment == ContentAlignment.BottomCenter ||
+                Alignment == ContentAlignment.BottomLeft ||
+                Alignment == ContentAlignment.BottomRight)
+            {
+                seriesMarkerPosition.Top = cellPosition.Bottom - seriesMarkerPosition.Height;
+            }
+            else if (Alignment == ContentAlignment.TopCenter ||
+                Alignment == ContentAlignment.TopLeft ||
+                Alignment == ContentAlignment.TopRight)
+            {
+                seriesMarkerPosition.Top = cellPosition.Top;
+            }
 
             // Draw legend item image
             if (legendItem.Image.Length > 0)
             {
                 // Get image size
-                Rectangle imageScale = Rectangle.Empty;
-                System.Drawing.Image image = this.Common.ImageLoader.LoadImage(legendItem.Image);
+                SKRect imageScale = SKRect.Empty;
+                SKImage image = Common.ImageLoader.LoadImage(legendItem.Image);
 
                 if (image != null)
                 {
-                    SKSize imageSize = new SKSize();
+                    SKSize imageSize = new();
 
                     ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
 
-                    imageScale.Width = (int)imageSize.Width;
-                    imageScale.Height = (int)imageSize.Height;
+                    imageScale.Size = new( (int)imageSize.Width,(int)imageSize.Height);
 
                     // Make sure image size fits into the drawing rectangle
                     float scaleValue = 1f;
                     if (imageScale.Height > seriesMarkerPosition.Height)
                     {
-                        scaleValue = (float)imageScale.Height / (float)seriesMarkerPosition.Height;
+                        scaleValue = imageScale.Height / seriesMarkerPosition.Height;
                     }
                     if (imageScale.Width > seriesMarkerPosition.Width)
                     {
-                        scaleValue = Math.Max(scaleValue, (float)imageScale.Width / (float)seriesMarkerPosition.Width);
+                        scaleValue = Math.Max(scaleValue, imageScale.Width / seriesMarkerPosition.Width);
                     }
 
                     // Scale image size
-                    imageScale.Height = (int)(imageScale.Height / scaleValue);
-                    imageScale.Width = (int)(imageScale.Width / scaleValue);
+                    imageScale.Size = new((int)(imageScale.Width / scaleValue),(int)(imageScale.Height / scaleValue));
 
-                    imageScale.X = (int)((seriesMarkerPosition.X + seriesMarkerPosition.Width / 2f) - imageScale.Width / 2f);
-                    imageScale.Y = (int)((seriesMarkerPosition.Y + seriesMarkerPosition.Height / 2f) - imageScale.Height / 2f);
+                    imageScale.Left = (int)((seriesMarkerPosition.Left + seriesMarkerPosition.Width / 2f) - imageScale.Width / 2f);
+                    imageScale.Top = (int)((seriesMarkerPosition.Top + seriesMarkerPosition.Height / 2f) - imageScale.Height / 2f);
 
-                    // Set image transparent color
-                    System.Drawing.Imaging.ImageAttributes imageAttributes = new System.Drawing.Imaging.ImageAttributes();
-                    if (legendItem.BackImageTransparentColor != Color.Empty)
-                    {
-                        imageAttributes.SetColorKey(legendItem.BackImageTransparentColor, legendItem.BackImageTransparentColor, System.Drawing.Imaging.ColorAdjustType.Default);
-                    }
 
                     // Draw image
                     chartGraph.DrawImage(
@@ -2060,19 +1895,18 @@ namespace WebCharts.Services.Models.General
                         0,
                         image.Width,
                         image.Height,
-                        GraphicsUnit.Pixel,
-                        imageAttributes);
+                        new SKPaint() { Style = SKPaintStyle.Fill });
                 }
             }
 
             else
             {
-                int maxShadowOffset = (int)Math.Round((3 * chartGraph.Graphics.DpiX) / 96);
-                int maxBorderWidth = (int)Math.Round((3 * chartGraph.Graphics.DpiX) / 96);
+                int maxShadowOffset = 3;
+                int maxBorderWidth = 3;
 
                 if (legendItem.ImageStyle == LegendImageStyle.Rectangle)
                 {
-                    int maxBorderWidthRect = (int)Math.Round((2 * chartGraph.Graphics.DpiX) / 96);
+                    int maxBorderWidthRect = 2;
 
                     // Draw series rectangle
                     chartGraph.FillRectangleRel(
@@ -2095,10 +1929,10 @@ namespace WebCharts.Services.Models.General
                 if (legendItem.ImageStyle == LegendImageStyle.Line)
                 {
                     // Prepare line coordinates
-                    Point point1 = new Point();
-                    point1.X = seriesMarkerPosition.X;
-                    point1.Y = (int)(seriesMarkerPosition.Y + seriesMarkerPosition.Height / 2F);
-                    Point point2 = new Point();
+                    SKPoint point1 = new();
+                    point1.X = seriesMarkerPosition.Left;
+                    point1.Y = (int)(seriesMarkerPosition.Top + seriesMarkerPosition.Height / 2F);
+                    SKPoint point2 = new();
                     point2.Y = point1.Y;
                     point2.X = seriesMarkerPosition.Right;
 
@@ -2150,43 +1984,40 @@ namespace WebCharts.Services.Models.General
                         }
 
                         // Draw marker
-                        Point point = new Point();
-                        point.X = (int)(seriesMarkerPosition.X + seriesMarkerPosition.Width / 2f);
-                        point.Y = (int)(seriesMarkerPosition.Y + seriesMarkerPosition.Height / 2f);
+                        SKPoint point = new();
+                        point.X = (int)(seriesMarkerPosition.Left + seriesMarkerPosition.Width / 2f);
+                        point.Y = (int)(seriesMarkerPosition.Top + seriesMarkerPosition.Height / 2f);
 
                         // Calculate image scale
-                        Rectangle imageScale = Rectangle.Empty;
+                        SKRect imageScale = SKRect.Empty;
                         if (legendItem.markerImage.Length > 0)
                         {
                             // Get image size
-                            System.Drawing.Image image = this.Common.ImageLoader.LoadImage(legendItem.markerImage);
+                            SKImage image = Common.ImageLoader.LoadImage(legendItem.markerImage);
 
-                            SKSize imageSize = new SKSize();
+                            SKSize imageSize = new();
 
                             ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
-
-                            imageScale.Width = (int)imageSize.Width;
-                            imageScale.Height = (int)imageSize.Height;
+                            imageScale.Size = new((int)imageSize.Width,(int)imageSize.Height);
 
                             // Make sure image size fits into the drawing rectangle
                             float scaleValue = 1f;
                             if (imageScale.Height > seriesMarkerPosition.Height)
                             {
-                                scaleValue = (float)imageScale.Height / (float)seriesMarkerPosition.Height;
+                                scaleValue = imageScale.Height / seriesMarkerPosition.Height;
                             }
                             if (imageScale.Width > seriesMarkerPosition.Width)
                             {
-                                scaleValue = Math.Max(scaleValue, (float)imageScale.Width / (float)seriesMarkerPosition.Width);
+                                scaleValue = Math.Max(scaleValue, imageScale.Width / seriesMarkerPosition.Width);
                             }
 
                             // Scale image size
-                            imageScale.Height = (int)(imageScale.Height / scaleValue);
-                            imageScale.Width = (int)(imageScale.Width / scaleValue);
+                            imageScale.Size = new((int)(imageScale.Width / scaleValue),(int)(imageScale.Height / scaleValue));
                         }
 
                         // Adjust marker position so that it always drawn on pixel
                         // boundary.
-                        SKPoint SKPoint = new SKPoint(point.X, point.Y);
+                        SKPoint SKPoint = new(point.X, point.Y);
                         if ((markerSize % 2) != 0.0)
                         {
                             SKPoint.X -= 0.5f;
@@ -2198,8 +2029,8 @@ namespace WebCharts.Services.Models.General
                             chartGraph.GetRelativePoint(SKPoint),
                             markerStyle,
                             markerSize,
-                            (legendItem.markerColor == Color.Empty) ? legendItem.Color : legendItem.markerColor,
-                            (legendItem.markerBorderColor == Color.Empty) ? legendItem.borderColor : legendItem.markerBorderColor,
+                            (legendItem.markerColor == SKColor.Empty) ? legendItem.Color : legendItem.markerColor,
+                            (legendItem.markerBorderColor == SKColor.Empty) ? legendItem.borderColor : legendItem.markerBorderColor,
                             markerBorderWidth,
                             legendItem.markerImage,
                             legendItem.markerImageTransparentColor,
@@ -2209,9 +2040,6 @@ namespace WebCharts.Services.Models.General
                     }
                 }
             }
-
-            // End Svg Selection mode
-            chartGraph.EndHotRegion();
         }
 
         #endregion // Cell Painting Methods
@@ -2244,7 +2072,6 @@ namespace WebCharts.Services.Models.General
     /// </summary>
     [
     SRDescription("DescriptionAttributeMargins_Margins"),
-    TypeConverter(typeof(MarginExpandableObjectConverter)),
     ]
     public class Margins
     {
@@ -2286,10 +2113,10 @@ namespace WebCharts.Services.Models.General
         /// <param name="right">Right margin.</param>
         public Margins(int top, int bottom, int left, int right)
         {
-            this._top = top;
-            this._bottom = bottom;
-            this._left = left;
-            this._right = right;
+            _top = top;
+            _bottom = bottom;
+            _left = left;
+            _right = right;
         }
 
         #endregion // Constructor
@@ -2301,25 +2128,22 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        DefaultValue(0),
-        SRDescription("DescriptionAttributeMargins_Top"),
-        RefreshPropertiesAttribute(RefreshProperties.All),
-        NotifyParentPropertyAttribute(true),
+        SRDescription("DescriptionAttributeMargins_Top"),        
         ]
         public int Top
         {
             get
             {
-                return this._top;
+                return _top;
             }
             set
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionMarginTopIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionMarginTopIsNegative, nameof(value)));
                 }
-                this._top = value;
-                this.Invalidate();
+                _top = value;
+                Invalidate();
             }
         }
 
@@ -2328,25 +2152,22 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        DefaultValue(0),
-        SRDescription("DescriptionAttributeMargins_Bottom"),
-        RefreshPropertiesAttribute(RefreshProperties.All),
-        NotifyParentPropertyAttribute(true),
+        SRDescription("DescriptionAttributeMargins_Bottom"),        
         ]
         public int Bottom
         {
             get
             {
-                return this._bottom;
+                return _bottom;
             }
             set
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionMarginBottomIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionMarginBottomIsNegative, nameof(value)));
                 }
-                this._bottom = value;
-                this.Invalidate();
+                _bottom = value;
+                Invalidate();
             }
         }
 
@@ -2355,16 +2176,13 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        DefaultValue(0),
-        RefreshPropertiesAttribute(RefreshProperties.All),
-        SRDescription("DescriptionAttributeMargins_Left"),
-        NotifyParentPropertyAttribute(true),
+        SRDescription("DescriptionAttributeMargins_Left"),        
         ]
         public int Left
         {
             get
             {
-                return this._left;
+                return _left;
             }
             set
             {
@@ -2372,8 +2190,8 @@ namespace WebCharts.Services.Models.General
                 {
                     throw (new ArgumentException(SR.ExceptionMarginLeftIsNegative, "value"));
                 }
-                this._left = value;
-                this.Invalidate();
+                _left = value;
+                Invalidate();
             }
         }
 
@@ -2382,16 +2200,13 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        DefaultValue(0),
-        SRDescription("DescriptionAttributeMargins_Right"),
-        RefreshPropertiesAttribute(RefreshProperties.All),
-        NotifyParentPropertyAttribute(true),
+        SRDescription("DescriptionAttributeMargins_Right"),        
         ]
         public int Right
         {
             get
             {
-                return this._right;
+                return _right;
             }
             set
             {
@@ -2399,8 +2214,8 @@ namespace WebCharts.Services.Models.General
                 {
                     throw (new ArgumentException(SR.ExceptionMarginRightIsNegative, "value"));
                 }
-                this._right = value;
-                this.Invalidate();
+                _right = value;
+                Invalidate();
             }
         }
 
@@ -2418,10 +2233,10 @@ namespace WebCharts.Services.Models.General
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{0:D}, {1:D}, {2:D}, {3:D}",
-                this.Top,
-                this.Bottom,
-                this.Left,
-                this.Right);
+                Top,
+                Bottom,
+                Left,
+                Right);
         }
 
         /// <summary>
@@ -2436,13 +2251,12 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override bool Equals(object obj)
         {
-            Margins margins = obj as Margins;
-            if (margins != null)
+            if (obj is Margins margins)
             {
-                if (this.Top == margins.Top &&
-                    this.Bottom == margins.Bottom &&
-                    this.Left == margins.Left &&
-                    this.Right == margins.Right)
+                if (Top == margins.Top &&
+                    Bottom == margins.Bottom &&
+                    Left == margins.Left &&
+                    Right == margins.Right)
                 {
                     return true;
                 }
@@ -2457,7 +2271,7 @@ namespace WebCharts.Services.Models.General
         [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override int GetHashCode()
         {
-            return this.Top.GetHashCode() + this.Bottom.GetHashCode() + this.Left.GetHashCode() + this.Right.GetHashCode();
+            return Top.GetHashCode() + Bottom.GetHashCode() + Left.GetHashCode() + Right.GetHashCode();
         }
 
         /// <summary>
@@ -2468,7 +2282,7 @@ namespace WebCharts.Services.Models.General
         /// </returns>
         public bool IsEmpty()
         {
-            return (this.Top == 0 && this.Bottom == 0 && this.Left == 0 && this.Right == 0);
+            return (Top == 0 && Bottom == 0 && Left == 0 && Right == 0);
         }
 
         /// <summary>
@@ -2477,7 +2291,7 @@ namespace WebCharts.Services.Models.General
         /// <returns>A SKRect class that contains the values of the margins.</returns>
         public SKRect ToSKRect()
         {
-            return new SKRect(this.Left, this.Top, this.Right, this.Bottom);
+            return new SKRect(Left, Top, Right, Bottom);
         }
 
         /// <summary>
@@ -2485,9 +2299,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         private void Invalidate()
         {
-            if (this.Common != null && this.Common.Chart != null)
+            if (Common != null && Common.Chart != null)
             {
-                this.Common.Chart.Invalidate();
+                Common.Chart.Invalidate();
             }
         }
 
@@ -2559,7 +2373,7 @@ namespace WebCharts.Services.Models.General
         /// </param>
         public void Insert(int index, LegendCellType cellType, string text, ContentAlignment alignment)
         {
-            this.Insert(index, new LegendCell(cellType, text, alignment));
+            Insert(index, new LegendCell(cellType, text, alignment));
         }
 
         #endregion
@@ -2609,7 +2423,7 @@ namespace WebCharts.Services.Models.General
                 {
                     item.Dispose();
                 }
-                this.ClearItems();
+                ClearItems();
             }
             base.Dispose(disposing);
         }

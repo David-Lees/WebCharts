@@ -11,32 +11,19 @@
 //
 
 
+using SkiaSharp;
 using System;
 using System.Collections;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Design;
-using System.Drawing.Drawing2D;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
-
-using System.Windows.Forms.DataVisualization.Charting.Data;
-using System.Windows.Forms.DataVisualization.Charting.ChartTypes;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
-using System.Windows.Forms.DataVisualization.Charting.Borders3D;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.ComponentModel.Design.Serialization;
-using System.Reflection;
-using System.Windows.Forms.Design;
-using System.Windows.Forms.Design.DataVisualization.Charting;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.ChartTypes;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.General
 {
-    using FontStyle = System.Drawing.FontStyle;
-
     #region Chart area aligment enumerations
 
     /// <summary>
@@ -117,7 +104,6 @@ namespace WebCharts.Services.Models.General
     /// of its base ChartArea3D class.
     /// </summary>
     [
-    DefaultProperty("Axes"),
     SRDescription("DescriptionAttributeChartArea_ChartArea"),
     ]
     public partial class ChartArea : ChartNamedElement
@@ -131,20 +117,19 @@ namespace WebCharts.Services.Models.General
 
         // Private data members, which store properties values
         private Axis[] _axisArray = new Axis[4];
-        private Color _backColor = Color.Empty;
-        private bool _backColorIsSet = false;
+        private SKColor _backColor = SKColor.Empty;
         private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
         private string _backImage = "";
         private ChartImageWrapMode _backImageWrapMode = ChartImageWrapMode.Tile;
-        private Color _backImageTransparentColor = Color.Empty;
+        private SKColor _backImageTransparentColor = SKColor.Empty;
         private ChartImageAlignmentStyle _backImageAlignment = ChartImageAlignmentStyle.TopLeft;
         private GradientStyle _backGradientStyle = GradientStyle.None;
-        private Color _backSecondaryColor = Color.Empty;
-        private Color _borderColor = Color.Black;
+        private SKColor _backSecondaryColor = SKColor.Empty;
+        private SKColor _borderColor = SKColors.Black;
         private int _borderWidth = 1;
         private ChartDashStyle _borderDashStyle = ChartDashStyle.NotSet;
         private int _shadowOffset = 0;
-        private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
+        private SKColor _shadowColor = new(0, 0, 0, 128);
         private ElementPosition _areaPosition = null;
         private ElementPosition _innerPlotPosition = null;
         internal int IterationCounter = 0;
@@ -177,13 +162,13 @@ namespace WebCharts.Services.Models.General
         private ArrayList _circularAxisList = null;
 
         // Buffered plotting area image
-        internal Bitmap areaBufferBitmap = null;
+        internal SKImage areaBufferBitmap = null;
 
-        private Cursor _cursorX = new Cursor();
-        private Cursor _cursorY = new Cursor();
+        private Cursor _cursorX = new();
+        private Cursor _cursorY = new();
 
         // Area SmartLabel class
-        internal SmartLabel smartLabels = new SmartLabel();
+        internal SmartLabel smartLabels = new();
 
         // Gets or sets a flag that specifies whether the chart area is visible.
         private bool _visible = true;
@@ -197,11 +182,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeCursor"),
-        Bindable(true),
-        DefaultValue(null),
         SRDescription("DescriptionAttributeChartArea_CursorX"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        TypeConverter(typeof(NoNameExpandableObjectConverter)),
         ]
         public Cursor CursorX
         {
@@ -223,11 +204,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeCursor"),
-        Bindable(true),
-        DefaultValue(null),
         SRDescription("DescriptionAttributeChartArea_CursorY"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        TypeConverter(typeof(NoNameExpandableObjectConverter)),
         ]
         public Cursor CursorY
         {
@@ -260,9 +237,7 @@ namespace WebCharts.Services.Models.General
         /// </value>
         [
         SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(true),
         SRDescription("DescriptionAttributeChartArea_Visible"),
-        ParenthesizePropertyNameAttribute(true),
         ]
         virtual public bool Visible
         {
@@ -273,7 +248,7 @@ namespace WebCharts.Services.Models.General
             set
             {
                 _visible = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
@@ -282,10 +257,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAlignment"),
-        Bindable(true),
-        DefaultValue(Constants.NotSetValue),
         SRDescription("DescriptionAttributeChartArea_AlignWithChartArea"),
-        TypeConverter(typeof(LegendAreaNameConverter))
         ]
         public string AlignWithChartArea
         {
@@ -297,7 +269,7 @@ namespace WebCharts.Services.Models.General
             {
                 if (value != _alignWithChartArea)
                 {
-                    if (String.IsNullOrEmpty(value))
+                    if (string.IsNullOrEmpty(value))
                     {
                         _alignWithChartArea = Constants.NotSetValue;
                     }
@@ -319,10 +291,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAlignment"),
-        Bindable(true),
-        DefaultValue(AreaAlignmentOrientations.Vertical),
         SRDescription("DescriptionAttributeChartArea_AlignOrientation"),
-        Editor(typeof(FlagsEnumUITypeEditor), typeof(UITypeEditor))
         ]
         public AreaAlignmentOrientations AlignmentOrientation
         {
@@ -343,10 +312,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAlignment"),
-        Bindable(true),
-        DefaultValue(AreaAlignmentStyles.All),
         SRDescription("DescriptionAttributeChartArea_AlignType"),
-        Editor(typeof(FlagsEnumUITypeEditor), typeof(UITypeEditor))
         ]
         public AreaAlignmentStyles AlignmentStyle
         {
@@ -366,14 +332,8 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAxes"),
-        Bindable(true),
         SRDescription("DescriptionAttributeChartArea_Axes"),
-        TypeConverter(typeof(AxesArrayConverter)),
-        Editor(typeof(AxesArrayEditor), typeof(UITypeEditor)),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public Axis[] Axes
         {
             get
@@ -391,24 +351,11 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Avoid serialization of the axes array
-        /// </summary>
-        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
-        internal bool ShouldSerializeAxes()
-        {
-            return false;
-        }
-
-        /// <summary>
         /// Gets or sets an Axis object that represents the primary Y-axis. 
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
-        Bindable(true),
-        Browsable(false),
         SRDescription("DescriptionAttributeChartArea_AxisY"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public Axis AxisY
         {
@@ -430,11 +377,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
-        Bindable(true),
-        Browsable(false),
         SRDescription("DescriptionAttributeChartArea_AxisX"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public Axis AxisX
         {
@@ -456,11 +399,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
-        Bindable(true),
-        Browsable(false),
         SRDescription("DescriptionAttributeChartArea_AxisX2"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public Axis AxisX2
         {
@@ -482,11 +421,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
-        Bindable(true),
-        Browsable(false),
         SRDescription("DescriptionAttributeChartArea_AxisY2"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        TypeConverter(typeof(NoNameExpandableObjectConverter))
         ]
         public Axis AxisY2
         {
@@ -508,32 +443,12 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeChartArea_Position"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ElementPositionConverter)),
-        SerializationVisibilityAttribute(SerializationVisibility.Element)
         ]
         public ElementPosition Position
         {
             get
             {
-                // Serialize only position values if Auto set to false
-                if (this.Chart != null && this.Chart.serializationStatus == SerializationStatus.Saving)
-                {
-                    if (_areaPosition.Auto)
-                    {
-                        return new ElementPosition();
-                    }
-                    else
-                    {
-                        ElementPosition newPosition = new ElementPosition();
-                        newPosition.Auto = false;
-                        newPosition.SetPositionNoAuto(_areaPosition.X, _areaPosition.Y, _areaPosition.Width, _areaPosition.Height);
-                        return newPosition;
-                    }
-                }
                 return _areaPosition;
             }
             set
@@ -551,7 +466,7 @@ namespace WebCharts.Services.Models.General
         /// <returns></returns>
         internal bool ShouldSerializePosition()
         {
-            return !this.Position.Auto;
+            return !Position.Auto;
         }
 
         /// <summary>
@@ -559,32 +474,12 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
         SRDescription("DescriptionAttributeChartArea_InnerPlotPosition"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ElementPositionConverter)),
-        SerializationVisibilityAttribute(SerializationVisibility.Element)
         ]
         public ElementPosition InnerPlotPosition
         {
             get
             {
-                // Serialize only position values if Auto set to false
-                if (this.Common != null && this.Common.Chart != null && this.Common.Chart.serializationStatus == SerializationStatus.Saving)
-                {
-                    if (_innerPlotPosition.Auto)
-                    {
-                        return new ElementPosition();
-                    }
-                    else
-                    {
-                        ElementPosition newPosition = new ElementPosition();
-                        newPosition.Auto = false;
-                        newPosition.SetPositionNoAuto(_innerPlotPosition.X, _innerPlotPosition.Y, _innerPlotPosition.Width, _innerPlotPosition.Height);
-                        return newPosition;
-                    }
-                }
                 return _innerPlotPosition;
             }
             set
@@ -601,7 +496,7 @@ namespace WebCharts.Services.Models.General
         /// <returns></returns>
         internal bool ShouldSerializeInnerPlotPosition()
         {
-            return !this.InnerPlotPosition.Auto;
+            return !InnerPlotPosition.Auto;
         }
 
         /// <summary>
@@ -609,30 +504,17 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeBackColor"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
         ]
-        public Color BackColor
+        public SKColor BackColor
         {
             get
             {
-                if (SystemInformation.HighContrast && _backColor.IsEmpty && !_backColorIsSet)
-                {
-                    return Drawing.SystemColors.Control;
-                }
-
                 return _backColor;
             }
             set
             {
                 _backColor = value;
-
-                _backColorIsSet = true;
-
                 Invalidate();
             }
         }
@@ -644,11 +526,7 @@ namespace WebCharts.Services.Models.General
 
 
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartHatchStyle.None),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeBackHatchStyle"),
-        Editor(typeof(HatchStyleEditor), typeof(UITypeEditor))
         ]
         public ChartHatchStyle BackHatchStyle
         {
@@ -668,11 +546,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(""),
         SRDescription("DescriptionAttributeBackImage"),
-        Editor(typeof(ImageValueEditor), typeof(UITypeEditor)),
-        NotifyParentPropertyAttribute(true)
         ]
         public string BackImage
         {
@@ -692,9 +566,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartImageWrapMode.Tile),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeImageWrapMode"),
         ]
         public ChartImageWrapMode BackImageWrapMode
@@ -715,14 +586,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), ""),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeImageTransparentColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor)),
         ]
-        public Color BackImageTransparentColor
+        public SKColor BackImageTransparentColor
         {
             get
             {
@@ -740,9 +606,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartImageAlignmentStyle.TopLeft),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeBackImageAlign"),
         ]
         public ChartImageAlignmentStyle BackImageAlignment
@@ -765,11 +628,7 @@ namespace WebCharts.Services.Models.General
         [
 
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(GradientStyle.None),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeBackGradientStyle"),
-        Editor(typeof(GradientEditor), typeof(UITypeEditor))
         ]
         public GradientStyle BackGradientStyle
         {
@@ -790,14 +649,9 @@ namespace WebCharts.Services.Models.General
         [
 
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), ""),
-        NotifyParentPropertyAttribute(true),
         SRDescription("DescriptionAttributeBackSecondaryColor"),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color BackSecondaryColor
+        public SKColor BackSecondaryColor
         {
             get
             {
@@ -815,14 +669,9 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), "128,0,0,0"),
         SRDescription("DescriptionAttributeShadowColor"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color ShadowColor
+        public SKColor ShadowColor
         {
             get
             {
@@ -840,10 +689,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(0),
         SRDescription("DescriptionAttributeShadowOffset"),
-        NotifyParentPropertyAttribute(true),
         ]
         public int ShadowOffset
         {
@@ -864,14 +710,9 @@ namespace WebCharts.Services.Models.General
         [
 
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(typeof(Color), "Black"),
         SRDescription("DescriptionAttributeBorderColor"),
-        NotifyParentPropertyAttribute(true),
-        TypeConverter(typeof(ColorConverter)),
-        Editor(typeof(ChartColorEditor), typeof(UITypeEditor))
         ]
-        public Color BorderColor
+        public SKColor BorderColor
         {
             get
             {
@@ -890,10 +731,7 @@ namespace WebCharts.Services.Models.General
         [
 
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(1),
         SRDescription("DescriptionAttributeBorderWidth"),
-        NotifyParentPropertyAttribute(true)
         ]
         public int BorderWidth
         {
@@ -905,7 +743,7 @@ namespace WebCharts.Services.Models.General
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentOutOfRangeException("value", SR.ExceptionBorderWidthIsNegative));
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNegative));
                 }
                 _borderWidth = value;
                 Invalidate();
@@ -918,10 +756,7 @@ namespace WebCharts.Services.Models.General
         [
 
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(ChartDashStyle.NotSet),
         SRDescription("DescriptionAttributeBorderDashStyle"),
-        NotifyParentPropertyAttribute(true),
         ]
         public ChartDashStyle BorderDashStyle
         {
@@ -942,9 +777,7 @@ namespace WebCharts.Services.Models.General
         [
 
         SRCategory("CategoryAttributeMisc"),
-        Bindable(true),
         SRDescription("DescriptionAttributeChartArea_Name"),
-        NotifyParentPropertyAttribute(true),
         ]
         public override string Name
         {
@@ -964,10 +797,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(false),
         SRDescription("DescriptionAttributeChartArea_EquallySizedAxesFont"),
-        NotifyParentPropertyAttribute(true),
         ]
         public bool IsSameFontSKSizeorAllAxes
         {
@@ -1010,14 +840,14 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal void Restore3DAnglesAndReverseMode()
         {
-            if (this.Area3DStyle.Enable3D && !this.chartAreaIsCurcular)
+            if (Area3DStyle.Enable3D && !chartAreaIsCurcular)
             {
                 // Restore axis "IsReversed" property and old Y angle
-                this.AxisX.IsReversed = oldReverseX;
-                this.AxisX2.IsReversed = oldReverseX;
-                this.AxisY.IsReversed = oldReverseY;
-                this.AxisY2.IsReversed = oldReverseY;
-                this.Area3DStyle.Rotation = oldYAngle;
+                AxisX.IsReversed = oldReverseX;
+                AxisX2.IsReversed = oldReverseX;
+                AxisY.IsReversed = oldReverseY;
+                AxisY2.IsReversed = oldReverseY;
+                Area3DStyle.Rotation = oldYAngle;
             }
         }
 
@@ -1030,52 +860,52 @@ namespace WebCharts.Services.Models.General
             _reverseSeriesOrder = false;
 
             // If 3D charting is enabled
-            if (this.Area3DStyle.Enable3D)
+            if (Area3DStyle.Enable3D)
             {
                 // Make sure primary & secondary axis has the same IsReversed settings
                 // This is a limitation for the 3D chart required for labels drawing.
-                this.AxisX2.IsReversed = this.AxisX.IsReversed;
-                this.AxisY2.IsReversed = this.AxisY.IsReversed;
+                AxisX2.IsReversed = AxisX.IsReversed;
+                AxisY2.IsReversed = AxisY.IsReversed;
 
                 // Remember reversed order of X & Y axis and Angles
-                oldReverseX = this.AxisX.IsReversed;
-                oldReverseY = this.AxisY.IsReversed;
-                oldYAngle = this.Area3DStyle.Rotation;
+                oldReverseX = AxisX.IsReversed;
+                oldReverseY = AxisY.IsReversed;
+                oldYAngle = Area3DStyle.Rotation;
 
                 // Check if Y angle 
-                if (this.Area3DStyle.Rotation > 90 || this.Area3DStyle.Rotation < -90)
+                if (Area3DStyle.Rotation > 90 || Area3DStyle.Rotation < -90)
                 {
                     // This method depends on the 'switchValueAxes' field which is calculated based on the chart types
                     // of the series associated with the chart area. We need to call SetData method to make sure this field
                     // is correctly initialized. Because we only need to collect information about the series, we pass 'false'
                     // as parameters to limit the amount of work this function does.
-                    this.SetData(false, false);
+                    SetData(false, false);
 
                     // Reversed series order
                     _reverseSeriesOrder = true;
 
                     // Reversed primary and secondary X axis
-                    if (!this.switchValueAxes)
+                    if (!switchValueAxes)
                     {
-                        this.AxisX.IsReversed = !this.AxisX.IsReversed;
-                        this.AxisX2.IsReversed = !this.AxisX2.IsReversed;
+                        AxisX.IsReversed = !AxisX.IsReversed;
+                        AxisX2.IsReversed = !AxisX2.IsReversed;
                     }
 
                     // Reversed primary and secondary Y axis for chart types like Bar
                     else
                     {
-                        this.AxisY.IsReversed = !this.AxisY.IsReversed;
-                        this.AxisY2.IsReversed = !this.AxisY2.IsReversed;
+                        AxisY.IsReversed = !AxisY.IsReversed;
+                        AxisY2.IsReversed = !AxisY2.IsReversed;
                     }
 
                     // Adjust Y angle
-                    if (this.Area3DStyle.Rotation > 90)
+                    if (Area3DStyle.Rotation > 90)
                     {
-                        this.Area3DStyle.Rotation = (this.Area3DStyle.Rotation - 90) - 90;
+                        Area3DStyle.Rotation = (Area3DStyle.Rotation - 90) - 90;
                     }
-                    else if (this.Area3DStyle.Rotation < -90)
+                    else if (Area3DStyle.Rotation < -90)
                     {
-                        this.Area3DStyle.Rotation = (this.Area3DStyle.Rotation + 90) + 90;
+                        Area3DStyle.Rotation = (Area3DStyle.Rotation + 90) + 90;
                     }
                 }
             }
@@ -1087,20 +917,20 @@ namespace WebCharts.Services.Models.General
         internal void SetTempValues()
         {
             // Save non automatic area position
-            if (!this.Position.Auto)
+            if (!Position.Auto)
             {
-                this.originalAreaPosition = this.Position.ToSKRect();
+                originalAreaPosition = Position.ToSKRect();
             }
 
             // Save non automatic area inner plot position
-            if (!this.InnerPlotPosition.Auto)
+            if (!InnerPlotPosition.Auto)
             {
-                this.originalInnerPlotPosition = this.InnerPlotPosition.ToSKRect();
+                originalInnerPlotPosition = InnerPlotPosition.ToSKRect();
             }
 
-            this._circularSectorNumber = int.MinValue;
-            this._circularUsePolygons = int.MinValue;
-            this._circularAxisList = null;
+            _circularSectorNumber = int.MinValue;
+            _circularUsePolygons = int.MinValue;
+            _circularAxisList = null;
 
             // Save Minimum and maximum values for all axes
             axisX.StoreAxisValues();
@@ -1121,18 +951,18 @@ namespace WebCharts.Services.Models.General
             axisY2.ResetAxisValues();
 
             // Restore non automatic area position
-            if (!this.originalAreaPosition.IsEmpty)
+            if (!originalAreaPosition.IsEmpty)
             {
-                this.lastAreaPosition = this.Position.ToSKRect();
-                this.Position.SetPositionNoAuto(this.originalAreaPosition.X, this.originalAreaPosition.Y, this.originalAreaPosition.Width, this.originalAreaPosition.Height);
-                this.originalAreaPosition = SKRect.Empty;
+                lastAreaPosition = Position.ToSKRect();
+                Position.SetPositionNoAuto(originalAreaPosition.Left, originalAreaPosition.Top, originalAreaPosition.Width, originalAreaPosition.Height);
+                originalAreaPosition = SKRect.Empty;
             }
 
             // Save non automatic area inner plot position
-            if (!this.originalInnerPlotPosition.IsEmpty)
+            if (!originalInnerPlotPosition.IsEmpty)
             {
-                this.InnerPlotPosition.SetPositionNoAuto(this.originalInnerPlotPosition.X, this.originalInnerPlotPosition.Y, this.originalInnerPlotPosition.Width, this.originalInnerPlotPosition.Height);
-                this.originalInnerPlotPosition = SKRect.Empty;
+                InnerPlotPosition.SetPositionNoAuto(originalInnerPlotPosition.Left, originalInnerPlotPosition.Top, originalInnerPlotPosition.Width, originalInnerPlotPosition.Height);
+                originalInnerPlotPosition = SKRect.Empty;
             }
         }
 
@@ -1150,7 +980,7 @@ namespace WebCharts.Services.Models.General
             axisX2 = new Axis();
             axisY2 = new Axis();
 
-            // Initialize axes;
+            // Initialize axes
             axisX.Initialize(this, AxisName.X);
             axisY.Initialize(this, AxisName.Y);
             axisX2.Initialize(this, AxisName.X2);
@@ -1163,8 +993,10 @@ namespace WebCharts.Services.Models.General
             _axisArray[3] = axisY2;
 
             // Set flag to reset auto values for all areas
-            _areaPosition = new ElementPosition(this);
-            _areaPosition.resetAreaAutoPosition = true;
+            _areaPosition = new ElementPosition(this)
+            {
+                resetAreaAutoPosition = true
+            };
 
             _innerPlotPosition = new ElementPosition(this);
 
@@ -1175,8 +1007,8 @@ namespace WebCharts.Services.Models.General
             }
 
             // Initialize cursor class
-            this._cursorX.Initialize(this, AxisName.X);
-            this._cursorY.Initialize(this, AxisName.Y);
+            _cursorX.Initialize(this, AxisName.X);
+            _cursorY.Initialize(this, AxisName.Y);
         }
 
         /// <summary>
@@ -1270,38 +1102,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Add scroll bar rectangles to the area background 
-            SKRect backgroundPositionWithScrollBars = new SKRect(backgroundPosition.Location, backgroundPosition.Size);
-
-            if (requireAxes)
-            {
-                // Loop through all axis
-                foreach (Axis axis in this.Axes)
-                {
-                    // Find axis with visible scroll bars
-                    if (axis.ScrollBar.IsVisible && axis.ScrollBar.IsPositionedInside)
-                    {
-                        // Change size of the background rectangle depending on the axis position
-                        if (axis.AxisPosition == AxisPosition.Bottom)
-                        {
-                            backgroundPositionWithScrollBars.Height += (float)axis.ScrollBar.GetScrollBarRelativeSize();
-                        }
-                        else if (axis.AxisPosition == AxisPosition.Top)
-                        {
-                            backgroundPositionWithScrollBars.Y -= (float)axis.ScrollBar.GetScrollBarRelativeSize();
-                            backgroundPositionWithScrollBars.Height += (float)axis.ScrollBar.GetScrollBarRelativeSize();
-                        }
-                        else if (axis.AxisPosition == AxisPosition.Left)
-                        {
-                            backgroundPositionWithScrollBars.X -= (float)axis.ScrollBar.GetScrollBarRelativeSize();
-                            backgroundPositionWithScrollBars.Width += (float)axis.ScrollBar.GetScrollBarRelativeSize();
-                        }
-                        else if (axis.AxisPosition == AxisPosition.Left)
-                        {
-                            backgroundPositionWithScrollBars.Width += (float)axis.ScrollBar.GetScrollBarRelativeSize();
-                        }
-                    }
-                }
-            }
+            SKRect backgroundPositionWithScrollBars = new(backgroundPosition.Left, backgroundPosition.Top, backgroundPosition.Right, backgroundPosition.Bottom);
 
             return backgroundPositionWithScrollBars;
         }
@@ -1316,10 +1117,10 @@ namespace WebCharts.Services.Models.General
             SKRect plottingRect = Position.ToSKRect();
             if (!InnerPlotPosition.Auto)
             {
-                plottingRect.X += (Position.Width / 100F) * InnerPlotPosition.X;
-                plottingRect.Y += (Position.Height / 100F) * InnerPlotPosition.Y;
-                plottingRect.Width = (Position.Width / 100F) * InnerPlotPosition.Width;
-                plottingRect.Height = (Position.Height / 100F) * InnerPlotPosition.Height;
+                plottingRect.Left += (Position.Width / 100F) * InnerPlotPosition.X;
+                plottingRect.Top += (Position.Height / 100F) * InnerPlotPosition.Y;
+                plottingRect.Right = plottingRect.Left + (Position.Width / 100F) * InnerPlotPosition.Width;
+                plottingRect.Bottom = plottingRect.Top + (Position.Height / 100F) * InnerPlotPosition.Height;
             }
 
             //******************************************************
@@ -1327,7 +1128,7 @@ namespace WebCharts.Services.Models.General
             //******************************************************
             int verticalAxes = 0;
             int horizontalAxes = 0;
-            foreach (Axis axis in this.Axes)
+            foreach (Axis axis in Axes)
             {
                 if (axis.enabled)
                 {
@@ -1362,10 +1163,10 @@ namespace WebCharts.Services.Models.General
             //******************************************************
             //** Find same auto-fit font size
             //******************************************************
-            Axis[] axisArray = (this.switchValueAxes) ?
-                new Axis[] { this.AxisX, this.AxisX2, this.AxisY, this.AxisY2 } :
-                new Axis[] { this.AxisY, this.AxisY2, this.AxisX, this.AxisX2 };
-            if (this.IsSameFontSKSizeorAllAxes)
+            Axis[] axisArray = (switchValueAxes) ?
+                new Axis[] { AxisX, AxisX2, AxisY, AxisY2 } :
+                new Axis[] { AxisY, AxisY2, AxisX, AxisX2 };
+            if (IsSameFontSKSizeorAllAxes)
             {
                 axesAutoFontSize = 20;
                 foreach (Axis axis in axisArray)
@@ -1376,11 +1177,11 @@ namespace WebCharts.Services.Models.General
                         // Resize axis
                         if (axis.AxisPosition == AxisPosition.Bottom || axis.AxisPosition == AxisPosition.Top)
                         {
-                            axis.Resize(chartGraph, this.PlotAreaPosition, plottingRect, horizontalAxes, InnerPlotPosition.Auto);
+                            axis.Resize(chartGraph, PlotAreaPosition, plottingRect, horizontalAxes, InnerPlotPosition.Auto);
                         }
                         else
                         {
-                            axis.Resize(chartGraph, this.PlotAreaPosition, plottingRect, verticalAxes, InnerPlotPosition.Auto);
+                            axis.Resize(chartGraph, PlotAreaPosition, plottingRect, verticalAxes, InnerPlotPosition.Auto);
                         }
 
                         // Calculate smallest font size
@@ -1405,26 +1206,26 @@ namespace WebCharts.Services.Models.General
                     //******************************************************
                     //** Adjust for the 3D Wall Width for disabled axis
                     //******************************************************
-                    if (InnerPlotPosition.Auto && this.Area3DStyle.Enable3D && !this.chartAreaIsCurcular)
+                    if (InnerPlotPosition.Auto && Area3DStyle.Enable3D && !chartAreaIsCurcular)
                     {
-                        SKSize areaWallSize = chartGraph.GetRelativeSize(new SKSize(this.Area3DStyle.WallWidth, this.Area3DStyle.WallWidth));
+                        SKSize areaWallSize = chartGraph.GetRelativeSize(new SKSize(Area3DStyle.WallWidth, Area3DStyle.WallWidth));
                         if (axis.AxisPosition == AxisPosition.Bottom)
                         {
-                            plottingRect.Height -= areaWallSize.Height;
+                            plottingRect.Bottom -= areaWallSize.Height;
                         }
                         else if (axis.AxisPosition == AxisPosition.Top)
                         {
-                            plottingRect.Y += areaWallSize.Height;
-                            plottingRect.Height -= areaWallSize.Height;
+                            plottingRect.Top += areaWallSize.Height;
+                            plottingRect.Bottom -= areaWallSize.Height;
                         }
                         else if (axis.AxisPosition == AxisPosition.Right)
                         {
-                            plottingRect.Width -= areaWallSize.Width;
+                            plottingRect.Right -= areaWallSize.Width;
                         }
                         else if (axis.AxisPosition == AxisPosition.Left)
                         {
-                            plottingRect.X += areaWallSize.Width;
-                            plottingRect.Width -= areaWallSize.Width;
+                            plottingRect.Left += areaWallSize.Width;
+                            plottingRect.Right -= areaWallSize.Width;
                         }
                     }
 
@@ -1436,11 +1237,11 @@ namespace WebCharts.Services.Models.General
                 //******************************************************
                 if (axis.AxisPosition == AxisPosition.Bottom || axis.AxisPosition == AxisPosition.Top)
                 {
-                    axis.Resize(chartGraph, this.PlotAreaPosition, plottingRect, horizontalAxes, InnerPlotPosition.Auto);
+                    axis.Resize(chartGraph, PlotAreaPosition, plottingRect, horizontalAxes, InnerPlotPosition.Auto);
                 }
                 else
                 {
-                    axis.Resize(chartGraph, this.PlotAreaPosition, plottingRect, verticalAxes, InnerPlotPosition.Auto);
+                    axis.Resize(chartGraph, PlotAreaPosition, plottingRect, verticalAxes, InnerPlotPosition.Auto);
                 }
 
                 // Shift top/bottom labels so they will not overlap with left/right labels
@@ -1462,7 +1263,7 @@ namespace WebCharts.Services.Models.General
                 {
                     if (!axis.GetIsMarksNextToAxis())
                     {
-                        axisPosition = plottingRect.Y;
+                        axisPosition = plottingRect.Top;
                     }
                     axisPosition = axisPosition - plottingRect.Top;
                 }
@@ -1478,7 +1279,7 @@ namespace WebCharts.Services.Models.General
                 {
                     if (!axis.GetIsMarksNextToAxis())
                     {
-                        axisPosition = plottingRect.X;
+                        axisPosition = plottingRect.Left;
                     }
                     axisPosition = axisPosition - plottingRect.Left;
                 }
@@ -1513,7 +1314,7 @@ namespace WebCharts.Services.Models.General
 
 
                 // Calculate horizontal axes size for circualar area
-                if (this.chartAreaIsCurcular &&
+                if (chartAreaIsCurcular &&
                     (axis.AxisPosition == AxisPosition.Top || axis.AxisPosition == AxisPosition.Bottom))
                 {
                     axisSize = axis.titleSize + axis.markSize + axis.scrollBarSize;
@@ -1526,21 +1327,21 @@ namespace WebCharts.Services.Models.General
                 {
                     if (axis.AxisPosition == AxisPosition.Bottom)
                     {
-                        plottingRect.Height -= axisSize;
+                        plottingRect.Bottom -= axisSize;
                     }
                     else if (axis.AxisPosition == AxisPosition.Top)
                     {
-                        plottingRect.Y += axisSize;
-                        plottingRect.Height -= axisSize;
+                        plottingRect.Top += axisSize;
+                        plottingRect.Bottom -= axisSize;
                     }
                     else if (axis.AxisPosition == AxisPosition.Left)
                     {
-                        plottingRect.X += axisSize;
-                        plottingRect.Width -= axisSize;
+                        plottingRect.Left += axisSize;
+                        plottingRect.Right -= axisSize;
                     }
                     else if (axis.AxisPosition == AxisPosition.Right)
                     {
-                        plottingRect.Width -= axisSize;
+                        plottingRect.Right -= axisSize;
                     }
 
                     // Check if labels side offset should be processed
@@ -1561,18 +1362,18 @@ namespace WebCharts.Services.Models.General
 
                                 // NOTE: Code was removed to solve an issue with extra space when labels angle = 45
                                 //rectLabelSideSpacing.Width = (float)Math.Max(offset, rectLabelSideSpacing.Width);
-                                rectLabelSideSpacing.X = (float)Math.Max(offset, rectLabelSideSpacing.X);
+                                rectLabelSideSpacing.Left = (float)Math.Max(offset, rectLabelSideSpacing.Left);
                             }
 
                             if (axis.labelFarOffset > Position.Right)
                             {
                                 if ((axis.labelFarOffset - Position.Right) < plottingRect.Width * 0.3f)
                                 {
-                                    rectLabelSideSpacing.Width = (float)Math.Max(axis.labelFarOffset - Position.Right, rectLabelSideSpacing.Width);
+                                    rectLabelSideSpacing.Right = rectLabelSideSpacing.Left + Math.Max(axis.labelFarOffset - Position.Right, rectLabelSideSpacing.Width);
                                 }
                                 else
                                 {
-                                    rectLabelSideSpacing.Width = (float)Math.Max(plottingRect.Width * 0.3f, rectLabelSideSpacing.Width);
+                                    rectLabelSideSpacing.Right = rectLabelSideSpacing.Left + Math.Max(plottingRect.Width * 0.3f, rectLabelSideSpacing.Width);
                                 }
                             }
                         }
@@ -1589,18 +1390,18 @@ namespace WebCharts.Services.Models.General
 
                                 // NOTE: Code was removed to solve an issue with extra space when labels angle = 45
                                 //rectLabelSideSpacing.Height = (float)Math.Max(offset, rectLabelSideSpacing.Height);
-                                rectLabelSideSpacing.Y = (float)Math.Max(offset, rectLabelSideSpacing.Y);
+                                rectLabelSideSpacing.Top = (float)Math.Max(offset, rectLabelSideSpacing.Top);
                             }
 
                             if (axis.labelFarOffset > Position.Bottom)
                             {
                                 if ((axis.labelFarOffset - Position.Bottom) < plottingRect.Height * 0.3f)
                                 {
-                                    rectLabelSideSpacing.Height = (float)Math.Max(axis.labelFarOffset - Position.Bottom, rectLabelSideSpacing.Height);
+                                    rectLabelSideSpacing.Bottom = rectLabelSideSpacing.Top + Math.Max(axis.labelFarOffset - Position.Bottom, rectLabelSideSpacing.Height);
                                 }
                                 else
                                 {
-                                    rectLabelSideSpacing.Height = (float)Math.Max(plottingRect.Height * 0.3f, rectLabelSideSpacing.Height);
+                                    rectLabelSideSpacing.Bottom = rectLabelSideSpacing.Top + Math.Max(plottingRect.Height * 0.3f, rectLabelSideSpacing.Height);
                                 }
                             }
                         }
@@ -1612,27 +1413,27 @@ namespace WebCharts.Services.Models.General
             //** Make sure there is enough space 
             //** for labels on the chart sides
             //******************************************************
-            if (!this.chartAreaIsCurcular)
+            if (!chartAreaIsCurcular)
             {
-                if (rectLabelSideSpacing.Y > 0 && rectLabelSideSpacing.Y > plottingRect.Y - Position.Y)
+                if (rectLabelSideSpacing.Top > 0 && rectLabelSideSpacing.Top > plottingRect.Top - Position.Y)
                 {
-                    float delta = (plottingRect.Y - Position.Y) - rectLabelSideSpacing.Y;
-                    plottingRect.Y -= delta;
-                    plottingRect.Height += delta;
+                    float delta = (plottingRect.Top - Position.Y) - rectLabelSideSpacing.Top;
+                    plottingRect.Top -= delta;
+                    plottingRect.Bottom += delta;
                 }
-                if (rectLabelSideSpacing.X > 0 && rectLabelSideSpacing.X > plottingRect.X - Position.X)
+                if (rectLabelSideSpacing.Left > 0 && rectLabelSideSpacing.Left > plottingRect.Left - Position.X)
                 {
-                    float delta = (plottingRect.X - Position.X) - rectLabelSideSpacing.X;
-                    plottingRect.X -= delta;
-                    plottingRect.Width += delta;
+                    float delta = (plottingRect.Left - Position.X) - rectLabelSideSpacing.Left;
+                    plottingRect.Left -= delta;
+                    plottingRect.Right += delta;
                 }
                 if (rectLabelSideSpacing.Height > 0 && rectLabelSideSpacing.Height > Position.Bottom - plottingRect.Bottom)
                 {
-                    plottingRect.Height += (Position.Bottom - plottingRect.Bottom) - rectLabelSideSpacing.Height;
+                    plottingRect.Bottom += (Position.Bottom - plottingRect.Bottom) - rectLabelSideSpacing.Height;
                 }
                 if (rectLabelSideSpacing.Width > 0 && rectLabelSideSpacing.Width > Position.Right - plottingRect.Right)
                 {
-                    plottingRect.Width += (Position.Right - plottingRect.Right) - rectLabelSideSpacing.Width;
+                    plottingRect.Bottom += (Position.Right - plottingRect.Right) - rectLabelSideSpacing.Width;
                 }
             }
 
@@ -1640,41 +1441,41 @@ namespace WebCharts.Services.Models.General
             //** Plotting area must be square for the circular 
             //** chart area (in pixels).
             //******************************************************
-            if (this.chartAreaIsCurcular)
+            if (chartAreaIsCurcular)
             {
                 // Adjust area to fit the axis title
-                float xTitleSize = (float)Math.Max(this.AxisY.titleSize, this.AxisY2.titleSize);
+                float xTitleSize = Math.Max(AxisY.titleSize, AxisY2.titleSize);
                 if (xTitleSize > 0)
                 {
-                    plottingRect.X += xTitleSize;
-                    plottingRect.Width -= 2f * xTitleSize;
+                    plottingRect.Left += xTitleSize;
+                    plottingRect.Right -= 2f * xTitleSize;
                 }
-                float yTitleSize = (float)Math.Max(this.AxisX.titleSize, this.AxisX2.titleSize);
+                float yTitleSize = Math.Max(AxisX.titleSize, AxisX2.titleSize);
                 if (yTitleSize > 0)
                 {
-                    plottingRect.Y += yTitleSize;
-                    plottingRect.Height -= 2f * yTitleSize;
+                    plottingRect.Top += yTitleSize;
+                    plottingRect.Bottom -= 2f * yTitleSize;
                 }
 
                 // Make a square plotting rect
                 SKRect rect = chartGraph.GetAbsoluteRectangle(plottingRect);
                 if (rect.Width > rect.Height)
                 {
-                    rect.X += (rect.Width - rect.Height) / 2f;
-                    rect.Width = rect.Height;
+                    rect.Left += (rect.Width - rect.Height) / 2f;
+                    rect.Size = new(rect.Height, rect.Height);
                 }
                 else
                 {
-                    rect.Y += (rect.Height - rect.Width) / 2f;
-                    rect.Height = rect.Width;
+                    rect.Top += (rect.Height - rect.Width) / 2f;
+                    rect.Size = new(rect.Width, rect.Width);
                 }
                 plottingRect = chartGraph.GetRelativeRectangle(rect);
 
                 // Remember circular chart area center
-                this.circularCenter = new SKPoint(plottingRect.X + plottingRect.Width / 2f, plottingRect.Y + plottingRect.Height / 2f);
+                circularCenter = new SKPoint(plottingRect.Left + plottingRect.Width / 2f, plottingRect.Top + plottingRect.Height / 2f);
 
                 // Calculate auto-fit font of the circular axis labels and update area position
-                FitCircularLabels(chartGraph, this.PlotAreaPosition, ref plottingRect, xTitleSize, yTitleSize);
+                FitCircularLabels(chartGraph, PlotAreaPosition, ref plottingRect, xTitleSize, yTitleSize);
             }
 
             //******************************************************
@@ -1682,16 +1483,16 @@ namespace WebCharts.Services.Models.General
             //******************************************************
             if (plottingRect.Width < 0f)
             {
-                plottingRect.Width = 0f;
+                plottingRect.Right = plottingRect.Left;
             }
             if (plottingRect.Height < 0f)
             {
-                plottingRect.Height = 0f;
+                plottingRect.Bottom = plottingRect.Top;
             }
             PlotAreaPosition.FromSKRect(plottingRect);
             InnerPlotPosition.SetPositionNoAuto(
-                (float)Math.Round((plottingRect.X - Position.X) / (Position.Width / 100F), 5),
-                (float)Math.Round((plottingRect.Y - Position.Y) / (Position.Height / 100F), 5),
+                (float)Math.Round((plottingRect.Left - Position.X) / (Position.Width / 100F), 5),
+                (float)Math.Round((plottingRect.Top - Position.Y) / (Position.Height / 100F), 5),
                 (float)Math.Round(plottingRect.Width / (Position.Width / 100F), 5),
                 (float)Math.Round(plottingRect.Height / (Position.Height / 100F), 5));
 
@@ -1701,12 +1502,12 @@ namespace WebCharts.Services.Models.General
             //** automatically calculated after the opposite axis 
             //** change the size of plotting area.
             //******************************************************
-            this.AxisY2.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
-            this.AxisY.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
+            AxisY2.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
+            AxisY.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
             if (InnerPlotPosition.Auto)
             {
-                this.AxisX2.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
-                this.AxisX.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
+                AxisX2.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
+                AxisX.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
             }
 
         }
@@ -1718,7 +1519,7 @@ namespace WebCharts.Services.Models.General
         /// <returns>Found axis.</returns>
         private Axis FindAxis(AxisPosition axisPosition)
         {
-            foreach (Axis axis in this.Axes)
+            foreach (Axis axis in Axes)
             {
                 if (axis.AxisPosition == axisPosition)
                 {
@@ -1857,7 +1658,7 @@ namespace WebCharts.Services.Models.General
             if (!borderOnly)
             {
                 // Draw background
-                if (!this.Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular)
+                if (!Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular)
                 {
                     // 3D Pie Chart doesn't need scene
                     // Draw 2D background
@@ -1871,47 +1672,47 @@ namespace WebCharts.Services.Models.General
                         BackImageAlignment,
                         BackGradientStyle,
                         BackSecondaryColor,
-                        (requireAxes) ? Color.Empty : BorderColor,
+                        (requireAxes) ? SKColor.Empty : BorderColor,
                         (requireAxes) ? 0 : BorderWidth,
                         BorderDashStyle,
                         ShadowColor,
                         ShadowOffset,
                         PenAlignment.Outset,
                         chartAreaIsCurcular,
-                        (chartAreaIsCurcular && this.CircularUsePolygons) ? this.CircularSectorsNumber : 0,
-                        this.Area3DStyle.Enable3D);
+                        (chartAreaIsCurcular && CircularUsePolygons) ? CircularSectorsNumber : 0,
+                        Area3DStyle.Enable3D);
                 }
                 else
                 {
                     // Draw chart area 3D scene
-                    this.DrawArea3DScene(graph, position);
+                    DrawArea3DScene(graph, position);
                 }
             }
             else
             {
-                if (!this.Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular)
+                if (!Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular)
                 {
                     // Draw chart area border
-                    if (BorderColor != Color.Empty && BorderWidth > 0)
+                    if (BorderColor != SKColor.Empty && BorderWidth > 0)
                     {
                         graph.FillRectangleRel(position,
-                            Color.Transparent,
+                            SKColors.Transparent,
                             ChartHatchStyle.None,
                             "",
                             ChartImageWrapMode.Tile,
-                            Color.Empty,
+                            SKColor.Empty,
                             ChartImageAlignmentStyle.Center,
                             GradientStyle.None,
-                            Color.Empty,
+                            SKColor.Empty,
                             BorderColor,
                             BorderWidth,
                             BorderDashStyle,
-                            Color.Empty,
+                            SKColor.Empty,
                             0,
                             PenAlignment.Outset,
                             chartAreaIsCurcular,
-                            (chartAreaIsCurcular && this.CircularUsePolygons) ? this.CircularSectorsNumber : 0,
-                            this.Area3DStyle.Enable3D);
+                            (chartAreaIsCurcular && CircularUsePolygons) ? CircularSectorsNumber : 0,
+                            Area3DStyle.Enable3D);
                     }
                 }
 
@@ -1936,10 +1737,11 @@ namespace WebCharts.Services.Models.General
                 SKRect plottingRect = Position.ToSKRect();
                 if (!InnerPlotPosition.Auto)
                 {
-                    plottingRect.X += (Position.Width / 100F) * InnerPlotPosition.X;
-                    plottingRect.Y += (Position.Height / 100F) * InnerPlotPosition.Y;
-                    plottingRect.Width = (Position.Width / 100F) * InnerPlotPosition.Width;
-                    plottingRect.Height = (Position.Height / 100F) * InnerPlotPosition.Height;
+                    plottingRect.Left += (Position.Width / 100F) * InnerPlotPosition.X;
+                    plottingRect.Top += (Position.Height / 100F) * InnerPlotPosition.Y;
+                    plottingRect.Size = new(
+                        (Position.Width / 100F) * InnerPlotPosition.Width,
+                        (Position.Height / 100F) * InnerPlotPosition.Height);
                 }
 
                 PlotAreaPosition.FromSKRect(plottingRect);
@@ -1985,12 +1787,12 @@ namespace WebCharts.Services.Models.General
 
 
             // Reset Smart Labels 
-            this.smartLabels.Reset();
+            smartLabels.Reset();
 
 
 
             // Set values for optimized drawing
-            foreach (Axis currentAxis in this._axisArray)
+            foreach (Axis currentAxis in _axisArray)
             {
                 currentAxis.optimizedGetPosition = true;
                 currentAxis.paintViewMax = currentAxis.ViewMaximum;
@@ -2000,11 +1802,12 @@ namespace WebCharts.Services.Models.General
                 if (currentAxis.ChartArea != null && currentAxis.ChartArea.chartAreaIsCurcular)
                 {
                     // Update position for circular chart area
-                    currentAxis.paintAreaPosition.Width /= 2.0f;
-                    currentAxis.paintAreaPosition.Height /= 2.0f;
+                    currentAxis.paintAreaPosition.Size = new SKSize(
+                        currentAxis.paintAreaPosition.Width / 2.0f,
+                        currentAxis.paintAreaPosition.Height / 2.0f);
                 }
-                currentAxis.paintAreaPositionBottom = currentAxis.paintAreaPosition.Y + currentAxis.paintAreaPosition.Height;
-                currentAxis.paintAreaPositionRight = currentAxis.paintAreaPosition.X + currentAxis.paintAreaPosition.Width;
+                currentAxis.paintAreaPositionBottom = currentAxis.paintAreaPosition.Top + currentAxis.paintAreaPosition.Height;
+                currentAxis.paintAreaPositionRight = currentAxis.paintAreaPosition.Left + currentAxis.paintAreaPosition.Width;
                 if (currentAxis.AxisPosition == AxisPosition.Top || currentAxis.AxisPosition == AxisPosition.Bottom)
                     currentAxis.paintChartAreaSize = currentAxis.paintAreaPosition.Width;
                 else
@@ -2095,7 +1898,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Draw Axis elements on the back of the 3D scene
-            if (this.Area3DStyle.Enable3D && !this.chartAreaIsCurcular)
+            if (Area3DStyle.Enable3D && !chartAreaIsCurcular)
             {
                 foreach (Axis currentAxis in axesArray)
                 {
@@ -2125,14 +1928,14 @@ namespace WebCharts.Services.Models.General
 
             // Draws chart area border
             bool borderDrawn = false;
-            if (this.Area3DStyle.Enable3D || !IsBorderOnTopSeries())
+            if (Area3DStyle.Enable3D || !IsBorderOnTopSeries())
             {
                 borderDrawn = true;
                 PaintAreaBack(graph, backgroundPosition, true);
             }
 
             // Draw chart types
-            if (!this.Area3DStyle.Enable3D || this.chartAreaIsCurcular)
+            if (!Area3DStyle.Enable3D || chartAreaIsCurcular)
             {
                 // Drawing in 2D space
 
@@ -2140,12 +1943,12 @@ namespace WebCharts.Services.Models.General
                 // If two chart series of the same type (for example Line) are separated
                 // by other series (for example Area) the order is not correct.
                 // Old implementation draws ALL series that belongs to the chart type.
-                ArrayList typeAndSeries = this.GetChartTypesAndSeriesToDraw();
+                ArrayList typeAndSeries = GetChartTypesAndSeriesToDraw();
 
                 // Draw series by chart type or by series
                 foreach (ChartTypeAndSeriesInfo chartTypeInfo in typeAndSeries)
                 {
-                    this.IterationCounter = 0;
+                    IterationCounter = 0;
                     IChartType type = Common.ChartTypeRegistry.GetChartType(chartTypeInfo.ChartType);
 
                     // If 'chartTypeInfo.Series' set to NULL all series of that chart type are drawn at once
@@ -2210,7 +2013,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Reset values for optimized drawing
-            foreach (Axis curentAxis in this._axisArray)
+            foreach (Axis curentAxis in _axisArray)
             {
                 curentAxis.optimizedGetPosition = false;
 
@@ -2233,19 +2036,16 @@ namespace WebCharts.Services.Models.General
         {
             // For most of the chart types chart area border is drawn on top.
             bool result = true;
-            foreach (Series series in this.Common.Chart.Series)
+            foreach (Series series in Common.Chart.Series)
             {
-                if (series.ChartArea == this.Name)
+                // It is common for the Bubble and Point chart types to draw markers
+                // partially outside of the chart area. By drawing the border before
+                // series we avoiding the possibility of drawing the border line on 
+                // top of the marker.
+                if (series.ChartArea == Name && (series.ChartType == SeriesChartType.Bubble ||
+                        series.ChartType == SeriesChartType.Point))
                 {
-                    // It is common for the Bubble and Point chart types to draw markers
-                    // partially outside of the chart area. By drawing the border before
-                    // series we avoiding the possibility of drawing the border line on 
-                    // top of the marker.
-                    if (series.ChartType == SeriesChartType.Bubble ||
-                        series.ChartType == SeriesChartType.Point)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
             return result;
@@ -2260,40 +2060,40 @@ namespace WebCharts.Services.Models.General
         internal void PaintCursors(ChartGraphics graph, bool cursorOnly)
         {
             // Cursors and selection are supoorted only in 2D charts
-            if (this.Area3DStyle.Enable3D == true)
+            if (Area3DStyle.Enable3D == true)
             {
                 return;
             }
 
             // Do not draw cursor/selection for chart types that do not require axis (like Pie)
-            if (!this.requireAxes)
+            if (!requireAxes)
             {
                 return;
             }
 
             // Cursors and selection are not supoorted in circular areas
-            if (this.chartAreaIsCurcular)
+            if (chartAreaIsCurcular)
             {
                 return;
             }
 
             // Do not draw cursor/selection while printing
-            if (this.Common != null &&
-                this.Common.ChartPicture != null &&
-                this.Common.ChartPicture.isPrinting)
+            if (Common != null &&
+                Common.ChartPicture != null &&
+                Common.ChartPicture.isPrinting)
             {
                 return;
             }
 
             // Do not draw cursor/selection when chart area is not visible
             // because either width or height is set to zero
-            if (this.Position.Width == 0f ||
-                this.Position.Height == 0f)
+            if (Position.Width == 0f ||
+                Position.Height == 0f)
             {
                 return;
             }
 
-            Chart chart = this.Common.Chart;
+            ChartService chart = Common.Chart;
             ChartPicture chartPicture = Common.ChartPicture;
 
             // Check if cursor should be drawn
@@ -2310,13 +2110,13 @@ namespace WebCharts.Services.Models.General
                 {
                     chartPicture.backgroundRestored = true;
 
-                    Rectangle chartPosition = new Rectangle(0, 0, chartPicture.Width, chartPicture.Height);
+                    SKRect chartPosition = new(0, 0, chartPicture.Width, chartPicture.Height);
 
                     // Get chart area position
-                    Rectangle absAreaPlotPosition = Rectangle.Round(graph.GetAbsoluteRectangle(PlotAreaPosition.ToSKRect()));
+                    SKRect absAreaPlotPosition = (graph.GetAbsoluteRectangle(PlotAreaPosition.ToSKRect())).Round();
                     int maxCursorWidth = (CursorY.LineWidth > CursorX.LineWidth) ? CursorY.LineWidth + 1 : CursorX.LineWidth + 1;
                     absAreaPlotPosition.Inflate(maxCursorWidth, maxCursorWidth);
-                    absAreaPlotPosition.Intersect(new Rectangle(0, 0, chart.Width, chart.Height));
+                    absAreaPlotPosition.Intersect(new SKRect(0, 0, Common.Width, Common.Height));
 
                     // Create area buffer bitmap
                     if (areaBufferBitmap == null ||
@@ -2336,28 +2136,6 @@ namespace WebCharts.Services.Models.General
                         }
 
 
-                        // Copy chart area plotting rectangle from the chart's dubble buffer image into area dubble buffer image
-                        if (chart.paintBufferBitmap != null)
-                        {
-                            areaBufferBitmap = chart.paintBufferBitmap.Clone(absAreaPlotPosition, chart.paintBufferBitmap.PixelFormat);
-                        }
-
-                        // Copy whole chart from the chart's dubble buffer image into area dubble buffer image
-                        if (chart.paintBufferBitmap != null &&
-                            chart.paintBufferBitmap.Size.Width >= chartPosition.Size.Width &&
-                            chart.paintBufferBitmap.Size.Height >= chartPosition.Size.Height)
-                        {
-                            chartPicture.nonTopLevelChartBuffer = chart.paintBufferBitmap.Clone(
-                                chartPosition, chart.paintBufferBitmap.PixelFormat);
-                        }
-
-                    }
-                    else if (cursorOnly && chartPicture.nonTopLevelChartBuffer != null)
-                    {
-                        // Restore previous background
-                        chart.paintBufferBitmapGraphics.DrawImageUnscaled(
-                            chartPicture.nonTopLevelChartBuffer,
-                            chartPosition);
                     }
                 }
 
@@ -2381,13 +2159,11 @@ namespace WebCharts.Services.Models.General
         internal ICircularChartType GetCircularChartType()
         {
             // Get number of sectors in circular chart area
-            foreach (Series series in this.Common.DataManager.Series)
+            foreach (Series series in Common.DataManager.Series)
             {
-                if (series.IsVisible() && series.ChartArea == this.Name)
+                if (series.IsVisible() && series.ChartArea == Name)
                 {
-                    ICircularChartType type = Common.ChartTypeRegistry.GetChartType(series.ChartTypeName) as ICircularChartType;
-                    ;
-                    if (type != null)
+                    if (Common.ChartTypeRegistry.GetChartType(series.ChartTypeName) is ICircularChartType type)
                     {
                         return type;
                     }
@@ -2412,7 +2188,7 @@ namespace WebCharts.Services.Models.General
             float yTitleSize)
         {
             // Check if axis labels are enabled
-            if (!this.AxisX.LabelStyle.Enabled)
+            if (!AxisX.LabelStyle.Enabled)
             {
                 return;
             }
@@ -2425,7 +2201,7 @@ namespace WebCharts.Services.Models.General
             SKRect areaRectAbs = chartGraph.GetAbsoluteRectangle(chartAreaPosition.ToSKRect());
 
             // Get absolute markers size and spacing
-            float spacing = chartGraph.GetAbsolutePoint(new SKPoint(0, this.AxisX.markSize + Axis.elementSpacing)).Y;
+            float spacing = chartGraph.GetAbsolutePoint(new SKPoint(0, AxisX.markSize + Axis.elementSpacing)).Y;
 
             // Get circular axis list
             ArrayList axisList = GetCircularAxisList();
@@ -2436,22 +2212,21 @@ namespace WebCharts.Services.Models.General
             //*****************************************************************
             //** Calculate the auto-fit font if required
             //*****************************************************************
-            if (this.AxisX.LabelStyle.Enabled && this.AxisX.IsLabelAutoFit)
+            if (AxisX.LabelStyle.Enabled && AxisX.IsLabelAutoFit)
             {
                 // Set max auto fit font
-                this.AxisX.autoLabelFont = Common.ChartPicture.FontCache.GetFont(
-                    this.AxisX.LabelStyle.Font.FontFamily,
+                AxisX.autoLabelFont = Common.ChartPicture.FontCache.GetFont(
+                    AxisX.LabelStyle.Font.Typeface.FamilyName,
                     14,
-                    this.AxisX.LabelStyle.Font.Style,
-                    GraphicsUnit.Point);
+                    AxisX.LabelStyle.Font.Typeface.FontStyle);
 
                 // Get estimated labels size
                 float labelsSizeEstimate = GetCircularLabelsSize(chartGraph, areaRectAbs, plotAreaRectAbs, titleSize);
-                labelsSizeEstimate = (float)Math.Min(labelsSizeEstimate * 1.1f, plotAreaRectAbs.Width / 5f);
+                labelsSizeEstimate = Math.Min(labelsSizeEstimate * 1.1f, plotAreaRectAbs.Width / 5f);
                 labelsSizeEstimate += spacing;
 
                 // Calculate auto-fit font
-                this.AxisX.GetCircularAxisLabelsAutoFitFont(chartGraph, axisList, labelsStyle, plotAreaRectAbs, areaRectAbs, labelsSizeEstimate);
+                AxisX.GetCircularAxisLabelsAutoFitFont(chartGraph, axisList, labelsStyle, plotAreaRectAbs, areaRectAbs, labelsSizeEstimate);
             }
 
             //*****************************************************************
@@ -2462,22 +2237,22 @@ namespace WebCharts.Services.Models.General
             float labelsSize = GetCircularLabelsSize(chartGraph, areaRectAbs, plotAreaRectAbs, titleSize);
 
             // Check if change size is smaller than radius
-            labelsSize = (float)Math.Min(labelsSize, plotAreaRectAbs.Width / 2.5f);
+            labelsSize = Math.Min(labelsSize, plotAreaRectAbs.Width / 2.5f);
             labelsSize += spacing;
 
-            plotAreaRectAbs.X += labelsSize;
-            plotAreaRectAbs.Width -= 2f * labelsSize;
-            plotAreaRectAbs.Y += labelsSize;
-            plotAreaRectAbs.Height -= 2f * labelsSize;
+            plotAreaRectAbs.Left += labelsSize;
+            plotAreaRectAbs.Right -= 2f * labelsSize;
+            plotAreaRectAbs.Top += labelsSize;
+            plotAreaRectAbs.Bottom -= 2f * labelsSize;
 
             // Restrict minimum plot area size
             if (plotAreaRectAbs.Width < 1.0f)
             {
-                plotAreaRectAbs.Width = 1.0f;
+                plotAreaRectAbs.Right = plotAreaRectAbs.Left + 1.0f;
             }
             if (plotAreaRectAbs.Height < 1.0f)
             {
-                plotAreaRectAbs.Height = 1.0f;
+                plotAreaRectAbs.Bottom = plotAreaRectAbs.Top + 1.0f;
             }
 
             plotArea = chartGraph.GetRelativeRectangle(plotAreaRectAbs);
@@ -2487,10 +2262,10 @@ namespace WebCharts.Services.Models.General
             //** Set axes labels size
             //*****************************************************************
             SKSize relativeLabelSize = chartGraph.GetRelativeSize(new SKSize(labelsSize, labelsSize));
-            this.AxisX.labelSize = relativeLabelSize.Height;
-            this.AxisX2.labelSize = relativeLabelSize.Height;
-            this.AxisY.labelSize = relativeLabelSize.Width;
-            this.AxisY2.labelSize = relativeLabelSize.Width;
+            AxisX.labelSize = relativeLabelSize.Height;
+            AxisX2.labelSize = relativeLabelSize.Height;
+            AxisY.labelSize = relativeLabelSize.Width;
+            AxisY2.labelSize = relativeLabelSize.Width;
 
         }
 
@@ -2509,12 +2284,12 @@ namespace WebCharts.Services.Models.General
             SKSize titleSize)
         {
             // Find current horiz. and vert. spacing between plotting and chart areas
-            SKSize areaDiff = new SKSize(plotAreaRectAbs.X - areaRectAbs.X, plotAreaRectAbs.Y - areaRectAbs.Y);
+            SKSize areaDiff = new(plotAreaRectAbs.Left - areaRectAbs.Left, plotAreaRectAbs.Top - areaRectAbs.Top);
             areaDiff.Width -= titleSize.Width;
             areaDiff.Height -= titleSize.Height;
 
             // Get absolute center of the area
-            SKPoint areaCenterAbs = chartGraph.GetAbsolutePoint(this.circularCenter);
+            SKPoint areaCenterAbs = chartGraph.GetAbsolutePoint(circularCenter);
 
             // Get circular axis list
             ArrayList axisList = GetCircularAxisList();
@@ -2535,7 +2310,7 @@ namespace WebCharts.Services.Models.General
                 //*****************************************************************
                 SKSize textSize = chartGraph.MeasureString(
                     axis.Title.Replace("\\n", "\n"),
-                    (this.AxisX.autoLabelFont == null) ? this.AxisX.LabelStyle.Font : this.AxisX.autoLabelFont);
+                    (AxisX.autoLabelFont == null) ? AxisX.LabelStyle.Font : AxisX.autoLabelFont);
                 textSize.Width = (float)Math.Ceiling(textSize.Width * 1.1f);
                 textSize.Height = (float)Math.Ceiling(textSize.Height * 1.1f);
 
@@ -2582,9 +2357,8 @@ namespace WebCharts.Services.Models.General
                     }
 
                     // Get label rotated position
-                    SKPoint[] labelPosition = new SKPoint[] { new SKPoint(areaCenterAbs.X, plotAreaRectAbs.Y) };
-                    Matrix newMatrix = new Matrix();
-                    newMatrix.RotateAt(textAngle, areaCenterAbs);
+                    SKPoint[] labelPosition = new SKPoint[] { new SKPoint(areaCenterAbs.X, plotAreaRectAbs.Top) };
+                    SKMatrix newMatrix = SKMatrix.CreateRotationDegrees(textAngle, areaCenterAbs.X, areaCenterAbs.Y);
                     newMatrix.TransformPoints(labelPosition);
 
                     // Calculate width
@@ -2595,7 +2369,7 @@ namespace WebCharts.Services.Models.General
                         width = 0f;
                     }
 
-                    labelsSize = (float)Math.Max(
+                    labelsSize = Math.Max(
                         labelsSize,
                         Math.Max(width, textSize.Height));
                 }
@@ -2612,14 +2386,14 @@ namespace WebCharts.Services.Models.General
             get
             {
                 // Check if value was precalculated
-                if (this._circularUsePolygons == int.MinValue)
+                if (_circularUsePolygons == int.MinValue)
                 {
                     _circularUsePolygons = 0;
 
                     // Look for custom properties in series
-                    foreach (Series series in this.Common.DataManager.Series)
+                    foreach (Series series in Common.DataManager.Series)
                     {
-                        if (series.ChartArea == this.Name && series.IsVisible())
+                        if (series.ChartArea == Name && series.IsVisible())
                         {
                             // Get custom attribute
                             if (series.IsCustomPropertySet(CustomPropertyName.AreaDrawingStyle))
@@ -2642,7 +2416,7 @@ namespace WebCharts.Services.Models.General
                     }
                 }
 
-                return (this._circularUsePolygons == 1);
+                return (_circularUsePolygons == 1);
             }
         }
 
@@ -2655,9 +2429,9 @@ namespace WebCharts.Services.Models.General
             CircularAxisLabelsStyle style = CircularAxisLabelsStyle.Auto;
 
             // Get maximum number of points in all series
-            foreach (Series series in this.Common.DataManager.Series)
+            foreach (Series series in Common.DataManager.Series)
             {
-                if (series.IsVisible() && series.ChartArea == this.Name && series.IsCustomPropertySet(CustomPropertyName.CircularLabelsStyle))
+                if (series.IsVisible() && series.ChartArea == Name && series.IsCustomPropertySet(CustomPropertyName.CircularLabelsStyle))
                 {
                     string styleName = series[CustomPropertyName.CircularLabelsStyle];
                     if (String.Compare(styleName, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
@@ -2706,12 +2480,12 @@ namespace WebCharts.Services.Models.General
             get
             {
                 // Check if value was precalculated
-                if (this._circularSectorNumber == int.MinValue)
+                if (_circularSectorNumber == int.MinValue)
                 {
-                    this._circularSectorNumber = GetCircularSectorNumber();
+                    _circularSectorNumber = GetCircularSectorNumber();
                 }
 
-                return this._circularSectorNumber;
+                return _circularSectorNumber;
             }
         }
 
@@ -2721,10 +2495,10 @@ namespace WebCharts.Services.Models.General
         /// <returns>Number of sectors.</returns>
         private int GetCircularSectorNumber()
         {
-            ICircularChartType type = this.GetCircularChartType();
+            ICircularChartType type = GetCircularChartType();
             if (type != null)
             {
-                return type.GetNumerOfSectors(this, this.Common.DataManager.Series);
+                return type.GetNumerOfSectors(this, Common.DataManager.Series);
             }
             return 0;
         }
@@ -2748,20 +2522,20 @@ namespace WebCharts.Services.Models.General
                     CircularChartAreaAxis axis = new CircularChartAreaAxis(sectorIndex * 360f / sectorNumber);
 
                     // Check if custom X axis labels will be used
-                    if (this.AxisX.CustomLabels.Count > 0)
+                    if (AxisX.CustomLabels.Count > 0)
                     {
-                        if (sectorIndex < this.AxisX.CustomLabels.Count)
+                        if (sectorIndex < AxisX.CustomLabels.Count)
                         {
-                            axis.Title = this.AxisX.CustomLabels[sectorIndex].Text;
-                            axis.TitleForeColor = this.AxisX.CustomLabels[sectorIndex].ForeColor;
+                            axis.Title = AxisX.CustomLabels[sectorIndex].Text;
+                            axis.TitleForeColor = AxisX.CustomLabels[sectorIndex].ForeColor;
                         }
                     }
                     else
                     {
                         // Get axis title from all series
-                        foreach (Series series in this.Common.DataManager.Series)
+                        foreach (Series series in Common.DataManager.Series)
                         {
-                            if (series.IsVisible() && series.ChartArea == this.Name && sectorIndex < series.Points.Count)
+                            if (series.IsVisible() && series.ChartArea == Name && sectorIndex < series.Points.Count)
                             {
                                 if (series.Points[sectorIndex].AxisLabel.Length > 0)
                                 {
@@ -2788,9 +2562,9 @@ namespace WebCharts.Services.Models.General
         internal float CircularPositionToAngle(double position)
         {
             // Get X axis scale size
-            double scaleRatio = 360.0 / Math.Abs(this.AxisX.Maximum - this.AxisX.Minimum);
+            double scaleRatio = 360.0 / Math.Abs(AxisX.Maximum - AxisX.Minimum);
 
-            return (float)(position * scaleRatio + this.AxisX.Crossing);
+            return (float)(position * scaleRatio + AxisX.Crossing);
         }
 
         #endregion
@@ -2812,9 +2586,9 @@ namespace WebCharts.Services.Models.General
             ArrayList resultList = new ArrayList();
 
             // Build chart type or series position based lists
-            if (this.ChartTypes.Count > 1 &&
-                (this.ChartTypes.Contains(ChartTypeNames.Area)
-                || this.ChartTypes.Contains(ChartTypeNames.SplineArea)
+            if (ChartTypes.Count > 1 &&
+                (ChartTypes.Contains(ChartTypeNames.Area)
+                || ChartTypes.Contains(ChartTypeNames.SplineArea)
                 )
                 )
             {
@@ -2824,10 +2598,10 @@ namespace WebCharts.Services.Models.General
 
                 // Draw using the exact order in the series collection
                 int seriesIndex = 0;
-                foreach (Series series in this.Common.DataManager.Series)
+                foreach (Series series in Common.DataManager.Series)
                 {
                     // Check if series is visible and belongs to the chart area
-                    if (series.ChartArea == this.Name && series.IsVisible() && series.Points.Count > 0)
+                    if (series.ChartArea == Name && series.IsVisible() && series.Points.Count > 0)
                     {
                         // Check if this chart type was already processed
                         if (!processedChartType.Contains(series.ChartTypeName))
@@ -2861,9 +2635,9 @@ namespace WebCharts.Services.Models.General
                                 else
                                 {
                                     bool otherChartTypeFound = false;
-                                    for (int curentSeriesIndex = seriesIndex + 1; curentSeriesIndex < this.Common.DataManager.Series.Count; curentSeriesIndex++)
+                                    for (int curentSeriesIndex = seriesIndex + 1; curentSeriesIndex < Common.DataManager.Series.Count; curentSeriesIndex++)
                                     {
-                                        if (series.ChartTypeName == this.Common.DataManager.Series[curentSeriesIndex].ChartTypeName)
+                                        if (series.ChartTypeName == Common.DataManager.Series[curentSeriesIndex].ChartTypeName)
                                         {
                                             if (otherChartTypeFound)
                                             {
@@ -2873,8 +2647,8 @@ namespace WebCharts.Services.Models.General
                                         }
                                         else
                                         {
-                                            if (this.Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.Area ||
-                                                this.Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.SplineArea)
+                                            if (Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.Area ||
+                                                Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.SplineArea)
                                             {
                                                 otherChartTypeFound = true;
                                             }
@@ -2902,7 +2676,7 @@ namespace WebCharts.Services.Models.General
             }
             else
             {
-                foreach (string chartType in this.ChartTypes)
+                foreach (string chartType in ChartTypes)
                 {
                     resultList.Add(new ChartTypeAndSeriesInfo(chartType));
                 }
@@ -2929,7 +2703,7 @@ namespace WebCharts.Services.Models.General
             /// <param name="chartType">Chart type name to initialize with.</param>
             public ChartTypeAndSeriesInfo(string chartType)
             {
-                this.ChartType = chartType;
+                ChartType = chartType;
             }
 
             /// <summary>
@@ -2938,8 +2712,8 @@ namespace WebCharts.Services.Models.General
             /// <param name="series">Series to initialize with.</param>
             public ChartTypeAndSeriesInfo(Series series)
             {
-                this.ChartType = series.ChartTypeName;
-                this.Series = series;
+                ChartType = series.ChartTypeName;
+                Series = series;
             }
 
             // Chart type name
@@ -2967,43 +2741,43 @@ namespace WebCharts.Services.Models.General
             if (disposing)
             {
                 // Dispose managed resources
-                if (this._axisArray != null)
+                if (_axisArray != null)
                 {
-                    foreach (Axis axis in this._axisArray)
+                    foreach (Axis axis in _axisArray)
                     {
                         axis.Dispose();
                     }
-                    this._axisArray = null;
+                    _axisArray = null;
                 }
-                if (this._areaPosition != null)
+                if (_areaPosition != null)
                 {
-                    this._areaPosition.Dispose();
-                    this._areaPosition = null;
+                    _areaPosition.Dispose();
+                    _areaPosition = null;
                 }
-                if (this._innerPlotPosition != null)
+                if (_innerPlotPosition != null)
                 {
-                    this._innerPlotPosition.Dispose();
-                    this._innerPlotPosition = null;
+                    _innerPlotPosition.Dispose();
+                    _innerPlotPosition = null;
                 }
-                if (this.PlotAreaPosition != null)
+                if (PlotAreaPosition != null)
                 {
-                    this.PlotAreaPosition.Dispose();
-                    this.PlotAreaPosition = null;
+                    PlotAreaPosition.Dispose();
+                    PlotAreaPosition = null;
                 }
-                if (this.areaBufferBitmap != null)
+                if (areaBufferBitmap != null)
                 {
-                    this.areaBufferBitmap.Dispose();
-                    this.areaBufferBitmap = null;
+                    areaBufferBitmap.Dispose();
+                    areaBufferBitmap = null;
                 }
-                if (this._cursorX != null)
+                if (_cursorX != null)
                 {
-                    this._cursorX.Dispose();
-                    this._cursorX = null;
+                    _cursorX.Dispose();
+                    _cursorX = null;
                 }
-                if (this._cursorY != null)
+                if (_cursorY != null)
                 {
-                    this._cursorY.Dispose();
-                    this._cursorY = null;
+                    _cursorY.Dispose();
+                    _cursorY = null;
                 }
             }
             base.Dispose(disposing);

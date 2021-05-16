@@ -57,10 +57,17 @@
 //
 
 
+using SkiaSharp;
 using System;
 using System.Collections;
 using System.Drawing;
 using System.Globalization;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -87,7 +94,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Get reference to the chart control
-			Chart	chart = series.Chart;
+			ChartService	chart = series.Chart;
 			if(chart == null)
 			{
                 throw (new InvalidOperationException(SR.ExceptionThreeLineBreakNullReference));
@@ -104,7 +111,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
 
 			// Create a temp series which will hold original series data points
-			Series seriesOriginalData = new Series("THREELINEBREAK_ORIGINAL_DATA_" + series.Name, series.YValuesPerPoint);
+			Series seriesOriginalData = new("THREELINEBREAK_ORIGINAL_DATA_" + series.Name, series.YValuesPerPoint);
 			seriesOriginalData.Enabled = false;
 			seriesOriginalData.IsVisibleInLegend = false;
 			chart.Series.Add(seriesOriginalData);
@@ -187,14 +194,14 @@ namespace WebCharts.Services.Models.ChartTypes
             if (series.Name.StartsWith("THREELINEBREAK_ORIGINAL_DATA_", StringComparison.Ordinal))
             {
                 // Get reference to the chart control
-                Chart chart = series.Chart;
+                ChartService chart = series.Chart;
                 if (chart == null)
                 {
                     throw (new InvalidOperationException(SR.ExceptionThreeLineBreakNullReference));
                 }
 
                 // Get original ThreeLineBreak series
-                Series threeLineBreakSeries = chart.Series[series.Name.Substring(29)];
+                Series threeLineBreakSeries = chart.Series[series.Name[29..]];
                 Series.MovePositionMarkers(threeLineBreakSeries, series);
                 // Copy data back to original ThreeLineBreak series
                 threeLineBreakSeries.Points.Clear();
@@ -209,12 +216,10 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Restore ThreeLineBreak series properties
                 threeLineBreakSeries.ChartType = SeriesChartType.ThreeLineBreak;
 
-                bool xValIndexed;
-                bool parseSucceed = bool.TryParse(threeLineBreakSeries["OldXValueIndexed"], out xValIndexed);
+                bool parseSucceed = bool.TryParse(threeLineBreakSeries["OldXValueIndexed"], out bool xValIndexed);
                 threeLineBreakSeries.IsXValueIndexed = parseSucceed && xValIndexed;
 
-                int yValsPerPoint;
-                parseSucceed = int.TryParse(threeLineBreakSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out yValsPerPoint);
+                parseSucceed = int.TryParse(threeLineBreakSeries["OldYValuesPerPoint"], NumberStyles.Any, CultureInfo.InvariantCulture, out int yValsPerPoint);
 
                 if (parseSucceed)
                 {
@@ -296,7 +301,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			}
 
 			// Create an array to store the history of high/low values of drawn lines
-			ArrayList	highLowHistory = new ArrayList();
+			ArrayList	highLowHistory = new();
 
 			// Fill points
 			double	prevLow = double.NaN;
@@ -325,7 +330,7 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 
 				// Get up price color
-				Color	priceUpColor = Color.Transparent;
+				SKColor	priceUpColor = SKColors.Transparent;
 				string	priceUpColorString = dataPoint[CustomPropertyName.PriceUpColor];
 				if(priceUpColorString == null)
 				{
@@ -335,8 +340,8 @@ namespace WebCharts.Services.Models.ChartTypes
 				{
 					try
 					{
-						ColorConverter colorConverter = new ColorConverter();
-						priceUpColor = (Color)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, priceUpColorString);
+						ColorConverter colorConverter = new();
+						priceUpColor = (SKColor)colorConverter.ConvertFromString(null, CultureInfo.InvariantCulture, priceUpColorString);
 					}
 					catch
 					{
@@ -443,8 +448,8 @@ namespace WebCharts.Services.Models.ChartTypes
 							{
 								newDataPoint.BorderDashStyle = ChartDashStyle.Solid;
 							}
-							if( (newDataPoint.BorderColor == Color.Empty || newDataPoint.BorderColor == Color.Transparent) &&
-								(newDataPoint.Color == Color.Empty || newDataPoint.Color == Color.Transparent) )
+							if( (newDataPoint.BorderColor == SKColor.Empty || newDataPoint.BorderColor == SKColors.Transparent) &&
+								(newDataPoint.Color == SKColor.Empty || newDataPoint.Color == SKColors.Transparent) )
 							{
 								newDataPoint.BorderColor = series.Color;
 							}
@@ -613,9 +618,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-		virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+		virtual public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 		#endregion
 

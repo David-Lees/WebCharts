@@ -25,11 +25,16 @@
 //
 
 
+using SkiaSharp;
+using System;
 using System.Collections;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting.Utilities;
+using WebCharts.Services.Enums;
+using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Common;
+using WebCharts.Services.Models.DataManager;
+using WebCharts.Services.Models.General;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.ChartTypes
 {
@@ -186,9 +191,9 @@ namespace WebCharts.Services.Models.ChartTypes
 		/// </summary>
 		/// <param name="registry">Chart types registry object.</param>
 		/// <returns>Chart type image.</returns>
-        virtual public System.Drawing.Image GetImage(ChartTypeRegistry registry)
+        virtual public SKImage GetImage(ChartTypeRegistry registry)
 		{
-			return (System.Drawing.Image)registry.ResourceManager.GetObject(this.Name + "ChartType");
+			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
 		}
 
 		#endregion
@@ -208,18 +213,18 @@ namespace WebCharts.Services.Models.ChartTypes
 			ChartArea area, 
 			Series seriesToDraw )
 		{	
-			this.Common = common;
-			this.Graph = graph;
+			Common = common;
+			Graph = graph;
 			bool	clipRegionSet = false;
 			if(area.Area3DStyle.Enable3D)
 			{
 				// Initialize variables
-				this.chartArea3DEnabled = true;
+				chartArea3DEnabled = true;
 				matrix3D = area.matrix3D;
 			}
 			else
 			{
-				this.chartArea3DEnabled = false;
+				chartArea3DEnabled = false;
 			}
 			
 			//************************************************************
@@ -228,7 +233,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			foreach( Series series in common.DataManager.Series )
 			{
 				// Process non empty series of the area with FastLine chart type
-				if( String.Compare( series.ChartTypeName, this.Name, true, System.Globalization.CultureInfo.CurrentCulture ) != 0 
+				if( String.Compare( series.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture ) != 0 
 					|| series.ChartArea != area.Name || 
 					!series.IsVisible())
 				{
@@ -236,11 +241,11 @@ namespace WebCharts.Services.Models.ChartTypes
 				}
 
 				// Get 3D series depth and Z position
-				if(this.chartArea3DEnabled)
+				if(chartArea3DEnabled)
 				{
 					float seriesDepth;
 					area.GetSeriesZPositionAndDepth(series, out seriesDepth, out seriesZCoordinate);
-					this.seriesZCoordinate += seriesDepth/2.0f;
+					seriesZCoordinate += seriesDepth/2.0f;
 				}
 
 				// Set active horizontal/vertical axis
@@ -282,19 +287,17 @@ namespace WebCharts.Services.Models.ChartTypes
 				double axesValuesPixelSizeX = Math.Abs(hAxis.PositionToValue(axesMin.Width + pixelSize.Width, false) - hAxis.PositionToValue(axesMin.Width, false));
 
 				// Create line pen
-				Pen	linePen = new Pen(series.Color, series.BorderWidth);
-				linePen.DashStyle = graph.GetPenStyle( series.BorderDashStyle );
-				linePen.StartCap = LineCap.Round;
-				linePen.EndCap = LineCap.Round;
+				SKPaint	linePen = new() { Color = series.Color, StrokeWidth = series.BorderWidth};
+				linePen.PathEffect = ChartGraphics.GetPenStyle( series.BorderDashStyle, series.BorderWidth );
+				linePen.StrokeCap = SKStrokeCap.Round;
 
 				// Create empty line pen
-				Pen	emptyLinePen = new Pen(series.EmptyPointStyle.Color, series.EmptyPointStyle.BorderWidth);
-				emptyLinePen.DashStyle = graph.GetPenStyle( series.EmptyPointStyle.BorderDashStyle );
-				emptyLinePen.StartCap = LineCap.Round;
-				emptyLinePen.EndCap = LineCap.Round;
+				SKPaint emptyLinePen = new() { Color = series.EmptyPointStyle.Color, StrokeWidth = series.EmptyPointStyle.BorderWidth };
+				emptyLinePen.PathEffect = ChartGraphics.GetPenStyle( series.EmptyPointStyle.BorderDashStyle, series.EmptyPointStyle.BorderWidth );
+				emptyLinePen.StrokeCap = SKStrokeCap.Round;
 
 				// Check if series is indexed
-				bool indexedSeries = ChartHelper.IndexedSeries(this.Common, series.Name );
+				bool indexedSeries = ChartHelper.IndexedSeries(Common, series.Name );
 
 				// Loop through all ponts in the series
 				int		index = 0;
@@ -560,7 +563,7 @@ namespace WebCharts.Services.Models.ChartTypes
 			DataPoint pointMin,
 			DataPoint pointMax,
 			int pointIndex,
-			Pen pen,
+			SKPaint pen,
 			float firstPointX,
 			float firstPointY,
 			float secondPointX,
@@ -596,24 +599,24 @@ namespace WebCharts.Services.Models.ChartTypes
 			Graph.DrawLine(pen, firstPointX, firstPointY, secondPointX,secondPointY);
 
 			// Process selection regions
-			if( this.Common.ProcessModeRegions )
+			if( Common.ProcessModeRegions )
 			{
 				// Create grapics path object for the line
                 using (SKPath path = new SKPath())
                 {
-                    float width = pen.Width + 2;
+                    float width = pen.StrokeWidth + 2;
 
                     if (Math.Abs(firstPointX - secondPointX) > Math.Abs(firstPointY - secondPointY))
                     {
                         path.AddLine(firstPointX, firstPointY - width, secondPointX, secondPointY - width);
                         path.AddLine(secondPointX, secondPointY + width, firstPointX, firstPointY + width);
-                        path.CloseAllFigures();
+                        path.Close();
                     }
                     else
                     {
                         path.AddLine(firstPointX - width, firstPointY, secondPointX - width, secondPointY);
                         path.AddLine(secondPointX + width, secondPointY, firstPointX + width, firstPointY);
-                        path.CloseAllFigures();
+                        path.Close();
                     }
 
                     // Calculate bounding rectangle
@@ -624,8 +627,8 @@ namespace WebCharts.Services.Models.ChartTypes
                     if (pathBounds.Width <= 2.0 || pathBounds.Height <= 2.0)
                     {
                         // Add hot region path as rectangle
-                        pathBounds.Inflate(pen.Width, pen.Width);
-                        this.Common.HotRegionsList.AddHotRegion(
+                        pathBounds.Inflate(pen.StrokeWidth, pen.StrokeWidth);
+                        Common.HotRegionsList.AddHotRegion(
                             Graph.GetRelativeRectangle(pathBounds),
                             point,
                             point.series.Name,
@@ -634,7 +637,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     else
                     {
                         // Add hot region path as polygon
-                        this.Common.HotRegionsList.AddHotRegion(
+                        Common.HotRegionsList.AddHotRegion(
                             path,
                             false,
                             Graph,

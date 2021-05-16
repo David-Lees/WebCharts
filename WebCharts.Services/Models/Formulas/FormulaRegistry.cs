@@ -10,150 +10,157 @@
 
 using System;
 using System.Collections;
-using System.ComponentModel;
 using WebCharts.Services.Models.Common;
 
 namespace WebCharts.Services.Models.Formulas
 {
+    public interface IFormulaRegistry
+    {
+        public int Count { get; }
+
+        public IFormula GetFormulaModule(string name);
+        public string GetModuleName(int index);
+        public void Register(string name, Type moduleType);
+    }
+
     /// <summary>
     /// Keep track of all registered formula modules types.
     /// </summary>
-    internal class FormulaRegistry : IServiceProvider
-	{
-		#region Fields
+    public class FormulaRegistry : IServiceProvider, IFormulaRegistry
+    {
+        #region Fields
 
-		// Storage for all registered formula modules
-		internal	Hashtable	registeredModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
+        // Storage for all registered formula modules
+        internal Hashtable registeredModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
         private Hashtable _createdModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
-		private		ArrayList	_modulesNames = new ArrayList();
+        private ArrayList _modulesNames = new ArrayList();
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// Formula Registry public constructor
-		/// </summary>
-		public FormulaRegistry()
-		{
-		}
+        /// <summary>
+        /// Formula Registry public constructor
+        /// </summary>
+        public FormulaRegistry()
+        {
+        }
 
-		/// <summary>
-		/// Adds modules into the registry.
-		/// </summary>
-		/// <param name="name">Module name.</param>
-		/// <param name="moduleType">Module class type.</param>
-		public void Register(string name, Type moduleType)
-		{
-			// First check if module with specified name already registered
-			if(registeredModules.Contains(name))
-			{
-				// If same type provided - ignore
-				if(registeredModules[name].GetType() == moduleType)
-				{
-					return;
-				}
+        /// <summary>
+        /// Adds modules into the registry.
+        /// </summary>
+        /// <param name="name">Module name.</param>
+        /// <param name="moduleType">Module class type.</param>
+        public void Register(string name, Type moduleType)
+        {
+            // First check if module with specified name already registered
+            if (registeredModules.Contains(name))
+            {
+                // If same type provided - ignore
+                if (registeredModules[name].GetType() == moduleType)
+                {
+                    return;
+                }
 
-				// Error - throw exception
-				throw( new ArgumentException( SR.ExceptionFormulaModuleNameIsNotUnique( name ) ) );
-			}
+                // Error - throw exception
+                throw (new ArgumentException(SR.ExceptionFormulaModuleNameIsNotUnique(name)));
+            }
 
-			// Add Module Name
-			_modulesNames.Add(name);
+            // Add Module Name
+            _modulesNames.Add(name);
 
-			// Make sure that specified class support IFormula interface
-			bool	found = false;
-			Type[]	interfaces = moduleType.GetInterfaces();
-			foreach(Type type in interfaces)
-			{   
-				if(type == typeof(IFormula))
-				{
-					found = true;
-					break;
-				}
-			}
-			if(!found)
-			{
-				throw( new ArgumentException( SR.ExceptionFormulaModuleHasNoInterface));
-			}
+            // Make sure that specified class support IFormula interface
+            bool found = false;
+            Type[] interfaces = moduleType.GetInterfaces();
+            foreach (Type type in interfaces)
+            {
+                if (type == typeof(IFormula))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                throw (new ArgumentException(SR.ExceptionFormulaModuleHasNoInterface));
+            }
 
-			// Add formula module to the hash table
-			registeredModules[name] = moduleType;
-		}
-		
-		/// <summary>
-		/// Returns formula module registry service object.
-		/// </summary>
-		/// <param name="serviceType">Service AxisName.</param>
-		/// <returns>Service object.</returns>
-		[EditorBrowsableAttribute(EditorBrowsableState.Never)]
-		object IServiceProvider.GetService(Type serviceType)
-		{
-			if(serviceType == typeof(FormulaRegistry))
-			{
-				return this;
-			}
-			throw (new ArgumentException( SR.ExceptionFormulaModuleRegistryUnsupportedType( serviceType.ToString())));
-		}
+            // Add formula module to the hash table
+            registeredModules[name] = moduleType;
+        }
 
-		/// <summary>
-		/// Returns formula module object by name.
-		/// </summary>
-		/// <param name="name">Formula Module name.</param>
-		/// <returns>Formula module object derived from IFormula.</returns>
-		public IFormula GetFormulaModule(string name)
-		{
-			// First check if formula module with specified name registered
-			if(!registeredModules.Contains(name))
-			{
-				throw( new ArgumentException( SR.ExceptionFormulaModuleNameUnknown( name ) ) );
-			}
+        /// <summary>
+        /// Returns formula module registry service object.
+        /// </summary>
+        /// <param name="serviceType">Service AxisName.</param>
+        /// <returns>Service object.</returns>
+        object IServiceProvider.GetService(Type serviceType)
+        {
+            if (serviceType == typeof(FormulaRegistry))
+            {
+                return this;
+            }
+            throw (new ArgumentException(SR.ExceptionFormulaModuleRegistryUnsupportedType(serviceType.ToString())));
+        }
 
-			// Check if the formula module object is already created
-			if(!_createdModules.Contains(name))
-			{	
-				// Create formula module object
-				_createdModules[name] = 
-					((Type)registeredModules[name]).Assembly.
-					CreateInstance(((Type)registeredModules[name]).ToString());
-			}
+        /// <summary>
+        /// Returns formula module object by name.
+        /// </summary>
+        /// <param name="name">Formula Module name.</param>
+        /// <returns>Formula module object derived from IFormula.</returns>
+        public IFormula GetFormulaModule(string name)
+        {
+            // First check if formula module with specified name registered
+            if (!registeredModules.Contains(name))
+            {
+                throw (new ArgumentException(SR.ExceptionFormulaModuleNameUnknown(name)));
+            }
 
-			return (IFormula)_createdModules[name];
-		}
+            // Check if the formula module object is already created
+            if (!_createdModules.Contains(name))
+            {
+                // Create formula module object
+                _createdModules[name] =
+                    ((Type)registeredModules[name]).Assembly.
+                    CreateInstance(((Type)registeredModules[name]).ToString());
+            }
 
-		/// <summary>
-		/// Returns the name of the module.
-		/// </summary>
-		/// <param name="index">Module index.</param>
-		/// <returns>Module Name.</returns>
-		public string GetModuleName( int index )
-		{
-			return (string)_modulesNames[index];
-		}
+            return (IFormula)_createdModules[name];
+        }
 
-		#endregion
+        /// <summary>
+        /// Returns the name of the module.
+        /// </summary>
+        /// <param name="index">Module index.</param>
+        /// <returns>Module Name.</returns>
+        public string GetModuleName(int index)
+        {
+            return (string)_modulesNames[index];
+        }
 
-		#region Properties
+        #endregion
 
-		/// <summary>
-		/// Return the number of registered modules.
-		/// </summary>
-		public int Count
-		{
-			get
-			{
-				return _modulesNames.Count;
-			}
-		}
-		
-		#endregion
-	}
+        #region Properties
+
+        /// <summary>
+        /// Return the number of registered modules.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return _modulesNames.Count;
+            }
+        }
+
+        #endregion
+    }
 
     /// <summary>
     /// Interface which defines the set of standard methods and
     /// properties for each formula module
     /// </summary>
-	internal interface IFormula
+	public interface IFormula
 	{
 		#region IFormula Properties and Methods
 

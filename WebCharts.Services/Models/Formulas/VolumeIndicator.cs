@@ -179,16 +179,14 @@ namespace WebCharts.Services.Models.Formulas
 					NegativeMoneyFlow[index] = MoneyFlow[index];
 					PositiveMoneyFlow[index] = 0;
 				}
-			}
+            }
 
-			double PosMoney = 0;
-			double NegMoney = 0;
-			for( int index = period - 1; index < inputValues[1].Length; index++ )
+            for ( int index = period - 1; index < inputValues[1].Length; index++ )
 			{
-				PosMoney = 0;
-				NegMoney = 0;
-				// Find Money flow using period
-				for( int periodIndex = index - period + 1; periodIndex <= index; periodIndex++ )
+                double PosMoney = 0;
+                double NegMoney = 0;
+                // Find Money flow using period
+                for ( int periodIndex = index - period + 1; periodIndex <= index; periodIndex++ )
 				{
 					NegMoney += NegativeMoneyFlow[periodIndex];
 					PosMoney += PositiveMoneyFlow[periodIndex];

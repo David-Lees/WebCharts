@@ -16,7 +16,7 @@ using WebCharts.Services.Models.Borders3D;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
     /// <summary>
     /// <b>RectangleAnnotation</b> is a class that represents a rectangle annotation.
@@ -297,9 +297,9 @@ namespace WebCharts.Services.Models.Annotation
 		/// A <see cref="ChartGraphics"/> object, used to paint an annotation object.
 		/// </param>
 		/// <param name="chart">
-		/// Reference to the <see cref="Chart"/> control.
+		/// Reference to the <see cref="ChartService"/> control.
 		/// </param>
-		override internal void Paint(Chart chart, ChartGraphics graphics)
+		override internal void Paint(ChartService chart, ChartGraphics graphics)
 		{
 			// Get annotation position in relative coordinates
 			SKPoint firstPoint = SKPoint.Empty;
@@ -327,27 +327,27 @@ namespace WebCharts.Services.Models.Annotation
 				return;
 			}
 
-			if(this.isRectVisible && 
-				this.Common.ProcessModePaint)
+			if(isRectVisible && 
+				Common.ProcessModePaint)
 			{
 				// Draw rectangle
 				graphics.FillRectangleRel(
 					rectanglePosition,
-					this.BackColor,
-					this.BackHatchStyle,
+					BackColor,
+					BackHatchStyle,
 					String.Empty,
 					ChartImageWrapMode.Scaled,
 					SKColor.Empty,
 					ChartImageAlignmentStyle.Center,
-					this.BackGradientStyle,
-					this.BackSecondaryColor,
-					this.LineColor,
-					this.LineWidth,
-					this.LineDashStyle,
-					this.ShadowColor,
-					this.ShadowOffset,
+					BackGradientStyle,
+					BackSecondaryColor,
+					LineColor,
+					LineWidth,
+					LineDashStyle,
+					ShadowColor,
+					ShadowOffset,
 					PenAlignment.Center,
-					this.isEllipse,
+					isEllipse,
 					1,
 					false);
 			}
@@ -378,7 +378,7 @@ namespace WebCharts.Services.Models.Annotation
 		public EllipseAnnotation() 
             : base()
 		{
-			this.isEllipse = true;
+			isEllipse = true;
 		}
 
 		#endregion
@@ -493,7 +493,7 @@ namespace WebCharts.Services.Models.Annotation
 			set
 			{
 				_borderSkin = value;
-				this.Invalidate();
+				Invalidate();
 			}
 		}
 
@@ -508,16 +508,13 @@ namespace WebCharts.Services.Models.Annotation
 		/// A <see cref="ChartGraphics"/> 
 		/// </param>
 		/// <param name="chart">
-		/// Reference to the <see cref="Chart"/> control that owns the annotation.
+		/// Reference to the <see cref="ChartService"/> control that owns the annotation.
 		/// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
 		{
-			// Get annotation position in relative coordinates
-			SKPoint firstPoint = SKPoint.Empty;
-			SKPoint anchorPoint = SKPoint.Empty;
-			SKSize size = SKSize.Empty;
-			GetRelativePosition(out firstPoint, out size, out anchorPoint);
-			SKPoint	secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
+            // Get annotation position in relative coordinates
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out _);
+            SKPoint	secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
 			// Create selection rectangle
 			SKRect selectionRect = new(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
@@ -538,7 +535,7 @@ namespace WebCharts.Services.Models.Annotation
 				return;
 			}
 
-			if(this.Common.ProcessModePaint)
+			if(Common.ProcessModePaint)
 			{
 				// Do not draw border if size is less that 10 pixels
 				SKRect absRectanglePosition = graphics.GetAbsoluteRectangle(rectanglePosition);
@@ -549,17 +546,17 @@ namespace WebCharts.Services.Models.Annotation
 					graphics.Draw3DBorderRel(
 						_borderSkin,
 						rectanglePosition,
-						this.BackColor,
-						this.BackHatchStyle,
+						BackColor,
+						BackHatchStyle,
 						String.Empty,
 						ChartImageWrapMode.Scaled,
 						SKColor.Empty,
 						ChartImageAlignmentStyle.Center,
-						this.BackGradientStyle,
-						this.BackSecondaryColor,
-						this.LineColor,
-						this.LineWidth,
-						this.LineDashStyle);
+						BackGradientStyle,
+						BackSecondaryColor,
+						LineColor,
+						LineWidth,
+						LineDashStyle);
 				}
 			}
 
@@ -575,27 +572,27 @@ namespace WebCharts.Services.Models.Annotation
 		internal override SKRect GetTextSpacing(out bool annotationRelative)
 		{
 			annotationRelative = false;
-			SKRect rect = new SKRect(3f, 3f, 3f, 3f);
+			SKRect rect = new(3f, 3f, 3f, 3f);
 			if(GetGraphics() != null)
 			{
 				rect = GetGraphics().GetRelativeRectangle(rect);
 			}
 
 			if(_borderSkin.SkinStyle != BorderSkinStyle.None &&
-				this.GetGraphics() != null &&
-				this.Chart != null &&
-				this.Chart.chartPicture != null &&
-				this.Common != null)
+				GetGraphics() != null &&
+				Chart != null &&
+				Chart.chartPicture != null &&
+				Common != null)
 			{
-				IBorderType	border3D = this.Common.BorderTypeRegistry.GetBorderType(_borderSkin.SkinStyle.ToString());
+				IBorderType	border3D = Common.BorderTypeRegistry.GetBorderType(_borderSkin.SkinStyle.ToString());
 				if(border3D != null)
 				{
 					// Adjust are position to the border size
-					SKRect rectangle = new SKRect(0f, 0f, 100f, 100f);
-					border3D.AdjustAreasPosition(this.GetGraphics(), ref rectangle);
+					SKRect rectangle = new(0f, 0f, 100f, 100f);
+					border3D.AdjustAreasPosition(GetGraphics(), ref rectangle);
 					rect = new SKRect(
-						rectangle.X + 1, 
-						rectangle.Y + 1,
+						rectangle.Left + 1, 
+						rectangle.Top + 1,
 						100f - rectangle.Right + 2,
 						100f - rectangle.Bottom + 2);
 				}

@@ -10,6 +10,7 @@
 
 using SkiaSharp;
 using System;
+using WebCharts.Services.Enums;
 using WebCharts.Services.Models.General;
 
 namespace WebCharts.Services.Models.Borders3D
@@ -136,7 +137,7 @@ namespace WebCharts.Services.Models.Borders3D
             int borderWidth,
             ChartDashStyle borderDashStyle)
         {
-            SKRect absolute = graph.Round(rect);
+            SKRect absolute = ChartGraphics.Round(rect);
             SKRect shadowRect = absolute;
 
             // Calculate shadow colors (0.2 - 0.6)
@@ -189,7 +190,7 @@ namespace WebCharts.Services.Models.Borders3D
             shadowRect.Top = absolute.Top + 3f * resolution / 96.0f;
             shadowRect.Right -= radius * .75f;
             shadowRect.Bottom -= radius * .75f;
-            SKPath path = graph.CreateRoundedRectPath(shadowRect, cornerRadius);
+            SKPath path = ChartGraphics.CreateRoundedRectPath(shadowRect, cornerRadius);
             graph.DrawPathAbs(
                 path,
                 backColor,
@@ -211,15 +212,15 @@ namespace WebCharts.Services.Models.Borders3D
 
             // Bottom/Right inner shadow
             SKRegion innerShadowRegion = new(
-                graph.CreateRoundedRectPath(
+                ChartGraphics.CreateRoundedRectPath(
                 new SKRect(
-                shadowRect.X - radius,
-                shadowRect.Y - radius,
+                shadowRect.Left - radius,
+                shadowRect.Top - radius,
                 shadowRect.Width + radius - radius * 0.25f,
                 shadowRect.Height + radius - radius * 0.25f),
                 cornerRadius));
 
-            innerShadowRegion.Complement(graph.CreateRoundedRectPath(shadowRect, cornerRadius));
+            innerShadowRegion.Op(ChartGraphics.CreateRoundedRectPath(shadowRect, cornerRadius), SKRegionOperation.Difference);
             graph.Clip = innerShadowRegion;
             graph.DrawRoundedRectShadowAbs(
                 shadowRect,

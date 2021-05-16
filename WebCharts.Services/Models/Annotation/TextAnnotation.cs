@@ -9,12 +9,11 @@
 
 using SkiaSharp;
 using System;
-using System.Security;
 using WebCharts.Services.Enums;
 using WebCharts.Services.Models.Common;
 using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotation
+namespace WebCharts.Services.Models.Annotations
 {
 
     /// <summary>
@@ -314,15 +313,12 @@ namespace WebCharts.Services.Models.Annotation
         /// A <see cref="ChartGraphics"/> object, used to paint an annotation object.
         /// </param>
         /// <param name="chart">
-        /// Reference to the <see cref="Chart"/> owner control.
+        /// Reference to the <see cref="ChartService"/> owner control.
         /// </param>
-        override internal void Paint(Chart chart, ChartGraphics graphics)
+        override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out _);
             SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
@@ -345,36 +341,34 @@ namespace WebCharts.Services.Models.Annotation
                 return;
             }
 
-            if (this.Common.ProcessModePaint)
+            if (Common.ProcessModePaint)
             {
                 DrawText(graphics, textPosition, false, false);
             }
 
-            if (this.Common.ProcessModeRegions)
+            if (Common.ProcessModeRegions)
             {
                 // Add hot region
                 if (isEllipse)
                 {
-                    using (SKPath ellipsePath = new())
-                    {
-                        ellipsePath.AddOval(textPosition);
-                        this.Common.HotRegionsList.AddHotRegion(
-                            graphics,
-                            ellipsePath,
-                            true,
-                            ReplaceKeywords(this.ToolTip),
-                            String.Empty,
-                            String.Empty,
-                            String.Empty,
-                            this,
-                            ChartElementType.Annotation);
-                    }
+                    using SKPath ellipsePath = new();
+                    ellipsePath.AddOval(textPosition);
+                    Common.HotRegionsList.AddHotRegion(
+                        graphics,
+                        ellipsePath,
+                        true,
+                        ReplaceKeywords(ToolTip),
+                        String.Empty,
+                        String.Empty,
+                        String.Empty,
+                        this,
+                        ChartElementType.Annotation);
                 }
                 else
                 {
-                    this.Common.HotRegionsList.AddHotRegion(
+                    Common.HotRegionsList.AddHotRegion(
                         textPosition,
-                        ReplaceKeywords(this.ToolTip),
+                        ReplaceKeywords(ToolTip),
                         String.Empty,
                         String.Empty,
                         String.Empty,
@@ -403,8 +397,7 @@ namespace WebCharts.Services.Models.Annotation
             //***************************************************************
             //** Adjust text position uing text spacing
             //***************************************************************
-            bool annotationRelative = false;
-            SKRect textSpacing = GetTextSpacing(out annotationRelative);
+            SKRect textSpacing = GetTextSpacing(out bool annotationRelative);
             float spacingScaleX = 1f;
             float spacingScaleY = 1f;
             if (annotationRelative)
@@ -421,16 +414,16 @@ namespace WebCharts.Services.Models.Annotation
                 }
             }
 
-            SKRect textPositionWithSpacing = new SKRect(textPosition.Location, textPosition.Size);
-            textPositionWithSpacing.Width -= (textSpacing.Width + textSpacing.X) * spacingScaleX;
-            textPositionWithSpacing.X += textSpacing.X * spacingScaleX;
-            textPositionWithSpacing.Height -= (textSpacing.Height + textSpacing.Y) * spacingScaleY;
-            textPositionWithSpacing.Y += textSpacing.Y * spacingScaleY;
+            SKRect textPositionWithSpacing = new(textPosition.Left, textPosition.Top, textPosition.Right, textPosition.Bottom);
+            textPositionWithSpacing.Right -= (textSpacing.Width + textSpacing.Left) * spacingScaleX;
+            textPositionWithSpacing.Left += textSpacing.Left * spacingScaleX;
+            textPositionWithSpacing.Bottom -= (textSpacing.Height + textSpacing.Top) * spacingScaleY;
+            textPositionWithSpacing.Top += textSpacing.Top * spacingScaleY;
 
             //***************************************************************
             //** Replace new line characters
             //***************************************************************
-            string titleText = this.ReplaceKeywords(this.Text.Replace("\\n", "\n"));
+            string titleText = ReplaceKeywords(Text.Replace("\\n", "\n"));
 
             //***************************************************************
             //** Check if centered text require spacing.
@@ -438,139 +431,137 @@ namespace WebCharts.Services.Models.Annotation
             //** Apply only for 1 line of text.
             //***************************************************************
             if (noSpacingForCenteredText &&
-                titleText.IndexOf('\n') == -1)
+                !titleText.Contains('\n'))
             {
-                if (this.Alignment == ContentAlignment.MiddleCenter ||
-                    this.Alignment == ContentAlignment.MiddleLeft ||
-                    this.Alignment == ContentAlignment.MiddleRight)
+                if (Alignment == ContentAlignment.MiddleCenter ||
+                    Alignment == ContentAlignment.MiddleLeft ||
+                    Alignment == ContentAlignment.MiddleRight)
                 {
-                    textPositionWithSpacing.Y = textPosition.Y;
-                    textPositionWithSpacing.Height = textPosition.Height;
-                    textPositionWithSpacing.Height -= textSpacing.Height / 2f + textSpacing.Y / 2f;
-                    textPositionWithSpacing.Y += textSpacing.Y / 2f;
+                    textPositionWithSpacing.Top = textPosition.Top;
+                    textPositionWithSpacing.Bottom = textPosition.Bottom;
+                    textPositionWithSpacing.Bottom -= textSpacing.Height / 2f + textSpacing.Top / 2f;
+                    textPositionWithSpacing.Top += textSpacing.Top / 2f;
                 }
-                if (this.Alignment == ContentAlignment.BottomCenter ||
-                    this.Alignment == ContentAlignment.MiddleCenter ||
-                    this.Alignment == ContentAlignment.TopCenter)
+                if (Alignment == ContentAlignment.BottomCenter ||
+                    Alignment == ContentAlignment.MiddleCenter ||
+                    Alignment == ContentAlignment.TopCenter)
                 {
-                    textPositionWithSpacing.X = textPosition.X;
-                    textPositionWithSpacing.Width = textPosition.Width;
-                    textPositionWithSpacing.Width -= textSpacing.Width / 2f + textSpacing.X / 2f;
-                    textPositionWithSpacing.X += textSpacing.X / 2f;
+                    textPositionWithSpacing.Left = textPosition.Left;
+                    textPositionWithSpacing.Right = textPosition.Right;
+                    textPositionWithSpacing.Right -= textSpacing.Width / 2f + textSpacing.Left / 2f;
+                    textPositionWithSpacing.Left += textSpacing.Left / 2f;
                 }
             }
 
             // Draw text
-            using (Brush textBrush = new SolidBrush(this.ForeColor))
+            using (SKPaint textBrush = new() { Color = ForeColor })
             {
-                using (StringFormat format = new StringFormat(StringFormat.GenericTypographic))
+                using StringFormat format = StringFormat.GenericTypographic;
+                //***************************************************************
+                //** Set text format
+                //***************************************************************
+                format.FormatFlags ^= StringFormatFlags.LineLimit;
+                format.Trimming = StringTrimming.EllipsisCharacter;
+                if (Alignment == ContentAlignment.BottomRight ||
+                    Alignment == ContentAlignment.MiddleRight ||
+                    Alignment == ContentAlignment.TopRight)
                 {
-                    //***************************************************************
-                    //** Set text format
-                    //***************************************************************
-                    format.FormatFlags = format.FormatFlags ^ StringFormatFlags.LineLimit;
-                    format.Trimming = StringTrimming.EllipsisCharacter;
-                    if (this.Alignment == ContentAlignment.BottomRight ||
-                        this.Alignment == ContentAlignment.MiddleRight ||
-                        this.Alignment == ContentAlignment.TopRight)
-                    {
-                        format.Alignment = StringAlignment.Far;
-                    }
-                    if (this.Alignment == ContentAlignment.BottomCenter ||
-                        this.Alignment == ContentAlignment.MiddleCenter ||
-                        this.Alignment == ContentAlignment.TopCenter)
-                    {
-                        format.Alignment = StringAlignment.Center;
-                    }
-                    if (this.Alignment == ContentAlignment.BottomCenter ||
-                        this.Alignment == ContentAlignment.BottomLeft ||
-                        this.Alignment == ContentAlignment.BottomRight)
-                    {
-                        format.LineAlignment = StringAlignment.Far;
-                    }
-                    if (this.Alignment == ContentAlignment.MiddleCenter ||
-                        this.Alignment == ContentAlignment.MiddleLeft ||
-                        this.Alignment == ContentAlignment.MiddleRight)
-                    {
-                        format.LineAlignment = StringAlignment.Center;
-                    }
-
-                    //***************************************************************
-                    //** Set shadow color and offset
-                    //***************************************************************
-                    SKColor textShadowColor = ChartGraphics.GetGradientColor(ForeColor, SKColors.Black, 0.8);
-                    int textShadowOffset = 1;
-                    TextStyle textStyle = this.TextStyle;
-                    if (textStyle == TextStyle.Shadow &&
-                        ShadowOffset != 0)
-                    {
-                        // Draw shadowed text
-                        textShadowColor = ShadowColor;
-                        textShadowOffset = ShadowOffset;
-                    }
-
-                    if (textStyle == TextStyle.Shadow)
-                    {
-                        textShadowColor = (textShadowColor.Alpha != 255) ? textShadowColor : new(textShadowColor.Red, textShadowColor.Green, textShadowColor.Blue, (byte)(textShadowColor.Alpha / 2));
-                    }
-
-                    //***************************************************************
-                    //** Get text actual position
-                    //***************************************************************
-                    if (getTextPosition)
-                    {
-                        // Measure text size
-                        SKSize textSize = graphics.MeasureStringRel(
-                            this.ReplaceKeywords(_text.Replace("\\n", "\n")),
-                            this.Font,
-                            textPositionWithSpacing.Size,
-                            format);
-
-                        // Get text position
-                        textActualPosition = new SKRect(textPositionWithSpacing.Location, textSize);
-                        if (this.Alignment == ContentAlignment.BottomRight ||
-                            this.Alignment == ContentAlignment.MiddleRight ||
-                            this.Alignment == ContentAlignment.TopRight)
-                        {
-                            textActualPosition.X += textPositionWithSpacing.Width - textSize.Width;
-                        }
-                        if (this.Alignment == ContentAlignment.BottomCenter ||
-                            this.Alignment == ContentAlignment.MiddleCenter ||
-                            this.Alignment == ContentAlignment.TopCenter)
-                        {
-                            textActualPosition.X += (textPositionWithSpacing.Width - textSize.Width) / 2f;
-                        }
-                        if (this.Alignment == ContentAlignment.BottomCenter ||
-                            this.Alignment == ContentAlignment.BottomLeft ||
-                            this.Alignment == ContentAlignment.BottomRight)
-                        {
-                            textActualPosition.Y += textPositionWithSpacing.Height - textSize.Height;
-                        }
-                        if (this.Alignment == ContentAlignment.MiddleCenter ||
-                            this.Alignment == ContentAlignment.MiddleLeft ||
-                            this.Alignment == ContentAlignment.MiddleRight)
-                        {
-                            textActualPosition.Y += (textPositionWithSpacing.Height - textSize.Height) / 2f;
-                        }
-
-                        // Do not allow text to go outside annotation position
-                        textActualPosition.Intersect(textPositionWithSpacing);
-                    }
-
-                    SKRect absPosition = graphics.GetAbsoluteRectangle(textPositionWithSpacing);
-                    Title.DrawStringWithStyle(
-                            graphics,
-                            titleText,
-                            this.TextStyle,
-                            this.Font,
-                            absPosition,
-                            this.ForeColor,
-                            textShadowColor,
-                            textShadowOffset,
-                            format,
-                            TextOrientation.Auto
-                      );
+                    format.Alignment = StringAlignment.Far;
                 }
+                if (Alignment == ContentAlignment.BottomCenter ||
+                    Alignment == ContentAlignment.MiddleCenter ||
+                    Alignment == ContentAlignment.TopCenter)
+                {
+                    format.Alignment = StringAlignment.Center;
+                }
+                if (Alignment == ContentAlignment.BottomCenter ||
+                    Alignment == ContentAlignment.BottomLeft ||
+                    Alignment == ContentAlignment.BottomRight)
+                {
+                    format.LineAlignment = StringAlignment.Far;
+                }
+                if (Alignment == ContentAlignment.MiddleCenter ||
+                    Alignment == ContentAlignment.MiddleLeft ||
+                    Alignment == ContentAlignment.MiddleRight)
+                {
+                    format.LineAlignment = StringAlignment.Center;
+                }
+
+                //***************************************************************
+                //** Set shadow color and offset
+                //***************************************************************
+                SKColor textShadowColor = ChartGraphics.GetGradientColor(ForeColor, SKColors.Black, 0.8);
+                int textShadowOffset = 1;
+                TextStyle textStyle = TextStyle;
+                if (textStyle == TextStyle.Shadow &&
+                    ShadowOffset != 0)
+                {
+                    // Draw shadowed text
+                    textShadowColor = ShadowColor;
+                    textShadowOffset = ShadowOffset;
+                }
+
+                if (textStyle == TextStyle.Shadow)
+                {
+                    textShadowColor = (textShadowColor.Alpha != 255) ? textShadowColor : new(textShadowColor.Red, textShadowColor.Green, textShadowColor.Blue, (byte)(textShadowColor.Alpha / 2));
+                }
+
+                //***************************************************************
+                //** Get text actual position
+                //***************************************************************
+                if (getTextPosition)
+                {
+                    // Measure text size
+                    SKSize textSize = graphics.MeasureStringRel(
+                        ReplaceKeywords(_text.Replace("\\n", "\n")),
+                        Font,
+                        textPositionWithSpacing.Size,
+                        format);
+
+                    // Get text position
+                    textActualPosition = new SKRect(textPositionWithSpacing.Left, textPositionWithSpacing.Top, textPositionWithSpacing.Left + textSize.Width, textPositionWithSpacing.Top + textSize.Height);
+                    if (Alignment == ContentAlignment.BottomRight ||
+                        Alignment == ContentAlignment.MiddleRight ||
+                        Alignment == ContentAlignment.TopRight)
+                    {
+                        textActualPosition.Left += textPositionWithSpacing.Width - textSize.Width;
+                    }
+                    if (Alignment == ContentAlignment.BottomCenter ||
+                        Alignment == ContentAlignment.MiddleCenter ||
+                        Alignment == ContentAlignment.TopCenter)
+                    {
+                        textActualPosition.Left += (textPositionWithSpacing.Width - textSize.Width) / 2f;
+                    }
+                    if (Alignment == ContentAlignment.BottomCenter ||
+                        Alignment == ContentAlignment.BottomLeft ||
+                        Alignment == ContentAlignment.BottomRight)
+                    {
+                        textActualPosition.Top += textPositionWithSpacing.Height - textSize.Height;
+                    }
+                    if (Alignment == ContentAlignment.MiddleCenter ||
+                        Alignment == ContentAlignment.MiddleLeft ||
+                        Alignment == ContentAlignment.MiddleRight)
+                    {
+                        textActualPosition.Top += (textPositionWithSpacing.Height - textSize.Height) / 2f;
+                    }
+
+                    // Do not allow text to go outside annotation position
+                    textActualPosition.Intersect(textPositionWithSpacing);
+                }
+
+                SKRect absPosition = graphics.GetAbsoluteRectangle(textPositionWithSpacing);
+                Title.DrawStringWithStyle(
+                        graphics,
+                        titleText,
+                        TextStyle,
+                        Font,
+                        absPosition,
+                        ForeColor,
+                        textShadowColor,
+                        textShadowOffset,
+                        format,
+                        TextOrientation.Auto
+                  );
             }
 
             return textActualPosition;
@@ -595,29 +586,30 @@ namespace WebCharts.Services.Models.Annotation
             // Create temporary bitmap based chart graphics if chart was not 
             // rendered yet and the graphics was not created.
             // NOTE: Fix for issue #3978.
-            Graphics graphics = null;
-            System.Drawing.Image graphicsImage = null;
+            SKCanvas graphics = null;
+            SKBitmap graphicsImage = null;
             ChartGraphics tempChartGraph = null;
-            if (GetGraphics() == null && this.Common != null)
+            if (GetGraphics() == null && Common != null)
             {
-                graphicsImage = new System.Drawing.Bitmap(Common.ChartPicture.Width, Common.ChartPicture.Height);
-                graphics = Graphics.FromImage(graphicsImage);
-                tempChartGraph = new ChartGraphics(Common);
+                graphicsImage = new(Common.ChartPicture.Width, Common.ChartPicture.Height);
+                graphics = new(graphicsImage);
+                tempChartGraph = new(Common);
                 tempChartGraph.Graphics = graphics;
                 tempChartGraph.SetPictureSize(Common.ChartPicture.Width, Common.ChartPicture.Height);
-                this.Common.graph = tempChartGraph;
+                Common.graph = tempChartGraph;
             }
 
             // Calculate content size
             SKRect result = SKRect.Empty;
-            if (GetGraphics() != null && this.Text.Trim().Length > 0)
+            if (GetGraphics() != null && Text.Trim().Length > 0)
             {
                 // Measure text using current font and slightly increase it
                 contentSize = GetGraphics().MeasureString(
-                     "W" + this.ReplaceKeywords(this.Text.Replace("\\n", "\n")),
-                     this.Font,
+                     "W" + ReplaceKeywords(Text.Replace("\\n", "\n")),
+                     Font,
                      new SKSize(2000, 2000),
-                     StringFormat.GenericTypographic);
+                     StringFormat.GenericTypographic, 
+                     TextOrientation.Auto);
 
                 contentSize.Height *= 1.04f;
 
@@ -625,8 +617,7 @@ namespace WebCharts.Services.Models.Annotation
                 contentSize = GetGraphics().GetRelativeSize(contentSize);
 
                 // Add spacing
-                bool annotationRelative = false;
-                SKRect textSpacing = GetTextSpacing(out annotationRelative);
+                SKRect textSpacing = GetTextSpacing(out bool annotationRelative);
                 float spacingScaleX = 1f;
                 float spacingScaleY = 1f;
                 if (annotationRelative)
@@ -643,8 +634,8 @@ namespace WebCharts.Services.Models.Annotation
                     }
                 }
 
-                contentSize.Width += (textSpacing.X + textSpacing.Width) * spacingScaleX;
-                contentSize.Height += (textSpacing.Y + textSpacing.Height) * spacingScaleY;
+                contentSize.Width += (textSpacing.Left + textSpacing.Width) * spacingScaleX;
+                contentSize.Height += (textSpacing.Top + textSpacing.Height) * spacingScaleY;
 
                 result = new SKRect(float.NaN, float.NaN, contentSize.Width, contentSize.Height);
             }
@@ -655,7 +646,7 @@ namespace WebCharts.Services.Models.Annotation
                 tempChartGraph.Dispose();
                 graphics.Dispose();
                 graphicsImage.Dispose();
-                this.Common.graph = null;
+                Common.graph = null;
             }
 
             return result;
@@ -669,7 +660,7 @@ namespace WebCharts.Services.Models.Annotation
         internal virtual SKRect GetTextSpacing(out bool annotationRelative)
         {
             annotationRelative = false;
-            SKRect rect = new SKRect(3f, 3f, 3f, 3f);
+            SKRect rect = new(3f, 3f, 3f, 3f);
             if (GetGraphics() != null)
             {
                 rect = GetGraphics().GetRelativeRectangle(rect);
@@ -695,22 +686,8 @@ namespace WebCharts.Services.Models.Annotation
         /// </remarks>
         override public void EndPlacement()
         {
-            // Check if text editing is allowed
-            // Maybe changed later in the EndPlacement method.
-            bool allowTextEditing = this.AllowTextEditing;
-
             // Call base class
-            base.EndPlacement();
-
-            // Begin text editing
-            if (this.Chart != null)
-            {
-                this.Chart.Annotations.lastClickedAnnotation = this;
-                if (allowTextEditing)
-                {
-                    BeginTextEditing();
-                }
-            }
+            base.EndPlacement();            
         }
 
         #endregion // Placement Methods
@@ -739,7 +716,7 @@ namespace WebCharts.Services.Models.Annotation
         /// </summary>
         public AnnotationSmartLabelStyle()
         {
-            this.chartElement = null;
+            chartElement = null;
         }
 
         /// <summary>

@@ -14,13 +14,13 @@
 using SkiaSharp;
 using System.Diagnostics.CodeAnalysis;
 using WebCharts.Services.Interfaces;
+using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services.Models.General
 {
     /// <summary>
     /// GdiGraphics class is chart GDI+ rendering engine.
     /// </summary>
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Gdi")]
     internal class GdiGraphics : IChartRenderingEngine
     {
         #region Constructors
@@ -48,7 +48,7 @@ namespace WebCharts.Services.Models.General
             SKPoint pt2
             )
         {
-            _graphics.DrawLine(pt1, pt2, pen);
+            Graphics.DrawLine(pt1, pt2, pen);
         }
 
         /// <summary>
@@ -67,50 +67,7 @@ namespace WebCharts.Services.Models.General
             float y2
             )
         {
-            _graphics.DrawLine(x1, y1, x2, y2, pen);
-        }
-
-        /// <summary>
-        /// Draws the specified portion of the specified Image object at the specified location and with the specified size.
-        /// </summary>
-        /// <param name="image">Image object to draw.</param>
-        /// <param name="destRect">Rectangle structure that specifies the location and size of the drawn image. The image is scaled to fit the rectangle.</param>
-        /// <param name="srcX">x-coordinate of the upper-left corner of the portion of the source image to draw.</param>
-        /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
-        /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
-        /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
-        /// <param name="srcUnit">Member of the GraphicsUnit enumeration that specifies the units of measure used to determine the source rectangle.</param>
-        /// <param name="imageAttr">ImageAttributes object that specifies recoloring and gamma information for the image object.</param>
-        public void DrawImage(
-            SKImage image,
-            SKRect destRect,
-            int srcX,
-            int srcY,
-            int srcWidth,
-            int srcHeight
-            )
-        {
-            _graphics.DrawImage(image, new SKRect(srcX, srcY, srcX + srcWidth, srcY + srcHeight), destRect);
-        }
-
-        /// <summary>
-        /// Draws an ellipse defined by a bounding rectangle specified by 
-        /// a pair of coordinates: a height, and a width.
-        /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
-        /// <param name="x">x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
-        /// <param name="y">y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
-        /// <param name="width">Width of the bounding rectangle that defines the ellipse.</param>
-        /// <param name="height">Height of the bounding rectangle that defines the ellipse.</param>
-        public void DrawEllipse(
-            SKPaint pen,
-            float x,
-            float y,
-            float width,
-            float height
-            )
-        {
-            _graphics.DrawEllipse(pen, x, y, width, height);
+            Graphics.DrawLine(x1, y1, x2, y2, pen);
         }
 
         /// <summary>
@@ -131,7 +88,123 @@ namespace WebCharts.Services.Models.General
             float tension
             )
         {
-            _graphics.DrawCurve(pen, points, offset, numberOfSegments, tension);
+            Graphics.DrawPath(SkiaSharpExtensions.CreateSpline(points), pen);
+        }
+
+
+
+        /// <summary>
+        /// Draws a polygon defined by an array of SKPoint structures.
+        /// </summary>
+        /// <param name="pen">Pen object that determines the color, width, and style of the polygon.</param>
+        /// <param name="points">Array of SKPoint structures that represent the vertices of the polygon.</param>
+        public void DrawPolygon(
+            SKPaint pen,
+            SKPoint[] points
+            )
+        {
+            Graphics.DrawPoints(SKPointMode.Polygon, points, pen);
+        }
+
+        /// <summary>
+        /// Draws the specified text string in the specified rectangle with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
+        /// </summary>
+        /// <param name="s">String to draw.</param>
+        /// <param name="font">Font object that defines the text format of the string.</param>
+        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
+        /// <param name="layoutRectangle">SKRect structure that specifies the location of the drawn text.</param>
+        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
+        public void DrawString(
+            string s,
+            SKFont font,
+            SKPaint brush,
+            SKRect layoutRectangle
+            )
+        {
+            Graphics.DrawText(s, layoutRectangle.Location.X, layoutRectangle.Location.Y, font, brush);
+        }
+
+        /// <summary>
+        /// Draws the specified text string at the specified location with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
+        /// </summary>
+        /// <param name="s">String to draw.</param>
+        /// <param name="font">Font object that defines the text format of the string.</param>
+        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
+        /// <param name="point">SKPoint structure that specifies the upper-left corner of the drawn text.</param>
+        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
+        public void DrawString(
+            string s,
+            SKFont font,
+            SKPaint brush,
+            SKPoint point)
+        {
+            Graphics.DrawText(s, point.X, point.Y, font, brush);
+        }
+
+        /// <summary>
+        /// Draws the specified portion of the specified Image object at the specified location and with the specified size.
+        /// </summary>
+        /// <param name="image">Image object to draw.</param>
+        /// <param name="destRect">Rectangle structure that specifies the location and size of the drawn image. The image is scaled to fit the rectangle.</param>
+        /// <param name="srcX">x-coordinate of the upper-left corner of the portion of the source image to draw.</param>
+        /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
+        /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
+        /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
+        public void DrawImage(
+                SKImage image,
+                SKRect destRect,
+                float srcX,
+                float srcY,
+                float srcWidth,
+                float srcHeight,
+                SKPaint paint
+                )
+        {
+            Graphics.DrawImage(image, new SKRect(srcX, srcY, srcX + srcWidth, srcY + srcHeight), destRect, paint);
+        }
+
+        /// <summary>
+        /// Draws the specified portion of the specified Image object at the specified location and with the specified size.
+        /// </summary>
+        /// <param name="image">Image object to draw.</param>
+        /// <param name="destRect">Rectangle structure that specifies the location and size of the drawn image. The image is scaled to fit the rectangle.</param>
+        /// <param name="srcX">x-coordinate of the upper-left corner of the portion of the source image to draw.</param>
+        /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
+        /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
+        /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
+        /// <param name="srcUnit">Member of the GraphicsUnit enumeration that specifies the units of measure used to determine the source rectangle.</param>
+        /// <param name="imageAttr">ImageAttributes object that specifies recoloring and gamma information for the image object.</param>
+        public void DrawImage(
+            SKImage image,
+            SKRect destRect,
+            int srcX,
+            int srcY,
+            int srcWidth,
+            int srcHeight,
+            SKPaint paint
+            )
+        {
+            Graphics.DrawImage(image, new SKRect(srcX, srcY, srcX + srcWidth, srcY + srcHeight), destRect, paint);
+        }
+
+
+        /// <summary>
+        /// Draws a rectangle specified by a coordinate pair: a width, and a height.
+        /// </summary>
+        /// <param name="pen">A Pen object that determines the color, width, and style of the rectangle.</param>
+        /// <param name="x">The x-coordinate of the upper-left corner of the rectangle to draw.</param>
+        /// <param name="y">The y-coordinate of the upper-left corner of the rectangle to draw.</param>
+        /// <param name="width">The width of the rectangle to draw.</param>
+        /// <param name="height">The height of the rectangle to draw.</param>
+        public void DrawRectangle(
+            SKPaint pen,
+            float x,
+            float y,
+            float width,
+            float height
+            )
+        {
+            Graphics.DrawRect(x, y, width, height, pen);
         }
 
         /// <summary>
@@ -150,95 +223,7 @@ namespace WebCharts.Services.Models.General
             int height
             )
         {
-            _graphics.DrawRectangle(pen, x, y, width, height);
-        }
-
-        /// <summary>
-        /// Draws a polygon defined by an array of SKPoint structures.
-        /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the polygon.</param>
-        /// <param name="points">Array of SKPoint structures that represent the vertices of the polygon.</param>
-        public void DrawPolygon(
-            SKPaint pen,
-            SKPoint[] points
-            )
-        {
-            _graphics.DrawPolygon(pen, points);
-        }
-
-        /// <summary>
-        /// Draws the specified text string in the specified rectangle with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
-        /// </summary>
-        /// <param name="s">String to draw.</param>
-        /// <param name="font">Font object that defines the text format of the string.</param>
-        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
-        /// <param name="layoutRectangle">SKRect structure that specifies the location of the drawn text.</param>
-        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
-        public void DrawString(
-            string s,
-            SKFont font,
-            SKPaint brush,
-            SKRect layoutRectangle
-            )
-        {
-            _graphics.DrawString(s, font, brush, layoutRectangle);
-        }
-
-        /// <summary>
-        /// Draws the specified text string at the specified location with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
-        /// </summary>
-        /// <param name="s">String to draw.</param>
-        /// <param name="font">Font object that defines the text format of the string.</param>
-        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
-        /// <param name="point">SKPoint structure that specifies the upper-left corner of the drawn text.</param>
-        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
-        public void DrawString(
-            string s,
-            SKFont font,
-            SKPaint brush,
-            SKPoint point)
-        {
-            _graphics.DrawString(s, font, brush, point);
-        }
-
-        /// <summary>
-        /// Draws the specified portion of the specified Image object at the specified location and with the specified size.
-        /// </summary>
-        /// <param name="image">Image object to draw.</param>
-        /// <param name="destRect">Rectangle structure that specifies the location and size of the drawn image. The image is scaled to fit the rectangle.</param>
-        /// <param name="srcX">x-coordinate of the upper-left corner of the portion of the source image to draw.</param>
-        /// <param name="srcY">y-coordinate of the upper-left corner of the portion of the source image to draw.</param>
-        /// <param name="srcWidth">Width of the portion of the source image to draw.</param>
-        /// <param name="srcHeight">Height of the portion of the source image to draw.</param>
-        public void DrawImage(
-                SKCanvas image,
-                Rectangle destRect,
-                float srcX,
-                float srcY,
-                float srcWidth,
-                float srcHeight
-                )
-        {
-            _graphics.DrawImage(image, destRect, srcX, srcY, srcWidth, srcHeight);
-        }
-
-        /// <summary>
-        /// Draws a rectangle specified by a coordinate pair: a width, and a height.
-        /// </summary>
-        /// <param name="pen">A Pen object that determines the color, width, and style of the rectangle.</param>
-        /// <param name="x">The x-coordinate of the upper-left corner of the rectangle to draw.</param>
-        /// <param name="y">The y-coordinate of the upper-left corner of the rectangle to draw.</param>
-        /// <param name="width">The width of the rectangle to draw.</param>
-        /// <param name="height">The height of the rectangle to draw.</param>
-        public void DrawRectangle(
-            SKPaint pen,
-            float x,
-            float y,
-            float width,
-            float height
-            )
-        {
-            _graphics.DrawRectangle(pen, x, y, width, height);
+            Graphics.DrawRect(x, y, width, height, pen);
         }
 
         /// <summary>
@@ -251,7 +236,7 @@ namespace WebCharts.Services.Models.General
             SKPath path
             )
         {
-            _graphics.DrawPath(pen, path);
+            Graphics.DrawPath(path, pen);
         }
 
         /// <summary>
@@ -274,7 +259,7 @@ namespace WebCharts.Services.Models.General
             float sweepAngle
             )
         {
-            _graphics.DrawPie(pen, x, y, width, height, startAngle, sweepAngle);
+            DrawArc(pen, x, y, width, height, startAngle, sweepAngle);
         }
 
         /// <summary>
@@ -297,20 +282,7 @@ namespace WebCharts.Services.Models.General
             float sweepAngle
             )
         {
-            _graphics.DrawArc(pen, x, y, width, height, startAngle, sweepAngle);
-        }
-
-        /// <summary>
-        /// Draws the specified Image object at the specified location and with the specified size.
-        /// </summary>
-        /// <param name="image">Image object to draw.</param>
-        /// <param name="rect">SKRect structure that specifies the location and size of the drawn image.</param>
-        public void DrawImage(
-            SKCanvas image,
-            SKRect rect
-            )
-        {
-            _graphics.DrawImage(image, rect);
+            Graphics.DrawArc(new SKRect(x, y, x + width, y + height), startAngle, sweepAngle,true, pen);
         }
 
         /// <summary>
@@ -323,7 +295,27 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
-            _graphics.DrawEllipse(pen, rect);
+            Graphics.DrawOval(rect, pen);
+        }
+
+        /// <summary>
+        /// Draws an ellipse defined by a bounding rectangle specified by 
+        /// a pair of coordinates: a height, and a width.
+        /// </summary>
+        /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
+        /// <param name="x">x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
+        /// <param name="y">y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
+        /// <param name="width">Width of the bounding rectangle that defines the ellipse.</param>
+        /// <param name="height">Height of the bounding rectangle that defines the ellipse.</param>
+        public void DrawEllipse(
+            SKPaint pen,
+            float x,
+            float y,
+            float width,
+            float height
+            )
+        {
+            Graphics.DrawOval(new SKPoint(x, y), new SKSize(width, height), pen);
         }
 
         /// <summary>
@@ -336,7 +328,7 @@ namespace WebCharts.Services.Models.General
             SKPoint[] points
             )
         {
-            _graphics.DrawLines(pen, points);
+            Graphics.DrawPoints(SKPointMode.Lines, points, pen);
         }
 
         #endregion // Drawing Methods
@@ -354,7 +346,7 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
-            _graphics.FillEllipse(brush, rect);
+            Graphics.DrawOval(rect, brush);
         }
 
         /// <summary>
@@ -367,7 +359,7 @@ namespace WebCharts.Services.Models.General
             SKPath path
             )
         {
-            _graphics.FillPath(brush, path);
+            Graphics.DrawPath(path, brush);
         }
 
         /// <summary>
@@ -380,7 +372,7 @@ namespace WebCharts.Services.Models.General
             SKRegion region
             )
         {
-            _graphics.FillRegion(brush, region);
+            Graphics.DrawRegion(region, brush);
         }
 
         /// <summary>
@@ -393,7 +385,7 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
-            _graphics.FillRectangle(brush, rect);
+            Graphics.DrawRect(rect, brush);
         }
 
         /// <summary>
@@ -412,7 +404,7 @@ namespace WebCharts.Services.Models.General
             float height
             )
         {
-            _graphics.FillRectangle(brush, x, y, width, height);
+            Graphics.DrawRect(x, y, width, height, brush);
         }
 
         /// <summary>
@@ -425,7 +417,7 @@ namespace WebCharts.Services.Models.General
             SKPoint[] points
             )
         {
-            _graphics.FillPolygon(brush, points);
+            Graphics.DrawPoints(SKPointMode.Polygon, points, brush);
         }
 
         /// <summary>
@@ -450,7 +442,7 @@ namespace WebCharts.Services.Models.General
             float sweepAngle
             )
         {
-            _graphics.FillPie(brush, x, y, width, height, startAngle, sweepAngle);
+            Graphics.DrawArc(new SKRect(x, y, x + width, y + height), startAngle, sweepAngle, true, brush);
         }
 
         #endregion // Filling Methods
@@ -471,7 +463,10 @@ namespace WebCharts.Services.Models.General
             SKFont font,
             SKSize layoutArea)
         {
-            return _graphics.MeasureString(text, font, layoutArea);
+            var p = new SKPaint() { Typeface = font.Typeface, TextSize = font.Size };
+            var width = p.MeasureText(text);
+            var height = p.TextSize;
+            return new SKSize(width > layoutArea.Width ? layoutArea.Width : width, height > layoutArea.Height ? layoutArea.Height : height);
         }
 
         /// <summary>
@@ -486,7 +481,11 @@ namespace WebCharts.Services.Models.General
             SKFont font
             )
         {
-            return _graphics.MeasureString(text, font);
+            var p = new SKPaint() { Typeface = font.Typeface, TextSize = font.Size };
+            var width = p.MeasureText(text);
+            var height = p.TextSize;
+            return new SKSize(width, height);
+
         }
 
         /// <summary>
@@ -494,7 +493,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public void ResetClip()
         {
-            _graphics.ResetClip();
+            Graphics.ClipRect(SKRect.Empty);
         }
 
         /// <summary>
@@ -505,22 +504,7 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
-            _graphics.SetClip(rect);
-        }
-
-        /// <summary>
-        /// Sets the clipping region of this Graphics object to the result of the 
-        /// specified operation combining the current clip region and the 
-        /// specified SKPath object.
-        /// </summary>
-        /// <param name="path">SKPath object to combine.</param>
-        /// <param name="combineMode">Member of the CombineMode enumeration that specifies the combining operation to use.</param>
-        public void SetClip(
-            SKPath path,
-            CombineMode combineMode
-            )
-        {
-            _graphics.SetClip(path, combineMode);
+            Graphics.ClipRect(rect);
         }
 
         /// <summary>
@@ -533,7 +517,7 @@ namespace WebCharts.Services.Models.General
             float dy
             )
         {
-            _graphics.TranslateTransform(dx, dy);
+            Graphics.Translate(dx, dy);
         }
 
         #endregion // Other Methods
@@ -547,15 +531,15 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                return _graphics.Transform;
+                return Graphics.TotalMatrix;
             }
             set
             {
-                _graphics.Transform = value;
+                Graphics.SetMatrix(value);
             }
         }
 
-  
+
 
         /// <summary>
         /// Gets or sets a Region object that limits the drawing region of this Graphics object.
@@ -564,11 +548,12 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                return _graphics.Clip;
+                Graphics.GetLocalClipBounds(out var bounds);
+                return new SKRegion(new SKRectI((int)bounds.Left, (int)bounds.Top, (int)bounds.Right, (int)bounds.Bottom));
             }
             set
             {
-                _graphics.Clip = value;
+                Graphics.ClipRegion(value);
             }
         }
 
@@ -579,24 +564,14 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                return _graphics.IsClipEmpty;
+                return Graphics.IsClipEmpty;
             }
         }
 
         /// <summary>
         /// Reference to the Graphics object
         /// </summary>
-        public SKCanvas Graphics
-        {
-            get
-            {
-                return _graphics;
-            }
-            set
-            {
-                _graphics = value;
-            }
-        }
+        public SKCanvas Graphics { get; set; } = null;
 
         #endregion // Properties
 
@@ -605,7 +580,6 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Graphics object
         /// </summary>
-        SKCanvas _graphics = null;
 
         #endregion // Fields
     }

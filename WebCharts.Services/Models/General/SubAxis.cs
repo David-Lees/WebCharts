@@ -105,7 +105,7 @@ namespace WebCharts.Services.Models.General
 		SRCategory("CategoryAttributeScale"),
 		SRDescription("DescriptionAttributeScaleBreakStyle"),
 		TypeConverter(typeof(NoNameExpandableObjectConverter)),
-		NotifyParentPropertyAttribute(true),
+		
 		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
 		]
 		override public AxisScaleBreakStyle ScaleBreakStyle
@@ -125,10 +125,10 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		[
 		SRCategory("CategoryAttributeAxis"),
-		Bindable(true),
+		
 		Browsable(false),
 		DefaultValue(null),
-		NotifyParentPropertyAttribute(true),
+		
 		SRDescription("DescriptionAttributeSubAxis_ParentAxis"),
 		DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
 		SerializationVisibilityAttribute(SerializationVisibility.Hidden)
@@ -147,9 +147,9 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		[
 		SRCategory("CategoryAttributeLocation"),
-		Bindable(true),
+		
 		DefaultValue(0.0),
-		NotifyParentPropertyAttribute(true),
+		
 		SRDescription("DescriptionAttributeSubAxis_LocationOffset"),
 		]
 		public double LocationOffset
@@ -169,10 +169,10 @@ namespace WebCharts.Services.Models.General
 		/// Axis position
 		/// </summary>
 		[
-		Bindable(true),
+		
 		Browsable(false),
 		DefaultValue(AxisPosition.Left),
-		NotifyParentPropertyAttribute(true),
+		
 		SRDescription("DescriptionAttributeReverse"),
 		DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
 		SerializationVisibilityAttribute(SerializationVisibility.Hidden)
@@ -197,7 +197,7 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		[
 		SRCategory("CategoryAttributeAppearance"),
-		Bindable(true),
+		
 		Browsable(true),
 		DefaultValue(""),
 		SRDescription("DescriptionAttributeSubAxis_Name"),
@@ -224,10 +224,10 @@ namespace WebCharts.Services.Models.General
 		SRCategory("CategoryAttributeAppearance"),
 		Browsable(false),
 		EditorBrowsable(EditorBrowsableState.Never),
-		Bindable(true),
+		
 		DefaultValue(true),
 		SRDescription("DescriptionAttributeMarksNextToAxis"),
-		NotifyParentPropertyAttribute(true),
+		
 		DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
 		SerializationVisibilityAttribute(SerializationVisibility.Hidden)
 		]
@@ -250,9 +250,9 @@ namespace WebCharts.Services.Models.General
 		SRCategory("CategoryAttributeScale"),
 		Browsable(false),
 		EditorBrowsable(EditorBrowsableState.Never),
-		Bindable(true),
+		
 		DefaultValue(Double.NaN),
-		NotifyParentPropertyAttribute(true),
+		
 		SRDescription("DescriptionAttributeCrossing"),
 		TypeConverter(typeof(AxisCrossingValueConverter)),
 		DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
@@ -277,7 +277,7 @@ namespace WebCharts.Services.Models.General
 		SRCategory("CategoryAttributeSubAxes"),
 		Browsable(false),
 		EditorBrowsable(EditorBrowsableState.Never),
-		Bindable(true),
+		
 		SRDescription("DescriptionAttributeSubAxes"),
         Editor(Editors.ChartCollectionEditor.Editor, Editors.ChartCollectionEditor.Base),
 		DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
