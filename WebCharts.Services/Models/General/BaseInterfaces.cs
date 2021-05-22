@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// IChartElement is implemented by both ChartElements and ChartElementCollection to provide a unified access to Parent/Common elements. 

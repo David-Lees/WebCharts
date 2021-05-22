@@ -16,14 +16,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -109,7 +103,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
         // Array of label rectangles used to prevent labels overlapping
         // for 2D pie chart outside labels.
-        private ArrayList _labelsRectangles = new ArrayList();
+        private readonly ArrayList _labelsRectangles = new();
 
         #endregion Fields
 
@@ -666,21 +660,17 @@ namespace WebCharts.Services.Models.ChartTypes
             }
 
             // Get first pie starting angle
-            if (typeSeries.Count > 0)
+            if (typeSeries.Count > 0 && dataSeries[typeSeries[0]].IsCustomPropertySet(CustomPropertyName.PieStartAngle))
             {
-                if (dataSeries[typeSeries[0]].IsCustomPropertySet(CustomPropertyName.PieStartAngle))
+                bool parseSucceed = float.TryParse(dataSeries[typeSeries[0]][CustomPropertyName.PieStartAngle], NumberStyles.Any, CultureInfo.InvariantCulture, out float angle);
+                if (parseSucceed)
                 {
-                    float angle;
-                    bool parseSucceed = float.TryParse(dataSeries[typeSeries[0]][CustomPropertyName.PieStartAngle], NumberStyles.Any, CultureInfo.InvariantCulture, out angle);
-                    if (parseSucceed)
-                    {
-                        startAngle = angle;
-                    }
+                    startAngle = angle;
+                }
 
-                    if (!parseSucceed || startAngle > 360f || startAngle < 0f)
-                    {
-                        throw (new InvalidOperationException(SR.ExceptionCustomAttributeAngleOutOfRange("PieStartAngle")));
-                    }
+                if (!parseSucceed || startAngle > 360f || startAngle < 0f)
+                {
+                    throw (new InvalidOperationException(SR.ExceptionCustomAttributeAngleOutOfRange("PieStartAngle")));
                 }
             }
 
@@ -759,7 +749,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 SKSize relativeSize = graph.GetRelativeSize(new SKSize(absRadius, absRadius));
 
                 // Center of the pie
-                SKPoint middlePoint = new SKPoint(rectangle.Left + rectangle.Width / 2, rectangle.Top + rectangle.Height / 2);
+                SKPoint middlePoint = new(rectangle.Left + rectangle.Width / 2, rectangle.Top + rectangle.Height / 2);
 
                 // Rectangle which will always create circle, never ellipse.
                 rectangle = new SKRect(middlePoint.X - relativeSize.Width / 2, middlePoint.Y - relativeSize.Height / 2, relativeSize.Width, relativeSize.Height);
@@ -1217,7 +1207,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     true);
 
                 // Draw the label inside the pie
-                using SKPaint brush = new() { Color = point.LabelForeColor };
+                using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
                 graph.DrawPointLabelStringRel(
                     area.Common,
                     text,
@@ -1269,130 +1259,128 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 // Set string alingment
-                using (StringFormat format = new StringFormat())
+                using StringFormat format = new();
+                format.Alignment = StringAlignment.Center;
+                format.LineAlignment = StringAlignment.Center;
+
+                // Find second line position
+                float y3 = (float)Math.Sin(midAngle * Math.PI / 180) * relativeSize.Height * shift * expShift + middlePoint.Y;
+                float x3;
+                float x3Overlap;
+
+                SKRect labelRect = SKRect.Empty;
+                SKRect labelRectOver = SKRect.Empty;
+
+                if (midAngle > 90 && midAngle < 270)
                 {
-                    format.Alignment = StringAlignment.Center;
-                    format.LineAlignment = StringAlignment.Center;
+                    format.Alignment = StringAlignment.Far;
+                    x3Overlap = -relativeSize.Width * shift * expShift + middlePoint.X - relativeSize.Width / 10 * labelsHorizontalLineSize;
+                    x3 = (float)Math.Cos((midAngle) * Math.PI / 180) * relativeSize.Width * shift * expShift + middlePoint.X - relativeSize.Width / 10 * labelsHorizontalLineSize;
 
-                    // Find second line position
-                    float y3 = (float)Math.Sin(midAngle * Math.PI / 180) * relativeSize.Height * shift * expShift + middlePoint.Y;
-                    float x3;
-                    float x3Overlap;
-
-                    SKRect labelRect = SKRect.Empty;
-                    SKRect labelRectOver = SKRect.Empty;
-
-                    if (midAngle > 90 && midAngle < 270)
+                    if (overlapTest)
                     {
-                        format.Alignment = StringAlignment.Far;
-                        x3Overlap = -relativeSize.Width * shift * expShift + middlePoint.X - relativeSize.Width / 10 * labelsHorizontalLineSize;
-                        x3 = (float)Math.Cos((midAngle) * Math.PI / 180) * relativeSize.Width * shift * expShift + middlePoint.X - relativeSize.Width / 10 * labelsHorizontalLineSize;
+                        x3Overlap = x3;
+                    }
 
-                        if (overlapTest)
-                        {
-                            x3Overlap = x3;
-                        }
+                    // This method returns calculated rectangle from point position
+                    // for outside label. Rectangle mustn’t be out of chart area.
+                    labelRect = GetLabelRect(new SKPoint(x3, y3), area, text, format, graph, point, true);
+                    labelRectOver = GetLabelRect(new SKPoint(x3Overlap, y3), area, text, format, graph, point, true);
+                }
+                else
+                {
+                    format.Alignment = StringAlignment.Near;
 
-                        // This method returns calculated rectangle from point position
-                        // for outside label. Rectangle mustn’t be out of chart area.
-                        labelRect = GetLabelRect(new SKPoint(x3, y3), area, text, format, graph, point, true);
-                        labelRectOver = GetLabelRect(new SKPoint(x3Overlap, y3), area, text, format, graph, point, true);
+                    x3Overlap = relativeSize.Width * shift * expShift + middlePoint.X + relativeSize.Width / 10 * labelsHorizontalLineSize;
+                    x3 = (float)Math.Cos(midAngle * Math.PI / 180) * relativeSize.Width * shift * expShift + middlePoint.X + relativeSize.Width / 10 * labelsHorizontalLineSize;
+
+                    if (overlapTest)
+                    {
+                        x3Overlap = x3;
+                    }
+
+                    // This method returns calculated rectangle from point position
+                    // for outside label. Rectangle mustn’t be out of chart area.
+                    labelRect = GetLabelRect(new SKPoint(x3, y3), area, text, format, graph, point, false);
+                    labelRectOver = GetLabelRect(new SKPoint(x3Overlap, y3), area, text, format, graph, point, false);
+                }
+
+                // Draw second line
+                if (!overlapTest)
+                {
+                    if (_labelsOverlap)
+                    {
+                        float calculatedY3 = (((SKRect)_labelsRectangles[pointIndex]).Top + ((SKRect)_labelsRectangles[pointIndex]).Bottom) / 2f;
+                        graph.DrawLineRel(pieLineColor, point.BorderWidth, ChartDashStyle.Solid, new SKPoint(x2, y2), new SKPoint(x3Overlap, calculatedY3));
                     }
                     else
                     {
-                        format.Alignment = StringAlignment.Near;
-
-                        x3Overlap = relativeSize.Width * shift * expShift + middlePoint.X + relativeSize.Width / 10 * labelsHorizontalLineSize;
-                        x3 = (float)Math.Cos(midAngle * Math.PI / 180) * relativeSize.Width * shift * expShift + middlePoint.X + relativeSize.Width / 10 * labelsHorizontalLineSize;
-
-                        if (overlapTest)
-                        {
-                            x3Overlap = x3;
-                        }
-
-                        // This method returns calculated rectangle from point position
-                        // for outside label. Rectangle mustn’t be out of chart area.
-                        labelRect = GetLabelRect(new SKPoint(x3, y3), area, text, format, graph, point, false);
-                        labelRectOver = GetLabelRect(new SKPoint(x3Overlap, y3), area, text, format, graph, point, false);
+                        graph.DrawLineRel(pieLineColor, point.BorderWidth, ChartDashStyle.Solid, new SKPoint(x2, y2), new SKPoint(x3, y3));
                     }
+                }
 
-                    // Draw second line
-                    if (!overlapTest)
+                // Draw the string
+                if (!overlapTest)
+                {
+                    SKRect rect = new(labelRect.Left, labelRect.Top, labelRect.Right, labelRect.Bottom);
+                    if (_labelsOverlap)
                     {
-                        if (_labelsOverlap)
-                        {
-                            float calculatedY3 = (((SKRect)_labelsRectangles[pointIndex]).Top + ((SKRect)_labelsRectangles[pointIndex]).Bottom) / 2f;
-                            graph.DrawLineRel(pieLineColor, point.BorderWidth, ChartDashStyle.Solid, new SKPoint(x2, y2), new SKPoint(x3Overlap, calculatedY3));
-                        }
-                        else
-                        {
-                            graph.DrawLineRel(pieLineColor, point.BorderWidth, ChartDashStyle.Solid, new SKPoint(x2, y2), new SKPoint(x3, y3));
-                        }
+                        // Draw label from collection if original labels overlap.
+                        rect = (SKRect)_labelsRectangles[pointIndex];
+                        rect.Left = labelRectOver.Left;
+                        rect.Size = new(labelRectOver.Width, labelRectOver.Height);
                     }
 
-                    // Draw the string
-                    if (!overlapTest)
+                    // Get label background position
+                    SKSize valueTextSize = graph.MeasureStringRel(text.Replace("\\n", "\n"), point.Font);
+                    valueTextSize.Height += valueTextSize.Height / 8;
+                    float spacing = valueTextSize.Width / text.Length / 2;
+                    valueTextSize.Width += spacing;
+                    SKRect labelBackPosition = new(
+                        rect.Left,
+                        rect.Right + rect.Height / 2f - valueTextSize.Height / 2f,
+                        valueTextSize.Width,
+                        valueTextSize.Height);
+
+                    // Adjust position based on alignment
+                    if (format.Alignment == StringAlignment.Near)
                     {
-                        SKRect rect = new(labelRect.Left, labelRect.Top, labelRect.Right, labelRect.Bottom);
-                        if (_labelsOverlap)
-                        {
-                            // Draw label from collection if original labels overlap.
-                            rect = (SKRect)_labelsRectangles[pointIndex];
-                            rect.Left = labelRectOver.Left;
-                            rect.Size = new(labelRectOver.Width, labelRectOver.Height);
-                        }
-
-                        // Get label background position
-                        SKSize valueTextSize = graph.MeasureStringRel(text.Replace("\\n", "\n"), point.Font);
-                        valueTextSize.Height += valueTextSize.Height / 8;
-                        float spacing = valueTextSize.Width / text.Length / 2;
-                        valueTextSize.Width += spacing;
-                        SKRect labelBackPosition = new(
-                            rect.Left,
-                            rect.Right + rect.Height / 2f - valueTextSize.Height / 2f,
-                            valueTextSize.Width,
-                            valueTextSize.Height);
-
-                        // Adjust position based on alignment
-                        if (format.Alignment == StringAlignment.Near)
-                        {
-                            labelBackPosition.Left -= spacing / 2f;
-                        }
-                        else if (format.Alignment == StringAlignment.Center)
-                        {
-                            labelBackPosition.Left = rect.Left + (rect.Width - valueTextSize.Width) / 2f;
-                        }
-                        else if (format.Alignment == StringAlignment.Far)
-                        {
-                            labelBackPosition.Left = rect.Right - valueTextSize.Width - spacing / 2f;
-                        }
-
-                        // Draw label text outside
-                        using SKPaint brush = new() { Color = point.LabelForeColor };
-                        graph.DrawPointLabelStringRel(
-                            area.Common,
-                            text,
-                            point.Font,
-                            brush,
-                            rect,
-                            format,
-                            point.LabelAngle,
-                            labelBackPosition,
-                            point.LabelBackColor,
-                            point.LabelBorderColor,
-                            point.LabelBorderWidth,
-                            point.LabelBorderDashStyle,
-                            series,
-                            point,
-                            pointIndex);
+                        labelBackPosition.Left -= spacing / 2f;
                     }
-                    else
+                    else if (format.Alignment == StringAlignment.Center)
                     {
-                        // Insert labels in label collection. This
-                        // code is executed only if labels overlap.
-                        InsertOverlapLabel(labelRectOver);
-                        added = true;
+                        labelBackPosition.Left = rect.Left + (rect.Width - valueTextSize.Width) / 2f;
                     }
+                    else if (format.Alignment == StringAlignment.Far)
+                    {
+                        labelBackPosition.Left = rect.Right - valueTextSize.Width - spacing / 2f;
+                    }
+
+                    // Draw label text outside
+                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
+                    graph.DrawPointLabelStringRel(
+                        area.Common,
+                        text,
+                        point.Font,
+                        brush,
+                        rect,
+                        format,
+                        point.LabelAngle,
+                        labelBackPosition,
+                        point.LabelBackColor,
+                        point.LabelBorderColor,
+                        point.LabelBorderWidth,
+                        point.LabelBorderDashStyle,
+                        series,
+                        point,
+                        pointIndex);
+                }
+                else
+                {
+                    // Insert labels in label collection. This
+                    // code is executed only if labels overlap.
+                    InsertOverlapLabel(labelRectOver);
+                    added = true;
                 }
             }
             // Restore old clip region
@@ -1744,7 +1732,7 @@ namespace WebCharts.Services.Models.ChartTypes
         private static void Map(CommonElements common, DataPoint point, float startAngle, float sweepAngle, SKRect rectangle, bool doughnut, float doughnutRadius, ChartGraphics graph, int pointIndex)
         {
             // Create a graphics path
-            using SKPath path = new SKPath();
+            using SKPath path = new();
             // Create the interior doughnut rectangle
             SKRect doughnutRect = SKRect.Empty;
 
@@ -2576,7 +2564,7 @@ namespace WebCharts.Services.Models.ChartTypes
             int pointIndex
             )
         {
-            SKPaint brush = new() { Color = point.Color };
+            SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.Color };
             SKColor penCurveColor = SKColor.Empty;
 
             // For lightStyle style Non, Border color always exist.
@@ -2613,7 +2601,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 backSlicePen = pen;
             }
 
-            SKPaint penCurve = new() { Color = penCurveColor, StrokeWidth = point.BorderWidth };
+            SKPaint penCurve = new() { Style = SKPaintStyle.Stroke, Color = penCurveColor, StrokeWidth = point.BorderWidth };
             penCurve.PathEffect = ChartGraphics.GetPenStyle(point.BorderDashStyle, point.BorderWidth);
 
             // Set Border Width
@@ -5177,10 +5165,10 @@ namespace WebCharts.Services.Models.ChartTypes
                 pieRectangle.Size = new(pieRectangle.Width * 0.8F, pieRectangle.Height);
             }
 
-            pieRectangle.Left = pieRectangle.Left + (oldWidth - pieRectangle.Width) / 2F;
+            pieRectangle.Left += (oldWidth - pieRectangle.Width) / 2F;
             pieWidth = pieRectangle.Width / oldWidth * pieWidth;
 
-            pieRectangle.Top = pieRectangle.Top + (oldHeight - pieRectangle.Height) / 2F;
+            pieRectangle.Top += (oldHeight - pieRectangle.Height) / 2F;
 
             // Find maximum number of rows. Number of rows will be changed
             // but this is only recommendation, which depends on font size
@@ -5265,105 +5253,103 @@ namespace WebCharts.Services.Models.ChartTypes
             graph.DrawLine(pen, points[(int)PiePoints.TopLabelLine], points[(int)PiePoints.TopLabelLineout]);
             LabelColumn columnLabel;
 
-            using (StringFormat format = new StringFormat())
+            using StringFormat format = new();
+            format.LineAlignment = StringAlignment.Center;
+
+            SKRect chartAreaPosition = graph.GetAbsoluteRectangle(area.Position.ToSKRect());
+            SKRect labelPosition = SKRect.Empty;
+
+            SKPoint labelPoint;
+
+            if (midAngle >= -90 && midAngle < 90 || midAngle >= 270 && midAngle < 450)
             {
-                format.LineAlignment = StringAlignment.Center;
+                columnLabel = labelColumnRight;
+                format.Alignment = StringAlignment.Near;
 
-                SKRect chartAreaPosition = graph.GetAbsoluteRectangle(area.Position.ToSKRect());
-                SKRect labelPosition = SKRect.Empty;
+                float labelVertSize = graph.GetAbsoluteSize(new SKSize(0f, labelColumnRight.columnHeight)).Height;
+                labelPoint = graph.GetAbsolutePoint(columnLabel.GetLabelPosition(point));
 
-                SKPoint labelPoint;
-
-                if (midAngle >= -90 && midAngle < 90 || midAngle >= 270 && midAngle < 450)
+                // Label has to be right from TopLabelLineOut
+                if (points[(int)PiePoints.TopLabelLineout].X > labelPoint.X)
                 {
-                    columnLabel = labelColumnRight;
-                    format.Alignment = StringAlignment.Near;
-
-                    float labelVertSize = graph.GetAbsoluteSize(new SKSize(0f, labelColumnRight.columnHeight)).Height;
-                    labelPoint = graph.GetAbsolutePoint(columnLabel.GetLabelPosition(point));
-
-                    // Label has to be right from TopLabelLineOut
-                    if (points[(int)PiePoints.TopLabelLineout].X > labelPoint.X)
-                    {
-                        labelPoint.X = points[(int)PiePoints.TopLabelLineout].X + 10;
-                    }
-
-                    labelPosition.Left = labelPoint.X;
-                    labelPosition.Right = chartAreaPosition.Right;
-                    labelPosition.Top = labelPoint.Y - labelVertSize / 2;
-                    labelPosition.Bottom = labelPosition.Top + labelVertSize;
-                }
-                else
-                {
-                    columnLabel = labelColumnLeft;
-                    format.Alignment = StringAlignment.Far;
-
-                    float labelVertSize = graph.GetAbsoluteSize(new SKSize(0f, labelColumnLeft.columnHeight)).Height;
-                    labelPoint = graph.GetAbsolutePoint(columnLabel.GetLabelPosition(point));
-
-                    // Label has to be left from TopLabelLineOut
-                    if (points[(int)PiePoints.TopLabelLineout].X < labelPoint.X)
-                    {
-                        labelPoint.X = points[(int)PiePoints.TopLabelLineout].X - 10;
-                    }
-
-                    labelPosition.Left = chartAreaPosition.Left;
-                    labelPosition.Right = labelPoint.X;
-                    labelPosition.Top = labelPoint.Y - labelVertSize / 2;
-                    labelPosition.Bottom = labelPosition.Top + labelVertSize;
-                }
-                format.FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.LineLimit;
-                format.Trimming = StringTrimming.EllipsisWord;
-
-                graph.DrawLine(pen, points[(int)PiePoints.TopLabelLineout], labelPoint);
-
-                // Get label relative position
-                labelPosition = graph.GetRelativeRectangle(labelPosition);
-
-                // Get label background position
-                SKSize valueTextSize = graph.MeasureStringRel(text.Replace("\\n", "\n"), point.Font);
-                valueTextSize.Height += valueTextSize.Height / 8;
-                float spacing = valueTextSize.Width / text.Length / 2;
-                valueTextSize.Width += spacing;
-                SKRect labelBackPosition = new(
-                    labelPosition.Left,
-                    labelPosition.Top + labelPosition.Height / 2f - valueTextSize.Height / 2f,
-                    valueTextSize.Width,
-                    valueTextSize.Height);
-
-                // Adjust position based on alignment
-                if (format.Alignment == StringAlignment.Near)
-                {
-                    labelBackPosition.Left -= spacing / 2f;
-                }
-                else if (format.Alignment == StringAlignment.Center)
-                {
-                    labelBackPosition.Left = labelPosition.Left + (labelPosition.Width - valueTextSize.Width) / 2f;
-                }
-                else if (format.Alignment == StringAlignment.Far)
-                {
-                    labelBackPosition.Left = labelPosition.Right - valueTextSize.Width - spacing / 2f;
+                    labelPoint.X = points[(int)PiePoints.TopLabelLineout].X + 10;
                 }
 
-                // Draw label text
-                using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
-                graph.DrawPointLabelStringRel(
-                    graph.Common,
-                    text,
-                    point.Font,
-                    brush,
-                    labelPosition,
-                    format,
-                    0,
-                    labelBackPosition,
-                    point.LabelBackColor,
-                    point.LabelBorderColor,
-                    point.LabelBorderWidth,
-                    point.LabelBorderDashStyle,
-                    point.series,
-                    point,
-                    pointIndex);
+                labelPosition.Left = labelPoint.X;
+                labelPosition.Right = chartAreaPosition.Right;
+                labelPosition.Top = labelPoint.Y - labelVertSize / 2;
+                labelPosition.Bottom = labelPosition.Top + labelVertSize;
             }
+            else
+            {
+                columnLabel = labelColumnLeft;
+                format.Alignment = StringAlignment.Far;
+
+                float labelVertSize = graph.GetAbsoluteSize(new SKSize(0f, labelColumnLeft.columnHeight)).Height;
+                labelPoint = graph.GetAbsolutePoint(columnLabel.GetLabelPosition(point));
+
+                // Label has to be left from TopLabelLineOut
+                if (points[(int)PiePoints.TopLabelLineout].X < labelPoint.X)
+                {
+                    labelPoint.X = points[(int)PiePoints.TopLabelLineout].X - 10;
+                }
+
+                labelPosition.Left = chartAreaPosition.Left;
+                labelPosition.Right = labelPoint.X;
+                labelPosition.Top = labelPoint.Y - labelVertSize / 2;
+                labelPosition.Bottom = labelPosition.Top + labelVertSize;
+            }
+            format.FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.LineLimit;
+            format.Trimming = StringTrimming.EllipsisWord;
+
+            graph.DrawLine(pen, points[(int)PiePoints.TopLabelLineout], labelPoint);
+
+            // Get label relative position
+            labelPosition = graph.GetRelativeRectangle(labelPosition);
+
+            // Get label background position
+            SKSize valueTextSize = graph.MeasureStringRel(text.Replace("\\n", "\n"), point.Font);
+            valueTextSize.Height += valueTextSize.Height / 8;
+            float spacing = valueTextSize.Width / text.Length / 2;
+            valueTextSize.Width += spacing;
+            SKRect labelBackPosition = new(
+                labelPosition.Left,
+                labelPosition.Top + labelPosition.Height / 2f - valueTextSize.Height / 2f,
+                valueTextSize.Width,
+                valueTextSize.Height);
+
+            // Adjust position based on alignment
+            if (format.Alignment == StringAlignment.Near)
+            {
+                labelBackPosition.Left -= spacing / 2f;
+            }
+            else if (format.Alignment == StringAlignment.Center)
+            {
+                labelBackPosition.Left = labelPosition.Left + (labelPosition.Width - valueTextSize.Width) / 2f;
+            }
+            else if (format.Alignment == StringAlignment.Far)
+            {
+                labelBackPosition.Left = labelPosition.Right - valueTextSize.Width - spacing / 2f;
+            }
+
+            // Draw label text
+            using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
+            graph.DrawPointLabelStringRel(
+                graph.Common,
+                text,
+                point.Font,
+                brush,
+                labelPosition,
+                format,
+                0,
+                labelBackPosition,
+                point.LabelBackColor,
+                point.LabelBorderColor,
+                point.LabelBorderWidth,
+                point.LabelBorderDashStyle,
+                point.series,
+                point,
+                pointIndex);
         }
 
         /// <summary>
@@ -5376,9 +5362,11 @@ namespace WebCharts.Services.Models.ChartTypes
         private void Draw3DInsideLabels(ChartGraphics graph, SKPoint[] points, DataPoint point, int pointIndex)
         {
             // Set String Alignment
-            StringFormat format = new StringFormat();
-            format.LineAlignment = StringAlignment.Center;
-            format.Alignment = StringAlignment.Center;
+            StringFormat format = new()
+            {
+                LineAlignment = StringAlignment.Center,
+                Alignment = StringAlignment.Center
+            };
 
             // Take label text
             string text = GetLabelText(point);
@@ -5393,13 +5381,11 @@ namespace WebCharts.Services.Models.ChartTypes
                 point.Font,
                 new SKSize(1000f, 1000f),
                 new StringFormat(StringFormat.GenericTypographic)));
-
-            // Get label background position
-            SKRect labelBackPosition = SKRect.Empty;
-            SKSize sizeLabel = new SKSize(SKSizeont.Width, SKSizeont.Height);
+            SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
             sizeLabel.Height += SKSizeont.Height / 8;
             sizeLabel.Width += sizeLabel.Width / text.Length;
-            labelBackPosition = new SKRect(
+            // Get label background position
+            SKRect labelBackPosition = new(
                 labelPosition.X - sizeLabel.Width / 2,
                 labelPosition.Y - sizeLabel.Height / 2 - SKSizeont.Height / 10,
                 sizeLabel.Width,

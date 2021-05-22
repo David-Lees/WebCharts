@@ -2,27 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	LegendCell and LegendCellColumn classes allow to 
-//              create highly customize legends. Please refer to 
-//              Chart documentation which contains images and 
+//  Purpose:	LegendCell and LegendCellColumn classes allow to
+//              create highly customize legends. Please refer to
+//              Chart documentation which contains images and
 //              samples describing this functionality.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
-
-
     #region Enumerations
 
     /// <summary>
@@ -62,11 +55,11 @@ namespace WebCharts.Services.Models.General
         SeriesSymbol
     }
 
-    #endregion // Enumerations
+    #endregion Enumerations
 
     /// <summary>
-    /// The LegendCellColumn class represents a cell column in a legend, 
-    /// used to extend the functionality of the default legend. It contains 
+    /// The LegendCellColumn class represents a cell column in a legend,
+    /// used to extend the functionality of the default legend. It contains
     /// visual appearance properties, legend header settings and also determine
     /// how and in which order cells are formed for each of the legend items.
     /// </summary>
@@ -125,7 +118,7 @@ namespace WebCharts.Services.Models.General
         // Maximum column width
         private int _maximumCellWidth = -1;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructors
 
@@ -138,7 +131,6 @@ namespace WebCharts.Services.Models.General
             _headerFont = _fontCache.DefaultBoldFont;
         }
 
-
         /// <summary>
         /// LegendCellColumn constructor.
         /// </summary>
@@ -147,7 +139,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="text">Column cell text.</param>
         public LegendCellColumn(string headerText, LegendCellColumnType columnType, string text) : this(headerText, columnType, text, ContentAlignment.MiddleCenter)
         {
-
         }
 
         /// <summary>
@@ -165,8 +156,7 @@ namespace WebCharts.Services.Models.General
             _alignment = alignment;
         }
 
-
-        #endregion // Constructors
+        #endregion Constructors
 
         #region Properties
 
@@ -189,7 +179,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Gets legend this column belongs too.
         /// </summary>
@@ -203,7 +192,6 @@ namespace WebCharts.Services.Models.General
                     return null;
             }
         }
-
 
         /// <summary>
         /// Gets or sets legend column type.  This is only applicable to items that are automatically generated for the series.
@@ -226,7 +214,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets legend column text.  This is only applicable to items that are automatically generated for the series.  
+        /// Gets or sets legend column text.  This is only applicable to items that are automatically generated for the series.
         /// Set the ColumnType property to text to use this property.
         /// </summary>
         [
@@ -285,7 +273,6 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
-
 
         /// <summary>
         /// Gets or sets the font of the legend column text.
@@ -354,7 +341,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the margins of the legend column (as a percentage of legend font size).  
+        /// Gets or sets the margins of the legend column (as a percentage of legend font size).
         /// This is only applicable to items that are automatically generated for the series.
         /// </summary>
         [
@@ -459,7 +446,7 @@ namespace WebCharts.Services.Models.General
         /// Gets or sets the font of the legend column header.
         /// </summary>
         [
-        SRCategory("CategoryAttributeHeader"),        
+        SRCategory("CategoryAttributeHeader"),
         SRDescription("DescriptionAttributeLegendCellColumn_HeaderFont"),
         ]
         public virtual SKFont HeaderFont
@@ -547,12 +534,12 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Methods
 
         /// <summary>
-        /// Creates a new LegendCell object and copies all properties from the 
+        /// Creates a new LegendCell object and copies all properties from the
         /// current column into the newly created one.
         /// </summary>
         /// <returns>A new copy of the LegendCell</returns>
@@ -567,7 +554,7 @@ namespace WebCharts.Services.Models.General
             return newCell;
         }
 
-        #endregion // Methods
+        #endregion Methods
 
         #region IDisposable Members
 
@@ -584,14 +571,13 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
-    /// The LegendCell class represents a single cell in the chart legend. 
+    /// The LegendCell class represents a single cell in the chart legend.
     /// Legend contains several legend items.  Each item contains several
-    /// cells which form the vertical columns. This class provides properties 
+    /// cells which form the vertical columns. This class provides properties
     /// which determine content of the cell and its visual appearance. It
     /// also contains method which determine the size of the cell and draw
     /// cell in the chart.
@@ -652,7 +638,7 @@ namespace WebCharts.Services.Models.General
         // Exncludes margins and space required for separators
         internal SKRect cellPosition = SKRect.Empty;
 
-        // Position where cell is drawn in pixel coordinates. 
+        // Position where cell is drawn in pixel coordinates.
         // Includes margins and space required for separators
         internal SKRect cellPositionWithMargins = SKRect.Empty;
 
@@ -662,7 +648,7 @@ namespace WebCharts.Services.Models.General
         // Font reduced value used to calculate last cached cell size
         private int _cachedCellSKSizeontReducedBy = 0;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructors
 
@@ -724,7 +710,7 @@ namespace WebCharts.Services.Models.General
             _alignment = alignment;
         }
 
-        #endregion // Constructors
+        #endregion Constructors
 
         #region Properties
 
@@ -795,8 +781,6 @@ namespace WebCharts.Services.Models.General
                     return null;
             }
         }
-
-
 
         /// <summary>
         /// Gets or sets the text of the legend cell. Set CellType to text to use this property.
@@ -919,7 +903,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the image size (as a percentage of legend font size) of the legend cell. 
+        /// Gets or sets the image size (as a percentage of legend font size) of the legend cell.
         /// Set CellType to Image to use this property.
         /// </summary>
         /// <remarks>
@@ -939,7 +923,7 @@ namespace WebCharts.Services.Models.General
             {
                 if (value.Width < 0 || value.Height < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionLegendCellImageSizeIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionLegendCellImageSizeIsNegative, nameof(value)));
                 }
                 _imageSize = value;
                 Invalidate();
@@ -947,7 +931,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the series symbol size (as a percentage of legend font size) of the legend cell. 
+        /// Gets or sets the series symbol size (as a percentage of legend font size) of the legend cell.
         /// Set CellType to SeriesSymbol to use this property.
         /// </summary>
         [
@@ -964,7 +948,7 @@ namespace WebCharts.Services.Models.General
             {
                 if (value.Width < 0 || value.Height < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionLegendCellSeriesSymbolSizeIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionLegendCellSeriesSymbolSizeIsNegative, nameof(value)));
                 }
                 _seriesSymbolSize = value;
                 Invalidate();
@@ -1008,7 +992,7 @@ namespace WebCharts.Services.Models.General
             {
                 if (value < 1)
                 {
-                    throw (new ArgumentException(SR.ExceptionLegendCellSpanIsLessThenOne, "value"));
+                    throw (new ArgumentException(SR.ExceptionLegendCellSpanIsLessThenOne, nameof(value)));
                 }
                 _cellSpan = value;
                 Invalidate();
@@ -1075,7 +1059,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Methods
 
@@ -1099,7 +1083,7 @@ namespace WebCharts.Services.Models.General
             SKRect position,
             SKSize singleWCharacterSize)
         {
-            // Set cell position 
+            // Set cell position
             cellPosition = position;
             cellPositionWithMargins = position;
             _rowIndex = rowIndex;
@@ -1152,8 +1136,7 @@ namespace WebCharts.Services.Models.General
 
             // Get cell font
             SKSize cellSize = SKSize.Empty;
-            bool disposeFont = false;
-            SKFont cellFont = GetCellFont(legendAutoFont, fontSizeReducedBy, out disposeFont);
+            SKFont cellFont = GetCellFont(legendAutoFont, fontSizeReducedBy, out bool disposeFont);
 
             // Measure cell content size based on the type
             if (CellType == LegendCellType.SeriesSymbol)
@@ -1195,7 +1178,7 @@ namespace WebCharts.Services.Models.General
                 throw (new InvalidOperationException(SR.ExceptionLegendCellTypeUnknown(CellType.ToString())));
             }
 
-            // Add cell margins 
+            // Add cell margins
             cellSize.Width += (int)((Margins.Left + Margins.Right) * singleWCharacterSize.Width / 100f);
             cellSize.Height += (int)((Margins.Top + Margins.Bottom) * singleWCharacterSize.Height / 100f);
 
@@ -1242,7 +1225,7 @@ namespace WebCharts.Services.Models.General
                     }
                 }
 
-                // Get font from the legend isInterlaced 
+                // Get font from the legend isInterlaced
                 if (resultColor == SKColor.Empty &&
                     Legend.InterlacedRows &&
                     _rowIndex % 2 != 0)
@@ -1345,7 +1328,7 @@ namespace WebCharts.Services.Models.General
         /// Helper function that returns cell tooltip.
         /// </summary>
         /// <remarks>
-        /// Tooltip can be set in the cell or in the legend item. Cell 
+        /// Tooltip can be set in the cell or in the legend item. Cell
         /// tooltip always has a higher priority.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
@@ -1370,7 +1353,7 @@ namespace WebCharts.Services.Models.General
         /// Helper function that returns cell url.
         /// </summary>
         /// <remarks>
-        /// Url can be set in the cell or in the legend item. Cell 
+        /// Url can be set in the cell or in the legend item. Cell
         /// tooltip always has a higher priority.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
@@ -1383,7 +1366,7 @@ namespace WebCharts.Services.Models.General
         /// Helper function that returns cell url.
         /// </summary>
         /// <remarks>
-        /// Url can be set in the cell or in the legend item. Cell 
+        /// Url can be set in the cell or in the legend item. Cell
         /// tooltip always has a higher priority.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
@@ -1396,7 +1379,7 @@ namespace WebCharts.Services.Models.General
         /// Helper function that returns cell url.
         /// </summary>
         /// <remarks>
-        /// Url can be set in the cell or in the legend item. Cell 
+        /// Url can be set in the cell or in the legend item. Cell
         /// tooltip always has a higher priority.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
@@ -1409,7 +1392,7 @@ namespace WebCharts.Services.Models.General
         /// Helper function that returns the exact text presented in the cell.
         /// </summary>
         /// <remarks>
-        /// This method replaces the "\n" substring with the new line character 
+        /// This method replaces the "\n" substring with the new line character
         /// and automatically wrap text if required.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
@@ -1502,7 +1485,7 @@ namespace WebCharts.Services.Models.General
             return SKColors.Black;
         }
 
-        #endregion // Methods
+        #endregion Methods
 
         #region Cell Painting Methods
 
@@ -1560,12 +1543,15 @@ namespace WebCharts.Services.Models.General
                     case (LegendCellType.Text):
                         this.PaintCellText(chartGraph, fontSizeReducedBy, legendAutoFont);
                         break;
+
                     case (LegendCellType.Image):
                         PaintCellImage(chartGraph, singleWCharacterSize);
                         break;
+
                     case (LegendCellType.SeriesSymbol):
                         this.PaintCellSeriesSymbol(chartGraph, singleWCharacterSize);
                         break;
+
                     default:
                         throw (new InvalidOperationException(SR.ExceptionLegendCellTypeUnknown(CellType.ToString())));
                 }
@@ -1609,8 +1595,7 @@ namespace WebCharts.Services.Models.General
             SKFont legendAutoFont)
         {
             // Get cell font
-            bool disposeFont = false;
-            SKFont cellFont = this.GetCellFont(legendAutoFont, fontSizeReducedBy, out disposeFont);
+            SKFont cellFont = this.GetCellFont(legendAutoFont, fontSizeReducedBy, out bool disposeFont);
 
             // Create font brush
             using (SKPaint fontBrush = new() { Color = GetCellForeColor(), Style = SKPaintStyle.Fill })
@@ -1655,7 +1640,6 @@ namespace WebCharts.Services.Models.General
                     {
                         format.FormatFlags ^= StringFormatFlags.LineLimit;
                     }
-
                     else if (charSize.Height < cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) == 0)
                     {
                         format.FormatFlags |= StringFormatFlags.LineLimit;
@@ -1697,11 +1681,11 @@ namespace WebCharts.Services.Models.General
 
                 ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
 
-                imagePosition.Size = new( (int)imageSize.Width,(int)imageSize.Height);
+                imagePosition.Size = new((int)imageSize.Width, (int)imageSize.Height);
 
                 // Calculate cell position
                 SKRect imageCellPosition = cellPosition;
-                imageCellPosition.Size = new(imagePosition.Width,imagePosition.Height);
+                imageCellPosition.Size = new(imagePosition.Width, imagePosition.Height);
                 if (!ImageSize.IsEmpty)
                 {
                     // Adjust cell size using image symbol size specified
@@ -1867,7 +1851,7 @@ namespace WebCharts.Services.Models.General
 
                     ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
 
-                    imageScale.Size = new( (int)imageSize.Width,(int)imageSize.Height);
+                    imageScale.Size = new((int)imageSize.Width, (int)imageSize.Height);
 
                     // Make sure image size fits into the drawing rectangle
                     float scaleValue = 1f;
@@ -1881,11 +1865,10 @@ namespace WebCharts.Services.Models.General
                     }
 
                     // Scale image size
-                    imageScale.Size = new((int)(imageScale.Width / scaleValue),(int)(imageScale.Height / scaleValue));
+                    imageScale.Size = new((int)(imageScale.Width / scaleValue), (int)(imageScale.Height / scaleValue));
 
                     imageScale.Left = (int)((seriesMarkerPosition.Left + seriesMarkerPosition.Width / 2f) - imageScale.Width / 2f);
                     imageScale.Top = (int)((seriesMarkerPosition.Top + seriesMarkerPosition.Height / 2f) - imageScale.Height / 2f);
-
 
                     // Draw image
                     chartGraph.DrawImage(
@@ -1898,7 +1881,6 @@ namespace WebCharts.Services.Models.General
                         new SKPaint() { Style = SKPaintStyle.Fill });
                 }
             }
-
             else
             {
                 int maxShadowOffset = 3;
@@ -1998,7 +1980,7 @@ namespace WebCharts.Services.Models.General
                             SKSize imageSize = new();
 
                             ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
-                            imageScale.Size = new((int)imageSize.Width,(int)imageSize.Height);
+                            imageScale.Size = new((int)imageSize.Width, (int)imageSize.Height);
 
                             // Make sure image size fits into the drawing rectangle
                             float scaleValue = 1f;
@@ -2012,7 +1994,7 @@ namespace WebCharts.Services.Models.General
                             }
 
                             // Scale image size
-                            imageScale.Size = new((int)(imageScale.Width / scaleValue),(int)(imageScale.Height / scaleValue));
+                            imageScale.Size = new((int)(imageScale.Width / scaleValue), (int)(imageScale.Height / scaleValue));
                         }
 
                         // Adjust marker position so that it always drawn on pixel
@@ -2042,7 +2024,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Cell Painting Methods
+        #endregion Cell Painting Methods
 
         #region IDisposable Members
 
@@ -2063,12 +2045,11 @@ namespace WebCharts.Services.Models.General
             base.Dispose(disposing);
         }
 
-
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
-    /// The Margins class represents the margins for various chart elements. 
+    /// The Margins class represents the margins for various chart elements.
     /// </summary>
     [
     SRDescription("DescriptionAttributeMargins_Margins"),
@@ -2093,7 +2074,7 @@ namespace WebCharts.Services.Models.General
         // chart when one of the properties is changed.
         internal CommonElements Common = null;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructor
 
@@ -2119,7 +2100,7 @@ namespace WebCharts.Services.Models.General
             _right = right;
         }
 
-        #endregion // Constructor
+        #endregion Constructor
 
         #region Properties
 
@@ -2128,7 +2109,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        SRDescription("DescriptionAttributeMargins_Top"),        
+        SRDescription("DescriptionAttributeMargins_Top"),
         ]
         public int Top
         {
@@ -2152,7 +2133,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        SRDescription("DescriptionAttributeMargins_Bottom"),        
+        SRDescription("DescriptionAttributeMargins_Bottom"),
         ]
         public int Bottom
         {
@@ -2176,7 +2157,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        SRDescription("DescriptionAttributeMargins_Left"),        
+        SRDescription("DescriptionAttributeMargins_Left"),
         ]
         public int Left
         {
@@ -2188,7 +2169,7 @@ namespace WebCharts.Services.Models.General
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionMarginLeftIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionMarginLeftIsNegative, nameof(value)));
                 }
                 _left = value;
                 Invalidate();
@@ -2200,7 +2181,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
-        SRDescription("DescriptionAttributeMargins_Right"),        
+        SRDescription("DescriptionAttributeMargins_Right"),
         ]
         public int Right
         {
@@ -2212,14 +2193,14 @@ namespace WebCharts.Services.Models.General
             {
                 if (value < 0)
                 {
-                    throw (new ArgumentException(SR.ExceptionMarginRightIsNegative, "value"));
+                    throw (new ArgumentException(SR.ExceptionMarginRightIsNegative, nameof(value)));
                 }
                 _right = value;
                 Invalidate();
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Methods
 
@@ -2305,7 +2286,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Methods
+        #endregion Methods
     }
 
     /// <summary>
@@ -2316,7 +2297,6 @@ namespace WebCharts.Services.Models.General
     ]
     public class LegendCellCollection : ChartNamedElementCollection<LegendCell>
     {
-
         #region Constructors
 
         /// <summary>
@@ -2330,9 +2310,10 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
+
         /// <summary>
         /// Adds a cell to the end of the collection.
         /// </summary>
@@ -2340,7 +2321,7 @@ namespace WebCharts.Services.Models.General
         /// A <see cref="LegendCellType"/> value representing the cell type.
         /// </param>
         /// <param name="text">
-        /// A <b>string</b> value representing cell text or image name depending 
+        /// A <b>string</b> value representing cell text or image name depending
         /// on the <b>cellType</b> parameter.
         /// </param>
         /// <param name="alignment">
@@ -2365,7 +2346,7 @@ namespace WebCharts.Services.Models.General
         /// A <see cref="LegendCellType"/> value representing the cell type.
         /// </param>
         /// <param name="text">
-        /// A <b>string</b> value representing cell text or image name depending 
+        /// A <b>string</b> value representing cell text or image name depending
         /// on the <b>cellType</b> parameter.
         /// </param>
         /// <param name="alignment">
@@ -2376,8 +2357,7 @@ namespace WebCharts.Services.Models.General
             Insert(index, new LegendCell(cellType, text, alignment));
         }
 
-        #endregion
-
+        #endregion Methods
     }
 
     /// <summary>
@@ -2389,7 +2369,6 @@ namespace WebCharts.Services.Models.General
     ]
     public class LegendCellColumnCollection : ChartNamedElementCollection<LegendCellColumn>
     {
-
         #region Construction and Initialization
 
         /// <summary>
@@ -2406,7 +2385,7 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion // Construction and Initialization
+        #endregion Construction and Initialization
 
         #region IDisposable Members
 
@@ -2428,9 +2407,6 @@ namespace WebCharts.Services.Models.General
             base.Dispose(disposing);
         }
 
-
-        #endregion
+        #endregion IDisposable Members
     }
-
 }
-

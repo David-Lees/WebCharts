@@ -2,20 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Class that implements Emboss 3D border style.
 //
 
-
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Borders3D
+namespace WebCharts.Services
 {
-
     /// <summary>
     /// Implements emboss 3D border.
     /// </summary>
@@ -35,7 +30,6 @@ namespace WebCharts.Services.Models.Borders3D
         /// </summary>
         internal float[] cornerRadius = { 15f, 15f, 15f, 15f, 15f, 15f, 15f, 15f };
 
-
         /// <summary>
         /// Public constructor
         /// </summary>
@@ -48,7 +42,6 @@ namespace WebCharts.Services.Models.Borders3D
         /// </summary>
         public virtual string Name { get { return "Emboss"; } }
 
-
         public virtual float Resolution
         {
             set
@@ -58,7 +51,6 @@ namespace WebCharts.Services.Models.Borders3D
                 defaultRadiusSize = radius;
                 cornerRadius = new float[] { radius, radius, radius, radius, radius, radius, radius, radius };
             }
-
         }
 
         /// <summary>
@@ -165,7 +157,7 @@ namespace WebCharts.Services.Models.Borders3D
             radius = (float)Math.Ceiling(radius);
 
             // Fill page background color
-            using (SKPaint brush = new() { Color = borderSkin.PageColor })
+            using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = borderSkin.PageColor })
             {
                 graph.FillRectangle(brush, rect);
             }
@@ -232,6 +224,6 @@ namespace WebCharts.Services.Models.Borders3D
             graph.Clip = new();
         }
 
-        #endregion
+        #endregion Border properties and methods
     }
 }

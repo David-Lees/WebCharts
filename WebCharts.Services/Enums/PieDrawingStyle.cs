@@ -1,4 +1,4 @@
-﻿namespace WebCharts.Services.Enums
+﻿namespace WebCharts.Services
 {
     /// <summary>
     /// Defines the style how the pie and doughnut charts are drawn.

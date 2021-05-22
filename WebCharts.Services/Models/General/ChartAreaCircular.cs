@@ -10,7 +10,7 @@
 
 using SkiaSharp;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// CircularChartAreaAxis class represents a single axis in the circular

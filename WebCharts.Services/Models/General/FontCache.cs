@@ -14,7 +14,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
 
     /// <summary>

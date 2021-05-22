@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     public static class SkiaSharpExtensions
     {
@@ -54,9 +54,9 @@ namespace WebCharts.Services.Models.Utilities
             path.AddPathReverse(clone);
         }
 
-        public static void CreateRotationDegrees(this SKMatrix matrix, float angle, SKPoint p)
+        public static SKMatrix CreateRotationDegrees(float angle, SKPoint p)
         {
-            matrix = SKMatrix.CreateRotationDegrees(angle, p.X, p.Y);
+            return SKMatrix.CreateRotationDegrees(angle, p.X, p.Y);
         }
 
         public static SKPoint Round (this SKPoint point)
@@ -381,9 +381,9 @@ namespace WebCharts.Services.Models.Utilities
             return new SKColor(c.Red, c.Green, c.Blue, (byte)a);
         }
 
-        internal static SKColor FromArgb(int v1, int v2, int v3)
+        internal static SKColor FromArgb(int red, int green, int blue)
         {
-            throw new NotImplementedException();
+            return new SKColor((byte)red, (byte)green, (byte)blue);
         }
     }
 

@@ -1,18 +1,12 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Annotations;
-using WebCharts.Services.Models.Borders3D;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// ChartPicture class represents chart content like legends, titles, 
-    /// chart areas and series. It provides methods for positioning and 
+    /// ChartPicture class represents chart content like legends, titles,
+    /// chart areas and series. It provides methods for positioning and
     /// drawing all chart elements.
     /// </summary>
     public class ChartPicture : ChartElement, IServiceProvider
@@ -30,7 +24,6 @@ namespace WebCharts.Services.Models.General
         private int _width = 300;
         private int _height = 300;
         private readonly DataManipulator _dataManipulator = new();
-        internal HotRegionsList hotRegionsList = null;
 
         // Chart areas collection
         private ChartAreaCollection _chartAreas = null;
@@ -49,10 +42,8 @@ namespace WebCharts.Services.Models.General
 
         // Chart picture events
         internal event EventHandler<ChartPaintEventArgs> BeforePaint;
-        internal event EventHandler<ChartPaintEventArgs> AfterPaint;
 
-        // Chart title position rectangle
-        private SKRect _titlePosition = SKRect.Empty;
+        internal event EventHandler<ChartPaintEventArgs> AfterPaint;
 
         // Element spacing size
         internal const float elementSpacing = 3F;
@@ -66,7 +57,7 @@ namespace WebCharts.Services.Models.General
         // Indicates chart selection mode
         internal bool isSelectionMode = false;
 
-        private FontCache _fontCache = new FontCache();
+        private FontCache _fontCache = new();
 
         // Position of the chart 3D border
         private SKRect _chartBorderPosition = SKRect.Empty;
@@ -81,7 +72,7 @@ namespace WebCharts.Services.Models.General
         // Buffered image of non-top level chart elements
         internal SKBitmap nonTopLevelChartBuffer = null;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -89,17 +80,11 @@ namespace WebCharts.Services.Models.General
         /// Constructor.
         /// </summary>
         /// <param name="container">Service container</param>
-        public ChartPicture(IServiceProvider container)
+        public ChartPicture(ChartService chart)
         {
-            if (container == null)
-            {
-                throw (new ArgumentNullException(SR.ExceptionInvalidServiceContainer));
-            }
-
             // Create and set Common Elements
-            Common = new CommonElements(container);
+            Common = chart.CommonElements;
             ChartGraph = new ChartGraphics(Common);
-            hotRegionsList = new HotRegionsList(Common);
 
             // Create border properties class
             BorderSkin = new BorderSkin(this);
@@ -134,7 +119,7 @@ namespace WebCharts.Services.Models.General
             throw (new ArgumentException(SR.ExceptionChartPictureUnsupportedType(serviceType.ToString())));
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Painting and selection methods
 
@@ -158,13 +143,12 @@ namespace WebCharts.Services.Models.General
             isSelectionMode = true;
 
             // Hot Region list does not exist. Create the list.
-            //this.common.HotRegionsList.List = new ArrayList();
             Common.HotRegionsList.Clear();
 
             // Create a new bitmap
             SKBitmap image = new(Math.Max(1, Width), Math.Max(1, Height));
 
-            // Creates a new Graphics object from the 
+            // Creates a new Graphics object from the
             // specified Image object.
             SKCanvas offScreen = new(image);
 
@@ -186,35 +170,7 @@ namespace WebCharts.Services.Models.General
 
             // Set process Mode to hot regions
             Common.HotRegionsList.ProcessChartMode |= ProcessMode.HotRegions;
-
         }
-
-        /// <summary>
-        /// Gets text rendering quality.
-        /// </summary>
-        /// <returns>Text rendering quality.</returns>
-        //internal TextRenderingHint GetTextRenderingHint()
-        //{
-        //    TextRenderingHint result = TextRenderingHint.SingleBitPerPixelGridFit;
-        //    if ((AntiAliasing & AntiAliasingStyles.Text) == AntiAliasingStyles.Text)
-        //    {
-        //        result = TextRenderingHint.ClearTypeGridFit;
-        //        if (TextAntiAliasingQuality == TextAntiAliasingQuality.Normal)
-        //        {
-        //            result = TextRenderingHint.AntiAlias;
-        //        }
-        //        else if (TextAntiAliasingQuality == TextAntiAliasingQuality.SystemDefault)
-        //        {
-        //            result = TextRenderingHint.SystemDefault;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        result = TextRenderingHint.SingleBitPerPixelGridFit;
-        //    }
-
-        //    return result;
-        //}
 
         internal bool GetBorderSkinVisibility()
         {
@@ -233,7 +189,7 @@ namespace WebCharts.Services.Models.General
             // Reset restored and saved backgound flags
             backgroundRestored = false;
 
-            // Reset Annotation Smart Labels 
+            // Reset Annotation Smart Labels
             annotationSmartLabel.Reset();
 
             // Do not draw the control if size is less than 5 pixel
@@ -253,10 +209,10 @@ namespace WebCharts.Services.Models.General
 
                 Common.HotRegionsList.hitTestCalled = false;
 
-                // Clear list of hot regions 
+                // Clear list of hot regions
                 if (paintTopLevelElementOnly)
                 {
-                    // If repainting only top level elements (annotations) - 
+                    // If repainting only top level elements (annotations) -
                     // clear top level objects hot regions only
                     for (int index = 0; index < Common.HotRegionsList.List.Count; index++)
                     {
@@ -302,7 +258,6 @@ namespace WebCharts.Services.Models.General
             // Set anti alias mode
             ChartGraph.AntiAliasing = AntiAliasing;
             ChartGraph.softShadows = IsSoftShadows;
-            //ChartGraph.TextRenderingHint = GetTextRenderingHint();
 
             try
             {
@@ -312,14 +267,13 @@ namespace WebCharts.Services.Models.General
                     // Fire Before Paint event
                     OnBeforePaint(new ChartPaintEventArgs(Chart, ChartGraph, Common, new ElementPosition(0, 0, 100, 100)));
 
-                    // Flag indicates that resize method should be called 
+                    // Flag indicates that resize method should be called
                     // after adjusting the intervals in 3D charts
                     bool resizeAfterIntervalAdjusting = false;
 
                     // RecalculateAxesScale paint chart areas
                     foreach (ChartArea area in _chartAreas)
                     {
-
                         // Check if area is visible
                         if (area.Visible)
 
@@ -342,8 +296,7 @@ namespace WebCharts.Services.Models.General
                     // Resize picture
                     Resize(ChartGraph, resizeAfterIntervalAdjusting);
 
-
-                    // This code is introduce because labels has to 
+                    // This code is introduce because labels has to
                     // be changed when scene is rotated.
                     bool intervalReCalculated = false;
                     foreach (ChartArea area in _chartAreas)
@@ -368,7 +321,7 @@ namespace WebCharts.Services.Models.General
                     {
                         // NOTE: Fixes issue #6808.
                         // In 3D chart area interval will be changed to compenstae for the axis rotation angle.
-                        // This will cause all standard labels to be changed. We need to call the customize event 
+                        // This will cause all standard labels to be changed. We need to call the customize event
                         // the second time to give user a chance to modify those labels.
                         if (intervalReCalculated)
                         {
@@ -379,7 +332,6 @@ namespace WebCharts.Services.Models.General
                         // Resize chart elements
                         Resize(ChartGraph);
                     }
-
 
                     //***********************************************************************
                     //** Draw chart 3D border
@@ -442,7 +394,6 @@ namespace WebCharts.Services.Models.General
                     // Call paint function for each chart area.
                     foreach (ChartArea area in _chartAreas)
                     {
-
                         // Check if area is visible
                         if (area.Visible)
 
@@ -451,8 +402,8 @@ namespace WebCharts.Services.Models.General
                         }
                     }
 
-                    // This code is introduced because of GetPointsInterval method, 
-                    // which is very time consuming. There is no reason to calculate 
+                    // This code is introduced because of GetPointsInterval method,
+                    // which is very time consuming. There is no reason to calculate
                     // interval after painting.
                     foreach (ChartArea area in _chartAreas)
                     {
@@ -476,16 +427,15 @@ namespace WebCharts.Services.Models.General
                     Chart.CallOnPostPaint(new ChartPaintEventArgs(Chart, ChartGraph, Common, new ElementPosition(0, 0, 100, 100)));
                 }
 
-                // Draw annotation objects 
+                // Draw annotation objects
                 Annotations.Paint(ChartGraph, paintTopLevelElementOnly);
 
                 // Draw chart areas cursors in all areas.
-                // Only if not in selection 
+                // Only if not in selection
                 if (!isSelectionMode)
                 {
                     foreach (ChartArea area in _chartAreas)
                     {
-
                         // Check if area is visible
                         if (area.Visible)
 
@@ -498,7 +448,6 @@ namespace WebCharts.Services.Models.General
                 // Return default values
                 foreach (ChartArea area in _chartAreas)
                 {
-
                     // Check if area is visible
                     if (area.Visible)
 
@@ -516,7 +465,6 @@ namespace WebCharts.Services.Models.General
                 // Restore temp values for each chart area
                 foreach (ChartArea area in _chartAreas)
                 {
-
                     // Check if area is visible
                     if (area.Visible)
 
@@ -555,7 +503,8 @@ namespace WebCharts.Services.Models.General
             if (Chart != null)
                 Chart.Invalidate();
         }
-        #endregion
+
+        #endregion Painting and selection methods
 
         #region Resizing methods
 
@@ -589,7 +538,7 @@ namespace WebCharts.Services.Models.General
             //******************************************************
             //** Get the 3D border interface
             //******************************************************
-            _titlePosition = SKRect.Empty;
+            SKRect titlePosition = SKRect.Empty;
             bool titleInBorder = false;
 
             if (BorderSkin.SkinStyle != BorderSkinStyle.None)
@@ -597,15 +546,15 @@ namespace WebCharts.Services.Models.General
                 // Set border size
                 _chartBorderPosition = chartGraph.GetAbsoluteRectangle(chartAreasRectangle);
 
-                // Get border interface 
+                // Get border interface
                 IBorderType border3D = Common.BorderTypeRegistry.GetBorderType(BorderSkin.SkinStyle.ToString());
                 if (border3D != null)
                 {
                     border3D.Resolution = 96;
                     // Check if title should be displayed in the border
                     titleInBorder = border3D.GetTitlePositionInBorder() != SKRect.Empty;
-                    _titlePosition = chartGraph.GetRelativeRectangle(border3D.GetTitlePositionInBorder());
-                    _titlePosition.Size = new( chartAreasRectangle.Width - _titlePosition.Width, _titlePosition.Height);
+                    titlePosition = chartGraph.GetRelativeRectangle(border3D.GetTitlePositionInBorder());
+                    titlePosition.Size = new(chartAreasRectangle.Width - titlePosition.Width, titlePosition.Height);
 
                     // Adjust are position to the border size
                     border3D.AdjustAreasPosition(chartGraph, ref chartAreasRectangle);
@@ -618,7 +567,7 @@ namespace WebCharts.Services.Models.General
             SKRect frameTitlePosition = SKRect.Empty;
             if (titleInBorder)
             {
-                frameTitlePosition = new SKRect(_titlePosition.Left, _titlePosition.Top, _titlePosition.Right, _titlePosition.Bottom);
+                frameTitlePosition = new SKRect(titlePosition.Left, titlePosition.Top, titlePosition.Right, titlePosition.Bottom);
             }
             foreach (Title title in Titles)
             {
@@ -640,14 +589,12 @@ namespace WebCharts.Services.Models.General
             //******************************************************
             chartAreasRectangle.Right -= elementSpacing;
             chartAreasRectangle.Bottom -= elementSpacing;
-            SKRect areaPosition = new SKRect();
-
+            SKRect areaPosition = new();
 
             // Get number of chart areas that requeres automatic positioning
             int areaNumber = 0;
             foreach (ChartArea area in _chartAreas)
             {
-
                 // Check if area is visible
                 if (area.Visible && area.Position.Auto)
                 {
@@ -668,7 +615,6 @@ namespace WebCharts.Services.Models.General
             int row = 0;
             foreach (ChartArea area in _chartAreas)
             {
-
                 // Check if area is visible
                 if (area.Visible)
 
@@ -721,13 +667,11 @@ namespace WebCharts.Services.Models.General
             //********************************************************
             if (!calcAreaPositionOnly)
             {
-
                 //******************************************************
                 //** Call Resize function for each chart area.
                 //******************************************************
                 foreach (ChartArea area in _chartAreas)
                 {
-
                     // Check if area is visible
                     if (area.Visible)
 
@@ -754,10 +698,10 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Minimum and maximum do not have to be calculated 
-        /// from data series every time. It is very time 
-        /// consuming. Minimum and maximum are buffered 
-        /// and only when this flags are set Minimum and 
+        /// Minimum and maximum do not have to be calculated
+        /// from data series every time. It is very time
+        /// consuming. Minimum and maximum are buffered
+        /// and only when this flags are set Minimum and
         /// Maximum are refreshed from data.
         /// </summary>
         internal void ResetMinMaxFromData()
@@ -767,7 +711,6 @@ namespace WebCharts.Services.Models.General
                 // Call ResetMinMaxFromData function for each chart area.
                 foreach (ChartArea area in _chartAreas)
                 {
-
                     // Check if area is visible
                     if (area.Visible)
                     {
@@ -785,7 +728,6 @@ namespace WebCharts.Services.Models.General
             // Call ReCalc function for each chart area.
             foreach (ChartArea area in _chartAreas)
             {
-
                 // Check if area is visible
                 if (area.Visible)
 
@@ -795,7 +737,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Resizing methods
 
         #region Chart picture properties
 
@@ -861,8 +803,6 @@ namespace WebCharts.Services.Models.General
                 return _titles;
             }
         }
-
-
 
         /// <summary>
         /// Chart annotation collection.
@@ -1090,7 +1030,7 @@ namespace WebCharts.Services.Models.General
             get { return _fontCache; }
         }
 
-        #endregion
+        #endregion Chart picture properties
 
         #region Chart areas alignment methods
 
@@ -1106,7 +1046,6 @@ namespace WebCharts.Services.Models.General
             // Loop through all chart areas
             foreach (ChartArea area in ChartAreas)
             {
-
                 // Check if chart area is visible
                 if (area.Visible && area.AlignWithChartArea != Constants.NotSetValue)
                 {
@@ -1137,7 +1076,6 @@ namespace WebCharts.Services.Models.General
             // Loop throught the chart areas and get the ones aligned with specified master area
             foreach (ChartArea area in ChartAreas)
             {
-
                 // Check if chart area is visible
                 if (area.Visible && area.Name != masterArea.Name &&
                         area.AlignWithChartArea == masterArea.Name &&
@@ -1170,7 +1108,6 @@ namespace WebCharts.Services.Models.General
                 // Loop through all chart areas
                 foreach (ChartArea area in ChartAreas)
                 {
-
                     // Check if chart area is visible
                     if (area.Visible)
 
@@ -1211,7 +1148,7 @@ namespace WebCharts.Services.Models.General
         private void AlignChartAreasPlotPosition(ArrayList areasGroup, AreaAlignmentOrientations orientation)
         {
             //****************************************************************
-            //** Find the smalles size of the inner plot 
+            //** Find the smalles size of the inner plot
             //****************************************************************
             SKRect areaPlotPosition = ((ChartArea)areasGroup[0]).PlotAreaPosition.ToSKRect();
             foreach (ChartArea area in areasGroup)
@@ -1285,7 +1222,6 @@ namespace WebCharts.Services.Models.General
                     area.AxisY.AdjustLabelFontAtSecondPass(ChartGraph, area.InnerPlotPosition.Auto);
                 }
             }
-
         }
 
         /// <summary>
@@ -1299,7 +1235,6 @@ namespace WebCharts.Services.Models.General
                 // Loop through all chart areas
                 foreach (ChartArea area in ChartAreas)
                 {
-
                     // Check if chart area is visible
                     if (area.Visible && area.AlignWithChartArea != Constants.NotSetValue && (area.AlignmentStyle & AreaAlignmentStyles.Position) == AreaAlignmentStyles.Position)
                     {
@@ -1346,7 +1281,6 @@ namespace WebCharts.Services.Models.General
                 // Loop through all chart areas
                 foreach (ChartArea area in ChartAreas)
                 {
-
                     // Check if chart area is visible
                     if (area.Visible)
 
@@ -1412,7 +1346,6 @@ namespace WebCharts.Services.Models.General
                 // Loop through all chart areas
                 foreach (ChartArea area in ChartAreas)
                 {
-
                     // Check if chart area is visible
                     if (area.Visible)
 
@@ -1466,7 +1399,6 @@ namespace WebCharts.Services.Models.General
                 // Loop through all chart areas
                 foreach (ChartArea area in ChartAreas)
                 {
-
                     // Check if chart area is visible
                     if (area.Visible)
 
@@ -1514,7 +1446,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Chart areas alignment methods
 
         #region Helper methods
 
@@ -1569,7 +1501,6 @@ namespace WebCharts.Services.Models.General
         /// <returns>true if tooltips enabled</returns>
         private bool IsToolTipsEnabled()
         {
-
             // Data series loop
             foreach (Series series in Common.DataManager.Series)
             {
@@ -1637,9 +1568,10 @@ namespace WebCharts.Services.Models.General
             return false;
         }
 
-        #endregion
+        #endregion Helper methods
 
         #region IDisposable Members
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -1674,11 +1606,6 @@ namespace WebCharts.Services.Models.General
                     _annotations.Dispose();
                     _annotations = null;
                 }
-                if (hotRegionsList != null)
-                {
-                    hotRegionsList.Dispose();
-                    hotRegionsList = null;
-                }
                 if (_fontCache != null)
                 {
                     _fontCache.Dispose();
@@ -1700,6 +1627,6 @@ namespace WebCharts.Services.Models.General
             base.Dispose(disposing);
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 }

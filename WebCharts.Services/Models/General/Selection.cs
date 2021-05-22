@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	This file contains methods used for Win Form selection
 //
-
 
 using SkiaSharp;
 using System;
@@ -14,17 +12,12 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
-
     #region Enumerations
 
-
-    // Plase keep the folowing enumaration in chart layering order - ex. ChartArea is under DataPoint 
+    // Plase keep the folowing enumaration in chart layering order - ex. ChartArea is under DataPoint
     /// <summary>
     /// An enumeration of types of Chart Element.
     /// </summary>
@@ -41,7 +34,7 @@ namespace WebCharts.Services.Models.General
         Title,
 
         /// <summary>
-        /// Plotting area (chart area excluding axes, labels, etc.).  
+        /// Plotting area (chart area excluding axes, labels, etc.).
         /// Also excludes the regions that data points may occupy.
         /// </summary>
         PlottingArea,
@@ -87,33 +80,33 @@ namespace WebCharts.Services.Models.General
         ScrollBarThumbTracker,
 
         /// <summary>
-        /// A scrollbar small decrement button.  A "down arrow" 
-        /// button for a vertical scrollbar, or a "left arrow" 
+        /// A scrollbar small decrement button.  A "down arrow"
+        /// button for a vertical scrollbar, or a "left arrow"
         /// button for a horizontal scroll bar.
         /// </summary>
         ScrollBarSmallDecrement,
 
         /// <summary>
-        /// A scrollbar small increment button.  An "up arrow" 
-        /// button for a vertical scrollbar, or a "right arrow" 
+        /// A scrollbar small increment button.  An "up arrow"
+        /// button for a vertical scrollbar, or a "right arrow"
         /// button for a horizontal scroll bar.
         /// </summary>
         ScrollBarSmallIncrement,
 
         /// <summary>
-        /// The background of a scrollbar that will result in 
-        /// a large decrement in the scale view size when clicked.  
-        /// This is the background below the thumb for 
-        /// a vertical scrollbar, and to the left of 
+        /// The background of a scrollbar that will result in
+        /// a large decrement in the scale view size when clicked.
+        /// This is the background below the thumb for
+        /// a vertical scrollbar, and to the left of
         /// the thumb for a horizontal scrollbar.
         /// </summary>
         ScrollBarLargeDecrement,
 
         /// <summary>
-        /// The background of a scrollbar that will result in 
-        /// a large increment in the scale view size when clicked.  
-        /// This is the background above the thumb for 
-        /// a vertical scrollbar, and to the right of 
+        /// The background of a scrollbar that will result in
+        /// a large increment in the scale view size when clicked.
+        /// This is the background above the thumb for
+        /// a vertical scrollbar, and to the right of
         /// the thumb for a horizontal scrollbar.
         /// </summary>
         ScrollBarLargeIncrement,
@@ -134,7 +127,7 @@ namespace WebCharts.Services.Models.General
         DataPointLabel,
 
         /// <summary>
-        /// The area inside a Legend object.  Does not include 
+        /// The area inside a Legend object.  Does not include
         /// the space occupied by legend items.
         /// </summary>
         LegendArea,
@@ -154,13 +147,10 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         LegendItem,
 
-
         /// <summary>
         /// Chart annotation object.
         /// </summary>
         Annotation,
-
-
     }
 
     /// <summary>
@@ -185,7 +175,7 @@ namespace WebCharts.Services.Models.General
         ImageMaps = 4
     }
 
-    #endregion
+    #endregion Enumerations
 
     /// <summary>
     /// This class presents item in
@@ -197,6 +187,7 @@ namespace WebCharts.Services.Models.General
 
         // Private data members, which store properties values
         private SKPath _path = null;
+
         private bool _relativeCoordinates = true;
         private SKRect _boundingRectangle = SKRect.Empty;
         private object _selectedObject = null;
@@ -204,11 +195,9 @@ namespace WebCharts.Services.Models.General
         private string _seriesName = "";
         private ChartElementType _type = ChartElementType.Nothing;
 
-
         private object _selectedSubObject = null;
 
-
-        #endregion // Fields
+        #endregion Fields
 
         #region Properties
 
@@ -228,7 +217,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Relative coordinates are used 
+        /// Relative coordinates are used
         /// to define region
         /// </summary>
         internal bool RelativeCoordinates
@@ -273,8 +262,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
-
         /// <summary>
         /// Sub-Object which is presented with this region
         /// </summary>
@@ -289,8 +276,6 @@ namespace WebCharts.Services.Models.General
                 _selectedSubObject = value;
             }
         }
-
-
 
         /// <summary>
         /// Index of the data point which is presented with this region
@@ -337,9 +322,10 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region IDisposable members
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -364,7 +350,8 @@ namespace WebCharts.Services.Models.General
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable members
 
         #region Methods
 
@@ -384,11 +371,11 @@ namespace WebCharts.Services.Models.General
             return string.Format(CultureInfo.CurrentCulture, "{0} of {1}", Type, objectType);
         }
 
-        #endregion //Methods
+        #endregion Methods
     }
 
     /// <summary>
-    /// This class is used to fill and 
+    /// This class is used to fill and
     /// manage collection with Hot Regions
     /// </summary>
     internal class HotRegionsList : IDisposable
@@ -415,12 +402,12 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		internal bool hitTestCalled = false;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Properties
 
         /// <summary>
-		/// Flag used for processing chart types. It could 
+		/// Flag used for processing chart types. It could
 		/// be Paint, HotRegion or both mode.
 		/// </summary>
 		internal ProcessMode ProcessChartMode
@@ -454,7 +441,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Methods
 
@@ -481,7 +468,6 @@ namespace WebCharts.Services.Models.General
             int pointIndex
             )
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
                 HotRegion region = new();
@@ -492,8 +478,6 @@ namespace WebCharts.Services.Models.General
                 region.Type = ChartElementType.DataPoint;
                 region.RelativeCoordinates = true;
 
-
-
                 // Use index of the original data point
                 if (point != null && point.IsCustomPropertySet("OriginalPointIndex"))
                 {
@@ -503,7 +487,6 @@ namespace WebCharts.Services.Models.General
                 _regionList.Add(region);
             }
         }
-
 
         /// <summary>
         /// Adds the hot region.
@@ -530,7 +513,6 @@ namespace WebCharts.Services.Models.General
 
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
-
                 HotRegion region = new();
 
                 region.SeriesName = seriesName;
@@ -541,8 +523,6 @@ namespace WebCharts.Services.Models.General
                 region.BoundingRectangle = b;
                 region.RelativeCoordinates = relativePath;
 
-
-
                 // Use index of the original data point
                 if (point != null && point.IsCustomPropertySet("OriginalPointIndex"))
                 {
@@ -550,7 +530,6 @@ namespace WebCharts.Services.Models.General
                 }
 
                 _regionList.Add(region);
-
             }
         }
 
@@ -564,20 +543,18 @@ namespace WebCharts.Services.Models.General
         /// <param name="point">Selected data point</param>
         /// <param name="seriesName">Name of the series.</param>
         /// <param name="pointIndex">Index of the point.</param>
-       internal void AddHotRegion(
-            int insertIndex,
-            SKPath path,
-            bool relativePath,
-            ChartGraphics graph,
-            DataPoint point,
-            string seriesName,
-            int pointIndex
-            )
+        internal void AddHotRegion(
+             int insertIndex,
+             SKPath path,
+             bool relativePath,
+             ChartGraphics graph,
+             DataPoint point,
+             string seriesName,
+             int pointIndex
+             )
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
-
                 HotRegion region = new();
 
                 region.SeriesName = seriesName;
@@ -588,18 +565,13 @@ namespace WebCharts.Services.Models.General
                 region.BoundingRectangle = b;
                 region.RelativeCoordinates = relativePath;
 
-
-
                 // Use index of the original data point
                 if (point != null && point.IsCustomPropertySet("OriginalPointIndex"))
                 {
                     region.PointIndex = int.Parse(point["OriginalPointIndex"], CultureInfo.InvariantCulture);
                 }
 
-
-
                 _regionList.Add(region);
-
             }
         }
 
@@ -614,10 +586,8 @@ namespace WebCharts.Services.Models.General
         /// <param name="pointIndex">Index of an Data Point in the series</param>
         internal void AddHotRegion(SKPath path, bool relativePath, float[] coord, DataPoint point, string seriesName, int pointIndex)
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
-
                 HotRegion region = new();
 
                 region.SeriesName = seriesName;
@@ -628,20 +598,14 @@ namespace WebCharts.Services.Models.General
                 region.BoundingRectangle = b;
                 region.RelativeCoordinates = relativePath;
 
-
-
                 // Use index of the original data point
                 if (point != null && point.IsCustomPropertySet("OriginalPointIndex"))
                 {
                     region.PointIndex = int.Parse(point["OriginalPointIndex"], CultureInfo.InvariantCulture);
                 }
 
-
-
                 _regionList.Add(region);
-
             }
-
         }
 
         /// <summary>
@@ -657,7 +621,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="pointIndex">Index of an Data Point in the series</param>
         internal void AddHotRegion(int insertIndex, ChartGraphics graph, float x, float y, float radius, DataPoint point, string seriesName, int pointIndex)
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
                 HotRegion region = new();
@@ -679,8 +642,6 @@ namespace WebCharts.Services.Models.General
                 region.Path = path;
                 region.RelativeCoordinates = false;
 
-
-
                 // Use index of the original data point
                 if (point != null && point.IsCustomPropertySet("OriginalPointIndex"))
                 {
@@ -690,7 +651,6 @@ namespace WebCharts.Services.Models.General
                 _regionList.Add(region);
             }
         }
-
 
         /// <summary>
         /// Add Hot region to the collection.
@@ -705,7 +665,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="series">Selected series</param>
         internal void AddHotRegion(SKRect rectArea, string toolTip, string hRef, string mapAreaAttributes, string postBackValue, object selectedObject, ChartElementType type, string series)
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
                 HotRegion region = new();
@@ -721,8 +680,6 @@ namespace WebCharts.Services.Models.General
                 _regionList.Add(region);
             }
         }
-
-
 
         /// <summary>
         /// Add Hot region to the collection.
@@ -747,7 +704,6 @@ namespace WebCharts.Services.Models.General
             ChartElementType type,
             string series)
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
                 HotRegion region = new();
@@ -777,12 +733,10 @@ namespace WebCharts.Services.Models.General
         /// <param name="postBackValue">The post back value associated with this item</param>
         /// <param name="selectedObject">Object which present hot region</param>
         /// <param name="type">AxisName of the object which present hot region</param>
-         internal void AddHotRegion(ChartGraphics graph, SKPath path, bool relativePath, string toolTip, string hRef, string mapAreaAttributes, string postBackValue, object selectedObject, ChartElementType type)
+        internal void AddHotRegion(ChartGraphics graph, SKPath path, bool relativePath, string toolTip, string hRef, string mapAreaAttributes, string postBackValue, object selectedObject, ChartElementType type)
         {
-
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
-
                 HotRegion region = new();
 
                 region.Type = type;
@@ -792,7 +746,6 @@ namespace WebCharts.Services.Models.General
                 region.RelativeCoordinates = relativePath;
 
                 _regionList.Add(region);
-
             }
         }
 
@@ -854,7 +807,6 @@ namespace WebCharts.Services.Models.General
         {
             if ((ProcessChartMode & ProcessMode.HotRegions) == ProcessMode.HotRegions)
             {
-
                 HotRegion region = new();
 
                 region.SelectedObject = selectedObject;
@@ -864,12 +816,11 @@ namespace WebCharts.Services.Models.General
                 region.RelativeCoordinates = relativePath;
 
                 _regionList.Add(region);
-
             }
         }
 
         /// <summary>
-        /// This method search for position in Map Areas which is the first 
+        /// This method search for position in Map Areas which is the first
         /// position after Custom areas.
         /// </summary>
         /// <returns>Insert Index</returns>
@@ -891,9 +842,10 @@ namespace WebCharts.Services.Models.General
             _regionList.Clear();
         }
 
-        #endregion // Methods
+        #endregion Methods
 
         #region IDisposable members
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -917,8 +869,8 @@ namespace WebCharts.Services.Models.General
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
 
+        #endregion IDisposable members
     }
 
     /// <summary>
@@ -930,7 +882,7 @@ namespace WebCharts.Services.Models.General
 
         // Private members
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -969,12 +921,11 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public object SubObject { get; set; } = null;
 
-        #endregion
+        #endregion Properties
     }
 
-
     /// <summary>
-    /// This class represents an array of marker points and 
+    /// This class represents an array of marker points and
     /// the outline path used for visual object selection in the chart.
     /// </summary>
     /// <remarks>
@@ -991,7 +942,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets the markers.  
+        /// Gets the markers.
         /// </summary>
         /// <value>The markers.</value>
         public ReadOnlyCollection<SKPoint> Markers { get; internal set; }
@@ -1001,7 +952,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         /// <value>The outline path.</value>
         public SKPath OutlinePath { get; internal set; }
-
 
         #region IDisposable Members
 
@@ -1031,7 +981,7 @@ namespace WebCharts.Services.Models.General
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
@@ -1043,11 +993,12 @@ namespace WebCharts.Services.Models.General
 
         // Private fields for properties values storage
         private int x = 0;
+
         private int y = 0;
         private string text = "";
         private HitTestResult result = new HitTestResult();
 
-        #endregion
+        #endregion Private fields
 
         #region Constructors
 
@@ -1068,7 +1019,7 @@ namespace WebCharts.Services.Models.General
             this.result = result;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -1133,6 +1084,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 }

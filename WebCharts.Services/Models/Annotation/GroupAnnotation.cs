@@ -2,24 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Annotation group class.
 //
 
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     /// <summary>
     /// <b>AnnotationGroup</b> is a class that represents an annotation group.
     /// </summary>
     /// <remarks>
-    /// This class is a collection of annotations, and can be used 
+    /// This class is a collection of annotations, and can be used
     /// to manipulate annotations relative to each other.
     /// </remarks>
     [
@@ -32,7 +28,7 @@ namespace WebCharts.Services.Models.Annotations
         // Collection of annotations in the group
         internal AnnotationCollection annotations = null;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -42,11 +38,13 @@ namespace WebCharts.Services.Models.Annotations
         public AnnotationGroup()
             : base()
         {
-            annotations = new AnnotationCollection(this);
-            annotations.AnnotationGroup = this;
+            annotations = new AnnotationCollection(this)
+            {
+                AnnotationGroup = this
+            };
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Miscellaneous Properties
 
@@ -57,8 +55,8 @@ namespace WebCharts.Services.Models.Annotations
         /// A string which represents the name of an existing chart area.
         /// </value>
         /// <remarks>
-        /// If the chart area name is specified, an annotation will only be drawn inside the 
-        /// plotting area of the chart area specified.  All parts of the annotation 
+        /// If the chart area name is specified, an annotation will only be drawn inside the
+        /// plotting area of the chart area specified.  All parts of the annotation
         /// outside of the plotting area will be clipped.
         /// <para>
         /// To disable chart area clipping, set the property to "NotSet" or an empty string.
@@ -84,26 +82,26 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Miscellaneous Properties
 
         #region Position Properties
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether the size of an annotation is always 
+        /// Gets or sets a flag that specifies whether the size of an annotation is always
         /// defined in relative chart coordinates.
         /// <seealso cref="Annotation.Width"/>
         /// <seealso cref="Annotation.Height"/>
         /// </summary>
         /// <value>
-        /// <b>True</b> if an annotation's <see cref="Annotation.Width"/> and <see cref="Annotation.Height"/> are always 
+        /// <b>True</b> if an annotation's <see cref="Annotation.Width"/> and <see cref="Annotation.Height"/> are always
         /// in chart relative coordinates, <b>false</b> otherwise.
         /// </value>
         /// <remarks>
-        /// An annotation's width and height may be set in relative chart or axes coordinates. 
+        /// An annotation's width and height may be set in relative chart or axes coordinates.
         /// By default, relative chart coordinates are used.
         /// <para>
-        /// To use axes coordinates for size set the <b>IsSizeAlwaysRelative</b> property to 
-        /// <b>false</b> and either anchor the annotation to a data point or set the 
+        /// To use axes coordinates for size set the <b>IsSizeAlwaysRelative</b> property to
+        /// <b>false</b> and either anchor the annotation to a data point or set the
         /// <see cref="Annotation.AxisX"/> or <see cref="Annotation.AxisY"/> properties.
         /// </para>
         /// </remarks>
@@ -123,7 +121,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Position Properties
 
         #region Visual Properties
 
@@ -185,8 +183,8 @@ namespace WebCharts.Services.Models.Annotations
         /// A <see cref="ContentAlignment"/> value that represents the content alignment.
         /// </value>
         /// <remarks>
-        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,  
-        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align 
+        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,
+        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align
         /// a non-scaled image inside an <see cref="ImageAnnotation"/> object.
         /// </remarks>
 		[
@@ -467,7 +465,7 @@ namespace WebCharts.Services.Models.Annotations
         /// <seealso cref="BackGradientStyle"/>
         /// </summary>
         /// <value>
-        /// A <see cref="Color"/> value used for the secondary color of an annotation background with 
+        /// A <see cref="Color"/> value used for the secondary color of an annotation background with
         /// hatching or gradient fill.
         /// </value>
         /// <remarks>
@@ -548,12 +546,12 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Visual Properties
 
         #region Editing Permissions Properties
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation may be selected 
+        /// Gets or sets a flag that specifies whether an annotation may be selected
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -576,7 +574,7 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation may be moved 
+        /// Gets or sets a flag that specifies whether an annotation may be moved
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -597,8 +595,9 @@ namespace WebCharts.Services.Models.Annotations
                 base.AllowMoving = value;
             }
         }
+
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation anchor may be moved 
+        /// Gets or sets a flag that specifies whether an annotation anchor may be moved
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -621,7 +620,7 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation may be resized 
+        /// Gets or sets a flag that specifies whether an annotation may be resized
         /// with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -644,7 +643,7 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether an annotation's text may be edited 
+        /// Gets or sets a flag that specifies whether an annotation's text may be edited
         /// when the end user double clicks on the text.
         /// </summary>
         /// <value>
@@ -667,7 +666,7 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether a polygon annotation's points 
+        /// Gets or sets a flag that specifies whether a polygon annotation's points
         /// may be moved with a mouse by the end user.
         /// </summary>
         /// <value>
@@ -689,8 +688,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-
-        #endregion
+        #endregion Editing Permissions Properties
 
         #region Other Properties
 
@@ -701,7 +699,7 @@ namespace WebCharts.Services.Models.Annotations
 		/// An <see cref="AnnotationCollection"/> object.
 		/// </value>
 		/// <remarks>
-		/// Note that the coordinates of all annotations in the group are relative to the 
+		/// Note that the coordinates of all annotations in the group are relative to the
 		/// group annotation.
 		/// </remarks>
 		[
@@ -720,8 +718,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -760,7 +758,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other Properties
 
         #region Methods
 
@@ -785,16 +783,13 @@ namespace WebCharts.Services.Models.Annotations
                 Common.ProcessModeRegions)
             {
                 // Get annotation position in relative coordinates
-                SKPoint firstPoint = SKPoint.Empty;
-                SKPoint anchorPoint = SKPoint.Empty;
-                SKSize size = SKSize.Empty;
-                GetRelativePosition(out firstPoint, out size, out anchorPoint);
-                SKPoint secondPoint = new SKPoint(firstPoint.X + size.Width, firstPoint.Y + size.Height);
+                GetRelativePosition(out SKPoint firstPoint, out SKSize size, out _);
+                SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
                 // Create selection rectangle
                 SKRect selectionRect = new(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
 
-                // Check rectangle orientation 
+                // Check rectangle orientation
                 if (selectionRect.Width < 0)
                 {
                     selectionRect.Left = selectionRect.Right;
@@ -835,26 +830,24 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Methods
+        #endregion Methods
 
         #region IDisposable override
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && annotations != null)
             {
-                //Clean up managed resources
-                if (annotations != null)
-                {
-                    annotations.Dispose();
-                    annotations = null;
-                }
+                annotations.Dispose();
+                annotations = null;
             }
             base.Dispose(disposing);
         }
-        #endregion
+
+        #endregion IDisposable override
     }
 }

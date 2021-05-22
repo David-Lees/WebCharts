@@ -2,37 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	A cursor is a horizontal or vertical line that 
-//              defines a position along an axis. A range selection 
-//              is a range along an axis that is defined by a beginning 
-//              and end position, and is displayed using a semi-transparent 
+//  Purpose:	A cursor is a horizontal or vertical line that
+//              defines a position along an axis. A range selection
+//              is a range along an axis that is defined by a beginning
+//              and end position, and is displayed using a semi-transparent
 //              color.
-//              Both cursors and range selections are implemented by the 
-//              Cursor class, which is exposed as the CursorX and CursorY 
-//              properties of the ChartArea object. The CursorX object is 
-//              for the X axis of a chart area, and the CursorY object is 
-//              for the Y axis. The AxisType property of these objects 
+//              Both cursors and range selections are implemented by the
+//              Cursor class, which is exposed as the CursorX and CursorY
+//              properties of the ChartArea object. The CursorX object is
+//              for the X axis of a chart area, and the CursorY object is
+//              for the Y axis. The AxisType property of these objects
 //              determines if the associated axis is primary or secondary.
-//              Cursors and range selections can be set via end-user 
+//              Cursors and range selections can be set via end-user
 //              interaction and programmatically.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// The Cursor class is responsible for chart axes cursor and selection 
-    /// functionality. It contains properties which define visual appearance, 
-    /// position and behavior settings. It also contains methods for 
+    /// The Cursor class is responsible for chart axes cursor and selection
+    /// functionality. It contains properties which define visual appearance,
+    /// position and behavior settings. It also contains methods for
     /// drawing cursor and selection in the plotting area.
     /// </summary>
     [
@@ -63,7 +58,7 @@ namespace WebCharts.Services.Models.General
             _attachedToXAxis = attachedToXAxis;
         }
 
-        #endregion
+        #endregion Cursor constructors and initialization
 
         #region Cursor fields
 
@@ -127,7 +122,7 @@ namespace WebCharts.Services.Models.General
         // Indicates that axis data scaleView was scrolled as a result of the mouse move event
         private readonly bool _viewScrolledOnMouseMove = false;
 
-        #endregion
+        #endregion Cursor fields
 
         #region Cursor "Behavior" public properties.
 
@@ -165,13 +160,12 @@ namespace WebCharts.Services.Models.General
                     {
                         Invalidate(false);
                     }
-
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the starting position of a cursor's selected range. 
+        /// Gets or sets the starting position of a cursor's selected range.
         /// </summary>
         [
         SRCategory("CategoryAttributeBehavior"),
@@ -204,13 +198,12 @@ namespace WebCharts.Services.Models.General
                     {
                         Invalidate(false);
                     }
-
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the ending position of a range selection.  
+        /// Gets or sets the ending position of a range selection.
         /// </summary>
         [
         SRCategory("CategoryAttributeBehavior"),
@@ -286,7 +279,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Determines if scrolling will occur if a range selection operation 
+        /// Determines if scrolling will occur if a range selection operation
         /// extends beyond a boundary of the chart area.
         /// </summary>
         [
@@ -367,9 +360,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// Gets or sets the interval offset, which determines 
+        /// Gets or sets the interval offset, which determines
         /// where to draw the cursor and range selection.
         /// </summary>
         [
@@ -412,7 +404,8 @@ namespace WebCharts.Services.Models.General
                 _intervalOffsetType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
             }
         }
-        #endregion
+
+        #endregion Cursor "Behavior" public properties.
 
         #region Cursor "Appearance" public properties
 
@@ -496,7 +489,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Cursor "Appearance" public properties
 
         #region Cursor painting methods
 
@@ -555,7 +548,7 @@ namespace WebCharts.Services.Models.General
                     {
                         rectSelection.Intersect(rectOppositeSelection);
 
-                        // We do not need to draw selection in the opposite axis 
+                        // We do not need to draw selection in the opposite axis
                         Cursor oppositeCursor =
                             (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
                             _chartArea.CursorY : _chartArea.CursorX;
@@ -648,7 +641,7 @@ namespace WebCharts.Services.Models.General
             _drawSelection = true;
         }
 
-        #endregion
+        #endregion Cursor painting methods
 
         #region Position rounding methods
 
@@ -734,7 +727,6 @@ namespace WebCharts.Services.Models.General
                         {
                             roundedPosition = nextPosition;
                         }
-
                     }
 
                     // Round date/time
@@ -797,8 +789,8 @@ namespace WebCharts.Services.Models.General
 
             return roundedPosition;
         }
-        #endregion
 
+        #endregion Position rounding methods
 
         #region Cursor helper methods
 
@@ -867,7 +859,7 @@ namespace WebCharts.Services.Models.General
         {
             if (_chartArea != null)
             {
-                // Get opposite cursor 
+                // Get opposite cursor
                 Cursor oppositeCursor =
                     (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
                     _chartArea.CursorY : _chartArea.CursorX;
@@ -928,7 +920,7 @@ namespace WebCharts.Services.Models.General
             return _axis;
         }
 
-        #endregion
+        #endregion Cursor helper methods
 
         #region IDisposable Members
 
@@ -949,7 +941,7 @@ namespace WebCharts.Services.Models.General
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
@@ -961,12 +953,13 @@ namespace WebCharts.Services.Models.General
 
         // Private fields for properties values storage
         private readonly ChartArea _chartArea = null;
+
         private readonly Axis _axis = null;
         private double _newPosition = double.NaN;
         private double _newSelectionStart = double.NaN;
         private double _newSelectionEnd = double.NaN;
 
-        #endregion
+        #endregion Private fields
 
         #region Constructors
 
@@ -1001,7 +994,7 @@ namespace WebCharts.Services.Models.General
             _newSelectionEnd = newSelectionEnd;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -1087,6 +1080,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 }

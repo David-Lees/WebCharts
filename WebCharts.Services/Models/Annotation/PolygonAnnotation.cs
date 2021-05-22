@@ -2,20 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Polyline and polygon annotation classes.
 //
 
-
 using SkiaSharp;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     /// <summary>
     /// <b>PolylineAnnotation</b> is a class that represents a polyline annotation.
@@ -29,7 +24,8 @@ namespace WebCharts.Services.Models.Annotations
         #region Fields
 
         // Path with polygon points.
-        private SKPath _defaultSKPath = new SKPath();
+        private SKPath _defaultSKPath = new();
+
         private SKPath _SKPath;
 
         // Indicates that path was changed
@@ -46,9 +42,10 @@ namespace WebCharts.Services.Models.Annotations
 
         // Line start/end caps
         private LineAnchorCapStyle _startCap = LineAnchorCapStyle.None;
+
         private LineAnchorCapStyle _endCap = LineAnchorCapStyle.None;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -63,7 +60,7 @@ namespace WebCharts.Services.Models.Annotations
             _SKPath = _defaultSKPath;
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
@@ -117,7 +114,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Polyline Visual Attributes
 
         #region Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -279,7 +276,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
         #region Other
 
@@ -287,8 +284,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -309,7 +306,7 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation selection points style.
         /// </summary>
         /// <value>
-        /// A <see cref="SelectionPointsStyle"/> value that represents the annotation 
+        /// A <see cref="SelectionPointsStyle"/> value that represents the annotation
         /// selection style.
         /// </value>
         /// <remarks>
@@ -331,12 +328,12 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets a flag that determines whether an annotation should be placed using the free-draw mode.
         /// </summary>
         /// <value>
-        /// <b>True</b> if an annotation should be placed using free-draw mode, 
+        /// <b>True</b> if an annotation should be placed using free-draw mode,
         /// <b>false</b> otherwise.  Defaults to <b>false</b>.
         /// </value>
         /// <remarks>
-        /// Two different placement modes are supported when the Annotation.BeginPlacement 
-        /// method is called. Set this property to <b>true</b> to switch from the default 
+        /// Two different placement modes are supported when the Annotation.BeginPlacement
+        /// method is called. Set this property to <b>true</b> to switch from the default
         /// mode to free-draw mode, which allows the caller to free-draw while moving the mouse cursor.
         /// </remarks>
         [
@@ -362,10 +359,10 @@ namespace WebCharts.Services.Models.Annotations
         /// A <see cref="SKPath"/> object with the polyline shape.
         /// </value>
         /// <remarks>
-        /// A polyline must use coordinates relative to an annotation object, where (0,0) is 
-        /// the top-left coordinates and (100,100) is the bottom-right coordinates of the annotation.  
+        /// A polyline must use coordinates relative to an annotation object, where (0,0) is
+        /// the top-left coordinates and (100,100) is the bottom-right coordinates of the annotation.
         /// <para>
-        /// This property is not accessible at design time (at design-time, use the 
+        /// This property is not accessible at design time (at design-time, use the
         /// <see cref="SKPathPoints"/> property instead).
         /// </para>
         /// </remarks>
@@ -386,11 +383,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
+        #endregion Other
 
-
-        #endregion
-
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -551,11 +546,12 @@ namespace WebCharts.Services.Models.Annotations
             PaintSelectionHandles(graphics, rectanglePosition, pathAbs);
         }
 
-        #endregion // Painting
+        #endregion Painting
 
         #region Position Changing
+
         /// <summary>
-        /// Changes annotation position, so it exactly matches the bounary of the 
+        /// Changes annotation position, so it exactly matches the bounary of the
         /// polyline path.
         /// </summary>
         private void ResizeToPathBoundary()
@@ -593,6 +589,7 @@ namespace WebCharts.Services.Models.Annotations
                 SetPositionRelative(pathBoundary, anchorPoint);
             }
         }
+
         /// <summary>
         /// Adjust annotation location and\or size as a result of user action.
         /// </summary>
@@ -649,14 +646,13 @@ namespace WebCharts.Services.Models.Annotations
                     }
                 }
 
-
                 // Adjust annotation position to the boundary of the path
                 if (userInput && AllowResizing)
                 {
                     // Get path bounds in relative coordinates
                     _defaultSKPath.Dispose();
                     _defaultSKPath = new SKPath();
-                    for (int i = 0; i< pathPoints.Length; i++)
+                    for (int i = 0; i < pathPoints.Length; i++)
                     {
                         if (i == 0)
                         {
@@ -686,7 +682,6 @@ namespace WebCharts.Services.Models.Annotations
                     // Adjust path point position
                     for (int pointIndex = 0; pointIndex < pathPoints.Length; pointIndex++)
                     {
-
                         pathPoints[pointIndex].X = startMovePositionRel.Left + pathPoints[pointIndex].X * (startMovePositionRel.Width / 100f);
                         pathPoints[pointIndex].Y = startMovePositionRel.Top + pathPoints[pointIndex].Y * (startMovePositionRel.Height / 100f);
 
@@ -694,7 +689,6 @@ namespace WebCharts.Services.Models.Annotations
                         pathPoints[pointIndex].Y = (pathPoints[pointIndex].Y - pathBounds.Top) / (pathBounds.Height / 100f);
                     }
                 }
-
 
                 // Position changed
                 positionChanged = true;
@@ -722,7 +716,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Position Changing
+        #endregion Position Changing
 
         #region Placement Methods
 
@@ -730,11 +724,11 @@ namespace WebCharts.Services.Models.Annotations
         /// Ends user placement of an annotation.
         /// </summary>
         /// <remarks>
-        /// Ends an annotation placement operation previously started by a 
+        /// Ends an annotation placement operation previously started by a
         /// <see cref="Annotation.BeginPlacement"/> method call.
         /// <para>
         /// Calling this method is not required, since placement will automatically
-        /// end when an end user enters all required points. However, it is useful when an annotation 
+        /// end when an end user enters all required points. However, it is useful when an annotation
         /// placement operation needs to be aborted for some reason.
         /// </para>
         /// </remarks>
@@ -759,11 +753,12 @@ namespace WebCharts.Services.Models.Annotations
             positionChanged = true;
         }
 
-        #endregion // Placement Methods
+        #endregion Placement Methods
 
-        #endregion
+        #endregion Methods
 
-        #region IDisposable override 
+        #region IDisposable override
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -782,12 +777,11 @@ namespace WebCharts.Services.Models.Annotations
                     _pathPoints.Dispose();
                     _pathPoints = null;
                 }
-
             }
             base.Dispose(disposing);
         }
-        #endregion
 
+        #endregion IDisposable override
     }
 
     /// <summary>
@@ -809,7 +803,7 @@ namespace WebCharts.Services.Models.Annotations
             isPolygon = true;
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
@@ -859,7 +853,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
         #region Applicable Annotation Appearance Attributes (set as Browsable)
 
@@ -951,7 +945,7 @@ namespace WebCharts.Services.Models.Annotations
         /// <seealso cref="BackGradientStyle"/>
         /// </summary>
         /// <value>
-        /// A <see cref="Color"/> value used for the secondary color of an annotation background with 
+        /// A <see cref="Color"/> value used for the secondary color of an annotation background with
         /// hatching or gradient fill.
         /// </value>
         /// <remarks>
@@ -974,7 +968,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Applicable Annotation Appearance Attributes (set as Browsable)
 
         #region Other
 
@@ -982,8 +976,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -1004,7 +998,7 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's selection points style.
         /// </summary>
         /// <value>
-        /// A <see cref="SelectionPointsStyle"/> value that represents an annotation's 
+        /// A <see cref="SelectionPointsStyle"/> value that represents an annotation's
         /// selection style.
         /// </value>
         /// <remarks>
@@ -1022,17 +1016,17 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other
 
-        #endregion
+        #endregion Properties
     }
 
-    /// <summary><b>AnnotationPathPointCollection</b> is a collection of polyline 
-    /// annotation path points, and is only available via the <b>SKPathPoints</b> 
+    /// <summary><b>AnnotationPathPointCollection</b> is a collection of polyline
+    /// annotation path points, and is only available via the <b>SKPathPoints</b>
     /// property at design-time.
     /// <seealso cref="PolylineAnnotation.SKPathPoints"/></summary>
     /// <remarks>
-    /// This collection is used at design-time only, and uses serialization to expose the 
+    /// This collection is used at design-time only, and uses serialization to expose the
     /// shape of the polyline and polygon via their SKPathPoints collection property.
     /// At run-time, use Path property to set the path of a polyline or polygon
     /// </remarks>
@@ -1046,7 +1040,7 @@ namespace WebCharts.Services.Models.Annotations
         internal PolylineAnnotation annotation = null;
         private SKPath _SKPath = null;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructors
 
@@ -1059,7 +1053,7 @@ namespace WebCharts.Services.Models.Annotations
             this.annotation = annotation;
         }
 
-        #endregion // Constructors
+        #endregion Constructors
 
         #region Methods
 
@@ -1103,9 +1097,10 @@ namespace WebCharts.Services.Models.Annotations
             base.Invalidate();
         }
 
-        #endregion // Methods
+        #endregion Methods
 
         #region IDisposable Members
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -1124,11 +1119,11 @@ namespace WebCharts.Services.Models.Annotations
             base.Dispose(disposing);
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
-    /// The <b>AnnotationPathPoint</b> class represents a path point of a polyline or polygon, 
+    /// The <b>AnnotationPathPoint</b> class represents a path point of a polyline or polygon,
     /// and is stored in their <b>SKPathPoints</b> property, which is only available at design-time.
     /// </summary>
     /// <remarks>
@@ -1150,7 +1145,7 @@ namespace WebCharts.Services.Models.Annotations
         // Point type
         private byte _pointType = 1;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructors
 
@@ -1185,7 +1180,7 @@ namespace WebCharts.Services.Models.Annotations
             _pointType = type;
         }
 
-        #endregion // Constructors
+        #endregion Constructors
 
         #region Properties
 
@@ -1278,7 +1273,6 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Properties
-
+        #endregion Properties
     }
 }

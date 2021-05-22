@@ -2,23 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	AxisScrollBar class represent axis scroolbar. There 
-//              is a big difference how this UI  functionality 
-//              implemented for Windows Forms and ASP.NET. For 
+//  Purpose:	AxisScrollBar class represent axis scroolbar. There
+//              is a big difference how this UI  functionality
+//              implemented for Windows Forms and ASP.NET. For
 //              Windows Forms a custom drawn scrollbar control is
-//              drawn in the chart which reacts to the mouse input and 
+//              drawn in the chart which reacts to the mouse input and
 //              changes current axis data scaleView.
 //
 
 using SkiaSharp;
 using System;
-using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Scroll bar enumerations
 
@@ -80,12 +76,12 @@ namespace WebCharts.Services.Models.General
         ResetZoom = 2,
 
         /// <summary>
-        /// All buttons are shown. 
+        /// All buttons are shown.
         /// </summary>
         All = SmallScroll | ResetZoom
     }
 
-    #endregion
+    #endregion Scroll bar enumerations
 
     /// <summary>
     /// AxisScrollBar class represents the axis scrollbar. It is exposed as the
@@ -119,13 +115,14 @@ namespace WebCharts.Services.Models.General
 
         // Current scroll bar drawing colors
         private readonly SKColor _buttonCurrentColor = SKColor.Empty;
+
         private readonly SKColor _backCurrentColor = SKColor.Empty;
         private readonly SKColor _lineCurrentColor = SKColor.Empty;
 
         // Position of the scrollbar (true - edge of PlotArea, false - edge of chart area)
         private bool _isPositionedInside = true;
 
-        #endregion
+        #endregion Scroll bar fields
 
         #region Scroll bar constructors and initialization
 
@@ -146,7 +143,7 @@ namespace WebCharts.Services.Models.General
             this.axis = axis;
         }
 
-        #endregion
+        #endregion Scroll bar constructors and initialization
 
         #region Scroll bar properties
 
@@ -175,7 +172,6 @@ namespace WebCharts.Services.Models.General
                 }
             }
         }
-
 
         /// <summary>
         /// Gets or sets a flag which indicates whether the scroll bar is enabled.
@@ -360,7 +356,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Scroll bar properties
 
         #region Scroll bar public methods
 
@@ -375,7 +371,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Scroll bar public methods
 
         #region Scroll bar painting methods
 
@@ -388,7 +384,6 @@ namespace WebCharts.Services.Models.General
             // Do nothing
         }
 
-    
         /// <summary>
         /// Draws 3D button in the scroll bar
         /// </summary>
@@ -524,7 +519,7 @@ namespace WebCharts.Services.Models.General
                             points[2].Y = buttonAbsRect.Bottom - imageOffset;
                         }
 
-                        using var brush = new SKPaint { Color = _lineCurrentColor };
+                        using var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = _lineCurrentColor };
 
                         graph.FillPolygon(brush, points);
 
@@ -553,8 +548,7 @@ namespace WebCharts.Services.Models.General
                             points[2].Y = buttonAbsRect.Bottom - imageOffset;
                         }
 
-
-                        using var brush = new SKPaint { Color = _lineCurrentColor };
+                        using var brush = new SKPaint { Style = SKPaintStyle.Fill, Color = _lineCurrentColor };
                         graph.FillPolygon(brush, points);
 
                         break;
@@ -563,7 +557,7 @@ namespace WebCharts.Services.Models.General
                     {
                         // Draw circule with a minus sign
 
-                        using var pen = new SKPaint { Color = _lineCurrentColor };
+                        using var pen = new SKPaint { Style = SKPaintStyle.Fill, Color = _lineCurrentColor };
 
                         graph.DrawEllipse(pen, buttonAbsRect.Left + imageOffset - 0.5f, buttonAbsRect.Top + imageOffset - 0.5f, buttonAbsRect.Width - 2f * imageOffset, buttonAbsRect.Height - 2f * imageOffset);
                         graph.DrawLine(pen, buttonAbsRect.Left + imageOffset + 1.5f, buttonAbsRect.Top + buttonAbsRect.Height / 2f - 0.5f, buttonAbsRect.Right - imageOffset - 2.5f, buttonAbsRect.Top + buttonAbsRect.Height / 2f - 0.5f);
@@ -579,7 +573,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Scroll bar painting methods
 
         #region Coordinate convertion methods
 
@@ -617,7 +611,7 @@ namespace WebCharts.Services.Models.General
             return relative;
         }
 
-        #endregion
+        #endregion Coordinate convertion methods
 
         #region IDisposable Members
 
@@ -639,7 +633,7 @@ namespace WebCharts.Services.Models.General
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 
     /// <summary>
@@ -652,7 +646,7 @@ namespace WebCharts.Services.Models.General
         // Private fields for properties values storage
         private readonly Axis _axis = null;
 
-        #endregion
+        #endregion Private fields
 
         #region Constructors
 
@@ -665,7 +659,7 @@ namespace WebCharts.Services.Models.General
             _axis = axis;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -705,7 +699,6 @@ namespace WebCharts.Services.Models.General
         ]
         public bool IsHandled { get; set; } = false;
 
-
-        #endregion
+        #endregion Properties
     }
 }

@@ -14,15 +14,8 @@
 using SkiaSharp;
 using System;
 using System.Collections;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Annotations;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// SmartLabelStyle class is used to enable and configure the
@@ -747,7 +740,7 @@ namespace WebCharts.Services.Models.General
                 GetLabelPosition(graph, labelPosition, labelSize, new StringFormat(), true));
 
             // Create callout pen
-            SKPaint calloutPen = new() { Color = smartLabelStyle.CalloutLineColor, StrokeWidth = smartLabelStyle.CalloutLineWidth };
+            SKPaint calloutPen = new() { Style = SKPaintStyle.Stroke, Color = smartLabelStyle.CalloutLineColor, StrokeWidth = smartLabelStyle.CalloutLineWidth };
             calloutPen.PathEffect = ChartGraphics.GetPenStyle(smartLabelStyle.CalloutLineDashStyle, smartLabelStyle.CalloutLineWidth);
 
             // Draw callout frame

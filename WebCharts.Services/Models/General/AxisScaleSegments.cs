@@ -5,12 +5,8 @@
 using SkiaSharp;
 using System;
 using System.Collections;
-using System.Linq;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// <b>AxisScaleSegment</b> class represents a single segment of the axis with
@@ -50,7 +46,7 @@ namespace WebCharts.Services.Models.General
         // Stack used to save/load axis settings
         private readonly Stack _oldAxisSettings = new();
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructor
 
@@ -61,7 +57,7 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion // Constructor
+        #endregion Constructor
 
         #region Properties
 
@@ -151,7 +147,6 @@ namespace WebCharts.Services.Models.General
         SRDescription("DescriptionAttributeAxisScaleSegment_ScaleMinimum"),
         ]
         public double ScaleMinimum { get; set; } = 0.0;
-
 
         /// <summary>
         /// Axis segment interval size.
@@ -246,7 +241,7 @@ namespace WebCharts.Services.Models.General
         ]
         public object Tag { get; set; } = null;
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Break Line Painting Methods
 
@@ -257,7 +252,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="nextSegment">Axis scale segment next to current.</param>
         internal void PaintBreakLine(ChartGraphics graph, AxisScaleSegment nextSegment)
         {
-            // Get break line position 
+            // Get break line position
             SKRect breakPosition = GetBreakLinePosition(graph, nextSegment);
 
             // Get top line graphics path
@@ -352,13 +347,12 @@ namespace WebCharts.Services.Models.General
                         }
                         shadowPath.Transform(newMatrix);
 
-
                         // Get line color
                         SKColor color = Color.FromArgb(
                             (byte)(axis.ChartArea.ShadowColor.Alpha - transparencyStep * index),
                             axis.ChartArea.ShadowColor);
 
-                        using SKPaint shadowPen = new() { Color = color, StrokeWidth = 1 };
+                        using SKPaint shadowPen = new() { Style = SKPaintStyle.Stroke, Color = color, StrokeWidth = 1 };
                         // Draw shadow
                         graph.DrawPath(shadowPen, shadowPath);
                     }
@@ -370,7 +364,7 @@ namespace WebCharts.Services.Models.General
             // Draw Separator Line(s)
             if (axis.ScaleBreakStyle.BreakLineStyle != BreakLineStyle.None)
             {
-                using SKPaint pen = new() { Color = axis.ScaleBreakStyle.LineColor, StrokeWidth = axis.ScaleBreakStyle.LineWidth };
+                using SKPaint pen = new() { Style = SKPaintStyle.Stroke, Color = axis.ScaleBreakStyle.LineColor, StrokeWidth = axis.ScaleBreakStyle.LineWidth };
                 // Set line style
                 pen.PathEffect = ChartGraphics.GetPenStyle(axis.ScaleBreakStyle.LineDashStyle, axis.ScaleBreakStyle.LineWidth);
 
@@ -388,7 +382,6 @@ namespace WebCharts.Services.Models.General
             {
                 breakLinePathBottom.Dispose();
             }
-
         }
 
         /// <summary>
@@ -402,7 +395,7 @@ namespace WebCharts.Services.Models.General
             SKPaint brush;
             if (chart.BackGradientStyle == GradientStyle.None)
             {
-                brush = new SKPaint() { Color = chart.BackColor };
+                brush = new SKPaint() { Style = SKPaintStyle.Fill, Color = chart.BackColor };
             }
             else
             {
@@ -568,7 +561,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets position of the axis break line. Break line may be shown as a single 
+        /// Gets position of the axis break line. Break line may be shown as a single
         /// line or two lines separated with a spacing.
         /// </summary>
         /// <param name="graph">Chart graphics.</param>
@@ -601,8 +594,8 @@ namespace WebCharts.Services.Models.General
             {
                 var h = Math.Abs(breakPosition.Top - breakPosition.Height);
                 var w = breakPosition.Width;
-                breakPosition.Left -= axis.ChartArea.BorderWidth;                
-                breakPosition.Size = new(w + 2 * axis.ChartArea.BorderWidth, h);                    
+                breakPosition.Left -= axis.ChartArea.BorderWidth;
+                breakPosition.Size = new(w + 2 * axis.ChartArea.BorderWidth, h);
             }
             else
             {
@@ -615,7 +608,7 @@ namespace WebCharts.Services.Models.General
             return breakPosition;
         }
 
-        #endregion // Break Line Painting Methods
+        #endregion Break Line Painting Methods
 
         #region Helper Methods
 
@@ -706,8 +699,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Helper Methods
-
+        #endregion Helper Methods
     }
 
     /// <summary>
@@ -724,7 +716,7 @@ namespace WebCharts.Services.Models.General
         private readonly Axis _axis = null;
 
         // Segment which is always used to convert scale values.
-        // This value is set tmporarly when only one segment has 
+        // This value is set tmporarly when only one segment has
         // to handle all the values.
         private AxisScaleSegment _enforcedSegment = null;
 
@@ -732,7 +724,7 @@ namespace WebCharts.Services.Models.General
         // Otherwise they will be rounded to Min and Max values.
         internal bool AllowOutOfScaleValues = false;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -760,7 +752,7 @@ namespace WebCharts.Services.Models.General
             _axis = axis;
         }
 
-        #endregion // Construction and Initialization
+        #endregion Construction and Initialization
 
         #region Indexer
 
@@ -768,7 +760,7 @@ namespace WebCharts.Services.Models.General
         /// Axis scale segment collection indexer.
         /// </summary>
         /// <remarks>
-        /// The <b>AxisScaleSegment</b> object index can be provided as a parameter. Returns the <see cref="AxisScaleSegment"/> object. 
+        /// The <b>AxisScaleSegment</b> object index can be provided as a parameter. Returns the <see cref="AxisScaleSegment"/> object.
         /// </remarks>
         [
         SRDescription("DescriptionAttributeAxisScaleSegmentCollection_Item"),
@@ -781,7 +773,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Indexer
+        #endregion Indexer
 
         #region Collection Add and Insert methods
 
@@ -799,8 +791,7 @@ namespace WebCharts.Services.Models.General
             return List.Add(segment);
         }
 
-
-        #endregion // Collection Add and Insert methods
+        #endregion Collection Add and Insert methods
 
         #region Items Inserting and Removing Notification methods
 
@@ -831,7 +822,7 @@ namespace WebCharts.Services.Models.General
             ((AxisScaleSegment)newValue).axis = _axis;
         }
 
-        #endregion
+        #endregion Items Inserting and Removing Notification methods
 
         #region Helper Methods
 
@@ -900,7 +891,6 @@ namespace WebCharts.Services.Models.General
             return null;
         }
 
-        #endregion // Helper Methods
+        #endregion Helper Methods
     }
 }
-

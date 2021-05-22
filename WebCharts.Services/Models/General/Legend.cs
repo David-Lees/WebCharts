@@ -23,14 +23,8 @@
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Legend enumerations
 
@@ -2870,7 +2864,7 @@ namespace WebCharts.Services.Models.General
                 {
                     if (value < 0)
                     {
-                        throw (new ArgumentOutOfRangeException("value", SR.ExceptionLegendColumnSpacingInvalid));
+                        throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionLegendColumnSpacingInvalid));
                     }
                     _itemColumnSpacing = value;
                     Invalidate(false);
@@ -3331,7 +3325,7 @@ namespace WebCharts.Services.Models.General
                 {
                     if (value < 0)
                     {
-                        throw (new ArgumentException(SR.ExceptionTextThresholdIsNegative, "value"));
+                        throw (new ArgumentException(SR.ExceptionTextThresholdIsNegative, nameof(value)));
                     }
                     _textWrapThreshold = value;
                     Invalidate(false);
@@ -4782,7 +4776,7 @@ namespace WebCharts.Services.Models.General
         internal ChartDashStyle borderDashStyle = ChartDashStyle.Solid;
         internal ChartHatchStyle backHatchStyle = ChartHatchStyle.None;
         internal int shadowOffset = 0;
-        internal SKColor shadowColor = Utilities.Color.FromArgb(128, 0, 0, 0);
+        internal SKColor shadowColor = Services.Color.FromArgb(128, 0, 0, 0);
         internal ChartImageWrapMode backImageWrapMode = ChartImageWrapMode.Tile;
         internal ChartImageAlignmentStyle backImageAlign = ChartImageAlignmentStyle.TopLeft;
 

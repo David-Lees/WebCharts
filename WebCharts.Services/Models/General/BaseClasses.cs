@@ -4,13 +4,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Models.Common;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
-
     /// <summary>
-    /// ChartElement is the most basic element of the chart element hierarchy. 
+    /// ChartElement is the most basic element of the chart element hierarchy.
     /// </summary>
     public abstract class ChartElement : IChartElement, IDisposable
     {
@@ -18,7 +16,7 @@ namespace WebCharts.Services.Models.General
 
         private CommonElements _common = null;
 
-        #endregion
+        #endregion Member variables
 
         #region Properties
 
@@ -74,7 +72,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Constructors
 
@@ -95,23 +93,22 @@ namespace WebCharts.Services.Models.General
             Parent = parent;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
         /// <summary>
         /// Invalidates this chart element.
         /// </summary>
-        internal virtual void Invalidate() 
+        internal virtual void Invalidate()
         {
             if (Parent != null)
                 Parent.Invalidate();
         }
 
-        #endregion
+        #endregion Methods
 
         #region IChartElement Members
-
 
         IChartElement IChartElement.Parent
         {
@@ -126,10 +123,10 @@ namespace WebCharts.Services.Models.General
 
         CommonElements IChartElement.Common
         {
-            get{ return Common; }
+            get { return Common; }
         }
 
-        #endregion
+        #endregion IChartElement Members
 
         #region IDisposable Members
 
@@ -144,14 +141,13 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Performs freeing, releasing, or resetting managed resources.
         /// </summary>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]        
-        public void Dispose()
+        public virtual void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Members
 
         #region Methods
 
@@ -173,7 +169,6 @@ namespace WebCharts.Services.Models.General
         /// <returns>
         /// A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
         /// </returns>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override string ToString()
         {
             return ToStringInternal();
@@ -201,7 +196,6 @@ namespace WebCharts.Services.Models.General
         /// true if the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.NullReferenceException">The <paramref name="obj"/> parameter is null.</exception>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override bool Equals(object obj)
         {
             return EqualsInternal(obj);
@@ -213,16 +207,14 @@ namespace WebCharts.Services.Models.General
         /// <returns>
         /// A hash code for the current <see cref="T:System.Object"/>.
         /// </returns>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
 
-        #endregion
-
+        #endregion Methods
     }
-    
+
     /// <summary>
     /// ChartNamedElement is a base class for most chart elements. Series, ChartAreas, Legends and other chart elements have a Name and reuse the unique name generation and validation logic provided by the ChartNamedElementCollection.
     /// </summary>
@@ -232,7 +224,7 @@ namespace WebCharts.Services.Models.General
 
         private string _name = String.Empty;
 
-        #endregion
+        #endregion Member variables
 
         #region Properties
 
@@ -240,20 +232,20 @@ namespace WebCharts.Services.Models.General
         /// Gets or sets the name of the chart element.
         /// </summary>
         /// <value>The name.</value>
-        public virtual string Name 
+        public virtual string Name
         {
             get { return _name; }
-            set 
+            set
             {
                 if (_name != value)
                 {
                     if (Parent is INameController)
                     {
                         INameController nameController = Parent as INameController;
-                        
+
                         if (!nameController.IsUniqueName(value))
                             throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(value, nameController.GetType().Name));
-                        
+
                         // Fire the name change events in case when the old name is not empty
                         NameReferenceChangedEventArgs args = new(this, _name, value);
                         nameController.OnNameReferenceChanging(args);
@@ -269,7 +261,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Constructors
 
@@ -278,7 +270,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         protected ChartNamedElement()
             : base()
-        { 
+        {
         }
 
         /// <summary>
@@ -296,12 +288,12 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         /// <param name="parent">The parent chart element.</param>
         /// <param name="name">The name of the new chart element.</param>
-        internal ChartNamedElement(IChartElement parent, string name) : base(parent)
+        protected ChartNamedElement(IChartElement parent, string name) : base(parent)
         {
             _name = name;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
@@ -316,11 +308,9 @@ namespace WebCharts.Services.Models.General
             string typeName = GetType().Name;
             return (string.IsNullOrEmpty(_name)) ? typeName : typeName + '-' + _name;
         }
-        
-        #endregion
 
+        #endregion Methods
     }
-
 
     /// <summary>
     /// NameReferenceChanged events help chart maintain referencial integrity.
@@ -329,41 +319,47 @@ namespace WebCharts.Services.Models.General
     {
         #region MemberValiables
 
-        ChartNamedElement _oldElement;
-        string _oldName;
-        string _newName;
+        private readonly ChartNamedElement _oldElement;
+        private readonly string _oldName;
+        private readonly string _newName;
 
-        #endregion
+        #endregion MemberValiables
 
         #region Properties
+
         public ChartNamedElement OldElement
         {
             get { return _oldElement; }
         }
+
         public string OldName
         {
             get { return _oldName; }
         }
+
         public string NewName
         {
             get { return _newName; }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Constructor
+
         public NameReferenceChangedEventArgs(ChartNamedElement oldElement, ChartNamedElement newElement)
         {
             _oldElement = oldElement;
-            _oldName = oldElement!=null ? oldElement.Name : string.Empty;
-            _newName = newElement!=null ? newElement.Name : string.Empty;
+            _oldName = oldElement != null ? oldElement.Name : string.Empty;
+            _newName = newElement != null ? newElement.Name : string.Empty;
         }
+
         public NameReferenceChangedEventArgs(ChartNamedElement oldElement, string oldName, string newName)
         {
             _oldElement = oldElement;
             _oldName = oldName;
             _newName = newName;
         }
-        #endregion
-    }
 
+        #endregion Constructor
+    }
 }

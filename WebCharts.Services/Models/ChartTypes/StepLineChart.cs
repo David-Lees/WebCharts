@@ -2,30 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Step Line chart uses two line segments (horizontal 
-//              and vertical) to connect data points. Markers and 
+//  Purpose:	Step Line chart uses two line segments (horizontal
+//              and vertical) to connect data points. Markers and
 //              labels drawing code is inherited from the Line chart.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
-    /// StepLine class extends its base class LineChart by changing how two 
-    /// neighbouring data points are connected with a line. Step Line chart 
-    /// uses two line segments (horizontal and vertical) to connect data 
+    /// StepLine class extends its base class LineChart by changing how two
+    /// neighbouring data points are connected with a line. Step Line chart
+    /// uses two line segments (horizontal and vertical) to connect data
     /// points. Markers and labels drawing code is inherited from the Line chart.
     /// </summary>
     internal class StepLineChart : LineChart
@@ -39,7 +31,7 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -58,7 +50,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Line drawing and selecting methods
 
@@ -173,7 +165,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion Line drawing and selecting methods
 
         #region 3D Line drawing and selection
 
@@ -250,7 +242,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 pointAttr = firstPoint;
             }
 
-            // Adjust point visual properties 
+            // Adjust point visual properties
             SKColor color = (useBorderColor) ? pointAttr.dataPoint.BorderColor : pointAttr.dataPoint.Color;
             ChartDashStyle dashStyle = pointAttr.dataPoint.BorderDashStyle;
             if (pointAttr.dataPoint.IsEmpty && pointAttr.dataPoint.Color == SKColor.Empty)
@@ -376,6 +368,6 @@ namespace WebCharts.Services.Models.ChartTypes
             return resultPath;
         }
 
-        #endregion
+        #endregion 3D Line drawing and selection
     }
 }

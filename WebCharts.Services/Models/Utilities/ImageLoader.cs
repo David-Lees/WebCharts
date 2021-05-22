@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	ImageLoader utility class loads specified image and 
+//  Purpose:	ImageLoader utility class loads specified image and
 //              caches it in the memory for the future use.
 //
-
 
 using SkiaSharp;
 using System;
@@ -17,16 +15,14 @@ using System.Net;
 using System.Reflection;
 using System.Resources;
 using System.Security;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     /// <summary>
-    /// ImageLoader utility class loads and returns specified image 
-    /// form the File, URI, Web Request or Chart Resources. 
-    /// Loaded images are stored in the internal hashtable which 
-    /// allows to improve performance if image need to be used 
+    /// ImageLoader utility class loads and returns specified image
+    /// form the File, URI, Web Request or Chart Resources.
+    /// Loaded images are stored in the internal hashtable which
+    /// allows to improve performance if image need to be used
     /// several times.
     /// </summary>
     internal class ImageLoader : IDisposable, IImageLoader
@@ -35,15 +31,16 @@ namespace WebCharts.Services.Models.Utilities
 
         // Image storage
         private Hashtable _imageData = null;
-        private readonly IServiceProvider _serviceContainer;
 
-        #endregion
+        private readonly CommonElements _common;
+
+        #endregion Fields
 
         #region Constructors and Initialization
 
-        public ImageLoader(IServiceProvider serviceProvider)
+        public ImageLoader(CommonElements common)
         {
-            _serviceContainer = serviceProvider;
+            _common = common;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -67,7 +64,7 @@ namespace WebCharts.Services.Models.Utilities
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion Constructors and Initialization
 
         #region Methods
 
@@ -92,9 +89,9 @@ namespace WebCharts.Services.Models.Utilities
             SKImage image = null;
 
             // Check if image is defined in the chart image collection
-            if (_serviceContainer != null)
+            if (_common != null)
             {
-                ChartService chart = (ChartService)_serviceContainer.GetService(typeof(ChartService));
+                ChartService chart = _common.Chart;
                 if (chart != null)
                 {
                     foreach (NamedImage namedImage in chart.Images)
@@ -124,7 +121,6 @@ namespace WebCharts.Services.Models.Utilities
             {
                 try
                 {
-
                     // Check if resource class type was specified
                     int columnIndex = imageURL.IndexOf("::", StringComparison.Ordinal);
                     if (columnIndex > 0)
@@ -183,7 +179,6 @@ namespace WebCharts.Services.Models.Utilities
                 }
             }
 
-
             // Try to load image using the Web Request
             if (image == null)
             {
@@ -197,7 +192,6 @@ namespace WebCharts.Services.Models.Utilities
                 {
                     // Do nothing
                 }
-
 
                 // Load image from file or web resource
                 if (imageUri != null)
@@ -293,6 +287,6 @@ namespace WebCharts.Services.Models.Utilities
             size.Height = image.Height;
         }
 
-        #endregion
+        #endregion Methods
     }
 }

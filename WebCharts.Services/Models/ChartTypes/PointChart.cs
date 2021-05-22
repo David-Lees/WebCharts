@@ -3,20 +3,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
-    /// PointChart class provides 2D/3D drawing and hit testing 
+    /// PointChart class provides 2D/3D drawing and hit testing
     /// functionality for the Point chart.
     /// </summary>
     internal class PointChart : IChartType
@@ -83,7 +74,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         internal ArrayList label3DInfoList = null;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -103,7 +94,7 @@ namespace WebCharts.Services.Models.ChartTypes
             this.alwaysDrawMarkers = alwaysDrawMarkers;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region IChartType interface implementation
 
@@ -117,15 +108,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         virtual public bool Stacked { get { return false; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return false; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return false; } }
@@ -166,8 +155,8 @@ namespace WebCharts.Services.Models.ChartTypes
         virtual public bool DataPointsInLegend { get { return false; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return false; } }
@@ -207,7 +196,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 1; } }
 
@@ -221,7 +210,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Painting and Selection
 
@@ -240,7 +229,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method recalculates size of the bars. This method is used 
+        /// This method recalculates size of the bars. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -255,7 +244,6 @@ namespace WebCharts.Services.Models.ChartTypes
             ChartArea area,
             Series seriesToDraw)
         {
-
             Common = common;
             // Prosess 3D chart type
             if (area.Area3DStyle.Enable3D)
@@ -279,9 +267,9 @@ namespace WebCharts.Services.Models.ChartTypes
             //************************************************************
             foreach (Series ser in common.DataManager.Series)
             {
-                // Labels and markers have to be shifted if there 
-                // is more than one series for column chart. This property 
-                // will give a name of the series, which is used, for 
+                // Labels and markers have to be shifted if there
+                // is more than one series for column chart. This property
+                // will give a name of the series, which is used, for
                 // labels and markers.
                 bool breakSeriesLoop = false;
                 if (ShiftedSerName.Length > 0)
@@ -359,7 +347,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         continue;
                     }
 
-
                     // Check if point should be drawn on the edge of the data scaleView.
                     bool skipMarker = false;
                     if (!ShouldDrawMarkerOnViewEdgeX())
@@ -384,13 +371,12 @@ namespace WebCharts.Services.Models.ChartTypes
                     string pointMarkerImage = point.MarkerImage;
                     MarkerStyle pointMarkerStyle = point.MarkerStyle;
 
-
                     // Get marker position
                     SKPoint markerPosition = SKPoint.Empty;
                     markerPosition.Y = (float)VAxis.GetLinearPosition(yValue);
                     if (indexedSeries)
                     {
-                        // The formula for position is based on a distance 
+                        // The formula for position is based on a distance
                         // from the grid line or nPoints position.
                         markerPosition.X = (float)HAxis.GetPosition((double)index);
                     }
@@ -399,7 +385,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         markerPosition.X = (float)HAxis.GetPosition(point.XValue);
                     }
 
-                    // Labels and markers have to be shifted if there 
+                    // Labels and markers have to be shifted if there
                     // is more than one series for column chart.
                     markerPosition.X += (float)ShiftedX;
 
@@ -554,7 +540,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Inserts Hot Regions used for image maps, tool tips and 
+        /// Inserts Hot Regions used for image maps, tool tips and
         /// hit test function
         /// </summary>
         /// <param name="common">Common elements object</param>
@@ -567,7 +553,6 @@ namespace WebCharts.Services.Models.ChartTypes
         /// <param name="markerPosition">Marker Position</param>
         private static void SetHotRegions(CommonElements common, ChartGraphics graph, DataPoint point, SKSize markerSize, string seriesName, int pointIndex, MarkerStyle pointMarkerStyle, SKPoint markerPosition)
         {
-
             // Get relative marker size
             SKSize relativeMarkerSize = graph.GetRelativeSize(markerSize);
 
@@ -588,7 +573,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     seriesName,
                     pointIndex);
             }
-
         }
 
         /// <summary>
@@ -730,42 +714,50 @@ namespace WebCharts.Services.Models.ChartTypes
                     case LabelAlignmentStyles.Center:
                         format.Alignment = StringAlignment.Center;
                         break;
+
                     case LabelAlignmentStyles.Bottom:
                         format.Alignment = StringAlignment.Center;
                         position.Y += sizeMarker.Height / 1.75F;
                         position.Y += sizeLabel.Height / 2F;
                         break;
+
                     case LabelAlignmentStyles.Top:
                         format.Alignment = StringAlignment.Center;
                         position.Y -= sizeMarker.Height / 1.75F;
                         position.Y -= sizeLabel.Height / 2F;
                         break;
+
                     case LabelAlignmentStyles.Left:
                         format.Alignment = StringAlignment.Far;
                         position.X -= sizeMarker.Height / 1.75F + horizontalSpacing / 2f;
                         break;
+
                     case LabelAlignmentStyles.TopLeft:
                         format.Alignment = StringAlignment.Far;
                         position.X -= sizeMarker.Height / 1.75F + horizontalSpacing / 2f;
                         position.Y -= sizeMarker.Height / 1.75F;
                         position.Y -= sizeLabel.Height / 2F;
                         break;
+
                     case LabelAlignmentStyles.BottomLeft:
                         format.Alignment = StringAlignment.Far;
                         position.X -= sizeMarker.Height / 1.75F + horizontalSpacing / 2f;
                         position.Y += sizeMarker.Height / 1.75F;
                         position.Y += sizeLabel.Height / 2F;
                         break;
+
                     case LabelAlignmentStyles.Right:
                         format.Alignment = StringAlignment.Near;
                         position.X += sizeMarker.Height / 1.75F + horizontalSpacing / 2f;
                         break;
+
                     case LabelAlignmentStyles.TopRight:
                         format.Alignment = StringAlignment.Near;
                         position.X += sizeMarker.Height / 1.75F + horizontalSpacing / 2f;
                         position.Y -= sizeMarker.Height / 1.75F;
                         position.Y -= sizeLabel.Height / 2F;
                         break;
+
                     case LabelAlignmentStyles.BottomRight:
                         format.Alignment = StringAlignment.Near;
                         position.X += sizeMarker.Height / 1.75F + horizontalSpacing / 2f;
@@ -780,8 +772,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Check if text contains white space only
                 if (text.Trim().Length != 0)
                 {
-
-
                     // Check if Smart Labels are enabled
                     if (ser.SmartLabelStyle.Enabled)
                     {
@@ -802,8 +792,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         textAngle = 0;
                     }
 
-
-
                     // Adjust alignment of vertical labels
                     // NOTE: Fixes issue #4560
                     if (textAngle == 90 || textAngle == -90)
@@ -814,25 +802,32 @@ namespace WebCharts.Services.Models.ChartTypes
                                 format.Alignment = StringAlignment.Near;
                                 position.Y += sizeLabel.Height / 2F;
                                 break;
+
                             case LabelAlignmentStyles.Bottom:
                                 format.Alignment = StringAlignment.Far;
                                 position.Y -= sizeLabel.Height / 2F;
                                 break;
+
                             case LabelAlignmentStyles.Right:
                                 format.Alignment = StringAlignment.Center;
                                 format.LineAlignment = StringAlignment.Near;
                                 break;
+
                             case LabelAlignmentStyles.Left:
                                 format.Alignment = StringAlignment.Center;
                                 format.LineAlignment = StringAlignment.Center;
                                 break;
+
                             case LabelAlignmentStyles.TopLeft:
                                 format.Alignment = StringAlignment.Near;
                                 break;
+
                             case LabelAlignmentStyles.TopRight:
                                 break;
+
                             case LabelAlignmentStyles.BottomLeft:
                                 break;
+
                             case LabelAlignmentStyles.BottomRight:
                                 format.Alignment = StringAlignment.Far;
                                 break;
@@ -842,11 +837,10 @@ namespace WebCharts.Services.Models.ChartTypes
                     // Draw label
                     if (!position.IsEmpty)
                     {
-                        // Get label background position
-                        SKRect labelBackPosition = SKRect.Empty;
                         sizeLabel.Height -= SKSizeont.Height / 2;
                         sizeLabel.Height += SKSizeont.Height / 8;
-                        labelBackPosition = GetLabelPosition(
+                        // Get label background position
+                        SKRect labelBackPosition = GetLabelPosition(
                             graph,
                             position,
                             sizeLabel,
@@ -859,18 +853,23 @@ namespace WebCharts.Services.Models.ChartTypes
                             case LabelAlignmentStyles.Left:
                                 labelBackPosition.Left += horizontalSpacing / 2f;
                                 break;
+
                             case LabelAlignmentStyles.TopLeft:
                                 labelBackPosition.Left += horizontalSpacing / 2f;
                                 break;
+
                             case LabelAlignmentStyles.BottomLeft:
                                 labelBackPosition.Left += horizontalSpacing / 2f;
                                 break;
+
                             case LabelAlignmentStyles.Right:
                                 labelBackPosition.Left -= horizontalSpacing / 2f;
                                 break;
+
                             case LabelAlignmentStyles.TopRight:
                                 labelBackPosition.Left -= horizontalSpacing / 2f;
                                 break;
+
                             case LabelAlignmentStyles.BottomRight:
                                 labelBackPosition.Left -= horizontalSpacing / 2f;
                                 break;
@@ -898,7 +897,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
         }
-
 
         /// <summary>
         /// Gets rectangle position of the label.
@@ -972,12 +970,12 @@ namespace WebCharts.Services.Models.ChartTypes
             return labPosition;
         }
 
-        #endregion
+        #endregion Painting and Selection
 
         #region 3D painting and Selection
 
         /// <summary>
-        /// This method recalculates size of the point marker. This method is used 
+        /// This method recalculates size of the point marker. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -1009,7 +1007,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 };
             }
 
-
             //************************************************************
             //** Get order of data points drawing
             //************************************************************
@@ -1031,9 +1028,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
             // Finish processing 3D labels
             DrawAccumulated3DLabels(graph, common, area);
-
         }
-
 
         /// <summary>
         /// Draws\Hit tests single 3D point.
@@ -1110,7 +1105,7 @@ namespace WebCharts.Services.Models.ChartTypes
             markerPosition.Y = (float)pointEx.yPosition;
             markerPosition.X = (float)HAxis.GetLinearPosition(xValue);  // No Log transformation required. Done above!
 
-            // Labels and markers have to be shifted if there 
+            // Labels and markers have to be shifted if there
             // is more than one series for column chart.
             markerPosition.X += (float)ShiftedX;
 
@@ -1177,10 +1172,9 @@ namespace WebCharts.Services.Models.ChartTypes
                     drawingOperationType);
             }
 
-
             //**********************************************************************
-            //** Data point label is not drawn with the data point. Instead the 
-            //** information about label is collected and drawn when all points 
+            //** Data point label is not drawn with the data point. Instead the
+            //** information about label is collected and drawn when all points
             //** with current Z position are drawn.
             //** This is done to achieve correct Z order layering of labels.
             //**********************************************************************
@@ -1288,7 +1282,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         labelInfo.PointEx.dataPoint,
                         labelInfo.PointEx.dataPoint.series,
                         labelInfo.PointEx.index - 1);
-
                 }
 
                 // Clear labels info list
@@ -1296,7 +1289,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion 3D painting and Selection
 
         #region Marker and Labels related methods
 
@@ -1362,12 +1355,12 @@ namespace WebCharts.Services.Models.ChartTypes
             return size;
         }
 
-        #endregion
+        #endregion Marker and Labels related methods
 
         #region Labels shifting properties
 
         /// <summary>
-        /// Labels and markers have to be shifted if there 
+        /// Labels and markers have to be shifted if there
         /// is more than one series for column chart.
         /// NOT USED IN POINT CHART.
         /// </summary>
@@ -1384,9 +1377,9 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Labels and markers have to be shifted if there 
-        /// is more than one series for column chart. This property 
-        /// will give a name of the series, which is used, for 
+        /// Labels and markers have to be shifted if there
+        /// is more than one series for column chart. This property
+        /// will give a name of the series, which is used, for
         /// labels and markers.
         /// NOT USED IN POINT CHART.
         /// </summary>
@@ -1402,7 +1395,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion Labels shifting properties
 
         #region Y values related methods
 
@@ -1424,7 +1417,6 @@ namespace WebCharts.Services.Models.ChartTypes
             int pointIndex,
             int yValueIndex)
         {
-
             // Point chart do not have height
             if (yValueIndex == -1)
             {
@@ -1468,9 +1460,9 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method will find previous and next data point, which is not 
-        /// empty and recalculate a new value for current empty data point. 
-        /// New value depends on custom attribute “EmptyPointValue” and 
+        /// This method will find previous and next data point, which is not
+        /// empty and recalculate a new value for current empty data point.
+        /// New value depends on custom attribute “EmptyPointValue” and
         /// it could be zero or average.
         /// </summary>
         /// <param name="point">IsEmpty data point.</param>
@@ -1564,7 +1556,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return -aCoeff * (point.XValue - series.Points[prevIndx].XValue) + previousPoint;
         }
 
-        #endregion
+        #endregion Y values related methods
 
         #region SmartLabelStyle methods
 
@@ -1646,7 +1638,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 markerPosition.Y = (float)vAxis.GetLinearPosition(yValue);
                 if (indexedSeries)
                 {
-                    // The formula for position is based on a distance 
+                    // The formula for position is based on a distance
                     // from the grid line or nPoints position.
                     markerPosition.X = (float)hAxis.GetPosition((double)index);
                 }
@@ -1655,7 +1647,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     markerPosition.X = (float)hAxis.GetPosition(point.XValue);
                 }
 
-                // Labels and markers have to be shifted if there 
+                // Labels and markers have to be shifted if there
                 // is more than one series for column chart.
                 markerPosition.X += (float)ShiftedX;
 
@@ -1677,14 +1669,13 @@ namespace WebCharts.Services.Models.ChartTypes
                 if (area.Area3DStyle.Enable3D)
                 {
                     // Get series depth and Z position
-                    float seriesDepth, seriesZPosition;
-                    area.GetSeriesZPositionAndDepth(series, out seriesDepth, out seriesZPosition);
+                    area.GetSeriesZPositionAndDepth(series, out float seriesDepth, out float seriesZPosition);
 
                     Point3D[] marker3DPosition = new Point3D[1];
                     marker3DPosition[0] = new Point3D(
                         markerPosition.X,
                         markerPosition.Y,
-                        (float)(seriesZPosition + ((middleMarker) ? seriesDepth / 2f : seriesDepth)));
+                        seriesZPosition + (middleMarker ? seriesDepth / 2f : seriesDepth));
 
                     // Transform coordinates
                     area.matrix3D.TransformPoints(marker3DPosition);
@@ -1702,7 +1693,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         markerSize = common.graph.GetRelativeSize(markerSize);
 
                         // Add marker position into the list
-                        SKRect markerRect = new SKRect(
+                        SKRect markerRect = new(
                             markerPosition.X - markerSize.Width / 2f,
                             markerPosition.Y - markerSize.Height / 2f,
                             markerSize.Width,
@@ -1722,7 +1713,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region 3D Label Info class
 
@@ -1736,16 +1727,17 @@ namespace WebCharts.Services.Models.ChartTypes
             internal SKSize MarkerSize = SKSize.Empty;
         }
 
-        #endregion // 3D Label Info class
+        #endregion 3D Label Info class
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -1756,6 +1748,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 }

@@ -12,12 +12,8 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -1562,7 +1558,6 @@ namespace WebCharts.Services.Models.Annotations
         ]
         public virtual bool AllowResizing { get; set; } = false;
 
-
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation's text may be edited
         /// when the end user double clicks on the text.
@@ -1575,7 +1570,6 @@ namespace WebCharts.Services.Models.Annotations
         SRDescription("DescriptionAttributeAllowTextEditing"),
         ]
         public virtual bool AllowTextEditing { get; set; } = false;
-
 
         /// <summary>
         /// Gets or sets a flag that specifies whether a polygon annotation's points
@@ -2671,7 +2665,6 @@ namespace WebCharts.Services.Models.Annotations
                     movingDistance = Chart.chartPicture.ChartGraph.GetRelativeSize(movingDistance);
                 }
 
-
                 // Get annotation position in relative coordinates
                 SKPoint firstPoint;
 
@@ -2990,8 +2983,6 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         #endregion Z Order Methods
-
-
 
         #region SmartLabelStyle methods
 
@@ -3605,7 +3596,6 @@ namespace WebCharts.Services.Models.Annotations
 
         /// <summary>Gets or sets the new annotation anchor point X location.</summary>
         public double NewAnchorLocationX { get; set; } = 0.0;
-
 
         /// <summary>Gets or sets the new annotation anchor point Y location.</summary>
         public double NewAnchorLocationY { get; set; } = 0.0;

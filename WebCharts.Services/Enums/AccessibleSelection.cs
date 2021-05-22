@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebCharts.Services.Enums
+namespace WebCharts.Services
 {
     [Flags]
     public enum AccessibleSelection

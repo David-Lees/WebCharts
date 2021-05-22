@@ -1,11 +1,4 @@
-﻿using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WebCharts.Services.Models
+﻿namespace WebCharts.Services
 {
     public static class RectangleExtensions
     {

@@ -2,30 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Axis related properties and methods. Axis class gives 
-//				information to Common.Chart series about 
-//				position in the Common.Chart area and keeps all necessary 
+//  Purpose:	Axis related properties and methods. Axis class gives
+//				information to Common.Chart series about
+//				position in the Common.Chart area and keeps all necessary
 //				information about axes.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Text;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// The Axis class gives information to the Common.Chart series 
-    /// about positions in the Common.Chart area and keeps all of 
+    /// The Axis class gives information to the Common.Chart series
+    /// about positions in the Common.Chart area and keeps all of
     ///	the data about the axis.
     /// </summary>
     [
@@ -61,6 +54,7 @@ namespace WebCharts.Services.Models.General
 
         // Size of the axis elements in percentage
         internal float titleSize = 0F;
+
         internal float labelSize = 0F;
         internal float labelNearOffset = 0F;
         internal float labelFarOffset = 0F;
@@ -70,6 +64,7 @@ namespace WebCharts.Services.Models.General
         internal float totlaGroupingLabelsSize = 0F;
         internal float[] groupingLabelSizes = null;
         internal float totlaGroupingLabelsSizeAdjustment = 0f;
+
         private LabelAutoFitStyles _labelAutoFitStyle = LabelAutoFitStyles.DecreaseFont |
                                                             LabelAutoFitStyles.IncreaseFont |
                                                             LabelAutoFitStyles.LabelsAngleStep30 |
@@ -78,12 +73,15 @@ namespace WebCharts.Services.Models.General
 
         // Auto calculated font for labels
         internal SKFont autoLabelFont = null;
+
         internal int autoLabelAngle = -1000;
         internal int autoLabelOffset = -1;
 
         // Labels auto fitting constants
         private float _aveLabelFontSize = 10F;
+
         private float _minLabelFontSize = 5F;
+
         // Determines maximum label size of the chart area.
         private float _maximumAutoSize = 75f;
 
@@ -99,7 +97,7 @@ namespace WebCharts.Services.Models.General
         // Maximum size of the axis title in percentage
         private const float maxAxisTitleSize = 20F;
 
-        // Maximum size of the axis second row of labels in percentage 
+        // Maximum size of the axis second row of labels in percentage
         // of the total labels size
         private const float maxAxisLabelRow2Size = 45F;
 
@@ -112,17 +110,16 @@ namespace WebCharts.Services.Models.General
         // Maximum cached value from data series.
         internal double maximumFromData = double.NaN;
 
-        // Flag, which tells to Set Data method to take, again values from 
+        // Flag, which tells to Set Data method to take, again values from
         // data source and not to use cached values.
         internal bool refreshMinMaxFromData = true;
 
-        // Flag, which tells to Set Data method to take, again values from 
+        // Flag, which tells to Set Data method to take, again values from
         // data source and not to use cached values.
         internal int numberOfPointsInAllSeries = 0;
 
         // Original axis scaleView position
         private double _originalViewPosition = double.NaN;
-
 
         /// <summary>
         /// Indicates that isInterlaced strip lines will be displayed for the axis.
@@ -164,7 +161,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal int labelAutoFitMaxFontSize = 10;
 
-        #endregion
+        #endregion Axis fields
 
         #region Axis constructor and initialization
 
@@ -256,9 +253,7 @@ namespace WebCharts.Services.Models.General
 			{
 				this.subAxes = new SubAxisCollection(this);
 			}
-#endif 
-
-
+#endif
 
             // Create collection of scale segments
             if (scaleSegments == null)
@@ -291,7 +286,7 @@ namespace WebCharts.Services.Models.General
         internal static string GetName(AxisName axisName)
         {
             // Set axis name.
-            // NOTE: Strings below should never be localized. Name properties in the chart are never localized 
+            // NOTE: Strings below should never be localized. Name properties in the chart are never localized
             // and represent consisten object name in all locales.
             return axisName switch
             {
@@ -303,7 +298,7 @@ namespace WebCharts.Services.Models.General
             };
         }
 
-        #endregion
+        #endregion Axis constructor and initialization
 
         #region Axis properies
 
@@ -364,9 +359,9 @@ namespace WebCharts.Services.Models.General
 		/// </summary>
 		[
 		SRCategory("CategoryAttributeSubAxes"),
-		
+
 		SRDescription("DescriptionAttributeSubAxes"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content), 
+		DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         Editor(Editors.ChartCollectionEditor.Editor, Editors.ChartCollectionEditor.Base)
 		]
 		virtual public SubAxisCollection SubAxes
@@ -599,10 +594,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
-
         /// <summary>
-        /// Gets or sets the minimum font size that can be used by 
+        /// Gets or sets the minimum font size that can be used by
         /// the label auto-fitting algorithm.
         /// </summary>
         [
@@ -629,7 +622,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the maximum font size that can be used by 
+        /// Gets or sets the maximum font size that can be used by
         /// the label auto-fitting algorithm.
         /// </summary>
         [
@@ -655,10 +648,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
-
         /// <summary>
-        /// Gets or sets the auto-fitting style used for the labels. 
+        /// Gets or sets the auto-fitting style used for the labels.
         /// IsLabelAutoFit must be set to true.
         /// </summary>
         [
@@ -680,7 +671,7 @@ namespace WebCharts.Services.Models.General
 
         /// <summary>
         /// Gets or sets a flag which indicates whether
-        /// tick marks and labels move with the axis when 
+        /// tick marks and labels move with the axis when
         /// the crossing value changes.
         /// </summary>
         [
@@ -859,7 +850,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Gets or sets the maximum size (in percentage) of the axis used in the automatic layout algorithm.
         /// </summary>
@@ -886,7 +876,8 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
-        #endregion
+
+        #endregion Axis properies
 
         #region	IMapAreaAttributes Properties implementation
 
@@ -1097,7 +1088,7 @@ namespace WebCharts.Services.Models.General
 
 #if SUBAXES
 			// Process all sub-axis
-			if(!ChartArea.Area3DStyle.Enable3D && 
+			if(!ChartArea.Area3DStyle.Enable3D &&
 				!ChartArea.chartAreaIsCurcular)
 			{
 				foreach(SubAxis subAxis in this.SubAxes)
@@ -1150,7 +1141,7 @@ namespace WebCharts.Services.Models.General
                             {
                                 drawLabels = false;
 
-                                // Save current font angle 
+                                // Save current font angle
                                 int currentAngle = labelStyle.Angle;
 
                                 // Set labels text angle
@@ -1166,10 +1157,10 @@ namespace WebCharts.Services.Models.General
                                     }
                                 }
 
-                                // Draw labels 
+                                // Draw labels
                                 labelStyle.Paint(graph, false);
 
-                                // Restore font angle 
+                                // Restore font angle
                                 labelStyle.angle = currentAngle;
                             }
                         }
@@ -1233,8 +1224,6 @@ namespace WebCharts.Services.Models.General
             ResetTempAxisOffset();
         }
 
-
-
         /// <summary>
         /// Paint Axis element when segmented axis scale feature is used.
         /// </summary>
@@ -1295,7 +1284,6 @@ namespace WebCharts.Services.Models.General
 				}
 			}
 #endif // SUBAXES
-
         }
 
         /// <summary>
@@ -1374,8 +1362,8 @@ namespace WebCharts.Services.Models.General
                     format.Alignment = TitleAlignment;
                     format.Trimming = StringTrimming.EllipsisCharacter;
                     // VSTS #144398
-                    // We need to have the StringFormatFlags set to FitBlackBox as othwerwise axis titles using Fonts like 
-                    // "Algerian" or "Forte" are completly clipped (= not drawn) due to the fact that MeasureString returns 
+                    // We need to have the StringFormatFlags set to FitBlackBox as othwerwise axis titles using Fonts like
+                    // "Algerian" or "Forte" are completly clipped (= not drawn) due to the fact that MeasureString returns
                     // a bounding rectangle that is too small.
                     format.FormatFlags |= StringFormatFlags.FitBlackBox;
 
@@ -1459,7 +1447,6 @@ namespace WebCharts.Services.Models.General
                             _titlePosition.Right = _titlePosition.Left + axisTitleSize.Width;
                             _titlePosition.Bottom = _titlePosition.Top + axisTitleSize.Height;
 
-
                             // Set graphics rotation transformation
                             oldTransform = SetRotationTransformation(graph, _titlePosition);
 
@@ -1501,7 +1488,7 @@ namespace WebCharts.Services.Models.General
                     }
 
                     // Draw title
-                    using SKPaint brush = new() { Color = TitleForeColor };
+                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = TitleForeColor };
                     graph.DrawStringRel(
                         axisTitle.Replace("\\n", "\n"),
                         TitleFont,
@@ -1531,7 +1518,7 @@ namespace WebCharts.Services.Models.General
                         transformedTitlePosition = transformedTitlePosition.Standardized;
                     }
 
-                    // Add hot region 
+                    // Add hot region
                     Common.HotRegionsList.AddHotRegion(
                         transformedTitlePosition, this, ChartElementType.AxisTitle, false, false);
                 }
@@ -1545,7 +1532,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Helper method which sets 90 or -90 degrees transformation in the middle of the 
+        /// Helper method which sets 90 or -90 degrees transformation in the middle of the
         /// specified rectangle. It is used to draw title text rotated 90 or 270 degrees.
         /// </summary>
         /// <param name="graph">Chart graphics to apply transformation for.</param>
@@ -1569,7 +1556,6 @@ namespace WebCharts.Services.Models.General
 
             return oldTransform;
         }
-
 
         /// <summary>
         /// Draws a radial line in circular Common.Chart area.
@@ -1638,7 +1624,7 @@ namespace WebCharts.Services.Models.General
                 path.Transform(newMatrix);
                 try
                 {
-                    using SKPaint pen = new() { Color = SKColors.Black, StrokeWidth = width + 2 };
+                    using SKPaint pen = new() { Style = SKPaintStyle.Stroke, Color = SKColors.Black, StrokeWidth = width + 2 };
                     //path.Widen(pen)
                     Common.HotRegionsList.AddHotRegion(path, false, ChartElementType.Gridlines, obj);
                 }
@@ -1661,7 +1647,6 @@ namespace WebCharts.Services.Models.General
             {
                 graph.Clip = oldRegion;
             }
-
         }
 
         /// <summary>
@@ -1707,7 +1692,7 @@ namespace WebCharts.Services.Models.General
             rect.Inflate(-rectInflate, -rectInflate);
 
             // Create circle pen
-            using SKPaint circlePen = new() { Color = color, StrokeWidth = width };
+            using SKPaint circlePen = new() { Style = SKPaintStyle.Fill, Color = color, StrokeWidth = width };
             circlePen.PathEffect = ChartGraphics.GetPenStyle(style, width);
 
             // Draw circle
@@ -1754,7 +1739,6 @@ namespace WebCharts.Services.Models.General
                     path.Dispose();
                 }
             }
-
         }
 
         /// <summary>
@@ -1822,7 +1806,7 @@ namespace WebCharts.Services.Models.General
                 angle = -90;
             }
 
-            // Calculate title center point on the axis 
+            // Calculate title center point on the axis
             if (AxisPosition == AxisPosition.Left)
             {
                 rotationCenter = new SKPoint(ChartArea.PlotAreaPosition.X, ChartArea.PlotAreaPosition.Y + ChartArea.PlotAreaPosition.Height / 2f);
@@ -1886,7 +1870,7 @@ namespace WebCharts.Services.Models.General
                 ChartArea.matrix3D.TransformPoints(rotationCenterPoints);
                 rotationCenter = rotationCenterPoints[0].SKPoint;
 
-                // Get absolute coordinates 
+                // Get absolute coordinates
                 rotationCenterPoints[0].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[0].SKPoint);
                 rotationCenterPoints[1].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[1].SKPoint);
 
@@ -1905,7 +1889,7 @@ namespace WebCharts.Services.Models.General
                 ChartArea.matrix3D.TransformPoints(rotationCenterPoints);
                 rotationCenter = rotationCenterPoints[0].SKPoint;
 
-                // Get absolute coordinates 
+                // Get absolute coordinates
                 rotationCenterPoints[0].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[0].SKPoint);
                 rotationCenterPoints[1].SKPoint = graph.GetAbsolutePoint(rotationCenterPoints[1].SKPoint);
 
@@ -1919,11 +1903,9 @@ namespace WebCharts.Services.Models.General
             }
             angle += (int)Math.Round(angleAxis * 180f / (float)Math.PI);
 
-
             // Calculate title center offset from the axis line
             float offset = labelSize + markSize + titleSize / 2f;
             float dX = 0f, dY = 0f;
-
 
             // Adjust center of title with labels, marker and title size
             if (AxisPosition == AxisPosition.Left)
@@ -1975,7 +1957,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Draw 3D title
-            using (SKPaint brush = new() { Color = TitleForeColor })
+            using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = TitleForeColor })
             {
                 graph.DrawStringRel(
                     axisTitle.Replace("\\n", "\n"),
@@ -2010,7 +1992,6 @@ namespace WebCharts.Services.Models.General
             // Set the position of axis
             switch (AxisPosition)
             {
-
                 case AxisPosition.Left:
 
                     first.X = (float)GetAxisPosition();
@@ -2062,7 +2043,6 @@ namespace WebCharts.Services.Models.General
                         arrowOrientation = ArrowOrientation.Right;
 
                     break;
-
             }
 
             // Update axis line position for circular area
@@ -2071,15 +2051,14 @@ namespace WebCharts.Services.Models.General
                 first.Y = PlotAreaPosition.Y + PlotAreaPosition.Height / 2f;
             }
 
-
             if (Common.ProcessModePaint)
             {
                 if (!ChartArea.Area3DStyle.Enable3D || ChartArea.chartAreaIsCurcular)
                 {
                     graph.DrawLineRel(_lineColor, _lineWidth, _lineDashStyle, first, second);
 
-                    // Opposite axis. Arrow uses this axis to find 
-                    // a shift from Common.Chart area border. This shift 
+                    // Opposite axis. Arrow uses this axis to find
+                    // a shift from Common.Chart area border. This shift
                     // depend on Tick mark size.
                     opositeAxis = arrowOrientation switch
                     {
@@ -2105,9 +2084,7 @@ namespace WebCharts.Services.Models.General
                     Draw3DAxisLine(graph, first, second, (AxisPosition == AxisPosition.Top || AxisPosition == AxisPosition.Bottom), backElements);
                 }
             }
-
         }
-
 
         /// <summary>
         /// Draws the axis line hot region.
@@ -2116,9 +2093,9 @@ namespace WebCharts.Services.Models.General
         /// <param name="backElements">set to <c>true</c> if we draw back elements.</param>
         private void DrawAxisLineHotRegion(ChartGraphics graph, bool backElements)
         {
-            //VSTS #229835: During the 3D rendering the axis is drawn twice: 
+            //VSTS #229835: During the 3D rendering the axis is drawn twice:
             //1. In PrePaint() both axis and backelements (labels) are drawn.
-            //2. In Paint() the axis is redrawn without labels and as a result it creates a second hot region which covered the labels' hotregions. 
+            //2. In Paint() the axis is redrawn without labels and as a result it creates a second hot region which covered the labels' hotregions.
             //In order to avoid this we have to suppress the hotregion drawing in the Paint using the backElements flag (it's false during the Paint)
             //The circular charts and 2D charts are drawn only once in Paint() so we draw the hot regions.
             if (Common.ProcessModeRegions && (backElements || !ChartArea.Area3DStyle.Enable3D || ChartArea.chartAreaIsCurcular))
@@ -2239,7 +2216,6 @@ namespace WebCharts.Services.Models.General
                 ChartElementType.Axis);
         }
 
-
         /// <summary>
         /// Draws axis line in 3D space.
         /// </summary>
@@ -2357,7 +2333,6 @@ namespace WebCharts.Services.Models.General
                     ChartElementType.Nothing
                     );
             }
-
         }
 
         /// <summary>
@@ -2411,7 +2386,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Paint Axis Grid lines or 
+        /// Paint Axis Grid lines or
         /// hit test function for grid lines
         /// </summary>
         /// <param name="graph">Reference to the Chart Graphics object</param>
@@ -2422,7 +2397,7 @@ namespace WebCharts.Services.Models.General
 
 #if SUBAXES
 			// Paint grids of sub-axis
-			if(!ChartArea.Area3DStyle.Enable3D && 
+			if(!ChartArea.Area3DStyle.Enable3D &&
 				!ChartArea.chartAreaIsCurcular)
 			{
 				foreach(SubAxis subAxis in this.SubAxes)
@@ -2454,7 +2429,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Paint Axis Strip lines or 
+        /// Paint Axis Strip lines or
         /// hit test function for Strip lines
         /// </summary>
         /// <param name="graph">Reference to the Chart Graphics object</param>
@@ -2497,7 +2472,6 @@ namespace WebCharts.Services.Models.General
                 // Remove isInterlaced strips which always is the first strip line
                 StripLines.RemoveAt(0);
             }
-
         }
 
         /// <summary>
@@ -2591,8 +2565,8 @@ namespace WebCharts.Services.Models.General
         #region Axis parameters recalculation and resizing methods
 
         /// <summary>
-        /// This method will calculate the maximum and minimum values 
-        /// using interval on the X axis automatically. It will make a gap between 
+        /// This method will calculate the maximum and minimum values
+        /// using interval on the X axis automatically. It will make a gap between
         /// data points and border of the Common.Chart area.
         /// Note that this method can only be called for primary or secondary X axes.
         /// </summary>
@@ -2620,9 +2594,9 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method store Axis values as minimum, maximum, 
-        /// crossing, etc. Axis auto algorithm changes these 
-        /// values and they have to be set to default values 
+        /// This method store Axis values as minimum, maximum,
+        /// crossing, etc. Axis auto algorithm changes these
+        /// values and they have to be set to default values
         /// after painting.
         /// </summary>
         internal void StoreAxisValues()
@@ -2635,11 +2609,10 @@ namespace WebCharts.Services.Models.General
 
             paintMode = true;
 
-            // This field synchronies the Storing and 
+            // This field synchronies the Storing and
             // resetting of temporary values
             if (_storeValuesEnabled)
             {
-
                 tempMaximum = maximum;
                 tempMinimum = minimum;
                 tempCrossing = crossing;
@@ -2652,10 +2625,8 @@ namespace WebCharts.Services.Models.General
                 tempMinorGridInterval = minorGrid.interval;
                 tempMinorTickMarkInterval = minorTickMark.interval;
 
-
                 tempGridIntervalType = majorGrid.intervalType;
                 tempTickMarkIntervalType = majorTickMark.intervalType;
-
 
                 tempLabelInterval = labelStyle.interval;
                 tempLabelIntervalType = labelStyle.intervalType;
@@ -2663,7 +2634,7 @@ namespace WebCharts.Services.Models.General
                 // Remember original ScaleView Position
                 _originalViewPosition = ScaleView.Position;
 
-                // This field synchronies the Storing and 
+                // This field synchronies the Storing and
                 // resetting of temporary values
                 _storeValuesEnabled = false;
             }
@@ -2679,14 +2650,12 @@ namespace WebCharts.Services.Models.General
 				}
 			}
 #endif // SUBAXES
-
         }
 
-
         /// <summary>
-        /// This method reset Axis values as minimum, maximum, 
-        /// crossing, etc. Axis auto algorithm changes these 
-        /// values and they have to be set to default values 
+        /// This method reset Axis values as minimum, maximum,
+        /// crossing, etc. Axis auto algorithm changes these
+        /// values and they have to be set to default values
         /// after painting.
         /// </summary>
         internal void ResetAxisValues()
@@ -2719,7 +2688,6 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
         }
 
-
         /// <summary>
         /// Reset auto calculated axis values
         /// </summary>
@@ -2738,7 +2706,6 @@ namespace WebCharts.Services.Models.General
             minorGrid.interval = tempMinorGridInterval;
             minorTickMark.interval = tempMinorTickMarkInterval;
 
-
             labelStyle.interval = tempLabelInterval;
             majorGrid.intervalType = tempGridIntervalType;
             majorTickMark.intervalType = tempTickMarkIntervalType;
@@ -2750,7 +2717,7 @@ namespace WebCharts.Services.Models.General
                 ScaleView.Position = _originalViewPosition;
             }
 
-            // This field synchronies the Storing and 
+            // This field synchronies the Storing and
             // resetting of temporary values
             _storeValuesEnabled = true;
 
@@ -2765,7 +2732,6 @@ namespace WebCharts.Services.Models.General
 				}
 			}
 #endif // SUBAXES
-
         }
 
         /// <summary>
@@ -2951,7 +2917,6 @@ namespace WebCharts.Services.Models.General
 
             markSize += Math.Max(majorTickSize, minorTickSize);
 
-
             // Add axis line size
             SKSize borderSize = chartGraph.GetRelativeSize(new SKSize(LineWidth, LineWidth));
 
@@ -2967,8 +2932,6 @@ namespace WebCharts.Services.Models.General
                 markSize += borderSize.Width / 2f;
                 markSize = Math.Min(markSize, (plotArea.Width / 100F) * (Axis.maxAxisMarkSize / axesNumber));
             }
-
-
 
             //*********************************************************
             //** Adjust mark size using area scene wall width
@@ -3041,14 +3004,10 @@ namespace WebCharts.Services.Models.General
                     maxLabelSize = plotArea.Width * (_maximumAutoSize / 100f);
             }
 
-
-
             //******************************************************
-            //** First try to select the interval that will 
+            //** First try to select the interval that will
             //** generate best fit labels.
             //******************************************************
-
-
 
             // Make sure the variable interval mode is enabled and
             // no custom label interval used.
@@ -3087,10 +3046,8 @@ namespace WebCharts.Services.Models.General
                 AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, false);
             }
 
-
-
             //******************************************************
-            //** Automatically calculate the best font size, angle 
+            //** Automatically calculate the best font size, angle
             //** and try to use offset labels.
             //******************************************************
             // Reset all automatic label properties
@@ -3117,7 +3074,6 @@ namespace WebCharts.Services.Models.General
                 float size = Math.Max(LabelAutoFitMaxFontSize, LabelAutoFitMinFontSize);
                 _minLabelFontSize = Math.Min(LabelAutoFitMinFontSize, LabelAutoFitMaxFontSize);
                 _aveLabelFontSize = _minLabelFontSize + Math.Abs(size - _minLabelFontSize) / 2f;
-
 
                 // Check if common font size should be used
                 if (ChartArea.IsSameFontSKSizeorAllAxes)
@@ -3171,8 +3127,6 @@ namespace WebCharts.Services.Models.General
                         if (autoLabelFont.Size >= _aveLabelFontSize &&
                             (LabelAutoFitStyle & LabelAutoFitStyles.DecreaseFont) == LabelAutoFitStyles.DecreaseFont)
                         {
-
-
                             //Clean up the old font
                             autoLabelFont = Common.Chart.chartPicture.FontCache.GetFont(
                                 autoLabelFont.Typeface.FamilyName,
@@ -3264,7 +3218,6 @@ namespace WebCharts.Services.Models.General
                                             autoLabelAngle = 0;
                                             noWordWrap = true;
                                         }
-
                                     }
                                     else
                                     {
@@ -3384,7 +3337,6 @@ namespace WebCharts.Services.Models.General
                     labelSize = elementSpacing + GetRequiredLabelSize(chartGraph,
                         (maxLabelSize / 100F) * (maxAxisElementsSize - markSize - scrollBarSize - titleSize), out unRotatedLabelSize);
 
-
                     if (!LabelStyle.Enabled)
                     {
                         labelSize -= elementSpacing;
@@ -3400,7 +3352,7 @@ namespace WebCharts.Services.Models.General
 
 #if SUBAXES
 			// Calculate offsets for all sub axes
-			if(!ChartArea.Area3DStyle.Enable3D && 
+			if(!ChartArea.Area3DStyle.Enable3D &&
 				!ChartArea.chartAreaIsCurcular)
 			{
 				float currentOffset = this.markSize + this.labelSize + this.titleSize + this.scrollBarSize;
@@ -3469,7 +3421,7 @@ namespace WebCharts.Services.Models.General
                     ++segmentIndex;
                 }
 
-                // Check all previously removed last labels of each segment if there 
+                // Check all previously removed last labels of each segment if there
                 // is enough space to fit them
                 int reInsertedLabelsCount = 0;
                 int labelIndex = 0;
@@ -3486,7 +3438,7 @@ namespace WebCharts.Services.Models.General
                         CustomLabels.Add(label);
                     }
 
-                    // Check labels fit. Only horizontal or vertical fit is checked depending 
+                    // Check labels fit. Only horizontal or vertical fit is checked depending
                     // on the axis orientation.
                     ArrayList labelPositions = new();
                     bool fitDone = CheckLabelsFit(
@@ -3552,7 +3504,7 @@ namespace WebCharts.Services.Models.General
                 {
                     return false;
                 }
-                // This feature is not supported if the axis doesn't have data range 
+                // This feature is not supported if the axis doesn't have data range
                 if (Double.IsNaN(minimum) || Double.IsNaN(maximum))
                 {
                     return false;
@@ -3643,7 +3595,6 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-
             // Iterate while interval is not found
             bool firstIteration = true;
             bool increaseNumberOfLabels = true;
@@ -3664,7 +3615,7 @@ namespace WebCharts.Services.Models.General
                 }
 #endif // DEBUG
 
-                // Check labels fit. Only horizontal or vertical fit is checked depending 
+                // Check labels fit. Only horizontal or vertical fit is checked depending
                 // on the axis orientation.
                 bool fitDone = CheckLabelsFit(
                     chartGraph,
@@ -3726,7 +3677,6 @@ namespace WebCharts.Services.Models.General
                         {
                             CustomLabels.Add(label);
                         }
-
                     }
                 }
                 else
@@ -3907,7 +3857,6 @@ namespace WebCharts.Services.Models.General
                     }
                 }
             }
-
 
             // Make sure interal is not less than min interval specified
             if (!double.IsNaN(minInterval) && newInterval < minInterval)
@@ -4179,7 +4128,6 @@ namespace WebCharts.Services.Models.General
                             autoLabelFont.Typeface.FamilyName,
                             autoLabelFont.Size - 1,
                             autoLabelFont.Typeface.FontStyle);
-
                     }
 
                     // Failed to fit
@@ -4273,7 +4221,6 @@ namespace WebCharts.Services.Models.General
                     // Remember label side angle
                     prevLabelSideAngle = rightSideAngle - 1;
 
-
                     //*****************************************************************
                     //** Check if label is inside the Common.Chart area
                     //*****************************************************************
@@ -4295,7 +4242,6 @@ namespace WebCharts.Services.Models.General
                         labelsFit = false;
                         break;
                     }
-
                 }
 
                 //*****************************************************************
@@ -4353,7 +4299,7 @@ namespace WebCharts.Services.Models.General
                         break;
                     }
 
-                    // Set previous point position 
+                    // Set previous point position
                     prevLabelPosition = curLabelPosition;
                 }
             }
@@ -4374,7 +4320,7 @@ namespace WebCharts.Services.Models.General
         {
 #if SUBAXES
 			// Process all sub-axis
-			if(!ChartArea.Area3DStyle.Enable3D && 
+			if(!ChartArea.Area3DStyle.Enable3D &&
 				!ChartArea.chartAreaIsCurcular)
 			{
 				foreach(SubAxis subAxis in this.SubAxes)
@@ -4384,13 +4330,10 @@ namespace WebCharts.Services.Models.General
 			}
 #endif //SUBAXES
 
-
             //******************************************************
-            //** First try to select the interval that will 
+            //** First try to select the interval that will
             //** generate best fit labels.
             //******************************************************
-
-
 
             // Make sure the variable interval mode is enabled
             if (Enabled != AxisEnabled.False &&
@@ -4432,9 +4375,6 @@ namespace WebCharts.Services.Models.General
                     AdjustIntervalToFitLabels(chartGraph, autoPlotPosition, true);
                 }
             }
-
-
-
 
             //******************************************************
             //** If labels auto-fit is on try reducing font size.
@@ -4585,7 +4525,7 @@ namespace WebCharts.Services.Models.General
                 labelPositions.Clear();
             }
 
-            // Label string drawing format			
+            // Label string drawing format
             using (StringFormat format = new())
             {
                 format.FormatFlags |= StringFormatFlags.LineLimit;
@@ -4632,7 +4572,6 @@ namespace WebCharts.Services.Models.General
 
                 // Loop through all grouping labels (all except first row)
                 totlaGroupingLabelsSize = 0;
-
 
                 // Get number of groups
                 int groupLabelLevelCount = GetGroupLabelLevelCount();
@@ -4737,7 +4676,6 @@ namespace WebCharts.Services.Models.General
                     {
                         return false;
                     }
-
                 }
 
                 // Loop through all labels in the first row
@@ -4757,25 +4695,21 @@ namespace WebCharts.Services.Models.General
 
                     if (label.RowIndex == 0)
                     {
-
                         // Force which scale segment to use when calculating label position
                         if (labelPositions != null)
                         {
                             ScaleSegments.EnforceSegment(ScaleSegments.FindScaleSegmentForAxisValue((label.FromPosition + label.ToPosition) / 2.0));
                         }
 
-
                         // Set label From and To coordinates
                         double fromPosition = GetLinearPosition(label.FromPosition);
                         double toPosition = GetLinearPosition(label.ToPosition);
-
 
                         // Reset scale segment to use when calculating label position
                         if (labelPositions != null)
                         {
                             ScaleSegments.EnforceSegment(null);
                         }
-
 
                         // Calculate single label position
                         rect.Left = PlotAreaPosition.X;
@@ -4837,7 +4771,7 @@ namespace WebCharts.Services.Models.General
                             format);
 
                         // Width and height maybe zeros if rect is too small to fit the text and
-                        // the LineLimit format flag is set. 
+                        // the LineLimit format flag is set.
                         if (label.Text.Length > 0 &&
                             (axisLabelSize.Width == 0f ||
                             axisLabelSize.Height == 0f))
@@ -4851,7 +4785,6 @@ namespace WebCharts.Services.Models.General
                                 format);
                             format.FormatFlags |= StringFormatFlags.LineLimit;
                         }
-
 
                         // Add image size
                         if (label.Image.Length > 0)
@@ -4882,7 +4815,6 @@ namespace WebCharts.Services.Models.General
                             axisLabelSize.Width += spacerSize.Width;
                             axisLabelSize.Height += spacerSize.Height;
                         }
-
 
                         // Calculate size using label angle
                         float width = axisLabelSize.Width;
@@ -5001,7 +4933,7 @@ namespace WebCharts.Services.Models.General
             labelNearOffset = float.MaxValue;
             labelFarOffset = float.MinValue;
 
-            // Label string drawing format			
+            // Label string drawing format
             using (StringFormat format = new())
             {
                 format.FormatFlags |= StringFormatFlags.LineLimit;
@@ -5072,7 +5004,7 @@ namespace WebCharts.Services.Models.General
                             format);
 
                         // Width and height maybe zeros if rect is too small to fit the text and
-                        // the LineLimit format flag is set. 
+                        // the LineLimit format flag is set.
                         if (axisLabelSize.Width == 0f || axisLabelSize.Height == 0f)
                         {
                             // Measure string without the LineLimit flag
@@ -5083,7 +5015,6 @@ namespace WebCharts.Services.Models.General
                                 format);
                             format.FormatFlags |= StringFormatFlags.LineLimit;
                         }
-
 
                         // Add image size
                         if (label.Image.Length > 0)
@@ -5116,7 +5047,6 @@ namespace WebCharts.Services.Models.General
                             axisLabelSize.Height += spacerSize.Height;
                         }
 
-
                         // Calculate size using label angle
                         float width = axisLabelSize.Width;
                         float height = axisLabelSize.Height;
@@ -5134,7 +5064,6 @@ namespace WebCharts.Services.Models.General
                         axisLabelSize.Width = (float)Math.Ceiling(axisLabelSize.Width) * 1.05f;
                         axisLabelSize.Height = (float)Math.Ceiling(axisLabelSize.Height) * 1.05f;
 
-
                         // If axis is horizontal
                         if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                         {
@@ -5146,7 +5075,6 @@ namespace WebCharts.Services.Models.General
                                 // Calculate the overhang of labels on the side
                                 labelNearOffset = (float)Math.Min(labelNearOffset, (fromPosition + toPosition) / 2f - axisLabelSize.Width / 2f);
                                 labelFarOffset = (float)Math.Max(labelFarOffset, (fromPosition + toPosition) / 2f + axisLabelSize.Width / 2f);
-
                             }
                             else
                             {
@@ -5307,7 +5235,6 @@ namespace WebCharts.Services.Models.General
                             axisLabelSize.Width = (float)Math.Ceiling(axisLabelSize.Width);
                             axisLabelSize.Height = (float)Math.Ceiling(axisLabelSize.Height);
 
-
                             // Add image size
                             if (label.Image.Length > 0)
                             {
@@ -5329,8 +5256,6 @@ namespace WebCharts.Services.Models.General
                                 axisLabelSize.Width += spacerSize.Width;
                                 axisLabelSize.Height += spacerSize.Height;
                             }
-
-
 
                             // If axis is horizontal
                             if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
@@ -5355,7 +5280,6 @@ namespace WebCharts.Services.Models.General
         #endregion
 
         #region Axis helper methods
-
 
         /// <summary>
         /// Gets main or sub axis associated with this axis.
@@ -5490,6 +5414,7 @@ namespace WebCharts.Services.Models.General
                         arrowOrientation = ArrowOrientation.Top;
 
                     break;
+
                 case AxisPosition.Right:
 
                     if (isReversed)
@@ -5498,6 +5423,7 @@ namespace WebCharts.Services.Models.General
                         arrowOrientation = ArrowOrientation.Top;
 
                     break;
+
                 case AxisPosition.Bottom:
 
                     if (isReversed)
@@ -5506,6 +5432,7 @@ namespace WebCharts.Services.Models.General
                         arrowOrientation = ArrowOrientation.Right;
 
                     break;
+
                 case AxisPosition.Top:
 
                     if (isReversed)
@@ -5525,8 +5452,8 @@ namespace WebCharts.Services.Models.General
                 _ => ChartArea.AxisX,
             };
 
-            // Arrow size has to have the same shape when width and height 
-            // are changed. When the picture is resized, width of the Common.Chart 
+            // Arrow size has to have the same shape when width and height
+            // are changed. When the picture is resized, width of the Common.Chart
             // picture is used only for arrow size.
             if (arrowOrientation == ArrowOrientation.Top || arrowOrientation == ArrowOrientation.Bottom)
             {
@@ -5563,7 +5490,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Checks if arrow with specified orientation will require space
         /// in axis with specified position
@@ -5585,9 +5511,8 @@ namespace WebCharts.Services.Models.General
             return false;
         }
 
-
         /// <summary>
-        /// This function converts real Interval to 
+        /// This function converts real Interval to
         /// absolute Interval
         /// </summary>
         /// <param name="realInterval">A interval represented as double value</param>
@@ -5687,10 +5612,13 @@ namespace WebCharts.Services.Models.General
                 {
                     case AxisPosition.Top:
                         return PlotAreaPosition.Y;
+
                     case AxisPosition.Bottom:
                         return PlotAreaPosition.Bottom;
+
                     case AxisPosition.Right:
                         return PlotAreaPosition.Right;
+
                     case AxisPosition.Left:
                         return PlotAreaPosition.X;
                 }
@@ -5824,6 +5752,5 @@ namespace WebCharts.Services.Models.General
         }
 
         #endregion
-
     }
 }

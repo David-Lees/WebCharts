@@ -2,17 +2,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
-    /// SplineChart class extends the LineChart class by 
+    /// SplineChart class extends the LineChart class by
     /// providing a different initial tension for the line.
     /// </summary>
     internal class SplineChart : LineChart
@@ -28,7 +22,7 @@ namespace WebCharts.Services.Models.ChartTypes
             base.lineTension = 0.5f;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -47,7 +41,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Helper methods
 
@@ -92,15 +86,15 @@ namespace WebCharts.Services.Models.ChartTypes
             return 0.5f;
         }
 
-        #endregion
+        #endregion Helper methods
     }
 
     /// <summary>
-    /// LineChart class provides 2D/3D drawing and hit testing 
-    /// functionality for the Line and Spline charts. The only 
-    /// difference of the Spline chart is the default tension 
+    /// LineChart class provides 2D/3D drawing and hit testing
+    /// functionality for the Line and Spline charts. The only
+    /// difference of the Spline chart is the default tension
     /// of the line.
-    /// 
+    ///
     /// PointChart base class provides functionality realted
     /// to drawing labels and markers.
     /// </summary>
@@ -186,7 +180,6 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         protected bool drawOutsideLines = false;
 
-
         /// <summary>
         /// Indicates if base (point) chart type should be processed
         /// </summary>
@@ -201,7 +194,7 @@ namespace WebCharts.Services.Models.ChartTypes
             middleMarker = false;
         }
 
-        #endregion
+        #endregion Fields and Constructor
 
         #region IChartType interface implementation
 
@@ -246,8 +239,8 @@ namespace WebCharts.Services.Models.ChartTypes
         override public bool SideBySideSeries { get { return false; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         override public bool ZeroCrossing { get { return true; } }
@@ -275,11 +268,11 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         public override int YValuesPerPoint { get { return 1; } }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Painting and selection methods
 
@@ -330,7 +323,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 return;
             }
 
-
             // All data series from chart area which have Bar chart type
             List<string> typeSeries = area.GetSeriesFromChartType(Name);
 
@@ -343,7 +335,7 @@ namespace WebCharts.Services.Models.ChartTypes
             foreach (Series ser in common.DataManager.Series)
             {
                 // Process non empty series of the area with Line chart type
-                if (String.Compare(ser.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) != 0
+                if (string.Compare(ser.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) != 0
                     || ser.ChartArea != area.Name || !ser.IsVisible())
                 {
                     continue;
@@ -424,7 +416,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             }
                         }
                     }
-
                 }
 
                 // Draw line if we have more than one data point
@@ -482,7 +473,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 (yValue <= vAxisMin && yValuePrev < vAxisMin) ||
                                 (yValue >= vAxisMax && yValuePrev > vAxisMax)) && !drawOutsideLines)
                             {
-                                // Check if next point also outside of the scaleView and on the 
+                                // Check if next point also outside of the scaleView and on the
                                 // same side as current point. If not line has to be processed
                                 // to correctly handle tooltips.
                                 // NOTE: Fixes issue #4961
@@ -500,7 +491,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                     {
                                         skipPoint = false;
                                     }
-
 
                                     // Change Y value if line is out of plot area
                                     if (skipPoint && ((yValue < vAxisMin && xValueNext > vAxisMin) ||
@@ -529,11 +519,10 @@ namespace WebCharts.Services.Models.ChartTypes
                                 yValuePrev < vAxisMin || yValuePrev > vAxisMax ||
                                 yValue < vAxisMin || yValue > vAxisMax)
                             {
-                                // Set clipping region for line drawing 
+                                // Set clipping region for line drawing
                                 graph.SetClip(area.PlotAreaPosition.ToSKRect());
                                 clipRegionSet = true;
                             }
-
 
                             if (lineTension == 0 && !dataPointPosFilled)
                             {
@@ -549,20 +538,19 @@ namespace WebCharts.Services.Models.ChartTypes
                                     xPosition = (float)HAxis.GetLinearPosition(xValuePrev);
 
                                     // Add point position into array
-                                    // IMPORTANT: Rounding was removed from this part of code because of 
+                                    // IMPORTANT: Rounding was removed from this part of code because of
                                     // very bad drawing in Flash.
                                     dataPointPos[index - 1] = new SKPoint(
                                         xPosition * chartWidthPercentage,
                                         yPosition * chartHeightPercentage);
                                 }
 
-
                                 // Recalculates x/y position
                                 yPosition = (float)VAxis.GetLinearPosition(yValue);
                                 xPosition = (float)HAxis.GetLinearPosition(xValue);
 
                                 // Add point position into array
-                                // IMPORTANT: Rounding was removed from this part of code because of 
+                                // IMPORTANT: Rounding was removed from this part of code because of
                                 // very bad drawing in Flash.
                                 dataPointPos[index] = new SKPoint(
                                     xPosition * chartWidthPercentage,
@@ -662,9 +650,8 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-
-
         private const long maxGDIRange = 0x800000;
+
         // VSTS: 9698 - issue: the line start from X = 0 when GDI overflows (before we expected exception)
         private static bool IsLinePointsOverflow(SKPoint point)
         {
@@ -673,7 +660,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
         /// <summary>
         /// During zooming there are scenarios when the line coordinates are extremly large and
-        /// originate outside of the chart pixel boundaries. This cause GDI+ line drawing methods 
+        /// originate outside of the chart pixel boundaries. This cause GDI+ line drawing methods
         /// to throw stack overflow exceptions.
         /// This method tries to change the coordinates into the chart boundaries and draw the line.
         /// </summary>
@@ -706,7 +693,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Gets intersection point coordinates between point line and and horizontal 
+        /// Gets intersection point coordinates between point line and and horizontal
         /// line specified by Y coordinate.
         /// </summary>
         /// <param name="firstPoint">First data point.</param>
@@ -725,7 +712,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Gets intersection point coordinates between point line and and vertical 
+        /// Gets intersection point coordinates between point line and and vertical
         /// line specified by X coordinate.
         /// </summary>
         /// <param name="firstPoint">First data point.</param>
@@ -762,6 +749,8 @@ namespace WebCharts.Services.Models.ChartTypes
             int pointIndex,
             float tension)
         {
+            graph.DrawStringAbs("Test", Common.Chart.Font, _linePen, points[0], StringFormat.GenericDefault, 0);
+
             int pointBorderWidth = point.BorderWidth;
 
             // ****************************************************
@@ -839,14 +828,14 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
 
                     // Set Rounded Cap
-                    if (_linePen.StrokeCap !=  SKStrokeCap.Round)
+                    if (_linePen.StrokeCap != SKStrokeCap.Round)
                         _linePen.StrokeCap = SKStrokeCap.Round;
 
                     if (tension == 0)
                     {
                         // VSTS: 9698 - issue: the line start from X = 0 when GDI overflows (before we expected exception)
                         if (IsLinePointsOverflow(points[pointIndex - 1]) || IsLinePointsOverflow(points[pointIndex]))
-                        {
+                        {                      
                             DrawTruncatedLine(graph, _linePen, points[pointIndex - 1], points[pointIndex]);
                         }
                         else
@@ -869,7 +858,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
 
             //************************************************************
-            // Hot Regions mode used for image maps, tool tips and 
+            // Hot Regions mode used for image maps, tool tips and
             // hit test function
             //************************************************************
             if (common.ProcessModeRegions)
@@ -879,7 +868,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Create grapics path object dor the curve
                 using (SKPath path = new())
                 {
-
                     // If line tension is zero - it's a straight line
                     if (lineTension == 0)
                     {
@@ -902,7 +890,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                 path.AddLine(first.X - width, first.Y, second.X - width, second.Y);
                                 path.AddLine(second.X + width, second.Y, first.X + width, first.Y);
                                 path.Close();
-
                             }
                         }
 
@@ -933,7 +920,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                 path.Close();
                             }
                         }
-
                     }
                     else if (pointIndex > 0)
                     {
@@ -976,24 +962,6 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Draw chart line.
-        /// </summary>
-        /// <param name="graph">Graphics object.</param>
-        /// <param name="point">Point to draw the line for.</param>
-        /// <param name="series">Point series.</param>
-        /// <param name="firstPoint">First line point.</param>
-        /// <param name="secondPoint">Seconf line point.</param>
-        protected void DrawLine(
-            ChartGraphics graph,
-            DataPoint point,
-            Series series,
-            SKPoint firstPoint,
-            SKPoint secondPoint)
-        {
-            graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle, firstPoint, secondPoint, series.ShadowColor, series.ShadowOffset);
-        }
-
-        /// <summary>
         /// Checks if line tension is supported by the chart type.
         /// </summary>
         /// <returns>True if line tension is supported.</returns>
@@ -1002,7 +970,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return false;
         }
 
-        #endregion
+        #endregion Painting and selection methods
 
         #region Position helper methods
 
@@ -1109,7 +1077,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 // Add point position into array
-                // IMPORTANT: Rounding was removed from this part of code because of 
+                // IMPORTANT: Rounding was removed from this part of code because of
                 // very bad drawing in Flash.
                 pointPos[index] = new SKPoint(
                     (float)xPosition * (graph.Common.ChartPicture.Width - 1) / 100F,
@@ -1121,7 +1089,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return pointPos;
         }
 
-        #endregion
+        #endregion Position helper methods
 
         #region 3D Drawing and selection methods
 
@@ -1140,7 +1108,6 @@ namespace WebCharts.Services.Models.ChartTypes
             ChartArea area,
             Series seriesToDraw)
         {
-
             // Reset graphics fields
             graph.frontLinePen = null;
             graph.frontLinePoint1 = SKPoint.Empty;
@@ -1231,7 +1198,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 null,
                 0,
                 false);
-
 
             //************************************************************
             //** Get line tension attribute
@@ -1357,11 +1323,10 @@ namespace WebCharts.Services.Models.ChartTypes
                                 new SKPoint(float.NaN, float.NaN),
                                 new SKPoint(float.NaN, float.NaN),
                                 false);
-
                         }
 
                         //************************************************************
-                        // Hot Regions mode used for image maps, tool tips and 
+                        // Hot Regions mode used for image maps, tool tips and
                         // hit test function
                         //************************************************************
                         if (common.ProcessModeRegions && rectPath != null)
@@ -1444,7 +1409,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 (multiSeries) ? secondPoint : null,
                 ref pointArrayIndex);
 
-
             // Fint point with line properties
             DataPoint3D pointAttr = secondPoint;
             if (prevDataPointEx.dataPoint.IsEmpty)
@@ -1456,7 +1420,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 pointAttr = firstPoint;
             }
 
-            // Adjust point visual properties 
+            // Adjust point visual properties
             SKColor color = (useBorderColor) ? pointAttr.dataPoint.BorderColor : pointAttr.dataPoint.Color;
             ChartDashStyle dashStyle = pointAttr.dataPoint.BorderDashStyle;
             if (pointAttr.dataPoint.IsEmpty && pointAttr.dataPoint.Color == SKColor.Empty)
@@ -1609,7 +1573,6 @@ namespace WebCharts.Services.Models.ChartTypes
             firstPoint.yPosition = Math.Round(firstPoint.yPosition, decimals);
             secondPoint.xPosition = Math.Round(secondPoint.xPosition, decimals);
             secondPoint.yPosition = Math.Round(secondPoint.yPosition, decimals);
-
 
             //****************************************************************
             //** Clip area data points inside the plotting area
@@ -1773,7 +1736,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     // Switch intersection points
                     if ((decimal)firstPoint.yPosition > plotAreaPositionBottom)
                     {
-                        DataPoint3D tempPoint = new DataPoint3D();
+                        DataPoint3D tempPoint = new();
                         tempPoint.xPosition = intersectionPoint.xPosition;
                         tempPoint.yPosition = intersectionPoint.yPosition;
                         intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -1782,7 +1745,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         intersectionPoint2.yPosition = tempPoint.yPosition;
                     }
                 }
-
 
                 // Adjust points Y values
                 bool firstSegmentVisible = true;
@@ -1835,7 +1797,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             new SKPoint((float)intersectionPoint2.xPosition, float.NaN),
                             firstSegmentOutsideBottom,
                             false, true);
-
                     }
 
                     if (segmentIndex == 1 && intersectionPoint2 != null && segmentNumber == 3)
@@ -1858,7 +1819,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             new SKPoint((float)intersectionPoint2.xPosition, float.NaN),
                             false,
                             false, true);
-
                     }
 
                     if (segmentIndex == 2 && !reversed ||
@@ -1879,7 +1839,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             new SKPoint(float.NaN, float.NaN),
                             secondSegmentOutsideBottom,
                             false, true);
-
                     }
 
                     // Add segment path
@@ -1970,8 +1929,6 @@ namespace WebCharts.Services.Models.ChartTypes
             plotAreaPositionRight += 0.001M;
             plotAreaPositionBottom += 0.001M;
 
-
-
             // Round top points coordinates
             firstPoint.xPosition = Math.Round(firstPoint.xPosition, decimals);
             firstPoint.yPosition = Math.Round(firstPoint.yPosition, decimals);
@@ -1995,8 +1952,8 @@ namespace WebCharts.Services.Models.ChartTypes
                 (decimal)fourthPoint.Y > plotAreaPositionBottom)
             {
                 // Remember previous y positions
-                SKPoint prevThirdPoint = new SKPoint(thirdPoint.X, thirdPoint.Y);
-                SKPoint prevFourthPoint = new SKPoint(fourthPoint.X, fourthPoint.Y);
+                SKPoint prevThirdPoint = new(thirdPoint.X, thirdPoint.Y);
+                SKPoint prevFourthPoint = new(fourthPoint.X, fourthPoint.Y);
 
                 // Check if whole line is outside plotting region
                 bool surfaceCompletlyOutside = false;
@@ -2038,7 +1995,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 // Get intersection point
-                DataPoint3D intersectionPoint = new DataPoint3D();
+                DataPoint3D intersectionPoint = new();
                 bool firstIntersectionOnBottom = false;
                 intersectionPoint.yPosition = (double)plotAreaPositionY;
                 if ((decimal)thirdPoint.Y > plotAreaPositionBottom ||
@@ -2103,7 +2060,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         return true;
                     }
 
-
                     // Switch intersection points
                     //if(firstPoint.yPosition > plotAreaPositionBottom)
                     if ((decimal)thirdPoint.Y > plotAreaPositionBottom)
@@ -2120,7 +2076,6 @@ namespace WebCharts.Services.Models.ChartTypes
 						*/
                     }
                 }
-
 
                 // Adjust points Y values
                 bool firstSegmentVisible = true;
@@ -2173,7 +2128,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         if (switchPoints)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -2181,7 +2136,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             intersectionPoint2.xPosition = tempPoint.xPosition;
                             intersectionPoint2.yPosition = tempPoint.yPosition;
                         }
-
 
                         intersectionPoint2.dataPoint = secondPoint.dataPoint;
                         intersectionPoint2.index = secondPoint.index;
@@ -2200,7 +2154,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         if (switchPoints)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -2208,14 +2162,13 @@ namespace WebCharts.Services.Models.ChartTypes
                             intersectionPoint2.xPosition = tempPoint.xPosition;
                             intersectionPoint2.yPosition = tempPoint.yPosition;
                         }
-
                     }
 
                     if (segmentIndex == 1 && intersectionPoint2 != null && segmentNumber == 3)
                     {
                         if (!switchPoints)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -2245,7 +2198,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         if (!switchPoints)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -2253,7 +2206,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             intersectionPoint2.xPosition = tempPoint.xPosition;
                             intersectionPoint2.yPosition = tempPoint.yPosition;
                         }
-
                     }
 
                     if (segmentIndex == 2 && !reversed ||
@@ -2261,7 +2213,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     {
                         if (switchPoints)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -2294,7 +2246,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         if (switchPoints)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -2302,7 +2254,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             intersectionPoint2.xPosition = tempPoint.xPosition;
                             intersectionPoint2.yPosition = tempPoint.yPosition;
                         }
-
                     }
 
                     // Add segment path
@@ -2376,9 +2327,11 @@ namespace WebCharts.Services.Models.ChartTypes
             // Implemented in area and range chart
             return null;
         }
-        #endregion
+
+        #endregion 3D Drawing and selection methods
 
         #region IDisposable overrides
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -2396,6 +2349,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
             base.Dispose(disposing);
         }
-        #endregion
+
+        #endregion IDisposable overrides
     }
 }

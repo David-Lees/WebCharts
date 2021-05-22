@@ -3,11 +3,8 @@
 // from information in SR.strings.
 // DO NOT MODIFY THIS FILE'S CONTENTS, THEY WILL BE OVERWRITTEN
 // 
-#if WINFORMS_CONTROL
-namespace System.Windows.Forms.DataVisualization.Charting
-#else
-namespace WebCharts.Services.Models.Common
-#endif
+
+namespace WebCharts.Services
 {
     using System;
     using System.Resources;
@@ -9907,7 +9904,7 @@ namespace WebCharts.Services.Models.Common
         public class Keys
         {
 
-            static ResourceManager resourceManager = new ResourceManager(typeof(SR).FullName, typeof(SR).Module.Assembly);
+            static ResourceManager resourceManager = new(typeof(SR).FullName, typeof(SR).Module.Assembly);
 
             static CultureInfo _culture = null;
 

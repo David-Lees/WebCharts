@@ -2,23 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	DataFormula class provides properties and methods, 
-//				which prepare series data for technical analyses 
-//				and time series and forecasting formulas and prepare 
+//  Purpose:	DataFormula class provides properties and methods,
+//				which prepare series data for technical analyses
+//				and time series and forecasting formulas and prepare
 //				output data to be displayed as a chart.
 //
 
-
 using System;
 using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Formulas;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Financial Formula Name enumeration
 
@@ -28,27 +22,27 @@ namespace WebCharts.Services.Models.General
     public enum FinancialFormula
     {
         /// <summary>
-        /// Accumulation Distribution formula. This indicator uses a relationship 
-        /// between volume and prices to estimate the strength of price movements, 
+        /// Accumulation Distribution formula. This indicator uses a relationship
+        /// between volume and prices to estimate the strength of price movements,
         /// and if volume is increased, there is a high probability that prices will go up.
         /// </summary>
         AccumulationDistribution,
 
         /// <summary>
-        /// Average True Range indicator.  It measures commitment and compares 
-        /// the range between the High, Low and Close prices. 
+        /// Average True Range indicator.  It measures commitment and compares
+        /// the range between the High, Low and Close prices.
         /// </summary>
         AverageTrueRange,
 
         /// <summary>
-        /// Bollinger Bands indicators.  They are plotted at standard deviation levels 
+        /// Bollinger Bands indicators.  They are plotted at standard deviation levels
         /// above and below a simple moving average.
         /// </summary>
         BollingerBands,
 
         /// <summary>
-        /// Chaikin Oscillator indicator. It is the difference between a 3-day 
-        /// exponential moving average and a 10-day exponential moving average 
+        /// Chaikin Oscillator indicator. It is the difference between a 3-day
+        /// exponential moving average and a 10-day exponential moving average
         /// applied to the Accumulation Distribution.
         /// </summary>
         ChaikinOscillator,
@@ -59,25 +53,25 @@ namespace WebCharts.Services.Models.General
         CommodityChannelIndex,
 
         /// <summary>
-        /// Detrended Price Oscillator.  It attempts to remove trend from prices. 
+        /// Detrended Price Oscillator.  It attempts to remove trend from prices.
         /// </summary>
         DetrendedPriceOscillator,
 
         /// <summary>
-        /// Ease of Movement deals with the relationship between volume and price change, 
+        /// Ease of Movement deals with the relationship between volume and price change,
         /// and uses volume to indicate how strong a trend is for prices.
         /// </summary>
         EaseOfMovement,
 
         /// <summary>
-        /// Envelopes are plotted above and below a moving average using a specified percentage 
+        /// Envelopes are plotted above and below a moving average using a specified percentage
         /// as the shift.
         /// </summary>
         Envelopes,
 
         /// <summary>
-        /// An Exponential Moving Average is an average of data calculated over a period of time 
-        /// where the most recent days have more weight.  
+        /// An Exponential Moving Average is an average of data calculated over a period of time
+        /// where the most recent days have more weight.
         /// </summary>
         ExponentialMovingAverage,
 
@@ -87,32 +81,32 @@ namespace WebCharts.Services.Models.General
         Forecasting,
 
         /// <summary>
-        /// Moving Average Convergence/Divergence indicator.  It compares two 
-        /// moving averages of prices and is used with a 9-day Exponential 
+        /// Moving Average Convergence/Divergence indicator.  It compares two
+        /// moving averages of prices and is used with a 9-day Exponential
         /// Moving average as a signal, which indicates buying and selling moments.
         /// </summary>
         MovingAverageConvergenceDivergence,
 
         /// <summary>
-        /// The Mass Index is used to predict trend reversal by comparing the 
-        /// difference and range between High and Low prices. 
+        /// The Mass Index is used to predict trend reversal by comparing the
+        /// difference and range between High and Low prices.
         /// </summary>
         MassIndex,
 
         /// <summary>
-        /// Median prices are mid-point values of daily prices and can be used 
-        /// as a filter for trend indicators. 
+        /// Median prices are mid-point values of daily prices and can be used
+        /// as a filter for trend indicators.
         /// </summary>
         MedianPrice,
 
         /// <summary>
         /// The Money Flow indicator compares upward changes and downward changes
-        /// of volume-weighted typical prices. 
+        /// of volume-weighted typical prices.
         /// </summary>
         MoneyFlow,
 
         /// <summary>
-        /// The Negative Volume Index should be used together with the Positive Volume index, 
+        /// The Negative Volume Index should be used together with the Positive Volume index,
         /// and the Negative Volume Index only changes if the volume decreases from the previous day.
         /// </summary>
         NegativeVolumeIndex,
@@ -123,45 +117,45 @@ namespace WebCharts.Services.Models.General
         OnBalanceVolume,
 
         /// <summary>
-        /// The Performance indicator compares a current closing price (or any other price) with 
+        /// The Performance indicator compares a current closing price (or any other price) with
         /// the first closing value (from the first time period).
         /// </summary>
         Performance,
 
         /// <summary>
-        /// The Positive Volume Index should be used together with the Negative Volume index. 
-        /// The Positive volume index only changes if the volume decreases from the previous day. 
+        /// The Positive Volume Index should be used together with the Negative Volume index.
+        /// The Positive volume index only changes if the volume decreases from the previous day.
         /// </summary>
         PositiveVolumeIndex,
 
         /// <summary>
-        /// The Price Volume Trend is a cumulative volume total that is calculated using 
-        /// relative changes of the closing price, and should be used with other indicators.  
+        /// The Price Volume Trend is a cumulative volume total that is calculated using
+        /// relative changes of the closing price, and should be used with other indicators.
         /// </summary>
         PriceVolumeTrend,
 
         /// <summary>
-        /// The Rate of Change indicator compares a specified closing price with the current price. 
+        /// The Rate of Change indicator compares a specified closing price with the current price.
         /// </summary>
         RateOfChange,
 
         /// <summary>
-        /// The Relative Strength Index is a momentum oscillator that compares upward movements 
+        /// The Relative Strength Index is a momentum oscillator that compares upward movements
         /// of the closing price with downward movements, and results in values that range from 0 to 100.
         /// </summary>
         RelativeStrengthIndex,
 
         /// <summary>
-        /// A Simple Moving Average is an average of data calculated over a period of time. 
-        /// The moving average is the most popular price indicator used in technical analysis, 
-        /// and can be used with any price (e.g. Hi, Low, Open and Close) 
-        /// or it can be applied to other indicators. 
+        /// A Simple Moving Average is an average of data calculated over a period of time.
+        /// The moving average is the most popular price indicator used in technical analysis,
+        /// and can be used with any price (e.g. Hi, Low, Open and Close)
+        /// or it can be applied to other indicators.
         /// </summary>
         MovingAverage,
 
         /// <summary>
-        /// Standard deviation is used to indicate volatility, and measures 
-        /// the difference between values (e.g. closing price) and their moving average.  
+        /// Standard deviation is used to indicate volatility, and measures
+        /// the difference between values (e.g. closing price) and their moving average.
         /// </summary>
         StandardDeviation,
 
@@ -173,15 +167,15 @@ namespace WebCharts.Services.Models.General
         StochasticIndicator,
 
         /// <summary>
-        /// A Triangular Moving Average is an average of data calculated over a period of time 
+        /// A Triangular Moving Average is an average of data calculated over a period of time
         /// where the middle portion of data has more weight.
         /// </summary>
         TriangularMovingAverage,
 
         /// <summary>
         /// The Triple Exponential Moving Average is based on a triple moving average of the closing Price.
-        /// Its purpose is to eliminate short cycles.  This indicator keeps the closing price 
-        /// in trends that are shorter than the specified period. 
+        /// Its purpose is to eliminate short cycles.  This indicator keeps the closing price
+        /// in trends that are shorter than the specified period.
         /// </summary>
         TripleExponentialMovingAverage,
 
@@ -191,42 +185,42 @@ namespace WebCharts.Services.Models.General
         TypicalPrice,
 
         /// <summary>
-        /// The Volatility Chaikins indicator measures the difference between High and Low prices, 
+        /// The Volatility Chaikins indicator measures the difference between High and Low prices,
         /// and is used to indicate tops or bottoms of the market.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Chaikins")]
         VolatilityChaikins,
 
         /// <summary>
-        /// The Volume oscillator attempts to identify trends in volume by comparing two moving averages: 
+        /// The Volume oscillator attempts to identify trends in volume by comparing two moving averages:
         /// one with a short period and another with a longer period.
         /// </summary>
         VolumeOscillator,
 
         /// <summary>
-        /// The Weighted Close formula calculates the average value of daily prices. 
-        /// The only difference between Typical Price and the Weighted Close is that the closing price 
-        /// has extra weight, and is considered the most important price. 
+        /// The Weighted Close formula calculates the average value of daily prices.
+        /// The only difference between Typical Price and the Weighted Close is that the closing price
+        /// has extra weight, and is considered the most important price.
         /// </summary>
         WeightedClose,
 
         /// <summary>
-        /// A Weighted Moving Average is an average of data calculated over a period of time, 
-        /// where greater weight is attached to the most recent data. 
+        /// A Weighted Moving Average is an average of data calculated over a period of time,
+        /// where greater weight is attached to the most recent data.
         /// </summary>
         WeightedMovingAverage,
 
         /// <summary>
-        /// William's %R is a momentum indicator, and is used to measure overbought and oversold levels. 
+        /// William's %R is a momentum indicator, and is used to measure overbought and oversold levels.
         /// </summary>
         WilliamsR
     }
 
-    #endregion  // Financial Formula Name enumeration
+    #endregion Financial Formula Name enumeration
 
     /// <summary>
-    /// The DataFormula class provides properties and methods, which prepare series 
-    /// data for technical analysis, apply formulas on the series data 
+    /// The DataFormula class provides properties and methods, which prepare series
+    /// data for technical analysis, apply formulas on the series data
     /// and prepare output data to be displayed as a chart.
     /// </summary>
     public class DataFormula
@@ -251,8 +245,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal CommonElements Common;
 
-
-        #endregion
+        #endregion Data Formulas fields
 
         #region Data Formulas methods
 
@@ -268,7 +261,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
@@ -287,12 +280,12 @@ namespace WebCharts.Services.Models.General
             // Split comma separated parameter list in the array of strings.
             SplitParameters(parameters, out string[] parameterList);
 
-            // Split comma separated series and Y values list in the array of 
+            // Split comma separated series and Y values list in the array of
             // Series and indexes to Y values.
             ConvertToArrays(inputSeries, out Series[] inSeries, out int[] inValueIndexes, true);
             ConvertToArrays(outputSeries, out Series[] outSeries, out int[] outValueIndexes, false);
 
-            // Set X value AxisName for output series. 
+            // Set X value AxisName for output series.
             foreach (Series outSeriesItem in outSeries)
             {
                 if (inSeries[0] != null)
@@ -301,7 +294,7 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-            // This method will convert array of Series and array of Y value 
+            // This method will convert array of Series and array of Y value
             // indexes to matrix of double values.
             GetDoubleArray(inSeries, inValueIndexes, out double[][] inValues);
 
@@ -333,7 +326,7 @@ namespace WebCharts.Services.Models.General
                 //    break;
                 //}
 
-                // Check if formula was found by detecting output 
+                // Check if formula was found by detecting output
                 if (outValues != null)
                 {
                     // Exit the loop
@@ -366,7 +359,7 @@ namespace WebCharts.Services.Models.General
                 {
                     if (series.Points.Count > 0)
                     {
-                        // get the last xValue: the formula processing is 
+                        // get the last xValue: the formula processing is
                         double topXValue = series.Points[^1].XValue;
                         Common.Chart.DataManipulator.InsertEmptyPoints(1, IntervalType.Number, 0, IntervalType.Number, 1, topXValue, series);
                         foreach (DataPoint point in series.Points)
@@ -376,12 +369,12 @@ namespace WebCharts.Services.Models.General
                     }
                 }
             }
-            // Copy axis labels from the original series into the calculated series            
+            // Copy axis labels from the original series into the calculated series
             CopyAxisLabels(inSeries, outSeries);
         }
 
         /// <summary>
-        /// Copy axis labels from the original series into the calculated series 
+        /// Copy axis labels from the original series into the calculated series
         /// </summary>
         /// <param name="inSeries">array of input series</param>
         /// <param name="outSeries">array of output series</param>
@@ -397,7 +390,7 @@ namespace WebCharts.Services.Models.General
                 //Depending on whether or not the source series has X Values we need to use two different search algorithms
                 if (_zeroXValues)
                 {   //If we have the empty XValues then the source series should have all the AxisLabels
-                    // -- set the indexed series labels source 
+                    // -- set the indexed series labels source
                     outputSeries[DataFormula.IndexedSeriesLabelsSourceAttr] = inputSeries.Name;
                 }
                 else
@@ -436,9 +429,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// This method will set series X and Y values from matrix of 
+        /// This method will set series X and Y values from matrix of
         /// double values.
         /// </summary>
         /// <param name="outputSeries">Array of output series</param>
@@ -528,10 +520,10 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method will convert a string with information about 
-        /// series and y values to two arrays. The first array will 
-        /// contain series and the second array will contain 
-        /// corresponding indexes to y values for every series. 
+        /// This method will convert a string with information about
+        /// series and y values to two arrays. The first array will
+        /// contain series and the second array will contain
+        /// corresponding indexes to y values for every series.
         /// The arrays have to have the same number of items.
         /// </summary>
         /// <param name="inputString">A string with information about series and Y values</param>
@@ -554,7 +546,6 @@ namespace WebCharts.Services.Models.General
             foreach (string str in subStrings)
             {
                 string[] parts = str.Split(':');
-
 
                 // There must be at least one and no more than two result strings
                 if (parts.Length < 1 && parts.Length > 2)
@@ -619,11 +610,10 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// Returns Jagged Arrays of doubles from array of series. 
+        /// Returns Jagged Arrays of doubles from array of series.
         /// A jagged array is merely an array of arrays and
-        /// it doesn't have to be square. The first item is array of 
+        /// it doesn't have to be square. The first item is array of
         /// X values from the first series
         /// </summary>
         /// <param name="inputSeries">Array of Data Series</param>
@@ -635,9 +625,9 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Returns Jagged Arrays of doubles from array of series. 
+        /// Returns Jagged Arrays of doubles from array of series.
         /// A jagged array is merely an array of arrays and
-        /// it doesn't have to be square. The first item is array of 
+        /// it doesn't have to be square. The first item is array of
         /// X values from the first series
         /// </summary>
         /// <param name="inputSeries">Array of Data Series</param>
@@ -688,7 +678,6 @@ namespace WebCharts.Services.Models.General
                 // Check X values input alignment
                 CheckXValuesAlignment(inputSeries);
             }
-
 
             // Data point index
             int indexPoint = 0;
@@ -747,28 +736,21 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Merge, split or move Y values of the series. 
+        /// Merge, split or move Y values of the series.
         /// </summary>
         /// <param name="inputSeries">Comma separated list of input data series names and optional X and Y values names.</param>
         /// <param name="outputSeries">Comma separated list of output data series names and optional X and Y values names.</param>
         public void CopySeriesValues(string inputSeries, string outputSeries)
         {
             if (inputSeries == null)
-                throw new ArgumentNullException("inputSeries");
+                throw new ArgumentNullException(nameof(inputSeries));
             if (outputSeries == null)
-                throw new ArgumentNullException("outputSeries");
+                throw new ArgumentNullException(nameof(outputSeries));
 
-            Series[] inSeries;
-            Series[] outSeries;
-            int[] inValueIndexes;
-            int[] outValueIndexes;
-            double[][] inValues;
-            double[][] outValues;
-
-            // Convert string with information about series and Y values 
+            // Convert string with information about series and Y values
             // to array of series and indexes to Y values.
-            ConvertToArrays(inputSeries, out inSeries, out inValueIndexes, true);
-            ConvertToArrays(outputSeries, out outSeries, out outValueIndexes, false);
+            ConvertToArrays(inputSeries, out Series[] inSeries, out int[] inValueIndexes, true);
+            ConvertToArrays(outputSeries, out Series[] outSeries, out int[] outValueIndexes, false);
 
             // The number of input and output series are different.
             if (inSeries.Length != outSeries.Length)
@@ -776,7 +758,7 @@ namespace WebCharts.Services.Models.General
                 throw new ArgumentException(SR.ExceptionFormulaInputOutputSeriesMismatch);
             }
 
-            // Check if output series points exist. If they do not exist 
+            // Check if output series points exist. If they do not exist
             // create data points which are copy of Input series data points
             for (int indexSeries = 0; indexSeries < inSeries.Length; indexSeries++)
             {
@@ -804,9 +786,9 @@ namespace WebCharts.Services.Models.General
             }
 
             // Covert Series X and Y values to arrays of doubles
-            GetDoubleArray(inSeries, inValueIndexes, out inValues, true);
+            GetDoubleArray(inSeries, inValueIndexes, out double[][] inValues, true);
 
-            outValues = new double[inValues.Length][];
+            double[][] outValues = new double[inValues.Length][];
 
             // Copy Series X and Y values.
             for (int seriesIndex = 0; seriesIndex < inValues.Length; seriesIndex++)
@@ -841,13 +823,12 @@ namespace WebCharts.Services.Models.General
             SetDoubleArray(outSeries, outValueIndexes, outValues, null);
         }
 
-
         /// <summary>
-        /// This method will first copy input matrix to output matrix 
-        /// then will remove columns, which have 
-        /// one or more empty values (NaN) from the output matrix. This 
-        /// method will set all values from column of input matrix 
-        /// to be empty (NaN) if one or more values of that column 
+        /// This method will first copy input matrix to output matrix
+        /// then will remove columns, which have
+        /// one or more empty values (NaN) from the output matrix. This
+        /// method will set all values from column of input matrix
+        /// to be empty (NaN) if one or more values of that column
         /// are empty.
         /// </summary>
         /// <param name="input">Input matrix with empty values</param>
@@ -909,12 +890,11 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /*
 		/// <summary>
-		/// This method will compare a input matrix with empty data 
-		/// points and output matrix without empty data points and 
-		/// add empty data points to output matrix according to 
+		/// This method will compare a input matrix with empty data
+		/// points and output matrix without empty data points and
+		/// add empty data points to output matrix according to
 		/// input matrix empty data point positions.
 		/// </summary>
 		/// <param name="input">Matrix With input data</param>
@@ -923,8 +903,6 @@ namespace WebCharts.Services.Models.General
          */
         //private void InsertEmptyDataPoints( double [][] input, double [][] inputWithoutEmpty, out double [][] output )
         //{
-
-
         // *** NOTE ***
         //
         //
@@ -935,8 +913,6 @@ namespace WebCharts.Services.Models.General
         //
         // ************
 
-
-
         //output = inputWithoutEmpty;
         //return;
 
@@ -944,15 +920,15 @@ namespace WebCharts.Services.Models.General
         // NOTE: Inserting empty points in the result data after applying the formula
         // causes issues. The algorithm below do not cover most of the common spzces
         // and as a result the formula data is completly destroyed.
-        // 
-        // By removing this code the result data set will have "missing" points instaed 
-        // of empty. 
+        //
+        // By removing this code the result data set will have "missing" points instaed
+        // of empty.
         //   - AG
         //
 
         /*
 
-        // Input matrix can have only empty rows. If one value 
+        // Input matrix can have only empty rows. If one value
         // is empty all values from a row have to be empty.
 
         // Find the number of empty rows
@@ -1021,9 +997,8 @@ namespace WebCharts.Services.Models.General
         */
         //}
 
-
         /// <summary>
-        /// This method splits a string with comma separated 
+        /// This method splits a string with comma separated
         /// parameters to the array of strings with parameters.
         /// </summary>
         /// <param name="parameters">a string with comma separated parameters</param>
@@ -1037,7 +1012,6 @@ namespace WebCharts.Services.Models.General
             {
                 parameterList[i] = parameterList[i].Trim();
             }
-
         }
 
         /// <summary>
@@ -1058,7 +1032,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method will check if X values from different series 
+        /// This method will check if X values from different series
         /// are aligned.
         /// </summary>
         /// <param name="series">Array of series</param>
@@ -1082,29 +1056,28 @@ namespace WebCharts.Services.Models.General
                         // Check X values.
                         if (series[seriesIndex].Points[pointIndex].XValue != series[seriesIndex + 1].Points[pointIndex].XValue)
                             throw new ArgumentException(SR.ExceptionFormulaDataSeriesAreNotAlignedDifferentXValues(series[seriesIndex].Name, series[seriesIndex + 1].Name));
-
                     }
                 }
             }
         }
 
-
-        #endregion
+        #endregion Data Formulas methods
 
         #region Data Formulas Financial methods
+
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
         /// <param name="inputSeries">Input series</param>
-        public void FinancialFormula(FinancialFormula formulaName, Series inputSeries)        
+        public void FinancialFormula(FinancialFormula formulaName, Series inputSeries)
         {
             FinancialFormula(formulaName, inputSeries, inputSeries);
         }
 
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
@@ -1115,9 +1088,8 @@ namespace WebCharts.Services.Models.General
             FinancialFormula(formulaName, "", inputSeries, outputSeries);
         }
 
-
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
@@ -1133,9 +1105,8 @@ namespace WebCharts.Services.Models.General
             FinancialFormula(formulaName, parameters, inputSeries.Name, outputSeries.Name);
         }
 
-
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
@@ -1145,9 +1116,8 @@ namespace WebCharts.Services.Models.General
             FinancialFormula(formulaName, inputSeries, inputSeries);
         }
 
-
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
@@ -1159,7 +1129,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method calls a method from a formula module with 
+        /// This method calls a method from a formula module with
         /// specified name.
         /// </summary>
         /// <param name="formulaName">Formula Name</param>
@@ -1181,7 +1151,7 @@ namespace WebCharts.Services.Models.General
             {
                 parameters = formulaInfo.SaveParametersToString();
             }
-            else 
+            else
             {
                 formulaInfo.CheckParameterString(parameters);
             }
@@ -1195,19 +1165,20 @@ namespace WebCharts.Services.Models.General
 
             Formula(formulaName.ToString(), parameters, inputSeries, outputSeries);
         }
-        #endregion
+
+        #endregion Data Formulas Financial methods
 
         #region Data Formulas properties
 
         /// <summary>
-        /// Gets or sets a flag which indicates whether 
-        /// empty points are ignored while performing calculations; 
-        /// otherwise, empty points are treated as zeros. 
+        /// Gets or sets a flag which indicates whether
+        /// empty points are ignored while performing calculations;
+        /// otherwise, empty points are treated as zeros.
         /// </summary>
         public bool IsEmptyPointIgnored { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a flag which indicates whether 
+        /// Gets or sets a flag which indicates whether
         /// to start formulas like rolling average from zero.
         /// </summary>
         public bool IsStartFromFirst
@@ -1236,10 +1207,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
-        #endregion
+        #endregion Data Formulas properties
     }
-
-
-
 }

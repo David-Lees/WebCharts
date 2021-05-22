@@ -2,20 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Arrow annotation classes.
 //
 
-
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     #region Enumeration
 
@@ -44,7 +38,7 @@ namespace WebCharts.Services.Models.Annotations
         Tailed,
     }
 
-    #endregion // Enumeration
+    #endregion Enumeration
 
     /// <summary>
     /// <b>ArrowAnnotation</b> is a class class that represents an arrow annotation.
@@ -66,7 +60,7 @@ namespace WebCharts.Services.Models.Annotations
         // Annotation arrow size
         private int _arrowSize = 5;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -79,7 +73,7 @@ namespace WebCharts.Services.Models.Annotations
             base.AnchorAlignment = ContentAlignment.TopLeft;
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
@@ -141,8 +135,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-
-        #endregion // Arrow properties
+        #endregion Arrow properties
 
         #region Anchor
 
@@ -155,12 +148,12 @@ namespace WebCharts.Services.Models.Annotations
         /// <seealso cref="Annotation.AnchorOffsetY"/>
         /// </summary>
         /// <value>
-        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to 
+        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to
         /// the anchor point.
         /// </value>
         /// <remarks>
-        /// The annotation must be anchored using either <see cref="Annotation.AnchorDataPoint"/>, or the <see cref="Annotation.AnchorX"/> 
-        /// and <see cref="Annotation.AnchorY"/> properties. Its <see cref="Annotation.X"/> and <see cref="Annotation.Y"/> 
+        /// The annotation must be anchored using either <see cref="Annotation.AnchorDataPoint"/>, or the <see cref="Annotation.AnchorX"/>
+        /// and <see cref="Annotation.AnchorY"/> properties. Its <see cref="Annotation.X"/> and <see cref="Annotation.Y"/>
         /// properties must be set to <b>Double.NaN</b>.
         /// </remarks>
         [
@@ -179,7 +172,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Anchoring
+        #endregion Anchor
 
         #region Other
 
@@ -187,8 +180,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type  
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -227,9 +220,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -390,6 +383,6 @@ namespace WebCharts.Services.Models.Annotations
             return path;
         }
 
-        #endregion
+        #endregion Methods
     }
 }

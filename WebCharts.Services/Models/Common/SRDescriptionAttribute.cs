@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
 
-namespace WebCharts.Services.Models.Common
+namespace WebCharts.Services
 {
     [AttributeUsage(AttributeTargets.All)]
     internal sealed class SRDescriptionAttribute : DescriptionAttribute
@@ -35,7 +33,4 @@ namespace WebCharts.Services.Models.Common
             }
         }
     }
-
- 
-
 }

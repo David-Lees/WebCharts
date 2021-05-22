@@ -2,37 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Titles can be added to the chart by simply including 
-//              those titles into the Titles collection, which is 
-//              found in the root Chart object. The Title object 
-//              incorporates several properties that can be used to 
-//              position, dock, and control the appearance of any 
-//              Title. Title positioning can be explicitly set, or 
-//              you can specify that your title be docked. The 
-//              charting control gives you full control over all of 
-//              the appearance properties of your Titles, so you have 
-//              the ability to set specific properties for such things 
-//              as fonts, or colors, and even text effects. 
+//  Purpose:	Titles can be added to the chart by simply including
+//              those titles into the Titles collection, which is
+//              found in the root Chart object. The Title object
+//              incorporates several properties that can be used to
+//              position, dock, and control the appearance of any
+//              Title. Title positioning can be explicitly set, or
+//              you can specify that your title be docked. The
+//              charting control gives you full control over all of
+//              the appearance properties of your Titles, so you have
+//              the ability to set specific properties for such things
+//              as fonts, or colors, and even text effects.
 //              :
-// NOTE: In early versions of the Chart control only 1 title was 
-// exposed through the Title, TitleFont and TitleFontColor properties 
-// in the root chart object. Due to the customer requests, support for 
-// unlimited number of titles was added through the TitleCollection 
-// exposed as a Titles property of the root chart object. Old 
-// properties were deprecated and marked as non-browsable. 
+// NOTE: In early versions of the Chart control only 1 title was
+// exposed through the Title, TitleFont and TitleFontColor properties
+// in the root chart object. Due to the customer requests, support for
+// unlimited number of titles was added through the TitleCollection
+// exposed as a Titles property of the root chart object. Old
+// properties were deprecated and marked as non-browsable.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Title enumerations
 
@@ -93,14 +88,13 @@ namespace WebCharts.Services.Models.General
         Frame
     }
 
-
     /// <summary>
     /// An enumeration of chart text orientation.
     /// </summary>
     public enum TextOrientation
     {
         /// <summary>
-        /// Orientation is automatically determined based on the type of the 
+        /// Orientation is automatically determined based on the type of the
         /// chart element it is used in.
         /// </summary>
         Auto,
@@ -126,12 +120,12 @@ namespace WebCharts.Services.Models.General
         Stacked
     }
 
-    #endregion
+    #endregion Title enumerations
 
     /// <summary>
-    /// The Title class provides properties which define content, visual 
-    /// appearance and position of the single chart title. It also 
-    /// contains methods responsible for calculating title position, 
+    /// The Title class provides properties which define content, visual
+    /// appearance and position of the single chart title. It also
+    /// contains methods responsible for calculating title position,
     /// drawing and hit testing.
     /// </summary>
     [
@@ -143,7 +137,6 @@ namespace WebCharts.Services.Models.General
 
         // Spacing between title text and the border in pixels
         internal int titleBorderSpacing = 4;
-
 
         //***********************************************************
         //** Private data members, which store properties values
@@ -160,6 +153,7 @@ namespace WebCharts.Services.Models.General
 
         // Background properties
         private bool _visible = true;
+
         private SKColor _backColor = SKColor.Empty;
         private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
         private string _backImage = "";
@@ -173,16 +167,19 @@ namespace WebCharts.Services.Models.General
 
         // Border properties
         private SKColor _borderColor = SKColor.Empty;
+
         private int _borderWidth = 1;
         private ChartDashStyle _borderDashStyle = ChartDashStyle.Solid;
 
         // Font properties
         private FontCache _fontCache = new();
+
         private SKFont _font;
         private SKColor _foreColor = SKColors.Black;
 
         // Docking and Alignment properties
         private ContentAlignment _alignment = ContentAlignment.MiddleCenter;
+
         private Docking _docking = Docking.Top;
         private string _dockedToChartArea = Constants.NotSetValue;
         private bool _isDockedInsideChartArea = true;
@@ -191,11 +188,10 @@ namespace WebCharts.Services.Models.General
         // Interactive properties
         private string _toolTip = String.Empty;
 
-
         // Default text orientation
         private TextOrientation _textOrientation = TextOrientation.Auto;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors and Initialization
 
@@ -259,7 +255,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Constructors and Initialization
 
         #region	Properties
 
@@ -362,7 +358,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets a property which indicates whether the title is docked inside chart area. 
+        /// Gets or sets a property which indicates whether the title is docked inside chart area.
         /// DockedToChartArea property must be set first.
         /// </summary>
         [
@@ -442,7 +438,6 @@ namespace WebCharts.Services.Models.General
             return !Position.Auto;
         }
 
-
         /// <summary>
         /// Gets or sets the text of the title.
         /// </summary>
@@ -462,7 +457,6 @@ namespace WebCharts.Services.Models.General
                 Invalidate(false);
             }
         }
-
 
         /// <summary>
         /// Title drawing style.
@@ -684,7 +678,7 @@ namespace WebCharts.Services.Models.General
         /// <seealso cref="BackGradientStyle"/>
         /// </summary>
         /// <value>
-        /// A <see cref="Color"/> value used for the secondary color of a background with 
+        /// A <see cref="Color"/> value used for the secondary color of a background with
         /// hatching or gradient fill.
         /// </value>
         /// <remarks>
@@ -884,9 +878,9 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                if (!(BackColor == SKColor.Empty) ||
+                if ((BackColor != SKColor.Empty) ||
                     BackImage.Length > 0 ||
-                    (!(BorderColor == SKColor.Empty) && BorderDashStyle != ChartDashStyle.NotSet))
+                    ((BorderColor != SKColor.Empty) && BorderDashStyle != ChartDashStyle.NotSet))
                 {
                     return true;
                 }
@@ -922,7 +916,7 @@ namespace WebCharts.Services.Models.General
         {
             if (TextOrientation == TextOrientation.Auto)
             {
-                // When chart title is docked to the left or right we automatically 
+                // When chart title is docked to the left or right we automatically
                 // set vertical text with different rotation angles.
                 if (Position.Auto)
                 {
@@ -948,7 +942,6 @@ namespace WebCharts.Services.Models.General
         {
             if (Visible)
             {
-
                 // Check if title is docked to the chart area
                 if (DockedToChartArea.Length > 0 &&
                     Chart != null)
@@ -963,7 +956,6 @@ namespace WebCharts.Services.Models.General
                         }
                     }
                 }
-
 
                 return true;
             }
@@ -1109,7 +1101,6 @@ namespace WebCharts.Services.Models.General
                             titlePosition.Top -= titlePosition.Height / 2f;
                         }
                     }
-
                 }
             }
 
@@ -1191,11 +1182,11 @@ namespace WebCharts.Services.Models.General
                 }
 
                 // NOTE: This approach for text selection can not be used with
-                // Flash animations because of the bug in Flash viewer. When the 
+                // Flash animations because of the bug in Flash viewer. When the
                 // button shape is placed in the last frame the Alpha value of the
                 // color is ignored.
 
-                // NOTE: Feature tested again with Flash Player 7 and it seems to be 
+                // NOTE: Feature tested again with Flash Player 7 and it seems to be
                 // working fine. Code below is commented to enable selection in flash
                 // through transparent rectangle.
                 // Fixes issue #4172.
@@ -1390,12 +1381,12 @@ namespace WebCharts.Services.Models.General
             {
                 if (textStyle == TextStyle.Default)
                 {
-                    using SKPaint brush = new() { Color = foreColor };
+                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = foreColor };
                     chartGraph.DrawString(titleText, font, brush, absPosition, format, orientation);
                 }
                 else if (textStyle == TextStyle.Frame)
                 {
-                    using SKPaint pen = new() { Color = foreColor, StrokeWidth = 1 };
+                    using SKPaint pen = new() { Style = SKPaintStyle.Stroke, Color = foreColor, StrokeWidth = 1 };
                     chartGraph.DrawString(titleText, font, pen, absPosition, format, orientation);
                 }
                 else if (textStyle == TextStyle.Embed)
@@ -1404,7 +1395,7 @@ namespace WebCharts.Services.Models.General
                     SKRect shadowPosition = new(absPosition.Left, absPosition.Top, absPosition.Right, absPosition.Bottom);
                     shadowPosition.Left -= 1;
                     shadowPosition.Top -= 1;
-                    using (SKPaint brush = new() { Color = shadowColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = shadowColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, shadowPosition, format, orientation);
                     }
@@ -1412,11 +1403,11 @@ namespace WebCharts.Services.Models.General
                     shadowPosition.Left += 2;
                     shadowPosition.Top += 2;
                     SKColor texthighlightColor = ChartGraphics.GetGradientColor(SKColors.White, foreColor, 0.3);
-                    using (SKPaint brush = new() { Color = texthighlightColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = texthighlightColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, shadowPosition, format, orientation);
                     }
-                    using (SKPaint brush = new() { Color = foreColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = foreColor })
                     {
                         // Draw text
                         chartGraph.DrawString(titleText, font, brush, absPosition, format, orientation);
@@ -1428,7 +1419,7 @@ namespace WebCharts.Services.Models.General
                     SKRect shadowPosition = new(absPosition.Left, absPosition.Top, absPosition.Right, absPosition.Bottom);
                     shadowPosition.Left += 1;
                     shadowPosition.Top += 1;
-                    using (SKPaint brush = new() { Color = shadowColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = shadowColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, shadowPosition, format, orientation);
                     }
@@ -1436,16 +1427,15 @@ namespace WebCharts.Services.Models.General
                     shadowPosition.Left -= 2;
                     shadowPosition.Top -= 2;
                     SKColor texthighlightColor = ChartGraphics.GetGradientColor(SKColors.White, foreColor, 0.3);
-                    using (SKPaint brush = new() { Color = texthighlightColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = texthighlightColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, shadowPosition, format, orientation);
                     }
                     // Draw text
-                    using (SKPaint brush = new() { Color = foreColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = foreColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, absPosition, format, orientation);
                     }
-
                 }
                 else if (textStyle == TextStyle.Shadow)
                 {
@@ -1453,12 +1443,12 @@ namespace WebCharts.Services.Models.General
                     SKRect shadowPosition = new(absPosition.Left, absPosition.Top, absPosition.Right, absPosition.Bottom);
                     shadowPosition.Left += shadowOffset;
                     shadowPosition.Top += shadowOffset;
-                    using (SKPaint brush = new() { Color = shadowColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = shadowColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, shadowPosition, format, orientation);
                     }
                     // Draw text
-                    using (SKPaint brush = new() { Color = foreColor })
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = foreColor })
                     {
                         chartGraph.DrawString(titleText, font, brush, absPosition, format, orientation);
                     }
@@ -1600,7 +1590,6 @@ namespace WebCharts.Services.Models.General
                 chartAreasRectangle.Right -= titlePosition.Width + elementSpacing;
             }
 
-
             // Offset calculated docking position
             if (DockingOffset != 0)
             {
@@ -1644,13 +1633,18 @@ namespace WebCharts.Services.Models.General
             }
         }
 
+        public override void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         #endregion
     }
 
     /// <summary>
     /// The TitleCollection class is a strongly typed collection of Title classes.
-    /// Indexer of this collection can take the title index (integer) or unique 
+    /// Indexer of this collection can take the title index (integer) or unique
     /// title name (string) as a parameter.
     /// </summary>
     [
@@ -1658,7 +1652,6 @@ namespace WebCharts.Services.Models.General
     ]
     public class TitleCollection : ChartNamedElementCollection<Title>
     {
-
         #region Constructors
 
         /// <summary>
@@ -1685,7 +1678,6 @@ namespace WebCharts.Services.Models.General
             Add(title);
             return title;
         }
-
 
         /// <summary>
         /// Recalculates title position in the collection for titles docked outside of chart area.
@@ -1784,10 +1776,8 @@ namespace WebCharts.Services.Models.General
                         {
                             chartAreasRectangle = prevChartAreasRectangle;
                         }
-
                     }
                 }
-
             }
         }
 
@@ -1829,7 +1819,6 @@ namespace WebCharts.Services.Models.General
                 // Loop through all chart areas
                 foreach (ChartArea area in chartPicture.ChartAreas)
                 {
-
                     // Check if chart area is visible
                     if (area.Visible)
 
@@ -1863,6 +1852,7 @@ namespace WebCharts.Services.Models.General
         #endregion
 
         #region Event handlers
+
         internal void ChartAreaNameReferenceChanged(object sender, NameReferenceChangedEventArgs e)
         {
             //If all the chart areas are removed and then the first one is added we don't want to dock the titles
@@ -1873,8 +1863,7 @@ namespace WebCharts.Services.Models.General
                 if (title.DockedToChartArea == e.OldName)
                     title.DockedToChartArea = e.NewName;
         }
+
         #endregion
-
-
     }
 }

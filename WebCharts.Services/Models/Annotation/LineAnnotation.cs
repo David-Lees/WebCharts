@@ -2,19 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Line annotation class.
 //
 
-
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     /// <summary>
     /// <b>LineAnnotation</b> is a class that represents a line annotation.
@@ -31,9 +26,10 @@ namespace WebCharts.Services.Models.Annotations
 
         // Line start/end caps
         private LineAnchorCapStyle _startCap = LineAnchorCapStyle.None;
+
         private LineAnchorCapStyle _endCap = LineAnchorCapStyle.None;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -46,7 +42,7 @@ namespace WebCharts.Services.Models.Annotations
             anchorAlignment = ContentAlignment.TopLeft;
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
@@ -123,7 +119,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Line Visual Attributes
 
         #region Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -288,26 +284,26 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
         #region Position
 
         /// <summary>
-        /// Gets or sets a flag that specifies whether the size of an annotation is always 
+        /// Gets or sets a flag that specifies whether the size of an annotation is always
         /// defined in relative chart coordinates.
         /// <seealso cref="Annotation.Width"/>
         /// <seealso cref="Annotation.Height"/>
         /// </summary>
         /// <value>
-        /// <b>True</b> if an annotation's <see cref="Annotation.Width"/> and <see cref="Annotation.Height"/> are always 
+        /// <b>True</b> if an annotation's <see cref="Annotation.Width"/> and <see cref="Annotation.Height"/> are always
         /// in chart relative coordinates, <b>false</b> otherwise.
         /// </value>
         /// <remarks>
-        /// An annotation's width and height may be set in relative chart or axes coordinates. 
+        /// An annotation's width and height may be set in relative chart or axes coordinates.
         /// By default, relative chart coordinates are used.
         /// <para>
-        /// To use axes coordinates for size set the <b>IsSizeAlwaysRelative</b> property to 
-        /// <b>false</b> and either anchor the annotation to a data point or set the 
+        /// To use axes coordinates for size set the <b>IsSizeAlwaysRelative</b> property to
+        /// <b>false</b> and either anchor the annotation to a data point or set the
         /// <see cref="Annotation.AxisX"/> or <see cref="Annotation.AxisY"/> properties.
         /// </para>
         /// </remarks>
@@ -327,7 +323,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Position
+        #endregion Position
 
         #region Anchor
 
@@ -340,12 +336,12 @@ namespace WebCharts.Services.Models.Annotations
         /// <seealso cref="Annotation.AnchorOffsetY"/>
         /// </summary>
         /// <value>
-        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to 
+        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to
         /// the anchor point.
         /// </value>
         /// <remarks>
-        /// The annotation must be anchored using either <see cref="Annotation.AnchorDataPoint"/>, or the <see cref="Annotation.AnchorX"/> 
-        /// and <see cref="Annotation.AnchorY"/> properties. Its <see cref="Annotation.X"/> and <see cref="Annotation.Y"/> 
+        /// The annotation must be anchored using either <see cref="Annotation.AnchorDataPoint"/>, or the <see cref="Annotation.AnchorX"/>
+        /// and <see cref="Annotation.AnchorY"/> properties. Its <see cref="Annotation.X"/> and <see cref="Annotation.Y"/>
         /// properties must be set to <b>Double.NaN</b>.
         /// </remarks>
         [
@@ -364,7 +360,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Anchoring
+        #endregion Anchor
 
         #region Other
 
@@ -372,8 +368,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -412,9 +408,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -589,7 +585,7 @@ namespace WebCharts.Services.Models.Annotations
             PaintSelectionHandles(graphics, selectionRect, null);
         }
 
-#endregion
+        #endregion Methods
     }
 
     /// <summary>
@@ -600,7 +596,7 @@ namespace WebCharts.Services.Models.Annotations
     ]
     public class VerticalLineAnnotation : LineAnnotation
     {
-#region Construction and Initialization
+        #region Construction and Initialization
 
         /// <summary>
         /// Default public constructor.
@@ -610,16 +606,16 @@ namespace WebCharts.Services.Models.Annotations
         {
         }
 
-#endregion
+        #endregion Construction and Initialization
 
-#region Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -636,9 +632,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-#endregion
+        #endregion Properties
 
-#region Methods
+        #region Methods
 
         /// <summary>
         /// Adjusts the two coordinates of the line.
@@ -656,7 +652,7 @@ namespace WebCharts.Services.Models.Annotations
             base.AdjustLineCoordinates(ref point1, ref point2, ref selectionRect);
         }
 
-#region Content Size
+        #region Content Size
 
         /// <summary>
         /// Gets text annotation content size based on the text and font.
@@ -667,9 +663,9 @@ namespace WebCharts.Services.Models.Annotations
             return new SKRect(float.NaN, float.NaN, 0f, float.NaN);
         }
 
-#endregion // Content Size
+        #endregion Content Size
 
-#endregion
+        #endregion Methods
     }
 
     /// <summary>
@@ -680,7 +676,7 @@ namespace WebCharts.Services.Models.Annotations
     ]
     public class HorizontalLineAnnotation : LineAnnotation
     {
-#region Construction and Initialization
+        #region Construction and Initialization
 
         /// <summary>
         /// Default public constructor.
@@ -690,16 +686,16 @@ namespace WebCharts.Services.Models.Annotations
         {
         }
 
-#endregion
+        #endregion Construction and Initialization
 
-#region Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -716,9 +712,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-#endregion
+        #endregion Properties
 
-#region Methods
+        #region Methods
 
         /// <summary>
         /// Adjusts the two coordinates of the line.
@@ -736,7 +732,7 @@ namespace WebCharts.Services.Models.Annotations
             base.AdjustLineCoordinates(ref point1, ref point2, ref selectionRect);
         }
 
-#region Content Size
+        #region Content Size
 
         /// <summary>
         /// Gets text annotation content size based on the text and font.
@@ -747,8 +743,8 @@ namespace WebCharts.Services.Models.Annotations
             return new SKRect(float.NaN, float.NaN, float.NaN, 0f);
         }
 
-#endregion // Content Size
+        #endregion Content Size
 
-#endregion
+        #endregion Methods
     }
 }

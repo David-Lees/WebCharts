@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Main windows forms chart control class.
 //
-
 
 using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
@@ -16,36 +14,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Annotations;
-using WebCharts.Services.Models.Borders3D;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Formulas;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
 namespace WebCharts.Services
 {
-    public static class ChartServicesExtensions
-    {
-        public static IServiceCollection AddChartServices(this IServiceCollection services)
-        {
-            services.AddTransient<IChartService, ChartService>();
-            services.AddTransient<IChartTypeRegistry, ChartTypeRegistry>();
-            services.AddTransient<IBorderTypeRegistry, BorderTypeRegistry>();
-            services.AddTransient<ICustomPropertyRegistry, CustomPropertyRegistry>();
-            services.AddTransient<IKeywordsRegistry, KeywordsRegistry>();
-            services.AddTransient<IDataManager, DataManager>();
-            services.AddTransient<IImageLoader, ImageLoader>();
-            services.AddTransient<IChartImage, ChartImage>();
-            services.AddTransient<IFormulaRegistry, FormulaRegistry>();
-            return services;
-        }
-    }
-
     /// <summary>
     /// Chart windows forms control
     /// </summary>
@@ -53,27 +24,6 @@ namespace WebCharts.Services
     public class ChartService : IDisposable, IChartService
     {
         #region Control fields
-
-        /// <summary>
-        /// Determines whether or not to show debug markings in debug mode. For internal use.
-        /// </summary>
-        internal bool ShowDebugMarkings = false;
-
-        // Chart services components
-        private ChartTypeRegistry _chartTypeRegistry = null;
-        private BorderTypeRegistry _borderTypeRegistry = null;
-        private CustomPropertyRegistry _customAttributeRegistry = null;
-        private DataManager _dataManager = null;
-        internal ChartImage chartPicture = null;
-        private ImageLoader _imageLoader = null;
-
-        // Named images collection
-        private NamedImagesCollection _namedImages = null;
-
-
-        // Formula registry servise component
-        private FormulaRegistry _formulaRegistry = null;
-
 
         // Indicates that control invalidation is temporary disabled
         internal bool disableInvalidates = false;
@@ -87,7 +37,24 @@ namespace WebCharts.Services
         // Indicates that some chart properties where changed (used for painting)
         internal bool dirtyFlag = true;
 
-        #endregion
+        internal readonly ChartImage chartPicture;
+
+        /// <summary>
+        /// Determines whether or not to show debug markings in debug mode. For internal use.
+        /// </summary>
+        internal bool ShowDebugMarkings = false;
+
+        // Chart services components
+        private readonly ChartTypeRegistry _chartTypeRegistry;
+
+        private readonly ImageLoader _imageLoader = null;
+
+        // Named images collection
+        private readonly NamedImagesCollection _namedImages = null;
+
+        private readonly DataManager _dataManager;
+
+        #endregion Control fields
 
         #region Control constructors
 
@@ -96,14 +63,18 @@ namespace WebCharts.Services
         /// <summary>
         /// Chart control constructor.
         /// </summary>
-        public ChartService(IServiceProvider provider)
+        public ChartService(IServiceProvider provider, int width, int height)
         {
-            _provider = provider;
+            CommonElements = new CommonElements(this);
 
-            // Initialize objects
-            _dataManager.Initialize();
+            _provider = provider;
+            chartPicture = new ChartImage(this) { Width = width, Height = height };
+
+            _dataManager = chartPicture.Common.DataManager;
+            _dataManager.Initialize(chartPicture);
 
             // Register known chart types
+            _chartTypeRegistry = chartPicture.Common.ChartTypeRegistry;
             _chartTypeRegistry.Register(ChartTypeNames.Bar, typeof(BarChart));
             _chartTypeRegistry.Register(ChartTypeNames.Column, typeof(ColumnChart));
             _chartTypeRegistry.Register(ChartTypeNames.Point, typeof(PointChart));
@@ -145,35 +116,34 @@ namespace WebCharts.Services
             _chartTypeRegistry.Register(ChartTypeNames.FastPoint, typeof(FastPointChart));
 
             // Register known formula modules
-            _formulaRegistry.Register(SR.FormulaNamePriceIndicators, typeof(PriceIndicators));
-            _formulaRegistry.Register(SR.FormulaNameGeneralTechnicalIndicators, typeof(GeneralTechnicalIndicators));
-            _formulaRegistry.Register(SR.FormulaNameTechnicalVolumeIndicators, typeof(VolumeIndicators));
-            _formulaRegistry.Register(SR.FormulaNameOscillator, typeof(Oscillators));
-            _formulaRegistry.Register(SR.FormulaNameGeneralFormulas, typeof(GeneralFormulas));
-            _formulaRegistry.Register(SR.FormulaNameTimeSeriesAndForecasting, typeof(TimeSeriesAndForecasting));
-            _formulaRegistry.Register(SR.FormulaNameStatisticalAnalysis, typeof(StatisticalAnalysis));
+            FormulaRegistry formulaRegistry = chartPicture.Common.FormulaRegistry;
+            formulaRegistry.Register(SR.FormulaNamePriceIndicators, typeof(PriceIndicators));
+            formulaRegistry.Register(SR.FormulaNameGeneralTechnicalIndicators, typeof(GeneralTechnicalIndicators));
+            formulaRegistry.Register(SR.FormulaNameTechnicalVolumeIndicators, typeof(VolumeIndicators));
+            formulaRegistry.Register(SR.FormulaNameOscillator, typeof(Oscillators));
+            formulaRegistry.Register(SR.FormulaNameGeneralFormulas, typeof(GeneralFormulas));
+            formulaRegistry.Register(SR.FormulaNameTimeSeriesAndForecasting, typeof(TimeSeriesAndForecasting));
+            formulaRegistry.Register(SR.FormulaNameStatisticalAnalysis, typeof(StatisticalAnalysis));
 
             // Register known 3D border types
-            _borderTypeRegistry.Register("Emboss", typeof(EmbossBorder));
-            _borderTypeRegistry.Register("Raised", typeof(RaisedBorder));
-            _borderTypeRegistry.Register("Sunken", typeof(SunkenBorder));
-            _borderTypeRegistry.Register("FrameThin1", typeof(FrameThin1Border));
-            _borderTypeRegistry.Register("FrameThin2", typeof(FrameThin2Border));
-            _borderTypeRegistry.Register("FrameThin3", typeof(FrameThin3Border));
-            _borderTypeRegistry.Register("FrameThin4", typeof(FrameThin4Border));
-            _borderTypeRegistry.Register("FrameThin5", typeof(FrameThin5Border));
-            _borderTypeRegistry.Register("FrameThin6", typeof(FrameThin6Border));
-            _borderTypeRegistry.Register("FrameTitle1", typeof(FrameTitle1Border));
-            _borderTypeRegistry.Register("FrameTitle2", typeof(FrameTitle2Border));
-            _borderTypeRegistry.Register("FrameTitle3", typeof(FrameTitle3Border));
-            _borderTypeRegistry.Register("FrameTitle4", typeof(FrameTitle4Border));
-            _borderTypeRegistry.Register("FrameTitle5", typeof(FrameTitle5Border));
-            _borderTypeRegistry.Register("FrameTitle6", typeof(FrameTitle6Border));
-            _borderTypeRegistry.Register("FrameTitle7", typeof(FrameTitle7Border));
-            _borderTypeRegistry.Register("FrameTitle8", typeof(FrameTitle8Border));
-
-            // Enable chart invalidating
-            disableInvalidates = false;
+            BorderTypeRegistry borderTypeRegistry = chartPicture.Common.BorderTypeRegistry;
+            borderTypeRegistry.Register("Emboss", typeof(EmbossBorder));
+            borderTypeRegistry.Register("Raised", typeof(RaisedBorder));
+            borderTypeRegistry.Register("Sunken", typeof(SunkenBorder));
+            borderTypeRegistry.Register("FrameThin1", typeof(FrameThin1Border));
+            borderTypeRegistry.Register("FrameThin2", typeof(FrameThin2Border));
+            borderTypeRegistry.Register("FrameThin3", typeof(FrameThin3Border));
+            borderTypeRegistry.Register("FrameThin4", typeof(FrameThin4Border));
+            borderTypeRegistry.Register("FrameThin5", typeof(FrameThin5Border));
+            borderTypeRegistry.Register("FrameThin6", typeof(FrameThin6Border));
+            borderTypeRegistry.Register("FrameTitle1", typeof(FrameTitle1Border));
+            borderTypeRegistry.Register("FrameTitle2", typeof(FrameTitle2Border));
+            borderTypeRegistry.Register("FrameTitle3", typeof(FrameTitle3Border));
+            borderTypeRegistry.Register("FrameTitle4", typeof(FrameTitle4Border));
+            borderTypeRegistry.Register("FrameTitle5", typeof(FrameTitle5Border));
+            borderTypeRegistry.Register("FrameTitle6", typeof(FrameTitle6Border));
+            borderTypeRegistry.Register("FrameTitle7", typeof(FrameTitle7Border));
+            borderTypeRegistry.Register("FrameTitle8", typeof(FrameTitle8Border));
 
             // Create named images collection
             _namedImages = new NamedImagesCollection();
@@ -187,13 +157,9 @@ namespace WebCharts.Services
             Legends.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Series.LegendNameReferenceChanged);
         }
 
+        public CommonElements CommonElements { get; set; }
 
-
-        #endregion
-
-        #region Control size and location properties/methods
-
-        #endregion
+        #endregion Control constructors
 
         #region Chart image saving methods
 
@@ -247,12 +213,15 @@ namespace WebCharts.Services
                 case ChartImageFormat.Bmp:
                     standardImageFormat = SKEncodedImageFormat.Bmp;
                     break;
+
                 case ChartImageFormat.Gif:
                     standardImageFormat = SKEncodedImageFormat.Gif;
                     break;
+
                 case ChartImageFormat.Jpeg:
                     standardImageFormat = SKEncodedImageFormat.Jpeg;
                     break;
+
                 case ChartImageFormat.Png:
                     standardImageFormat = SKEncodedImageFormat.Png;
                     break;
@@ -260,7 +229,7 @@ namespace WebCharts.Services
 
             var image = SKImage.FromBitmap(chartImage);
             image.Encode(standardImageFormat, 100).SaveTo(imageStream);
-          
+
             // Dispose image
             chartImage.Dispose();
             image.Dispose();
@@ -269,8 +238,7 @@ namespace WebCharts.Services
             chartPicture.isSavingAsImage = false;
         }
 
-
-        #endregion
+        #endregion Chart image saving methods
 
         #region Control public properties
 
@@ -306,7 +274,7 @@ namespace WebCharts.Services
         /// </summary>
         internal void ResetPaletteCustomColors()
         {
-            PaletteCustomColors = new SKColor[0];
+            PaletteCustomColors = Array.Empty<SKColor>();
         }
 
         /// <summary>
@@ -341,7 +309,6 @@ namespace WebCharts.Services
             }
         }
 
-
         /// <summary>
         /// "The data source used to populate series data. Series ValueMember properties must be also set."
         /// </summary>
@@ -375,9 +342,6 @@ namespace WebCharts.Services
                 return _namedImages;
             }
         }
-
-
-   
 
         /// <summary>
         /// Chart series collection.
@@ -460,7 +424,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -537,7 +500,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -638,7 +600,6 @@ namespace WebCharts.Services
             }
         }
 
-
         /// <summary>
         /// Title font
         /// </summary>
@@ -647,13 +608,12 @@ namespace WebCharts.Services
         ]
         public SKFont Font { get; set; }
 
-
         /// <summary>
         /// Back Hatch style
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
-        SRDescription("DescriptionAttributeBackHatchStyle"),        
+        SRDescription("DescriptionAttributeBackHatchStyle"),
         ]
         public ChartHatchStyle BackHatchStyle
         {
@@ -669,7 +629,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -677,8 +636,6 @@ namespace WebCharts.Services
         {
             // Nothing to do
         }
-
-
 
         /// <summary>
         /// Chart area background image
@@ -701,7 +658,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -726,7 +682,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -751,7 +706,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -776,7 +730,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -801,7 +754,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -826,7 +778,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -851,7 +802,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -876,7 +826,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -901,7 +850,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -926,7 +874,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -951,7 +898,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -976,10 +922,8 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
-
 
         /// <summary>
         /// Chart border skin style.
@@ -1002,7 +946,6 @@ namespace WebCharts.Services
                 {
                     Invalidate();
                 }
-
             }
         }
 
@@ -1046,7 +989,7 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeMisc"),
         ]
-        public double RenderingDpiY { get; set; }  = 96.0;
+        public double RenderingDpiY { get; set; } = 96.0;
 
         /// <summary>
         /// Horizontal resolution of the chart renderer.
@@ -1057,9 +1000,9 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeMisc"),
         ]
-        public double RenderingDpiX { get; set; }  = 96.0;
-       
-        #endregion
+        public double RenderingDpiX { get; set; } = 96.0;
+
+        #endregion Control public properties
 
         #region Control public methods
 
@@ -1099,22 +1042,20 @@ namespace WebCharts.Services
         /// </summary>
         public void ResetAutoValues()
         {
-            // Reset auto calculated series properties values 
+            // Reset auto calculated series properties values
             foreach (Series series in Series)
             {
                 series.ResetAutoValues();
             }
 
-            // Reset auto calculated axis properties values 
+            // Reset auto calculated axis properties values
             foreach (ChartArea chartArea in ChartAreas)
             {
                 chartArea.ResetAutoValues();
             }
-
         }
 
-        #endregion
-
+        #endregion Control public methods
 
         #region ISupportInitialize implementation
 
@@ -1140,10 +1081,9 @@ namespace WebCharts.Services
             {
                 Invalidate();
             }
-
         }
 
-        #endregion
+        #endregion ISupportInitialize implementation
 
         #region Axis data scaleView position/size changing events
 
@@ -1160,7 +1100,6 @@ namespace WebCharts.Services
         [SRDescription("DescriptionAttributeChartEvent_AxisViewChanged"),
         SRCategory("CategoryAttributeAxisView")]
         public event EventHandler<ViewEventArgs> AxisViewChanged;
-
 
         /// <summary>
         /// Calls event delegate.
@@ -1186,7 +1125,7 @@ namespace WebCharts.Services
             }
         }
 
-        #endregion
+        #endregion Axis data scaleView position/size changing events
 
         #region Axis scroll bar events
 
@@ -1196,7 +1135,6 @@ namespace WebCharts.Services
         [SRDescription("DescriptionAttributeChartEvent_AxisScrollBarClicked"),
         SRCategory("CategoryAttributeAxisView")]
         public event EventHandler<ScrollBarEventArgs> AxisScrollBarClicked;
-
 
         /// <summary>
         /// Calls event delegate.
@@ -1210,7 +1148,7 @@ namespace WebCharts.Services
             }
         }
 
-        #endregion
+        #endregion Axis scroll bar events
 
         #region Painting events
 
@@ -1229,7 +1167,7 @@ namespace WebCharts.Services
         public event EventHandler<ChartPaintEventArgs> PrePaint;
 
         /// <summary>
-        /// Fires when chart element backround must be drawn. 
+        /// Fires when chart element backround must be drawn.
         /// This event is fired for elements like: ChartPicture, ChartArea and Legend
         /// </summary>
         /// <param name="e">Event arguments.</param>
@@ -1242,7 +1180,7 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fires when chart element backround must be drawn. 
+        /// Fires when chart element backround must be drawn.
         /// This event is fired for elements like: ChartPicture, ChartArea and Legend
         /// </summary>
         /// <param name="e">Event arguments.</param>
@@ -1252,7 +1190,7 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fires when chart element must be drawn. 
+        /// Fires when chart element must be drawn.
         /// This event is fired for elements like: ChartPicture, ChartArea and Legend
         /// </summary>
         /// <param name="e">Event arguments.</param>
@@ -1265,7 +1203,7 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fires when chart element must be drawn. 
+        /// Fires when chart element must be drawn.
         /// This event is fired for elements like: ChartPicture, ChartArea and Legend
         /// </summary>
         /// <param name="e">Event arguments.</param>
@@ -1274,7 +1212,7 @@ namespace WebCharts.Services
             OnPostPaint(e);
         }
 
-        #endregion
+        #endregion Painting events
 
         #region Customize event
 
@@ -1286,9 +1224,8 @@ namespace WebCharts.Services
         ]
         public event EventHandler Customize;
 
-
         /// <summary>
-        /// Fires when all chart data is prepared to be customized before drawing. 
+        /// Fires when all chart data is prepared to be customized before drawing.
         /// </summary>
         [
         SRDescription("DescriptionAttributeChart_OnCustomize")
@@ -1302,7 +1239,7 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fires when all chart data is prepared to be customized before drawing. 
+        /// Fires when all chart data is prepared to be customized before drawing.
         /// </summary>
         internal void CallOnCustomize()
         {
@@ -1317,34 +1254,31 @@ namespace WebCharts.Services
         ]
         public event EventHandler<CustomizeLegendEventArgs> CustomizeLegend;
 
-
         /// <summary>
-        /// Fires when all chart data is prepared to be customized before drawing. 
+        /// Fires when all chart data is prepared to be customized before drawing.
         /// </summary>
         [
             SRDescription("DescriptionAttributeChart_OnCustomizeLegend")
         ]
         protected virtual void OnCustomizeLegend(LegendItemsCollection legendItems, string legendName)
         {
-            if (CustomizeLegend != null)
-            {
-                CustomizeLegend(this, new CustomizeLegendEventArgs(legendItems, legendName));
-            }
+            CustomizeLegend?.Invoke(this, new CustomizeLegendEventArgs(legendItems, legendName));
         }
 
         /// <summary>
-        /// Fires when all chart data is prepared to be customized before drawing. 
+        /// Fires when all chart data is prepared to be customized before drawing.
         /// </summary>
         internal void CallOnCustomizeLegend(LegendItemsCollection legendItems, string legendName)
         {
             OnCustomizeLegend(legendItems, legendName);
         }
-        #endregion
+
+        #endregion Customize event
 
         #region Annotation events
 
         /// <summary>
-        /// Fires when annotation text was changed. 
+        /// Fires when annotation text was changed.
         /// </summary>
         [
         SRDescription("DescriptionAttributeChartEvent_AnnotationTextChanged"),
@@ -1362,13 +1296,14 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fires when selected annotation changes. 
+        /// Fires when selected annotation changes.
         /// </summary>
         [
         SRDescription("DescriptionAttributeChartEvent_AnnotationSelectionChanged"),
         SRCategory("CategoryAttributeAnnotation")
         ]
         public event EventHandler AnnotationSelectionChanged;
+
         /// <summary>
         /// Fires when annotation position was changed.
         /// </summary>
@@ -1388,14 +1323,13 @@ namespace WebCharts.Services
         public event EventHandler<AnnotationPositionChangingEventArgs> AnnotationPositionChanging;
 
         /// <summary>
-        /// Fires when annotation is placed by the user on the chart. 
+        /// Fires when annotation is placed by the user on the chart.
         /// </summary>
         [
         SRDescription("DescriptionAttributeChartEvent_AnnotationPlaced"),
         SRCategory("CategoryAttributeAnnotation")
         ]
         public event EventHandler AnnotationPlaced;
-
 
         /// <summary>
         /// Fires when annotation is placed by the user on the chart.
@@ -1407,7 +1341,7 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fires when selected annotation changes. 
+        /// Fires when selected annotation changes.
         /// </summary>
         /// <param name="annotation">Annotation which have it's selection changed.</param>
         internal void OnAnnotationSelectionChanged(Annotation annotation)
@@ -1439,7 +1373,7 @@ namespace WebCharts.Services
             return false;
         }
 
-        #endregion
+        #endregion Annotation events
 
         #region Control DataBind method
 
@@ -1514,9 +1448,9 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Automatically creates and binds series to specified data table. 
+        /// Automatically creates and binds series to specified data table.
         /// Each column of the table becomes a Y value in a separate series.
-        /// Series X value field may also be provided. 
+        /// Series X value field may also be provided.
         /// </summary>
         /// <param name="dataSource">Data source.</param>
         /// <param name="xField">Name of the field for series X values.</param>
@@ -1532,7 +1466,7 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Automatically creates and binds series to specified data table. 
+        /// Automatically creates and binds series to specified data table.
         /// Each column of the table becomes a Y value in a separate series.
         /// </summary>
         /// <param name="dataSource">Data source.</param>
@@ -1603,10 +1537,9 @@ namespace WebCharts.Services
                 sortingOrder);
         }
 
-        #endregion
+        #endregion Control DataBind method
 
         #region Special Extension Methods and Properties
-
 
         /// <summary>
         /// Gets the requested chart service.
@@ -1665,7 +1598,7 @@ namespace WebCharts.Services
             OnFormatNumber(caller, e);
         }
 
-        #endregion
+        #endregion Special Extension Methods and Properties
 
         #region IDisposable override
 
@@ -1678,7 +1611,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Disposing control resourses
         /// </summary>
-        protected void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -1686,25 +1619,23 @@ namespace WebCharts.Services
                 if (_imageLoader != null)
                 {
                     _imageLoader.Dispose();
-                    _imageLoader = null;
                 }
 
                 if (_namedImages != null)
                 {
                     _namedImages.Dispose();
-                    _namedImages = null;
                 }
 
                 if (_chartTypeRegistry != null)
                 {
                     _chartTypeRegistry.Dispose();
-                    _chartTypeRegistry = null;
                 }
 
-
-
+                if (CommonElements != null)
+                {
+                    CommonElements.Dispose();
+                }
             }
-
 
             //The chart picture and datamanager will be the last to be disposed
             if (disposing)
@@ -1712,80 +1643,14 @@ namespace WebCharts.Services
                 if (_dataManager != null)
                 {
                     _dataManager.Dispose();
-                    _dataManager = null;
                 }
                 if (chartPicture != null)
                 {
                     chartPicture.Dispose();
-                    chartPicture = null;
                 }
             }
         }
-        #endregion
+
+        #endregion IDisposable override
     }
-
-    #region Customize event delegate
-
-    /// <summary>
-    /// Chart legend customize events arguments
-    /// </summary>
-    public class CustomizeLegendEventArgs : EventArgs
-    {
-        private readonly LegendItemsCollection _legendItems = null;
-        private readonly string _legendName = "";
-
-        /// <summary>
-        /// Default construvtor is not accessible
-        /// </summary>
-        private CustomizeLegendEventArgs()
-        {
-        }
-
-        /// <summary>
-        /// Customize legend event arguments constructor
-        /// </summary>
-        /// <param name="legendItems">Legend items collection.</param>
-        public CustomizeLegendEventArgs(LegendItemsCollection legendItems)
-        {
-            _legendItems = legendItems;
-        }
-
-        /// <summary>
-        /// Customize legend event arguments constructor
-        /// </summary>
-        /// <param name="legendItems">Legend items collection.</param>
-        /// <param name="legendName">Legend name.</param>
-        public CustomizeLegendEventArgs(LegendItemsCollection legendItems, string legendName)
-        {
-            _legendItems = legendItems;
-            _legendName = legendName;
-        }
-
-        /// <summary>
-        /// Legend name.
-        /// </summary>
-        public string LegendName
-        {
-            get
-            {
-                return _legendName;
-            }
-        }
-
-        /// <summary>
-        /// Legend items collection.
-        /// </summary>
-        public LegendItemsCollection LegendItems
-        {
-            get
-            {
-                return _legendItems;
-            }
-        }
-
-    }
-
-    #endregion
 }
-
-

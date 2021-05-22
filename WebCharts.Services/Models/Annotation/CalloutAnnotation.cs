@@ -2,21 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Callout annotation classes.
 //
 
-
-
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -65,14 +58,14 @@ namespace WebCharts.Services.Models.Annotations
         Perspective,
     }
 
-    #endregion
+    #endregion Enumerations
 
     /// <summary>
     /// <b>CalloutAnnotation</b> is a class class that represents a callout annotation.
     /// </summary>
     /// <remarks>
     /// Callout annotation is the only annotation that draws a connection between the
-    /// annotation position and anchor point. It can display text and automatically 
+    /// annotation position and anchor point. It can display text and automatically
     /// calculate the required size. Different <see cref="CalloutStyle"/> are supported.
     /// </remarks>
     [
@@ -82,7 +75,7 @@ namespace WebCharts.Services.Models.Annotations
     {
         #region Fields
 
-        // Callout anchor type 
+        // Callout anchor type
         private LineAnchorCapStyle _calloutAnchorCap = LineAnchorCapStyle.Arrow;
 
         // Callout drawing style
@@ -97,7 +90,7 @@ namespace WebCharts.Services.Models.Annotations
         // Cloud shape boundary rectangle
         private static SKRect _cloudBounds = SKRect.Empty;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -113,7 +106,7 @@ namespace WebCharts.Services.Models.Annotations
             anchorAlignment = ContentAlignment.BottomLeft;
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
@@ -154,8 +147,8 @@ namespace WebCharts.Services.Models.Annotations
         /// A <see cref="LineAnchorCapStyle"/> value used as the anchor cap of a callout line.
         /// </value>
         /// <remarks>
-        /// This property sets the anchor cap of the line connecting an annotation to 
-        /// its anchor point. It only applies when SimpleLine or BorderLine 
+        /// This property sets the anchor cap of the line connecting an annotation to
+        /// its anchor point. It only applies when SimpleLine or BorderLine
         /// are used.
         /// </remarks>
 		[
@@ -174,7 +167,8 @@ namespace WebCharts.Services.Models.Annotations
                 Invalidate();
             }
         }
-        #endregion // Callout properties
+
+        #endregion Properties
 
         #region Applicable Annotation Appearance Attributes (set as Browsable)
 
@@ -223,7 +217,6 @@ namespace WebCharts.Services.Models.Annotations
             set
             {
                 base.LineWidth = value;
-
             }
         }
 
@@ -339,7 +332,7 @@ namespace WebCharts.Services.Models.Annotations
         /// <seealso cref="BackGradientStyle"/>
         /// </summary>
         /// <value>
-        /// A <see cref="Color"/> value used for the secondary color of an annotation background with 
+        /// A <see cref="Color"/> value used for the secondary color of an annotation background with
         /// hatching or gradient fill.
         /// </value>
         /// <remarks>
@@ -362,7 +355,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Applicable Annotation Appearance Attributes (set as Browsable)
 
         #region Anchor
 
@@ -377,8 +370,8 @@ namespace WebCharts.Services.Models.Annotations
         /// A double value that represents the x-coordinate offset between the positions of an annotation and its anchor point.
         /// </value>
         /// <remarks>
-        /// The annotation must be anchored using the <see cref="Annotation.AnchorDataPoint"/> or 
-        /// <see cref="Annotation.AnchorX"/> properties, and its <see cref="Annotation.X"/> property must be set 
+        /// The annotation must be anchored using the <see cref="Annotation.AnchorDataPoint"/> or
+        /// <see cref="Annotation.AnchorX"/> properties, and its <see cref="Annotation.X"/> property must be set
         /// to <b>Double.NaN</b>.
         /// </remarks>
         [
@@ -408,7 +401,7 @@ namespace WebCharts.Services.Models.Annotations
         /// A double value that represents the y-coordinate offset between the positions of an annotation and its anchor point.
         /// </value>
         /// <remarks>
-        /// Annotation must be anchored using <see cref="Annotation.AnchorDataPoint"/> or 
+        /// Annotation must be anchored using <see cref="Annotation.AnchorDataPoint"/> or
         /// <see cref="Annotation.AnchorY"/> properties and its <see cref="Annotation.Y"/> property must be set
         /// to <b>Double.NaN</b>.
         /// </remarks>
@@ -437,12 +430,12 @@ namespace WebCharts.Services.Models.Annotations
         /// <seealso cref="AnchorOffsetY"/>
         /// </summary>
         /// <value>
-        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to 
+        /// A <see cref="ContentAlignment"/> value that represents the annotation's alignment to
         /// the anchor point.
         /// </value>
         /// <remarks>
-        /// The annotation must be anchored using either <see cref="Annotation.AnchorDataPoint"/>, or the <see cref="Annotation.AnchorX"/> 
-        /// and <see cref="Annotation.AnchorY"/> properties. Its <see cref="Annotation.X"/> and <see cref="Annotation.Y"/> 
+        /// The annotation must be anchored using either <see cref="Annotation.AnchorDataPoint"/>, or the <see cref="Annotation.AnchorX"/>
+        /// and <see cref="Annotation.AnchorY"/> properties. Its <see cref="Annotation.X"/> and <see cref="Annotation.Y"/>
         /// properties must be set to <b>Double.NaN</b>.
         /// </remarks>
 		[
@@ -461,7 +454,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Anchoring
+        #endregion Anchor
 
         #region Other
 
@@ -469,12 +462,12 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type  
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
-        /// </remarks>	
+        /// </remarks>
         [
         SRCategory("CategoryAttributeMisc"),
         SRDescription("DescriptionAttributeAnnotationType"),
@@ -509,7 +502,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other
 
         #endregion
 
@@ -560,10 +553,10 @@ namespace WebCharts.Services.Models.Annotations
             SKPoint anchorPoint = SKPoint.Empty;
             SKSize size = SKSize.Empty;
             GetRelativePosition(out firstPoint, out size, out anchorPoint);
-            SKPoint secondPoint = new SKPoint(firstPoint.X + size.Width, firstPoint.Y + size.Height);
+            SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
-            SKRect selectionRect = new SKRect(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
+            SKRect selectionRect = new(firstPoint.X, firstPoint.Y, secondPoint.X, secondPoint.Y);
 
             // Adjust negative rectangle width and height
             SKRect rectanglePosition = selectionRect;
@@ -602,6 +595,7 @@ namespace WebCharts.Services.Models.Annotations
                             anchorPoint,
                             false);
                         break;
+
                     case (CalloutStyle.Borderline):
                         hotRegionPathAbs = DrawRectangleLineCallout(
                             graphics,
@@ -609,24 +603,28 @@ namespace WebCharts.Services.Models.Annotations
                             anchorPoint,
                             true);
                         break;
+
                     case (CalloutStyle.Perspective):
                         hotRegionPathAbs = DrawPerspectiveCallout(
                             graphics,
                             rectanglePosition,
                             anchorPoint);
                         break;
+
                     case (CalloutStyle.Cloud):
                         hotRegionPathAbs = DrawCloudCallout(
                             graphics,
                             rectanglePosition,
                             anchorPoint);
                         break;
+
                     case (CalloutStyle.Rectangle):
                         hotRegionPathAbs = DrawRectangleCallout(
                             graphics,
                             rectanglePosition,
                             anchorPoint);
                         break;
+
                     case (CalloutStyle.Ellipse):
                         hotRegionPathAbs = DrawRoundedRectCallout(
                             graphics,
@@ -634,6 +632,7 @@ namespace WebCharts.Services.Models.Annotations
                             anchorPoint,
                             true);
                         break;
+
                     case (CalloutStyle.RoundedRectangle):
                         hotRegionPathAbs = DrawRoundedRectCallout(
                             graphics,
@@ -749,7 +748,7 @@ namespace WebCharts.Services.Models.Annotations
                 ShadowOffset,
                 ShadowColor);
 
-            // Draw text 
+            // Draw text
             DrawText(graphics, rectanglePosition, true, false);
 
             return ellipsePath;
@@ -911,7 +910,6 @@ namespace WebCharts.Services.Models.Annotations
                         PenAlignment.Center,
                         ShadowOffset,
                         ShadowColor);
-
                 }
             }
 
@@ -940,7 +938,7 @@ namespace WebCharts.Services.Models.Annotations
                 hotRegion.AddRect(graphics.GetAbsoluteRectangle(rectanglePosition));
             }
 
-            // Draw text 
+            // Draw text
             DrawText(graphics, rectanglePosition, false, false);
 
             return hotRegion;
@@ -1023,7 +1021,7 @@ namespace WebCharts.Services.Models.Annotations
                         }
                     }
 
-                    SKSize size = new SKSize(Math.Abs(cloudCenterAbs.X - point.X), Math.Abs(cloudCenterAbs.Y - point.Y));
+                    SKSize size = new(Math.Abs(cloudCenterAbs.X - point.X), Math.Abs(cloudCenterAbs.Y - point.Y));
                     if (dxAbs > 0)
                         dxAbs -= size.Width;
                     else
@@ -1033,7 +1031,6 @@ namespace WebCharts.Services.Models.Annotations
                         dyAbs -= size.Height;
                     else
                         dyAbs += size.Height;
-
 
                     // Draw 3 smaller ellipses from anchor point to the cloud
                     for (int index = 0; index < 3; index++)
@@ -1115,7 +1112,7 @@ namespace WebCharts.Services.Models.Annotations
                 }
             }
 
-            // Draw text 
+            // Draw text
             DrawText(graphics, rectanglePosition, true, false);
 
             return pathCloud;
@@ -1155,7 +1152,7 @@ namespace WebCharts.Services.Models.Annotations
             SKPath hotRegion = new();
             hotRegion.AddRect(graphics.GetAbsoluteRectangle(rectanglePosition));
 
-            // Draw text 
+            // Draw text
             DrawText(graphics, rectanglePosition, false, false);
 
             // Draw perspective polygons from anchoring point
@@ -1316,12 +1313,12 @@ namespace WebCharts.Services.Models.Annotations
                     ShadowOffset,
                     PenAlignment.Center);
 
-                // Draw text 
+                // Draw text
                 DrawText(graphics, rectanglePosition, false, false);
             }
             else
             {
-                // Draw text 
+                // Draw text
                 rectanglePosition = DrawText(graphics, rectanglePosition, false, true);
                 SKSize pixelSize = graphics.GetRelativeSize(new SKSize(2f, 2f));
                 rectanglePosition.Inflate(pixelSize);
@@ -1332,8 +1329,8 @@ namespace WebCharts.Services.Models.Annotations
             hotRegion.AddRect(graphics.GetAbsoluteRectangle(rectanglePosition));
 
             // Define position of text underlying line
-            SKPoint textLinePoint1 = new SKPoint(rectanglePosition.Left, rectanglePosition.Bottom);
-            SKPoint textLinePoint2 = new SKPoint(rectanglePosition.Right, rectanglePosition.Bottom);
+            SKPoint textLinePoint1 = new(rectanglePosition.Left, rectanglePosition.Bottom);
+            SKPoint textLinePoint2 = new(rectanglePosition.Right, rectanglePosition.Bottom);
 
             // Draw line to the anchor point
             if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y))
@@ -1484,7 +1481,6 @@ namespace WebCharts.Services.Models.Annotations
                     //linePath.Widen(new Pen(SKColors.Black, LineWidth + 2));
                     //hotRegion.SetMarkers();
                     hotRegion.AddPath(linePath);
-
                 }
             }
 
@@ -1522,10 +1518,10 @@ namespace WebCharts.Services.Models.Annotations
 
             // Translate and sacle original path to fit specified position
             SKPath resultPath = _cloudOutlinePath;
-            SKMatrix matrix = new SKMatrix();
+            SKMatrix matrix = new();
             matrix.Translate(-_cloudBounds.Left, -_cloudBounds.Top);
             resultPath.Transform(matrix);
-            matrix = new SKMatrix();
+            matrix = new();
             matrix.Translate(position.Left, position.Top);
             matrix.ScaleX = position.Width / _cloudBounds.Width;
             matrix.ScaleY = position.Height / _cloudBounds.Height;
@@ -1585,7 +1581,6 @@ namespace WebCharts.Services.Models.Annotations
 
                 _cloudPath.Close();
 
-
                 // Create cloud outline path
                 _cloudOutlinePath = new SKPath();
 
@@ -1640,7 +1635,7 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         /// <summary>
-        /// Gets intersection point coordinates between point line and and horizontal 
+        /// Gets intersection point coordinates between point line and and horizontal
         /// line specified by Y coordinate.
         /// </summary>
         /// <param name="firstPoint">First data point.</param>
@@ -1649,7 +1644,7 @@ namespace WebCharts.Services.Models.Annotations
         /// <returns>Intersection point coordinates.</returns>
         internal static SKPoint GetIntersectionY(SKPoint firstPoint, SKPoint secondPoint, float pointY)
         {
-            SKPoint intersectionPoint = new SKPoint();
+            SKPoint intersectionPoint = new();
             intersectionPoint.Y = pointY;
             intersectionPoint.X = (pointY - firstPoint.Y) *
                 (secondPoint.X - firstPoint.X) /
@@ -1659,7 +1654,7 @@ namespace WebCharts.Services.Models.Annotations
         }
 
         /// <summary>
-        /// Gets intersection point coordinates between point line and and vertical 
+        /// Gets intersection point coordinates between point line and and vertical
         /// line specified by X coordinate.
         /// </summary>
         /// <param name="firstPoint">First data point.</param>
@@ -1668,7 +1663,7 @@ namespace WebCharts.Services.Models.Annotations
         /// <returns>Intersection point coordinates.</returns>
         internal static SKPoint GetIntersectionX(SKPoint firstPoint, SKPoint secondPoint, float pointX)
         {
-            SKPoint intersectionPoint = new SKPoint();
+            SKPoint intersectionPoint = new();
             intersectionPoint.X = pointX;
             intersectionPoint.Y = (pointX - firstPoint.X) *
                 (secondPoint.Y - firstPoint.Y) /
@@ -1711,6 +1706,7 @@ namespace WebCharts.Services.Models.Annotations
                 throw (new InvalidOperationException(SR.ExceptionAnnotationPathAddLineAsSegmentsInvalid));
             }
         }
+
         /// <summary>
         /// Helper function which creates a rounded rectangle path.
         /// Extra points are added on the sides to allow anchor connection.
@@ -1721,15 +1717,15 @@ namespace WebCharts.Services.Models.Annotations
         private SKPath CreateRoundedRectPath(SKRect rect, float cornerRadius)
         {
             // Create rounded rectangle path
-            SKPath path = new SKPath();
+            SKPath path = new();
             int segments = 10;
             PathAddLineAsSegments(path, rect.Left + cornerRadius, rect.Top, rect.Right - cornerRadius, rect.Top, segments);
 
-            path.AddArc(new SKRect(rect.Right - 2f * cornerRadius, rect.Top, 2f * cornerRadius, 2f * cornerRadius), 270, 90);
+            path.AddArc(new(rect.Right - 2f * cornerRadius, rect.Top, 2f * cornerRadius, 2f * cornerRadius), 270, 90);
 
             PathAddLineAsSegments(path, rect.Right, rect.Top + cornerRadius, rect.Right, rect.Bottom - cornerRadius, segments);
 
-            path.AddArc(new SKRect(rect.Right - 2f * cornerRadius, rect.Bottom - 2f * cornerRadius, 2f * cornerRadius, 2f * cornerRadius), 0, 90);
+            path.AddArc(new(rect.Right - 2f * cornerRadius, rect.Bottom - 2f * cornerRadius, 2f * cornerRadius, 2f * cornerRadius), 0, 90);
 
             PathAddLineAsSegments(path, rect.Right - cornerRadius, rect.Bottom, rect.Left + cornerRadius, rect.Bottom, segments);
 

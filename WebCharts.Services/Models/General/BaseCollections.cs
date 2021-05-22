@@ -3,17 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
-using System.Collections;
-using WebCharts.Services.Models.Common;
+using System.Globalization;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
-
     /// <summary>
     /// Base class for all chart element collections
     /// </summary>
@@ -25,7 +22,8 @@ namespace WebCharts.Services.Models.General
         private IChartElement _parent = null;
         private CommonElements _common = null;
         internal int _suspendUpdates = 0;
-        #endregion
+
+        #endregion Member variables
 
         #region Properties
 
@@ -41,6 +39,7 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
+
         /// <summary>
         /// Gets the CommonElements of the chart.
         /// </summary>
@@ -73,7 +72,7 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Gets the items as List&lt;T&gt;. Use this property to perform advanced List specific operations (Sorting, etc)
         /// </summary>
-        internal List<T> ItemList 
+        internal List<T> ItemList
         {
             get { return Items as List<T>; }
         }
@@ -82,7 +81,8 @@ namespace WebCharts.Services.Models.General
         {
             get { return _suspendUpdates > 0; }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Constructors
 
@@ -95,7 +95,7 @@ namespace WebCharts.Services.Models.General
             _parent = parent;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
@@ -111,7 +111,7 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Suspends invalidation
         /// </summary>
-        public virtual void SuspendUpdates() 
+        public virtual void SuspendUpdates()
         {
             _suspendUpdates++;
         }
@@ -121,11 +121,11 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public virtual void ResumeUpdates()
         {
-            if (_suspendUpdates>0)
+            if (_suspendUpdates > 0)
                 _suspendUpdates--;
 
-            if (_suspendUpdates==0)
-                Invalidate(); 
+            if (_suspendUpdates == 0)
+                Invalidate();
         }
 
         /// <summary>
@@ -146,9 +146,8 @@ namespace WebCharts.Services.Models.General
         /// Deinitializes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        internal virtual void Deinitialize( T item)
+        internal virtual void Deinitialize(T item)
         {
-
         }
 
         /// <summary>
@@ -157,7 +156,6 @@ namespace WebCharts.Services.Models.General
         /// <param name="item">The item.</param>
         internal virtual void Initialize(T item)
         {
-
         }
 
         /// <summary>
@@ -201,7 +199,7 @@ namespace WebCharts.Services.Models.General
             Invalidate();
         }
 
-        #endregion
+        #endregion Methods
 
         #region IChartElement Members
 
@@ -218,10 +216,10 @@ namespace WebCharts.Services.Models.General
 
         CommonElements IChartElement.Common
         {
-            get{ return Common; }
+            get { return Common; }
         }
 
-        #endregion
+        #endregion IChartElement Members
 
         #region IDisposable Members
 
@@ -250,8 +248,8 @@ namespace WebCharts.Services.Models.General
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
 
+        #endregion IDisposable Members
     }
 
     /// <summary>
@@ -261,11 +259,12 @@ namespace WebCharts.Services.Models.General
     public abstract class ChartNamedElementCollection<T> : ChartElementCollection<T>, INameController
         where T : ChartNamedElement
     {
-
         #region Fields
+
         private List<T> _cachedState = null;
         private int _disableDeleteCount = 0;
-        #endregion
+
+        #endregion Fields
 
         #region Properties
 
@@ -302,19 +301,16 @@ namespace WebCharts.Services.Models.General
 
                 if (!nameFound && !itemFound)
                     Add(value);
-
                 else if (nameFound && !itemFound)
                     this[nameIndex] = value;
-
                 else if (!nameFound && itemFound)
                     throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, GetType().Name));
-                    
                 else if (nameFound && itemFound && nameIndex != itemIndex)
                     throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, GetType().Name));
-                    
             }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Constructors
 
@@ -327,14 +323,15 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Events
 
         internal event EventHandler<NameReferenceChangedEventArgs> NameReferenceChanged;
+
         internal event EventHandler<NameReferenceChangedEventArgs> NameReferenceChanging;
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -347,7 +344,7 @@ namespace WebCharts.Services.Models.General
         /// </returns>
         public virtual bool IsUniqueName(string name)
         {
-            return FindByName(name)==null;
+            return FindByName(name) == null;
         }
 
         /// <summary>
@@ -394,7 +391,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="name">Chart element name.</param>
         internal void VerifyNameReference(string name)
         {
-            if (Chart!=null && !Chart.serializing && !IsNameReferenceValid(name))
+            if (Chart != null && !Chart.serializing && !IsNameReferenceValid(name))
                 throw new ArgumentException(SR.ExceptionNameNotFound(name, GetType().Name));
         }
 
@@ -404,7 +401,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="name">Chart element name.</param>
         internal bool IsNameReferenceValid(string name)
         {
-            return  String.IsNullOrEmpty(name) || 
+            return String.IsNullOrEmpty(name) ||
                     name == Constants.NotSetValue ||
                     IndexOf(name) >= 0;
         }
@@ -442,7 +439,7 @@ namespace WebCharts.Services.Models.General
             base.InsertItem(index, item);
 
             if (Count == 1 && item != null)
-            { 
+            {
                 // First element is added to the list -> fire the NameReferenceChanged event to update all the dependent elements
                 ((INameController)this).OnNameReferenceChanged(new NameReferenceChangedEventArgs(null, item));
             }
@@ -464,8 +461,8 @@ namespace WebCharts.Services.Models.General
             FixNameReferences(item);
 
             // Remember the removedElement
-            ChartNamedElement removedElement = index<Count ? this[index] : null;
-            
+            ChartNamedElement removedElement = index < Count ? this[index] : null;
+
             ((INameController)this).OnNameReferenceChanging(new NameReferenceChangedEventArgs(removedElement, item));
             base.SetItem(index, item);
             // Fire the NameReferenceChanged event to update all the dependent elements
@@ -483,7 +480,7 @@ namespace WebCharts.Services.Models.General
             if (_disableDeleteCount == 0)
             {
                 ((INameController)this).OnNameReferenceChanged(new NameReferenceChangedEventArgs(removedElement, null));
-            }            
+            }
             base.RemoveItem(index);
             if (_disableDeleteCount == 0)
             {
@@ -498,11 +495,11 @@ namespace WebCharts.Services.Models.General
         /// Fixes the name references of the item.
         /// </summary>
         internal virtual void FixNameReferences(T item)
-        { 
+        {
             //Nothing to fix at the base class...
         }
 
-        #endregion
+        #endregion Methods
 
         #region INameController Members
 
@@ -568,15 +565,15 @@ namespace WebCharts.Services.Models.General
         /// <param name="save">if set to <c>true</c> collection items will be saved.</param>
         /// <param name="changingCallback">The changing callback.</param>
         /// <param name="changedCallback">The changed callback.</param>
-        void INameController.DoSnapshot(bool save, 
-            EventHandler<NameReferenceChangedEventArgs> changingCallback, 
+        void INameController.DoSnapshot(bool save,
+            EventHandler<NameReferenceChangedEventArgs> changingCallback,
             EventHandler<NameReferenceChangedEventArgs> changedCallback)
         {
             if (save)
             {
                 _cachedState = new List<T>(this);
                 if (changingCallback != null) NameReferenceChanging += changingCallback;
-                if (changedCallback  != null) NameReferenceChanged += changedCallback;
+                if (changedCallback != null) NameReferenceChanged += changedCallback;
             }
             else
             {
@@ -596,10 +593,6 @@ namespace WebCharts.Services.Models.General
             get { return _cachedState; }
         }
 
-
-        #endregion
-
-        
+        #endregion INameController Members
     }
-
 }

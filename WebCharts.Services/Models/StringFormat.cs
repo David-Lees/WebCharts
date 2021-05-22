@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebCharts.Services.Enums;
 
-namespace WebCharts.Services.Models
+namespace WebCharts.Services
 {
     public class StringFormat : ICloneable, IDisposable
     {
-        public StringFormat() { }
+        public StringFormat()
+        {
+        }
 
         public StringFormat(StringFormat sf)
         {

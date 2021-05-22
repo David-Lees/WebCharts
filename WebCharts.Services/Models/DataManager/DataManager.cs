@@ -2,21 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Series storage and manipulation class.
 //
 
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.DataManager
+namespace WebCharts.Services
 {
     internal interface IDataManager
     {
@@ -25,34 +18,50 @@ namespace WebCharts.Services.Models.DataManager
         SeriesCollection Series { get; }
 
         int GetNumberOfPoints(params string[] series);
+
         double GetMaxYValue(int valueIndex, params string[] series);
+
         double GetMaxYWithRadiusValue(ChartArea area, params string[] series);
+
         double GetMaxXWithRadiusValue(ChartArea area, params string[] series);
+
         double GetMinXWithRadiusValue(ChartArea area, params string[] series);
+
         double GetMaxXValue(params string[] series);
+
         void GetMinMaxXValue(out double min, out double max, params string[] series);
+
         void GetMinMaxYValue(int valueIndex, out double min, out double max, params string[] series);
+
         void GetMinMaxYValue(out double min, out double max, params string[] series);
+
         void GetMinMaxYValue(System.Collections.ArrayList seriesList, out double min, out double max);
+
         double GetMaxStackedYValue(int valueIndex, params string[] series);
-       
+
         double GetMaxYValue(params string[] series);
 
         double GetMaxUnsignedStackedYValue(int valueIndex, params string[] series);
+
         double GetMaxStackedXValue(params string[] series);
+
         double GetMinYValue(int valueIndex, params string[] series);
+
         double GetMinYWithRadiusValue(ChartArea area, params string[] series);
+
         double GetMinYValue(params string[] series);
+
         double GetMinXValue(params string[] series);
+
         double GetMinStackedYValue(int valueIndex, params string[] series);
+
         double GetMinUnsignedStackedYValue(int valueIndex, params string[] series);
+
         double GetMinStackedXValue(params string[] series);
+
         double GetMaxHundredPercentStackedYValue(bool supportNegative, params string[] series);
+
         double GetMinHundredPercentStackedYValue(bool supportNegative, params string[] series);
-
-
-
-
     }
 
     /// <summary>
@@ -61,26 +70,24 @@ namespace WebCharts.Services.Models.DataManager
     internal class DataManager : ChartElement, IServiceProvider, IDataManager
     {
         #region Fields
+
         // Series collection
         private SeriesCollection _series = null;
 
         // Chart color palette
         private ChartColorPalette _colorPalette = ChartColorPalette.BrightPastel;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors and initialization
-
-        private readonly IServiceProvider _provider;
 
         /// <summary>
         /// Data manager public constructor
         /// </summary>
         /// <param name="container">Service container object.</param>
-        public DataManager(IServiceProvider provider)
+        public DataManager(CommonElements common)
         {
-            _provider = provider;
-            Common = new CommonElements(provider);
+            Common = common;
             _series = new SeriesCollection(this);
         }
 
@@ -101,18 +108,16 @@ namespace WebCharts.Services.Models.DataManager
         /// <summary>
         /// Initialize data manger object
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(ChartImage chartPicture)
         {
             // Attach to the Chart Picture painting events
-            ChartImage chartPicture = (ChartImage)_provider.GetService(typeof(ChartImage));
             chartPicture.BeforePaint += new EventHandler<ChartPaintEventArgs>(ChartPicture_BeforePaint);
             chartPicture.AfterPaint += new EventHandler<ChartPaintEventArgs>(ChartPicture_AfterPaint);
         }
 
-        #endregion
+        #endregion Constructors and initialization
 
         #region Chart picture painting events hanlers
-
 
         /// <summary>
         /// Event fired when chart picture is going to be painted.
@@ -172,7 +177,7 @@ namespace WebCharts.Services.Models.DataManager
         /// <param name="e">Event arguments.</param>
 		private void ChartPicture_AfterPaint(object sender, ChartPaintEventArgs e)
         {
-            ChartService control = (ChartService)_provider.GetService(typeof(ChartService));
+            ChartService control = Common.Chart;
             if (control != null)
             {
                 // Clean up series after drawing
@@ -187,7 +192,7 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-        #endregion
+        #endregion Chart picture painting events hanlers
 
         #region Series data preparation methods
 
@@ -246,7 +251,7 @@ namespace WebCharts.Services.Models.DataManager
             ApplyPaletteColors();
 
             // Prepare data in series
-            ChartService control = (ChartService)_provider.GetService(typeof(ChartService));
+            ChartService control = Common.Chart;
             if (control != null)
             {
                 foreach (string seriesName in series)
@@ -256,12 +261,12 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-        #endregion
+        #endregion Series data preparation methods
 
         #region Series Min/Max values methods
 
         /// <summary>
-        /// This method checks if data point should be skipped. This 
+        /// This method checks if data point should be skipped. This
         /// method will return true if data point is empty.
         /// </summary>
         /// <param name="point">Data point</param>
@@ -607,8 +612,8 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     if (_series[seriesName].Points.Count > pointIndex)
                     {
-                        // Take chart type from the series 
-                        ChartTypeRegistry chartTypeRegistry = (ChartTypeRegistry)_provider.GetService(typeof(ChartTypeRegistry));
+                        // Take chart type from the series
+                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
                         IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
 
                         // If stacked area
@@ -653,8 +658,8 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     if (_series[seriesName].Points.Count > pointIndex)
                     {
-                        // Take chart type from the series 
-                        ChartTypeRegistry chartTypeRegistry = (ChartTypeRegistry)_provider.GetService(typeof(ChartTypeRegistry));
+                        // Take chart type from the series
+                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
                         IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
 
                         // If stacked column and bar
@@ -838,8 +843,8 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     if (_series[seriesName].Points.Count > pointIndex)
                     {
-                        // Take chart type from the series 
-                        ChartTypeRegistry chartTypeRegistry = (ChartTypeRegistry)_provider.GetService(typeof(ChartTypeRegistry));
+                        // Take chart type from the series
+                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
                         IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
 
                         // If stacked area
@@ -888,8 +893,8 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     if (_series[seriesName].Points.Count > pointIndex)
                     {
-                        // Take chart type from the series 
-                        ChartTypeRegistry chartTypeRegistry = (ChartTypeRegistry)_provider.GetService(typeof(ChartTypeRegistry));
+                        // Take chart type from the series
+                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
                         IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
 
                         // If stacked column and bar
@@ -942,7 +947,6 @@ namespace WebCharts.Services.Models.DataManager
             }
             return returnValue;
         }
-
 
         /// <summary>
         /// Gets maximum hundred percent stacked Y value
@@ -1065,7 +1069,7 @@ namespace WebCharts.Services.Models.DataManager
             return returnValue;
         }
 
-        #endregion
+        #endregion Series Min/Max values methods
 
         #region DataManager Properties
 
@@ -1127,12 +1131,10 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-
-
-
-        #endregion
+        #endregion DataManager Properties
 
         #region IDisposable Members
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -1149,6 +1151,6 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 }

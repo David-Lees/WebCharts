@@ -2,27 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	The ChartArea class represents one chart area within 
-//              a chart image, and is used to plot one or more chart 
-//              series. The number of chart series that can be plotted 
+//  Purpose:	The ChartArea class represents one chart area within
+//              a chart image, and is used to plot one or more chart
+//              series. The number of chart series that can be plotted
 //              in a chart area is unlimited.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Chart area aligment enumerations
 
@@ -90,16 +82,16 @@ namespace WebCharts.Services.Models.General
         All = Position | PlotPosition | Cursor | AxesView
     }
 
-    #endregion
+    #endregion Chart area aligment enumerations
 
     /// <summary>
-    /// The ChartArea class is used to create and display a chart 
-    /// area within a chart image. The chart area is a rectangular 
-    /// area on a chart image.  It has 4 axes, horizontal and vertical grids. 
-    /// A chart area can contain more than one different chart type.  
-    /// The number of chart series that can be plotted in a chart area 
+    /// The ChartArea class is used to create and display a chart
+    /// area within a chart image. The chart area is a rectangular
+    /// area on a chart image.  It has 4 axes, horizontal and vertical grids.
+    /// A chart area can contain more than one different chart type.
+    /// The number of chart series that can be plotted in a chart area
     /// is unlimited.
-    /// 
+    ///
     /// ChartArea class exposes all the properties and methods
     /// of its base ChartArea3D class.
     /// </summary>
@@ -117,6 +109,7 @@ namespace WebCharts.Services.Models.General
 
         // Private data members, which store properties values
         private Axis[] _axisArray = new Axis[4];
+
         private SKColor _backColor = SKColor.Empty;
         private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
         private string _backImage = "";
@@ -155,7 +148,6 @@ namespace WebCharts.Services.Models.General
         // Chart area position before adjustments
         internal SKRect lastAreaPosition = SKRect.Empty;
 
-
         // Center of the circulat chart area
         internal SKPoint circularCenter = SKPoint.Empty;
 
@@ -173,7 +165,7 @@ namespace WebCharts.Services.Models.General
         // Gets or sets a flag that specifies whether the chart area is visible.
         private bool _visible = true;
 
-        #endregion
+        #endregion Chart Area Fields
 
         #region Chart Area Cursor properties
 
@@ -221,7 +213,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Chart Area Cursor properties
 
         #region Chart Area properties
 
@@ -229,7 +221,7 @@ namespace WebCharts.Services.Models.General
         /// Gets or sets a flag that specifies whether the chart area is visible.
         /// </summary>
         /// <remarks>
-        /// When this flag is set to false, all series, legends, titles and annotation objects 
+        /// When this flag is set to false, all series, legends, titles and annotation objects
         /// associated with the chart area will also be hidden.
         /// </remarks>
         /// <value>
@@ -306,7 +298,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Gets or sets the alignment style of the ChartArea.
         /// </summary>
@@ -351,7 +342,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets an Axis object that represents the primary Y-axis. 
+        /// Gets or sets an Axis object that represents the primary Y-axis.
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
@@ -373,7 +364,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets an Axis object that represents the primary X-axis. 
+        /// Gets or sets an Axis object that represents the primary X-axis.
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
@@ -395,7 +386,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets an Axis object that represents the secondary X-axis. 
+        /// Gets or sets an Axis object that represents the secondary X-axis.
         /// </summary>
         [
         SRCategory("CategoryAttributeAxis"),
@@ -470,7 +461,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets an ElementPosition object, which defines the inner plot position of a chart area object.  
+        /// Gets or sets an ElementPosition object, which defines the inner plot position of a chart area object.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -500,7 +491,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the background color of a ChartArea object. 
+        /// Gets or sets the background color of a ChartArea object.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -524,7 +515,6 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         [
 
-
         SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeBackHatchStyle"),
         ]
@@ -542,7 +532,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the background image of a ChartArea object. 
+        /// Gets or sets the background image of a ChartArea object.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -582,7 +572,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the color of a ChartArea object's background image that will be drawn as transparent.  
+        /// Gets or sets the color of a ChartArea object's background image that will be drawn as transparent.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -602,7 +592,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the alignment of a ChartArea object. 
+        /// Gets or sets the alignment of a ChartArea object.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -622,8 +612,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the orientation of a chart element's gradient, 
-        /// and also determines whether or not a gradient is used.  
+        /// Gets or sets the orientation of a chart element's gradient,
+        /// and also determines whether or not a gradient is used.
         /// </summary>
         [
 
@@ -665,7 +655,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the shadow color of a ChartArea object.  
+        /// Gets or sets the shadow color of a ChartArea object.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -793,7 +783,7 @@ namespace WebCharts.Services.Models.General
 
         /// <summary>
         /// Gets or sets a Boolean that determines if the labels of the axes for all chart area
-        /// , which have LabelsAutoFit property set to true, are of equal size.  
+        /// , which have LabelsAutoFit property set to true, are of equal size.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -812,10 +802,10 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
-        #endregion
+        #endregion Chart Area properties
 
         #region Constructors
+
         /// <summary>
         /// ChartArea constructor.
         /// </summary>
@@ -832,9 +822,11 @@ namespace WebCharts.Services.Models.General
         {
             Initialize();
         }
-        #endregion
+
+        #endregion Constructors
 
         #region Chart Area Methods
+
         /// <summary>
         /// Restores series order and X axis reversed mode for the 3D charts.
         /// </summary>
@@ -872,7 +864,7 @@ namespace WebCharts.Services.Models.General
                 oldReverseY = AxisY.IsReversed;
                 oldYAngle = Area3DStyle.Rotation;
 
-                // Check if Y angle 
+                // Check if Y angle
                 if (Area3DStyle.Rotation > 90 || Area3DStyle.Rotation < -90)
                 {
                     // This method depends on the 'switchValueAxes' field which is calculated based on the chart types
@@ -1012,10 +1004,10 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Minimum and maximum do not have to be calculated 
-        /// from data series every time. It is very time 
-        /// consuming. Minimum and maximum are buffered 
-        /// and only when this flags are set Minimum and 
+        /// Minimum and maximum do not have to be calculated
+        /// from data series every time. It is very time
+        /// consuming. Minimum and maximum are buffered
+        /// and only when this flags are set Minimum and
         /// Maximum are refreshed from data.
         /// </summary>
         internal void ResetMinMaxFromData()
@@ -1043,7 +1035,7 @@ namespace WebCharts.Services.Models.General
             _axisArray[2].ReCalc(PlotAreaPosition);
             _axisArray[3].ReCalc(PlotAreaPosition);
 
-            // Find all Data and chart types which belong 
+            // Find all Data and chart types which belong
             // to this chart area an set default values
             SetData();
 
@@ -1062,11 +1054,10 @@ namespace WebCharts.Services.Models.General
             _axisArray[2].ReCalc(PlotAreaPosition);
             _axisArray[3].ReCalc(PlotAreaPosition);
 
-            // Find all Data and chart types which belong 
+            // Find all Data and chart types which belong
             // to this chart area an set default values
             SetData();
         }
-
 
         /// <summary>
         /// Reset auto calculated chart area values.
@@ -1086,8 +1077,8 @@ namespace WebCharts.Services.Models.General
         /// <returns>Background rectangle</returns>
         internal SKRect GetBackgroundPosition(bool withScrollBars)
         {
-            // For pie and doughnut, which do not have axes, the position 
-            // for the background is Chart area position not plotting 
+            // For pie and doughnut, which do not have axes, the position
+            // for the background is Chart area position not plotting
             // area position.
             SKRect backgroundPosition = PlotAreaPosition.ToSKRect();
             if (!requireAxes)
@@ -1101,7 +1092,7 @@ namespace WebCharts.Services.Models.General
                 return backgroundPosition;
             }
 
-            // Add scroll bar rectangles to the area background 
+            // Add scroll bar rectangles to the area background
             SKRect backgroundPositionWithScrollBars = new(backgroundPosition.Left, backgroundPosition.Top, backgroundPosition.Right, backgroundPosition.Bottom);
 
             return backgroundPositionWithScrollBars;
@@ -1159,7 +1150,6 @@ namespace WebCharts.Services.Models.General
                 verticalAxes = 1;
             }
 
-
             //******************************************************
             //** Find same auto-fit font size
             //******************************************************
@@ -1194,7 +1184,7 @@ namespace WebCharts.Services.Models.General
             }
 
             //******************************************************
-            //** Adjust plotting area position according to the axes 
+            //** Adjust plotting area position according to the axes
             //** elements (title, labels, tick marks) size.
             //******************************************************
             SKRect rectLabelSideSpacing = SKRect.Empty;
@@ -1308,10 +1298,8 @@ namespace WebCharts.Services.Models.General
                     axisSize = 0;
                 }
 
-
                 // Add axis title and scroll bar size (always outside of plotting area)
                 axisSize += axis.titleSize + axis.scrollBarSize;
-
 
                 // Calculate horizontal axes size for circualar area
                 if (chartAreaIsCurcular &&
@@ -1362,7 +1350,7 @@ namespace WebCharts.Services.Models.General
 
                                 // NOTE: Code was removed to solve an issue with extra space when labels angle = 45
                                 //rectLabelSideSpacing.Width = (float)Math.Max(offset, rectLabelSideSpacing.Width);
-                                rectLabelSideSpacing.Left = (float)Math.Max(offset, rectLabelSideSpacing.Left);
+                                rectLabelSideSpacing.Left = Math.Max(offset, rectLabelSideSpacing.Left);
                             }
 
                             if (axis.labelFarOffset > Position.Right)
@@ -1377,7 +1365,6 @@ namespace WebCharts.Services.Models.General
                                 }
                             }
                         }
-
                         else
                         {
                             if (axis.labelNearOffset != 0 && axis.labelNearOffset < Position.Y)
@@ -1410,7 +1397,7 @@ namespace WebCharts.Services.Models.General
             }
 
             //******************************************************
-            //** Make sure there is enough space 
+            //** Make sure there is enough space
             //** for labels on the chart sides
             //******************************************************
             if (!chartAreaIsCurcular)
@@ -1438,7 +1425,7 @@ namespace WebCharts.Services.Models.General
             }
 
             //******************************************************
-            //** Plotting area must be square for the circular 
+            //** Plotting area must be square for the circular
             //** chart area (in pixels).
             //******************************************************
             if (chartAreaIsCurcular)
@@ -1496,10 +1483,9 @@ namespace WebCharts.Services.Models.General
                 (float)Math.Round(plottingRect.Width / (Position.Width / 100F), 5),
                 (float)Math.Round(plottingRect.Height / (Position.Height / 100F), 5));
 
-
             //******************************************************
-            //** Adjust label font size for axis, which were 
-            //** automatically calculated after the opposite axis 
+            //** Adjust label font size for axis, which were
+            //** automatically calculated after the opposite axis
             //** change the size of plotting area.
             //******************************************************
             AxisY2.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
@@ -1509,7 +1495,6 @@ namespace WebCharts.Services.Models.General
                 AxisX2.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
                 AxisX.AdjustLabelFontAtSecondPass(chartGraph, InnerPlotPosition.Auto);
             }
-
         }
 
         /// <summary>
@@ -1640,10 +1625,9 @@ namespace WebCharts.Services.Models.General
                     }
                 }
             }
-
         }
 
-        #endregion
+        #endregion Chart Area Methods
 
         #region Painting and Selection Methods
 
@@ -1715,7 +1699,6 @@ namespace WebCharts.Services.Models.General
                             Area3DStyle.Enable3D);
                     }
                 }
-
             }
         }
 
@@ -1784,12 +1767,8 @@ namespace WebCharts.Services.Models.General
                 return;
             }
 
-
-
-            // Reset Smart Labels 
+            // Reset Smart Labels
             smartLabels.Reset();
-
-
 
             // Set values for optimized drawing
             foreach (Axis currentAxis in _axisArray)
@@ -1825,14 +1804,12 @@ namespace WebCharts.Services.Models.General
             Axis[] axesArray = new Axis[] { axisY, axisY2, axisX, axisX2 };
             foreach (Axis currentAxis in axesArray)
             {
-
                 useScaleSegments = (currentAxis.ScaleSegments.Count > 0);
 
                 if (!useScaleSegments)
                 {
                     currentAxis.PaintStrips(graph, false);
                 }
-
                 else
                 {
                     foreach (AxisScaleSegment scaleSegment in currentAxis.ScaleSegments)
@@ -1850,14 +1827,12 @@ namespace WebCharts.Services.Models.General
             axesArray = new Axis[] { axisY, axisX2, axisY2, axisX };
             foreach (Axis currentAxis in axesArray)
             {
-
                 useScaleSegments = (currentAxis.ScaleSegments.Count > 0);
 
                 if (!useScaleSegments)
                 {
                     currentAxis.PaintGrids(graph);
                 }
-
                 else
                 {
                     foreach (AxisScaleSegment scaleSegment in currentAxis.ScaleSegments)
@@ -1869,20 +1844,17 @@ namespace WebCharts.Services.Models.General
                         scaleSegment.RestoreAxisScaleAndInterval();
                     }
                 }
-
             }
 
             // Draw Axis Striplines (only when StripWidth == 0)
             foreach (Axis currentAxis in axesArray)
             {
-
                 useScaleSegments = (currentAxis.ScaleSegments.Count > 0);
 
                 if (!useScaleSegments)
                 {
                     currentAxis.PaintStrips(graph, true);
                 }
-
                 else
                 {
                     foreach (AxisScaleSegment scaleSegment in currentAxis.ScaleSegments)
@@ -1894,7 +1866,6 @@ namespace WebCharts.Services.Models.General
                         scaleSegment.RestoreAxisScaleAndInterval();
                     }
                 }
-
             }
 
             // Draw Axis elements on the back of the 3D scene
@@ -1902,14 +1873,12 @@ namespace WebCharts.Services.Models.General
             {
                 foreach (Axis currentAxis in axesArray)
                 {
-
                     useScaleSegments = (currentAxis.ScaleSegments.Count > 0);
 
                     if (!useScaleSegments)
                     {
                         currentAxis.PrePaint(graph);
                     }
-
                     else
                     {
                         foreach (AxisScaleSegment scaleSegment in currentAxis.ScaleSegments)
@@ -1920,9 +1889,7 @@ namespace WebCharts.Services.Models.General
 
                             scaleSegment.RestoreAxisScaleAndInterval();
                         }
-
                     }
-
                 }
             }
 
@@ -1970,7 +1937,6 @@ namespace WebCharts.Services.Models.General
             // Draw Axis
             foreach (Axis currentAxis in axesArray)
             {
-
                 useScaleSegments = (currentAxis.ScaleSegments.Count > 0);
 
                 if (!useScaleSegments)
@@ -1978,10 +1944,9 @@ namespace WebCharts.Services.Models.General
                     // Paint axis and Reset temp axis offset for side-by-side charts like column
                     currentAxis.Paint(graph);
                 }
-
                 else
                 {
-                    // Some of the axis elements like grid lines and tickmarks 
+                    // Some of the axis elements like grid lines and tickmarks
                     // are drawn for each segment
                     foreach (AxisScaleSegment scaleSegment in currentAxis.ScaleSegments)
                     {
@@ -1995,7 +1960,6 @@ namespace WebCharts.Services.Models.General
                     // Other elements like labels, title, axis line are drawn once
                     currentAxis.PaintOnSegmentedScalePassTwo(graph);
                 }
-
             }
 
             // Call Paint event
@@ -2008,7 +1972,6 @@ namespace WebCharts.Services.Models.General
                 for (int segmentIndex = 0; segmentIndex < (currentAxis.ScaleSegments.Count - 1); segmentIndex++)
                 {
                     currentAxis.ScaleSegments[segmentIndex].PaintBreakLine(graph, currentAxis.ScaleSegments[segmentIndex + 1]);
-
                 }
             }
 
@@ -2017,14 +1980,11 @@ namespace WebCharts.Services.Models.General
             {
                 curentAxis.optimizedGetPosition = false;
 
-
                 // Reset preffered number of intervals on the axis
                 curentAxis.prefferedNumberofIntervals = 5;
 
                 // Reset flag that scale segments are used
                 curentAxis.scaleSegmentsUsed = false;
-
-
             }
         }
 
@@ -2040,7 +2000,7 @@ namespace WebCharts.Services.Models.General
             {
                 // It is common for the Bubble and Point chart types to draw markers
                 // partially outside of the chart area. By drawing the border before
-                // series we avoiding the possibility of drawing the border line on 
+                // series we avoiding the possibility of drawing the border line on
                 // top of the marker.
                 if (series.ChartArea == Name && (series.ChartType == SeriesChartType.Bubble ||
                         series.ChartType == SeriesChartType.Point))
@@ -2104,7 +2064,6 @@ namespace WebCharts.Services.Models.General
                 !double.IsNaN(_cursorY.SelectionEnd) ||
                 !double.IsNaN(_cursorY.Position))
             {
-
                 if (!chartPicture.backgroundRestored &&
                     !chartPicture.isSelectionMode)
                 {
@@ -2134,8 +2093,6 @@ namespace WebCharts.Services.Models.General
                             chartPicture.nonTopLevelChartBuffer.Dispose();
                             chartPicture.nonTopLevelChartBuffer = null;
                         }
-
-
                     }
                 }
 
@@ -2143,12 +2100,10 @@ namespace WebCharts.Services.Models.General
 
                 _cursorY.Paint(graph);
                 _cursorX.Paint(graph);
-
             }
-
         }
 
-        #endregion
+        #endregion Painting and Selection Methods
 
         #region Circular chart area methods
 
@@ -2257,7 +2212,6 @@ namespace WebCharts.Services.Models.General
 
             plotArea = chartGraph.GetRelativeRectangle(plotAreaRectAbs);
 
-
             //*****************************************************************
             //** Set axes labels size
             //*****************************************************************
@@ -2266,7 +2220,6 @@ namespace WebCharts.Services.Models.General
             AxisX2.labelSize = relativeLabelSize.Height;
             AxisY.labelSize = relativeLabelSize.Width;
             AxisY2.labelSize = relativeLabelSize.Width;
-
         }
 
         /// <summary>
@@ -2310,17 +2263,16 @@ namespace WebCharts.Services.Models.General
                 //*****************************************************************
                 SKSize textSize = chartGraph.MeasureString(
                     axis.Title.Replace("\\n", "\n"),
-                    (AxisX.autoLabelFont == null) ? AxisX.LabelStyle.Font : AxisX.autoLabelFont);
+                    AxisX.autoLabelFont ?? AxisX.LabelStyle.Font);
                 textSize.Width = (float)Math.Ceiling(textSize.Width * 1.1f);
                 textSize.Height = (float)Math.Ceiling(textSize.Height * 1.1f);
-
 
                 //*****************************************************************
                 //** Calculate area size change depending on labels style
                 //*****************************************************************
                 if (labelsStyle == CircularAxisLabelsStyle.Circular)
                 {
-                    labelsSize = (float)Math.Max(
+                    labelsSize = Math.Max(
                         labelsSize,
                         textSize.Height);
                 }
@@ -2341,7 +2293,6 @@ namespace WebCharts.Services.Models.General
                         width = 0;
                     if (height < 0)
                         height = 0;
-
 
                     labelsSize = (float)Math.Max(
                         labelsSize,
@@ -2454,7 +2405,6 @@ namespace WebCharts.Services.Models.General
                     {
                         throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(styleName, "CircularLabelsStyle")));
                     }
-
                 }
             }
 
@@ -2549,7 +2499,6 @@ namespace WebCharts.Services.Models.General
                     // Add axis into the list
                     _circularAxisList.Add(axis);
                 }
-
             }
             return _circularAxisList;
         }
@@ -2567,7 +2516,7 @@ namespace WebCharts.Services.Models.General
             return (float)(position * scaleRatio + AxisX.Crossing);
         }
 
-        #endregion
+        #endregion Circular chart area methods
 
         #region 2D Series drawing order methods
 
@@ -2576,8 +2525,8 @@ namespace WebCharts.Services.Models.General
         /// This list is used for chart area series drawing in 2D mode. Each
         /// object may represent an individual series or all series that belong
         /// to one chart type.
-        /// 
-        /// This method is intended to fix issues #6443 and #5385 when area chart 
+        ///
+        /// This method is intended to fix issues #6443 and #5385 when area chart
         /// type incorrectly overlaps point or line chart type.
         /// </summary>
         /// <returns>List of 'ChartTypeAndSeriesInfo' objects.</returns>
@@ -2624,7 +2573,7 @@ namespace WebCharts.Services.Models.General
                             }
                             else
                             {
-                                // Check if curent chart type has more that 1 series and they are split 
+                                // Check if curent chart type has more that 1 series and they are split
                                 // by other series
                                 bool chartTypeIsSplit = false;
 
@@ -2721,10 +2670,9 @@ namespace WebCharts.Services.Models.General
 
             // Series object. Can be set to NULL!
             internal Series Series = null;
-
         }
 
-        #endregion // 2D Series drawing order methods
+        #endregion 2D Series drawing order methods
 
         #region IDisposable Members
 
@@ -2783,7 +2731,6 @@ namespace WebCharts.Services.Models.General
             base.Dispose(disposing);
         }
 
-        #endregion
-
+        #endregion IDisposable Members
     }
 }

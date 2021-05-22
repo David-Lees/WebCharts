@@ -2,27 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Provides 2D/3D drawing and hit testing functionality 
-//              for the Bar and RangeBar charts. 
+//  Purpose:	Provides 2D/3D drawing and hit testing functionality
+//              for the Bar and RangeBar charts.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     #region Bar label style enumeration
 
@@ -52,12 +43,12 @@ namespace WebCharts.Services.Models.ChartTypes
         Right,
     };
 
-    #endregion
+    #endregion Bar label style enumeration
 
     /// <summary>
-    /// BarChart class contains all the code necessary to draw 
-    /// both Bar and RangeBar charts. The RangeBarChart class is used 
-    /// to override few default settings, so that 2 Y values 
+    /// BarChart class contains all the code necessary to draw
+    /// both Bar and RangeBar charts. The RangeBarChart class is used
+    /// to override few default settings, so that 2 Y values
     /// will be used to define left and right position of each bar.
     /// </summary>
     internal class RangeBarChart : BarChart
@@ -76,7 +67,7 @@ namespace WebCharts.Services.Models.ChartTypes
             defLabelDrawingStyle = BarValueLabelDrawingStyle.Center;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -86,14 +77,14 @@ namespace WebCharts.Services.Models.ChartTypes
         override public string Name { get { return ChartTypeNames.RangeBar; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         override public bool ZeroCrossing { get { return true; } }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         override public int YValuesPerPoint { get { return 2; } }
 
@@ -102,14 +93,14 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         override public bool ExtraYValuesConnectedToYAxis { get { return true; } }
 
-        #endregion
+        #endregion IChartType interface implementation
     }
 
     /// <summary>
-    /// BarChart class provides 2D/3D drawing and hit testing 
-    /// functionality for the Bar and RangeBar charts. The only 
-    /// difference between the RangeBar and Bar chart is that 
-    /// 2 Y values are used to position left and right side 
+    /// BarChart class provides 2D/3D drawing and hit testing
+    /// functionality for the Bar and RangeBar charts. The only
+    /// difference between the RangeBar and Bar chart is that
+    /// 2 Y values are used to position left and right side
     /// of each RangeBar bar.
     /// </summary>
     internal class BarChart : IChartType
@@ -136,7 +127,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         protected bool pointLabelsMarkersPresent = false;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
@@ -147,7 +138,7 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -171,15 +162,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         public bool Stacked { get { return false; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return false; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return false; } }
@@ -215,8 +204,8 @@ namespace WebCharts.Services.Models.ChartTypes
         virtual public bool SideBySideSeries { get { return true; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return true; } }
@@ -249,7 +238,6 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         public bool ApplyPaletteColorsToPoints { get { return false; } }
 
-
         /// <summary>
         /// How to draw series/points in legend:
         /// Filled rectangle, Line or Marker
@@ -262,11 +250,11 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 1; } }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Painting and selection methods
 
@@ -316,7 +304,6 @@ namespace WebCharts.Services.Models.ChartTypes
             // Get pixel size
             SKSize pixelRelSize = graph.GetRelativeSize(new SKSize(1.1f, 1.1f));
 
-
             //************************************************************
             //** Prosess 3D chart type
             //************************************************************
@@ -325,7 +312,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 ProcessChartType3D(selection, graph, common, area, seriesToDraw);
                 return;
             }
-
 
             //************************************************************
             //** Collect initial series data
@@ -369,7 +355,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
             // Check if bar chart series are indexed
             bool indexedSeries = ChartHelper.IndexedSeries(area.Common, typeSeries.ToArray());
-
 
             //************************************************************
             //** Loop through all series
@@ -500,7 +485,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     double xPosition = 0;
                     if (indexedSeries)
                     {
-                        // The formula for position is based on a distance 
+                        // The formula for position is based on a distance
                         // from the grid line or nPoints position.
                         xPosition = vAxis.GetPosition((double)pointIndex + 1) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width;
                     }
@@ -533,7 +518,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         rectSize.Left = (float)(xPosition - width / 2);
                         rectSize.Size = new((float)width, (float)width);
 
-                        // The left side of rectangle has always 
+                        // The left side of rectangle has always
                         // smaller value than a right value
                         if (barStartPosition < barSize)
                         {
@@ -576,7 +561,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             bool clipRegionSet = false;
                             if (rectSize.Top < area.PlotAreaPosition.Y || rectSize.Bottom > area.PlotAreaPosition.Bottom)
                             {
-                                // Set clipping region for line drawing 
+                                // Set clipping region for line drawing
                                 graph.SetClip(area.PlotAreaPosition.ToSKRect());
                                 clipRegionSet = true;
                             }
@@ -636,7 +621,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
 
                     //************************************************************
-                    // Hot Regions mode used for image maps, tool tips and 
+                    // Hot Regions mode used for image maps, tool tips and
                     // hit test function
                     //************************************************************
                     if (common.ProcessModeRegions && !common.ProcessModePaint)
@@ -665,7 +650,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 {
                     seriesIndx++;
                 }
-
             }
         }
 
@@ -716,7 +700,6 @@ namespace WebCharts.Services.Models.ChartTypes
             int pointIndex,
             ref int markerIndex)
         {
-
             //************************************************************
             // Draw data point value marker
             //************************************************************
@@ -785,7 +768,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 {
                     markerIndex = 0;
                 }
-
             }
 
             //************************************************************
@@ -801,7 +783,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 using StringFormat format = new();
 
                 //************************************************************
-                // Get label text 
+                // Get label text
                 //************************************************************
                 string text;
                 if (point.Label.Length == 0)
@@ -821,7 +803,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 //************************************************************
-                // Check labels style custom properties 
+                // Check labels style custom properties
                 //************************************************************
                 BarValueLabelDrawingStyle drawingStyle = defLabelDrawingStyle;
                 string valueLabelAttrib = "";
@@ -929,7 +911,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             format.Alignment = StringAlignment.Far;
                     }
 
-                    // Make sure value label fits rectangle. 
+                    // Make sure value label fits rectangle.
                     SKSize valueTextSize = graph.MeasureStringRel(text, point.Font);
                     if (!labelSwitched &&
                         !labelSwitchedBack &&
@@ -1026,7 +1008,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 // Draw label text
-                using SKPaint brush = new() { Color = point.LabelForeColor };
+                using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
                 graph.DrawPointLabelStringRel(
                     common,
                     text,
@@ -1047,7 +1029,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Inserts Hot Regions used for image maps, tool tips and 
+        /// Inserts Hot Regions used for image maps, tool tips and
         /// hit test function
         /// </summary>
         /// <param name="common">Common elements object</param>
@@ -1080,10 +1062,9 @@ namespace WebCharts.Services.Models.ChartTypes
                     seriesName,
                     pointIndex);
             }
-
         }
 
-        #endregion
+        #endregion Painting and selection methods
 
         #region Getting Y value methods
 
@@ -1149,9 +1130,9 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method will find previous and next data point, which is not 
-        /// empty and recalculate a new value for current empty data point. 
-        /// New value depends on custom attribute “EmptyPointValue” and 
+        /// This method will find previous and next data point, which is not
+        /// empty and recalculate a new value for current empty data point.
+        /// New value depends on custom attribute “EmptyPointValue” and
         /// it could be zero or average.
         /// </summary>
         /// <param name="point">IsEmpty data point.</param>
@@ -1246,7 +1227,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return -aCoeff * (point.XValue - series.Points[prevIndx].XValue) + previousPoint;
         }
 
-        #endregion
+        #endregion Getting Y value methods
 
         #region 3D Drawing and Selection
 
@@ -1329,7 +1310,6 @@ namespace WebCharts.Services.Models.ChartTypes
             //** Loop through all data poins
             //************************************************************
             bool drawLabels = false;
-
 
             //************************************************************
             //** Get list of series to draw
@@ -1425,7 +1405,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     rectSize.Top = (float)(xPosition - pointEx.width / 2);
                     rectSize.Bottom = rectSize.Top + (float)(pointEx.width);
 
-                    // The left side of rectangle has always 
+                    // The left side of rectangle has always
                     // smaller value than a right value
                     if (barStartPosition < barSize)
                     {
@@ -1449,7 +1429,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
                 // Remeber pre-calculated point position
                 point.positionRel = new SKPoint(rectSize.Right, (float)xPosition);
-
 
                 //************************************************************
                 //** Painting mode
@@ -1533,7 +1512,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 //************************************************************
-                // Hot Regions mode used for image maps, tool tips and 
+                // Hot Regions mode used for image maps, tool tips and
                 // hit test function
                 //************************************************************
                 if (common.ProcessModeRegions)
@@ -1551,7 +1530,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     rectPath.Dispose();
                 }
             }
-
 
             //************************************************************
             //** Loop through all data poins and draw labels
@@ -1618,7 +1596,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         rectSize.Top = (float)(xPosition - pointEx.width / 2);
                         rectSize.Bottom = rectSize.Top + (float)(pointEx.width);
 
-                        // The left side of rectangle has always 
+                        // The left side of rectangle has always
                         // smaller value than a right value
                         if (barStartPosition < barSize)
                         {
@@ -1635,7 +1613,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     {
                         continue;
                     }
-
 
                     //************************************************************
                     //** Painting mode
@@ -1660,7 +1637,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
                 }
             }
-
         }
 
         /// <summary>
@@ -1728,7 +1704,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     // Transform coordinates of text size
                     area.matrix3D.TransformPoints(marker3DPosition);
 
-
                     //************************************************************
                     //** Draw 3D marker
                     //************************************************************
@@ -1751,7 +1726,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
         }
-
 
         /// <summary>
         /// Draws labels in 3D.
@@ -1791,7 +1765,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 using StringFormat format = new();
 
                 //************************************************************
-                // Get label text 
+                // Get label text
                 //************************************************************
                 string text;
                 if (point.Label.Length == 0)
@@ -1829,7 +1803,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 //************************************************************
-                // Check labels style custom properties 
+                // Check labels style custom properties
                 //************************************************************
                 BarValueLabelDrawingStyle drawingStyle = defLabelDrawingStyle;
                 string valueLabelAttrib = "";
@@ -1931,7 +1905,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             format.Alignment = StringAlignment.Far;
                     }
 
-                    // Make sure value label fits rectangle. 
+                    // Make sure value label fits rectangle.
                     SKSize valueTextSize = graph.MeasureStringRel(text, point.Font);
                     if (!labelSwitched &&
                         !labelSwitchedBack &&
@@ -2018,7 +1992,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 format.Alignment = StringAlignment.Center;
                 format.LineAlignment = StringAlignment.Center;
 
-
                 //************************************************************
                 // Adjust label rotation angle
                 //************************************************************
@@ -2050,14 +2023,13 @@ namespace WebCharts.Services.Models.ChartTypes
                     angle += (int)angleXAxis;
                 }
 
-
                 // Calculate label background position
                 SKRect labelBackPosition = SKRect.Empty;
                 if (common.ProcessModeRegions ||
                     point.LabelBackColor != SKColor.Empty ||
                     point.LabelBorderColor != SKColor.Empty)
                 {
-                    SKSize sizeLabel = new SKSize(size.Width, size.Height);
+                    SKSize sizeLabel = new(size.Width, size.Height);
                     sizeLabel.Height += sizeLabel.Height / 8;
                     sizeLabel.Width += sizeLabel.Width / text.Length;
                     labelBackPosition = new SKRect(
@@ -2087,11 +2059,10 @@ namespace WebCharts.Services.Models.ChartTypes
                     ser,
                     point,
                     pointIndex);
-
             }
         }
 
-        #endregion
+        #endregion 3D Drawing and Selection
 
         #region SmartLabelStyle methods
 
@@ -2107,16 +2078,17 @@ namespace WebCharts.Services.Models.ChartTypes
             // NOTE: Bar chart do not support SmartLabelStyle feature.
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -2127,18 +2099,19 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 
     #region Points drawing order comparer class
 
     /// <summary>
-    /// Chart 3D engine relies on the data point drawing order 
-    /// to achieve correct visual appearance. All data points 
-    /// have to be drawn in the correct order depending on the 
+    /// Chart 3D engine relies on the data point drawing order
+    /// to achieve correct visual appearance. All data points
+    /// have to be drawn in the correct order depending on the
     /// 3D angles, perspective and the depth of the series.
-    /// 
-    /// BarPointsDrawingOrderComparer class is used sort data 
+    ///
+    /// BarPointsDrawingOrderComparer class is used sort data
     /// points of the Bar chart type.
     /// </summary>
     internal class BarPointsDrawingOrderComparer : IComparer
@@ -2148,19 +2121,19 @@ namespace WebCharts.Services.Models.ChartTypes
         /// <summary>
 		/// Chart area object reference.
 		/// </summary>
-		private ChartArea _area = null;
+		private readonly ChartArea _area = null;
 
         /// <summary>
         /// Area X position where visible sides are switched.
         /// </summary>
-        private Point3D _areaProjectionCenter = new Point3D(float.NaN, float.NaN, float.NaN);
+        private readonly Point3D _areaProjectionCenter = new(float.NaN, float.NaN, float.NaN);
 
         /// <summary>
         /// Selection mode. Points order should be reversed.
         /// </summary>
-        private bool _selection = false;
+        private readonly bool _selection = false;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Methods
 
@@ -2238,11 +2211,9 @@ namespace WebCharts.Services.Models.ChartTypes
                         {
                             result = 1;
                         }
-
                     }
                     else
                     {
-
                         if (yMax1 >= _areaProjectionCenter.Y && yMax2 >= _areaProjectionCenter.Y)
                         {
                             result *= 1;
@@ -2287,8 +2258,8 @@ namespace WebCharts.Services.Models.ChartTypes
             return (_selection) ? -result : result;
         }
 
-        #endregion // Methods
+        #endregion Methods
     }
 
-    #endregion
+    #endregion Points drawing order comparer class
 }

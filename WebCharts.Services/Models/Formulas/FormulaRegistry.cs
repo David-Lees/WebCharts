@@ -2,24 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Keep track of all registered formula module types.
 //
 
-
 using System;
 using System.Collections;
-using WebCharts.Services.Models.Common;
 
-namespace WebCharts.Services.Models.Formulas
+namespace WebCharts.Services
 {
     public interface IFormulaRegistry
     {
         public int Count { get; }
 
         public IFormula GetFormulaModule(string name);
+
         public string GetModuleName(int index);
+
         public void Register(string name, Type moduleType);
     }
 
@@ -32,10 +31,11 @@ namespace WebCharts.Services.Models.Formulas
 
         // Storage for all registered formula modules
         internal Hashtable registeredModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
+
         private Hashtable _createdModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
         private ArrayList _modulesNames = new ArrayList();
 
-        #endregion
+        #endregion Fields
 
         #region Methods
 
@@ -138,7 +138,7 @@ namespace WebCharts.Services.Models.Formulas
             return (string)_modulesNames[index];
         }
 
-        #endregion
+        #endregion Methods
 
         #region Properties
 
@@ -153,7 +153,7 @@ namespace WebCharts.Services.Models.Formulas
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 
     /// <summary>
@@ -161,16 +161,16 @@ namespace WebCharts.Services.Models.Formulas
     /// properties for each formula module
     /// </summary>
 	public interface IFormula
-	{
-		#region IFormula Properties and Methods
-
-		/// <summary>
-		/// Formula Module name
-		/// </summary>
-		string Name			{ get; }
+    {
+        #region IFormula Properties and Methods
 
         /// <summary>
-        /// The first method in the module, which converts a formula 
+        /// Formula Module name
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// The first method in the module, which converts a formula
         /// name to the corresponding private method.
         /// </summary>
         /// <param name="formulaName">String which represent a formula name</param>
@@ -179,9 +179,8 @@ namespace WebCharts.Services.Models.Formulas
         /// <param name="parameterList">Array of strings - Formula parameters</param>
         /// <param name="extraParameterList">Array of strings - Extra Formula parameters from DataManipulator object</param>
         /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		void Formula(string formulaName, double [][] inputValues, out double [][] outputValues, string [] parameterList, string [] extraParameterList, out string [][] outLabels  );
+		void Formula(string formulaName, double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList, out string[][] outLabels);
 
-		#endregion
-	}
+        #endregion IFormula Properties and Methods
+    }
 }
-

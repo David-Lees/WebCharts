@@ -2,34 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Class is used to store relative position of the chart
 //				elements like Legend, Title and others. It uses
 //              relative coordinate system where top left corner is
 //              0,0 and bottom right is 100,100.
 //              :
-//              If Auto property is set to true, all position properties 
+//              If Auto property is set to true, all position properties
 //              (X,Y,Width and Height) are ignored and they automatically
 //              calculated during chart rendering.
 //              :
-//              Note that setting any of the position properties will 
+//              Note that setting any of the position properties will
 //              automatically set Auto property to false.
 //
 
-
 using SkiaSharp;
 using System;
-using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     /// <summary>
-    /// ElementPosition is the base class for many chart visual 
-    /// elements like Legend, Title and ChartArea. It provides 
-    /// the position of the chart element in relative coordinates, 
+    /// ElementPosition is the base class for many chart visual
+    /// elements like Legend, Title and ChartArea. It provides
+    /// the position of the chart element in relative coordinates,
     /// from (0,0) to (100,100).
     /// </summary>
     [
@@ -41,6 +36,7 @@ namespace WebCharts.Services.Models.Utilities
 
         // Private data members, which store properties values
         private float _x = 0;
+
         private float _y = 0;
         private float _width = 0;
         private float _height = 0;
@@ -49,7 +45,7 @@ namespace WebCharts.Services.Models.Utilities
         // Indicates the auto position of all areas must be reset
         internal bool resetAreaAutoPosition = false;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -68,7 +64,6 @@ namespace WebCharts.Services.Models.Utilities
         {
         }
 
-
         /// <summary>
         /// ElementPosition constructor.
         /// </summary>
@@ -85,7 +80,7 @@ namespace WebCharts.Services.Models.Utilities
             _height = height;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
@@ -159,7 +154,6 @@ namespace WebCharts.Services.Models.Utilities
                 {
                     return true;
                 }
-
             }
             return false;
         }
@@ -199,7 +193,7 @@ namespace WebCharts.Services.Models.Utilities
             _auto = oldValue;
         }
 
-        #endregion
+        #endregion Methods
 
         #region Element Position properties
 
@@ -325,7 +319,6 @@ namespace WebCharts.Services.Models.Utilities
                 if ((_y + Height) > 100)
                 {
                     _y = 100 - Height;
-
                 }
 
                 Invalidate();
@@ -363,7 +356,7 @@ namespace WebCharts.Services.Models.Utilities
             }
         }
 
-        #endregion
+        #endregion Element Position properties
     }
 
     /// <summary>

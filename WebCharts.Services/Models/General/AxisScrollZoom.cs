@@ -23,10 +23,8 @@
 
 using System;
 using System.Collections;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Scrolling  enumerations
 
@@ -814,7 +812,7 @@ namespace WebCharts.Services.Models.General
             // Check parameters
             if (numberOfViews < 0)
             {
-                throw (new ArgumentOutOfRangeException("numberOfViews", SR.ExceptionScrollBarZoomResetsNumberInvalid));
+                throw (new ArgumentOutOfRangeException(nameof(numberOfViews), SR.ExceptionScrollBarZoomResetsNumberInvalid));
             }
             // Check if storage was created
             if (dataViewStates != null && dataViewStates.Count >= 3)
@@ -831,7 +829,7 @@ namespace WebCharts.Services.Models.General
                 }
 
                 // Fire scaleView position/size changing events
-                ViewEventArgs arguments = new ViewEventArgs(
+                ViewEventArgs arguments = new(
                     axis,
                     (double)dataViewStates[dataStartIndex],
                     (double)dataViewStates[dataStartIndex + 1],
@@ -876,7 +874,7 @@ namespace WebCharts.Services.Models.General
             else
             {
                 // Fire scaleView position/size changing events
-                ViewEventArgs arguments = new ViewEventArgs(
+                ViewEventArgs arguments = new(
                     axis,
                     double.NaN,
                     double.NaN,
@@ -1187,6 +1185,7 @@ namespace WebCharts.Services.Models.General
 
         // Private fields for properties values storage
         private readonly Axis _axis = null;
+
         private DateTimeIntervalType _newSizeType = DateTimeIntervalType.Auto;
 
         #endregion Private fields

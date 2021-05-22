@@ -2,31 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	ChartTypeRegistry is a repository for all standard 
-//              and custom chart types. Each chart type has unique 
+//  Purpose:	ChartTypeRegistry is a repository for all standard
+//              and custom chart types. Each chart type has unique
 //              name and IChartType derived class which provides
 //              behaviour information about the chart type and
 //              also contains drwaing functionality.
-//              ChartTypeRegistry can be used by user for custom 
-//              chart type registering and can be retrieved using 
+//              ChartTypeRegistry can be used by user for custom
+//              chart type registering and can be retrieved using
 //              Chart.GetService(typeof(ChartTypeRegistry)) method.
 //
 
-
 using System;
 using System.Collections;
-using System.IO;
 using System.Reflection;
 using System.Resources;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
     /// ChartTypeName class contains constant strings defining
@@ -72,18 +64,18 @@ namespace WebCharts.Services.Models.ChartTypes
         internal const string Stock = "Stock";
         internal const string ThreeLineBreak = "ThreeLineBreak";
 
-        #endregion // Keyword Names
+        #endregion Chart type names
     }
 
     /// <summary>
-    /// ChartTypeRegistry class is a repository for all standard and custom 
-    /// chart types. In order for the chart control to display the chart 
-    /// type, it first must be registered using unique name and IChartType 
-    /// derived class which provides the description of the chart type and 
+    /// ChartTypeRegistry class is a repository for all standard and custom
+    /// chart types. In order for the chart control to display the chart
+    /// type, it first must be registered using unique name and IChartType
+    /// derived class which provides the description of the chart type and
     /// also responsible for all drawing and hit testing.
-    /// 
-    /// ChartTypeRegistry can be used by user for custom chart type registering 
-    /// and can be retrieved using Chart.GetService(typeof(ChartTypeRegistry)) 
+    ///
+    /// ChartTypeRegistry can be used by user for custom chart type registering
+    /// and can be retrieved using Chart.GetService(typeof(ChartTypeRegistry))
     /// method.
     /// </summary>
     internal class ChartTypeRegistry : IServiceProvider, IDisposable, IChartTypeRegistry
@@ -95,9 +87,10 @@ namespace WebCharts.Services.Models.ChartTypes
 
         // Storage for registered/created chart types
         internal Hashtable registeredChartTypes = new(StringComparer.OrdinalIgnoreCase);
+
         private readonly Hashtable _createdChartTypes = new(StringComparer.OrdinalIgnoreCase);
 
-        #endregion
+        #endregion Fields
 
         #region Constructor and Services
 
@@ -122,7 +115,7 @@ namespace WebCharts.Services.Models.ChartTypes
             throw (new ArgumentException(SR.ExceptionChartTypeRegistryUnsupportedType(serviceType.ToString())));
         }
 
-        #endregion
+        #endregion Constructor and Services
 
         #region Registry methods
 
@@ -217,7 +210,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion Registry methods
 
         #region IDisposable Members
 
@@ -248,6 +241,6 @@ namespace WebCharts.Services.Models.ChartTypes
             GC.SuppressFinalize(this);
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 }

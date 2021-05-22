@@ -2,39 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	StripLinesCollection class is used to expose stripes 
-//              or lines on the plotting area and is exposed through 
+//  Purpose:	StripLinesCollection class is used to expose stripes
+//              or lines on the plotting area and is exposed through
 //              StripLines property of each Axis.
-//              Each StripLine class presents one or series of 
-//              repeated axis horizontal or vertical strips within 
+//              Each StripLine class presents one or series of
+//              repeated axis horizontal or vertical strips within
 //              the plotting are.
-//              When multiple strip lines are defined for an axis, 
-//              there is a possibility of overlap. The z-order of 
-//              StripLine objects is determined by their order of 
-//              occurrence in the StripLinesCollection object. The 
-//              z-order follows this convention, the first occurrence 
-//              is drawn first, the second occurrence is drawn second, 
+//              When multiple strip lines are defined for an axis,
+//              there is a possibility of overlap. The z-order of
+//              StripLine objects is determined by their order of
+//              occurrence in the StripLinesCollection object. The
+//              z-order follows this convention, the first occurrence
+//              is drawn first, the second occurrence is drawn second,
 //              and so on.
-//              Highlighting weekends on date axis is a good example 
-//              of using strip lines with interval. 
+//              Highlighting weekends on date axis is a good example
+//              of using strip lines with interval.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// The StripLinesCollection class is a strongly typed collection of 
-    /// StripLine classes. 
+    /// The StripLinesCollection class is a strongly typed collection of
+    /// StripLine classes.
     /// </summary>
     [
         SRDescription("DescriptionAttributeStripLinesCollection_StripLinesCollection"),
@@ -42,8 +36,8 @@ namespace WebCharts.Services.Models.General
     ]
     public class StripLinesCollection : ChartElementCollection<StripLine>
     {
-
         #region Constructor
+
         /// <summary>
 		/// Legend item collection object constructor
 		/// </summary>
@@ -52,16 +46,15 @@ namespace WebCharts.Services.Models.General
             : base(axis)
         {
         }
-        #endregion
 
-
+        #endregion Constructor
     }
 
     /// <summary>
-    /// The StripLine class contains properties which define visual appearance 
-    /// of the stripe or line, its position according to the axis.  It 
-    /// may optionally contain the repeat interval. Text may associate 
-    /// with a strip or a line.  It also contains methods of drawing and hit 
+    /// The StripLine class contains properties which define visual appearance
+    /// of the stripe or line, its position according to the axis.  It
+    /// may optionally contain the repeat interval. Text may associate
+    /// with a strip or a line.  It also contains methods of drawing and hit
     /// testing.
     /// </summary>
     [
@@ -69,11 +62,11 @@ namespace WebCharts.Services.Models.General
     ]
     public class StripLine : ChartElement
     {
-
         #region Fields
 
         // Private data members, which store properties values
         private double _intervalOffset = 0;
+
         private double _interval = 0;
         private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
         internal DateTimeIntervalType intervalOffsetType = DateTimeIntervalType.Auto;
@@ -94,21 +87,23 @@ namespace WebCharts.Services.Models.General
 
         // Strip/Line title properties
         private string _text = "";
+
         private SKColor _foreColor = SKColors.Black;
         private FontCache _fontCache = new();
         private SKFont _font = null;
         private StringAlignment _textAlignment = StringAlignment.Far;
         private StringAlignment _textLineAlignment = StringAlignment.Near;
 
-        // Chart image map properties 
+        // Chart image map properties
         private string _toolTip = "";
 
         // Default text orientation
         private TextOrientation _textOrientation = TextOrientation.Auto;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
+
         /// <summary>
         /// Gets axes to which this object attached to.
         /// </summary>
@@ -123,7 +118,8 @@ namespace WebCharts.Services.Models.General
                     return null;
             }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Constructors
 
@@ -136,7 +132,7 @@ namespace WebCharts.Services.Models.General
             _font = _fontCache.DefaultFont;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Painting methods
 
@@ -201,7 +197,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Get starting position from axis
-            // NOTE: Starting position was changed from "this.Axis.minimum" to 
+            // NOTE: Starting position was changed from "this.Axis.minimum" to
             // fix the minimum scaleView location to fix issue #5962 -- AG
             double currentPosition = Axis.ViewMinimum;
 
@@ -241,12 +237,12 @@ namespace WebCharts.Services.Models.General
 			{
 				// Align first position for indexed series
 				currentPosition += this.Axis.AlignIndexedIntervalStart(
-					currentPosition, 
-					this.Interval, 
-					this.IntervalType, 
-					axisSeries, 
-					this.IntervalOffset, 
-					offsetType, 
+					currentPosition,
+					this.Interval,
+					this.IntervalType,
+					axisSeries,
+					this.IntervalOffset,
+					offsetType,
 					false);
 			}
 			*/
@@ -307,7 +303,6 @@ namespace WebCharts.Services.Models.General
 
                         if (rect.Width > 0 && rect.Height > 0)
                         {
-
                             // Start Svg Selection mode
                             if (!Axis.ChartArea.Area3DStyle.Enable3D)
                             {
@@ -335,7 +330,6 @@ namespace WebCharts.Services.Models.General
                                 }
                             }
                         }
-
                     }
                 }
                 // Draw line
@@ -402,7 +396,6 @@ namespace WebCharts.Services.Models.General
                 {
                     currentPosition += ChartHelper.GetIntervalSize(currentPosition, Interval, IntervalType, axisSeries, IntervalOffset, offsetType, false);
                 }
-
             } while (Interval > 0 && currentPosition <= Axis.ViewMaximum);
         }
 
@@ -460,7 +453,6 @@ namespace WebCharts.Services.Models.General
                     BorderWidth,
                     BorderDashStyle,
                     operationType);
-
             }
             else if (area.IsBottomSceneWallVisible())
             {
@@ -528,7 +520,7 @@ namespace WebCharts.Services.Models.General
                 // Prepare string format
                 using StringFormat format = new();
                 format.Alignment = TextAlignment;
-              
+
                 format.LineAlignment = TextLineAlignment;
 
                 // Adjust default title angle for horizontal lines
@@ -538,9 +530,11 @@ namespace WebCharts.Services.Models.General
                     case (TextOrientation.Rotated90):
                         angle = 90;
                         break;
+
                     case (TextOrientation.Rotated270):
                         angle = 270;
                         break;
+
                     case (TextOrientation.Auto):
                         if (Axis.AxisPosition == AxisPosition.Bottom || Axis.AxisPosition == AxisPosition.Top)
                         {
@@ -583,7 +577,6 @@ namespace WebCharts.Services.Models.General
                     size.Width *= size.Width / (textSizeProjection[index].X - textSizeProjection[(index == 0) ? 1 : 0].X);
                     size.Height *= size.Height / (textSizeProjection[2].Y - textSizeProjection[0].Y);
                 }
-
 
                 // Get relative size of the border width
                 SKSize sizeBorder = graph.GetRelativeSize(new SKSize(BorderWidth, BorderWidth));
@@ -662,7 +655,7 @@ namespace WebCharts.Services.Models.General
                 }
 
                 // Draw string
-                using SKPaint brush = new() { Color = ForeColor };
+                using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = ForeColor };
                 graph.DrawStringRel(
                     titleText.Replace("\\n", "\n"),
                     Font,
@@ -674,7 +667,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Painting methods
 
         #region	Strip line properties
 
@@ -1018,7 +1011,7 @@ namespace WebCharts.Services.Models.General
         /// <seealso cref="BackGradientStyle"/>
         /// </summary>
         /// <value>
-        /// A <see cref="Color"/> value used for the secondary color of a background with 
+        /// A <see cref="Color"/> value used for the secondary color of a background with
         /// hatching or gradient fill.
         /// </value>
         /// <remarks>
@@ -1186,7 +1179,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Gets or sets the tooltip.
         /// </summary>
@@ -1208,7 +1200,6 @@ namespace WebCharts.Services.Models.General
         }
 
         #endregion
-
 
         #region Invalidation methods
 
@@ -1243,7 +1234,6 @@ namespace WebCharts.Services.Models.General
             }
             base.Dispose(disposing);
         }
-
 
         #endregion
     }

@@ -5,7 +5,7 @@
 
 using SkiaSharp;
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     internal interface IImageLoader
     {

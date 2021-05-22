@@ -1,21 +1,23 @@
-﻿namespace WebCharts.Services.Enums
+﻿namespace WebCharts.Services
 {
     /// <summary>
     /// An enumeration that specifies the level of anti-aliasing quality.
     /// </summary>
     public enum TextAntiAliasingQuality
-	{
-		/// <summary>
-		/// Normal anti-aliasing quality.
-		/// </summary>
-		Normal,
-		/// <summary>
-		/// High anti-aliasing quality.
-		/// </summary>
-		High,
-		/// <summary>
-		/// System default anti-aliasing quality.
-		/// </summary>
-		SystemDefault
-	}
+    {
+        /// <summary>
+        /// Normal anti-aliasing quality.
+        /// </summary>
+        Normal,
+
+        /// <summary>
+        /// High anti-aliasing quality.
+        /// </summary>
+        High,
+
+        /// <summary>
+        /// System default anti-aliasing quality.
+        /// </summary>
+        SystemDefault
+    }
 }

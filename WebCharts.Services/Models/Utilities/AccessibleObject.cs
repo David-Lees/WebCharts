@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Chart control accessible object.
 //
@@ -11,15 +10,15 @@
 
 using System.Collections.Generic;
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     using SkiaSharp;
     using System;
-    using WebCharts.Services.Enums;
+    using WebCharts.Services;
     using WebCharts.Services.Models.Annotations;
     using WebCharts.Services.Models.Common;
     using WebCharts.Services.Models.DataManager;
-    using WebCharts.Services.Models.General;
+    using WebCharts.Services;
 
     public class ChartAccessibleObject : AccessibleObject
     {
@@ -37,7 +36,7 @@ namespace WebCharts.Services.Models.Utilities
         // Chart scaleView transformation matrix
         private SKPoint _chartScale = new(1f, 1f);
 
-#endregion // Fields
+#endregion Fields
 
 #region Constructors
 
@@ -50,7 +49,7 @@ namespace WebCharts.Services.Models.Utilities
             this._chart = chart;
         }
 
-#endregion // Constructors
+#endregion Constructors
 
 #region Properties
 
@@ -76,7 +75,7 @@ namespace WebCharts.Services.Models.Utilities
             }
         }
 
-#endregion // Properties
+#endregion Properties
 
 #region Methods
 
@@ -265,7 +264,6 @@ namespace WebCharts.Services.Models.Utilities
                             {
                                 processRegion = true;
                             }
-
                         }
                         else if (hotRegion.SelectedObject == chartElement || hotRegion.SelectedSubObject == chartElement)
                         {
@@ -275,8 +273,6 @@ namespace WebCharts.Services.Models.Utilities
                         if (processRegion)
                         {
                             SKRect bounds = hotRegion.BoundingRectangle;
-
-
 
                             // Conver chart relative coordinates to chart absolute (pixel) coordinates
                             if (hotRegion.RelativeCoordinates)
@@ -328,14 +324,13 @@ namespace WebCharts.Services.Models.Utilities
                                 result = SKRect.Union(result, rect);
                             }
                         }
-
                     }
                 }
             }
             return result;
         }
 
-#endregion // Methods
+#endregion Methods
     }
 
     /// <summary>
@@ -372,7 +367,7 @@ namespace WebCharts.Services.Models.Utilities
         // Data point index
         internal int dataPointIndex = -1;
 
-#endregion // Fields
+#endregion Fields
 
 #region Constructors
 
@@ -438,7 +433,7 @@ namespace WebCharts.Services.Models.Utilities
             this.dataPointIndex = pointIndex;
         }
 
-#endregion // Constructors
+#endregion Constructors
 
 #region Properties
 
@@ -525,7 +520,7 @@ namespace WebCharts.Services.Models.Utilities
             }
         }
 
-#endregion // Properties
+#endregion Properties
 
 #region Methods
 
@@ -548,7 +543,7 @@ namespace WebCharts.Services.Models.Utilities
             this.chartAccessibleObject.SelectChild(this.chartChildObject, this.chartChildObjectType, selection);
         }
 
-#endregion // Methods
+#endregion Methods
     }
 
     /// <summary>
@@ -561,7 +556,7 @@ namespace WebCharts.Services.Models.Utilities
         // List of child accessible objects
         private List<ChartChildAccessibleObject> _childList = new List<ChartChildAccessibleObject>();
 
-#endregion // Fields
+#endregion Fields
 
 #region Constructor
 
@@ -594,7 +589,7 @@ namespace WebCharts.Services.Models.Utilities
             // NOTE: Legend items are dynamically generated and curently are not part of the list
         }
 
-#endregion // Constructor
+#endregion Constructor
 
 #region Methods
 
@@ -621,7 +616,7 @@ namespace WebCharts.Services.Models.Utilities
             return this._childList.Count;
         }
 
-#endregion // Methods
+#endregion Methods
     }
 
     /// <summary>
@@ -634,7 +629,7 @@ namespace WebCharts.Services.Models.Utilities
         // List of child accessible objects
         private List<ChartChildAccessibleObject> _childList = new List<ChartChildAccessibleObject>();
 
-#endregion // Fields
+#endregion Fields
 
 #region Constructor
 
@@ -666,7 +661,7 @@ namespace WebCharts.Services.Models.Utilities
             this.AddAxisAccessibilityObjects(chartAccessibleObject, chartArea.AxisY2);
         }
 
-#endregion // Constructor
+#endregion Constructor
 
 #region Methods
 
@@ -700,7 +695,6 @@ namespace WebCharts.Services.Models.Utilities
                         axis.Title,
                         AccessibleRole.StaticText));
                 }
-
 
                 if (axis.MajorGrid.Enabled)
                 {
@@ -751,7 +745,7 @@ namespace WebCharts.Services.Models.Utilities
             return this._childList.Count;
         }
 
-#endregion // Methods
+#endregion Methods
     }
 
     /// <summary>
@@ -764,7 +758,7 @@ namespace WebCharts.Services.Models.Utilities
         // List of child accessible objects
         private List<ChartChildAccessibleObject> _childList = new List<ChartChildAccessibleObject>();
 
-#endregion // Fields
+#endregion Fields
 
 #region Constructor
 
@@ -815,7 +809,7 @@ namespace WebCharts.Services.Models.Utilities
             }
         }
 
-#endregion // Constructor
+#endregion Constructor
 
 #region Methods
 
@@ -842,7 +836,7 @@ namespace WebCharts.Services.Models.Utilities
             return this._childList.Count;
         }
 
-#endregion // Methods
+#endregion Methods
     }
 }
 

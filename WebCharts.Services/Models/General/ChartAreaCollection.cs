@@ -11,7 +11,7 @@
 
 using System;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// The ChartAreaCollection class represents a strongly typed collection of 

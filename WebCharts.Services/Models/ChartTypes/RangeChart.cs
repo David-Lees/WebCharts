@@ -2,32 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Provides 2D/3D drawing and hit testing functionality 
-//              for the Range and SplineRange charts. The Range chart 
-//              displays a range of data by plotting two Y values per 
-//              data point, with each Y value being drawn as a line 
-//              chart. The range between the Y values can then be 
-//              filled with color. Spline Range chart changes the 
+//  Purpose:	Provides 2D/3D drawing and hit testing functionality
+//              for the Range and SplineRange charts. The Range chart
+//              displays a range of data by plotting two Y values per
+//              data point, with each Y value being drawn as a line
+//              chart. The range between the Y values can then be
+//              filled with color. Spline Range chart changes the
 //              default tension of the lines between data points.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Linq;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
-    /// SplineRangeChart class extends the RangeChart class by 
+    /// SplineRangeChart class extends the RangeChart class by
     /// providing a different initial tension for the lines.
     /// </summary>
     internal class SplineRangeChart : RangeChart
@@ -43,7 +36,7 @@ namespace WebCharts.Services.Models.ChartTypes
             base.lineTension = 0.5f;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -62,7 +55,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Default tension method
 
@@ -84,16 +77,16 @@ namespace WebCharts.Services.Models.ChartTypes
             return true;
         }
 
-        #endregion
+        #endregion Default tension method
     }
 
     /// <summary>
-    /// RangeChart class provides 2D/3D drawing and hit testing 
-    /// functionality for the Range and SplineRange charts. The 
-    /// only difference of the SplineRange chart is the default 
+    /// RangeChart class provides 2D/3D drawing and hit testing
+    /// functionality for the Range and SplineRange charts. The
+    /// only difference of the SplineRange chart is the default
     /// tension of the line.
-    /// 
-    /// SplineChart base class provides most of the functionality 
+    ///
+    /// SplineChart base class provides most of the functionality
     /// like drawing lines, labels and markers.
     /// </summary>
     internal class RangeChart : SplineChart
@@ -101,7 +94,7 @@ namespace WebCharts.Services.Models.ChartTypes
         #region Fields
 
         /// <summary>
-        /// Fields used to fill area with gradient 
+        /// Fields used to fill area with gradient
         /// </summary>
         internal bool gradientFill = false;
 
@@ -140,7 +133,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         private float _fourthPointY2Value = float.NaN;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
@@ -152,7 +145,7 @@ namespace WebCharts.Services.Models.ChartTypes
             drawOutsideLines = true;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -162,7 +155,7 @@ namespace WebCharts.Services.Models.ChartTypes
         public override string Name { get { return ChartTypeNames.Range; } }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         override public int YValuesPerPoint { get { return 2; } }
 
@@ -192,7 +185,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Default tension method
 
@@ -214,13 +207,13 @@ namespace WebCharts.Services.Models.ChartTypes
             return false;
         }
 
-        #endregion
+        #endregion Default tension method
 
         #region Painting and Selection related methods
 
         /// <summary>
         /// Fills last series area with gradient.
-        /// If gradient is used as a back color of the series it must be drawn 
+        /// If gradient is used as a back color of the series it must be drawn
         /// at the same time.
         /// </summary>
         /// <param name="graph">The Chart Graphics object.</param>
@@ -242,7 +235,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Set clip region
                 graph.SetClip(Area.PlotAreaPosition.ToSKRect());
 
-                // Create new path from high/low lines 
+                // Create new path from high/low lines
                 using (SKPath gradientPath = new())
                 {
                     gradientPath.AddPath(areaPath);
@@ -270,7 +263,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method recalculates position of the end points of lines. This method 
+        /// This method recalculates position of the end points of lines. This method
         /// is used from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -383,7 +376,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
             else
             {
-                areaBrush = new SKPaint() { Color = point.Color, Style =  SKPaintStyle.Fill };
+                areaBrush = new SKPaint() { Color = point.Color, Style = SKPaintStyle.Fill };
             }
 
             // Calculate data point area segment path
@@ -400,7 +393,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
             path.AddLine(highPoint2.X, highPoint2.Y, highPoint2.X, lowPoint2.Y);
 
-            // Because of SVG Rendering order of points in the close shape 
+            // Because of SVG Rendering order of points in the close shape
             // has to be respected.
             if (graph.ActiveRenderingType == RenderingType.Svg)
             {
@@ -448,7 +441,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 {
                     path.AddPath(SkiaSharpExtensions.CreateSpline(lowPoints));
                 }
-
             }
 
             // Check if bottom line is partialy in the data scaleView
@@ -461,7 +453,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     series.Points[pointIndex - 1].YValues[1] < vAxisMin || series.Points[pointIndex - 1].YValues[1] > vAxisMax ||
                     series.Points[pointIndex].YValues[1] < vAxisMin || series.Points[pointIndex].YValues[1] > vAxisMax)
                 {
-                    // Set clipping region for bottom line drawing 
+                    // Set clipping region for bottom line drawing
                     graph.SetClip(Area.PlotAreaPosition.ToSKRect());
                     clipRegionSet = true;
                 }
@@ -671,7 +663,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     point,
                     series.Name,
                     pointIndex);
-
             }
             //Clean up
             if (areaBrush != null)
@@ -682,7 +673,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion Painting and Selection related methods
 
         #region 3D painting and selection methods
 
@@ -731,7 +722,6 @@ namespace WebCharts.Services.Models.ChartTypes
             SKPath resultPath = ((operationType & DrawingOperationTypes.CalcElementPath) == DrawingOperationTypes.CalcElementPath)
                 ? new SKPath() : null;
 
-
             //****************************************************************
             //** Find line first and second points.
             //****************************************************************
@@ -765,7 +755,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 reversed = true;
             }
 
-
             // Points can be drawn from sides to the center.
             // In this case can't use index in the list to find first point.
             // Use point series and real point index to find the first point.
@@ -796,7 +785,6 @@ namespace WebCharts.Services.Models.ChartTypes
             {
                 return resultPath;
             }
-
 
             // Area point is drawn as one segment
             return Draw3DSurface(firstPoint, secondPoint, reversed,
@@ -896,7 +884,6 @@ namespace WebCharts.Services.Models.ChartTypes
             //****************************************************************
             float axisPosition = (float)VAxis.GetPosition(VAxis.Crossing);
 
-
             //****************************************************************
             //** Calculate position of top/bootom points.
             //****************************************************************
@@ -918,7 +905,6 @@ namespace WebCharts.Services.Models.ChartTypes
             {
                 fourthPoint.Y = fourthPointPosition.Y;
             }
-
 
             //****************************************************************
             //** Check if top/bottom lines of range segment intersect.
@@ -1032,13 +1018,11 @@ namespace WebCharts.Services.Models.ChartTypes
                         // Reset bottom line "forced" Y coordinates
                         _thirdPointY2Value = float.NaN;
                         _fourthPointY2Value = float.NaN;
-
                     }
 
                     return resultPath;
                 }
             }
-
 
             //****************************************************************
             //** Detect visibility of the bounding rectangle.
@@ -1090,7 +1074,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     bottomFirst = false;
                 }
 
-
                 visibleSurfaces |= SurfaceNames.Bottom;
                 visibleSurfaces |= SurfaceNames.Top;
             }
@@ -1102,7 +1085,7 @@ namespace WebCharts.Services.Models.ChartTypes
             secondPoint.yPosition = Math.Round(secondPoint.yPosition, 5);
 
             //****************************************************************
-            //** Clip area first and second data points inside 
+            //** Clip area first and second data points inside
             //** the plotting area.
             //****************************************************************
             if (ClipTopPoints(
@@ -1131,7 +1114,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
 
             //****************************************************************
-            //** Clip area third and fourth data points inside 
+            //** Clip area third and fourth data points inside
             //** the plotting area.
             //****************************************************************
             if (ClipBottomPoints(
@@ -1214,6 +1197,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                 tension, operationType, LineSegmentType.Middle,
                                 showPointLines, false, area.ReverseSeriesOrder, multiSeries, 0, true);
                             break;
+
                         case (SurfaceNames.Bottom):
                             {
                                 // Calculate coordinates
@@ -1247,7 +1231,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                     (!area.ReverseSeriesOrder && surfaceSegmentType == LineSegmentType.First) ||
                                     (area.ReverseSeriesOrder && surfaceSegmentType == LineSegmentType.Last))
                                 {
-
                                     // Calculate coordinates
                                     DataPoint3D leftMostPoint = (firstPoint.xPosition <= secondPoint.xPosition) ? firstPoint : secondPoint;
                                     DataPoint3D dp1 = new();
@@ -1262,7 +1245,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                         surfaceColor, surfaceBorderColor, pointAttr.dataPoint.BorderWidth, dashStyle,
                                         dp1, dp2, points, pointIndex,
                                         0f, operationType, LineSegmentType.Single, false, true, area.ReverseSeriesOrder, multiSeries, 0, true);
-
                                 }
                                 break;
                             }
@@ -1316,7 +1298,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             }
                         case (SurfaceNames.Front):
                             {
-
                                 // Calculate coordinates
                                 DataPoint3D dp1 = new();
                                 dp1.dataPoint = firstPoint.dataPoint;
@@ -1380,7 +1361,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         resultPath.Close();
                         resultPath.AddPath(surfacePath);
                     }
-
                 }
             }
 
@@ -1452,7 +1432,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
 
-            // Tranform coordinates 
+            // Tranform coordinates
             matrix.TransformPoints(cubePoints);
 
             // Check the top side visibility
@@ -1461,14 +1441,12 @@ namespace WebCharts.Services.Models.ChartTypes
                 visibleSurfaces |= SurfaceNames.Top;
             }
 
-
             //***********************************************************************
             //** Check Bottom surface visibility
             //***********************************************************************
 
             // Get bottom surface points
             GetBottomPointsPosition(area.Common, area, 0, ref firstPoint, ref secondPoint, out SKPoint thirdPoint, out SKPoint fourthPoint);
-
 
             // If Bottom surface visibility in bounding rectangle - do not gurantee angled linde visibility
             if ((visibleSurfaces & SurfaceNames.Bottom) == SurfaceNames.Bottom)
@@ -1511,7 +1489,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
 
-            // Tranform coordinates 
+            // Tranform coordinates
             matrix.TransformPoints(cubePoints);
 
             // Check the top side visibility
@@ -1519,7 +1497,6 @@ namespace WebCharts.Services.Models.ChartTypes
             {
                 visibleSurfaces |= SurfaceNames.Bottom;
             }
-
         }
 
         /// <summary>
@@ -1554,7 +1531,6 @@ namespace WebCharts.Services.Models.ChartTypes
             if (!float.IsNaN(_thirdPointY2Value))
             {
                 thirdPoint.Y = _thirdPointY2Value;
-
             }
             if (!float.IsNaN(_fourthPointY2Value))
             {
@@ -1637,7 +1613,6 @@ namespace WebCharts.Services.Models.ChartTypes
             resultPath.AddPath(bottomLine);
             resultPath.Close();
 
-
             //**********************************************************************
             //** Define drawing colors
             //**********************************************************************
@@ -1701,7 +1676,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 if (lineSegmentType == LineSegmentType.First)
                 {
                     graph.DrawLine(thickBorderPen, topLine.Points[0], bottomLine.Points.Last());
-
                 }
                 else if (lineSegmentType == LineSegmentType.Last)
                 {
@@ -1712,9 +1686,10 @@ namespace WebCharts.Services.Models.ChartTypes
             return resultPath;
         }
 
-        #endregion
+        #endregion 3D painting and selection methods
 
         #region IDisposable overrides
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
@@ -1737,8 +1712,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
             base.Dispose(disposing);
         }
-        #endregion
 
+        #endregion IDisposable overrides
     }
 }
-

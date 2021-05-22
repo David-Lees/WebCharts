@@ -1,7 +1,7 @@
 ﻿using System;
-using WebCharts.Services.Models.Utilities;
+using WebCharts.Services;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// Event arguments of Chart paint event.

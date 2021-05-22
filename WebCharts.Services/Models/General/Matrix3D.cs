@@ -2,32 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Matrix3D class is used during the 3D drawings to 
-//              transform plotting area 3D coordinates into the 2D 
-//              projection coordinates based on rotation and 
+//  Purpose:	Matrix3D class is used during the 3D drawings to
+//              transform plotting area 3D coordinates into the 2D
+//              projection coordinates based on rotation and
 //              perspective settings.
 //
 
-
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// This class is responsible for all 3D coordinates transformations: Translation, 
-    /// Rotation, Scale, Perspective and RightAngle Projection. Translation 
-    /// and rotation are stored in composite matrix (mainMatrix), and scaling, 
-    /// projection and non-composite translation are stored in private fields. 
-    /// Matrix is initialized with Chart Area 3D cube, which is invisible boundary 
-    /// cube of 3D Chart area. The matrix has to be initialized every time 
-    /// when angles, position or perspective parameters are changed. Method 
-    /// TransformPoints will apply 3D Transformation on points using 
+    /// This class is responsible for all 3D coordinates transformations: Translation,
+    /// Rotation, Scale, Perspective and RightAngle Projection. Translation
+    /// and rotation are stored in composite matrix (mainMatrix), and scaling,
+    /// projection and non-composite translation are stored in private fields.
+    /// Matrix is initialized with Chart Area 3D cube, which is invisible boundary
+    /// cube of 3D Chart area. The matrix has to be initialized every time
+    /// when angles, position or perspective parameters are changed. Method
+    /// TransformPoints will apply 3D Transformation on points using
     /// Initialization values: Main matrix and other initialization values.
     /// </summary>
     internal class Matrix3D
@@ -55,7 +50,7 @@ namespace WebCharts.Services.Models.General
             Z
         }
 
-        #endregion // Enumerations
+        #endregion Enumerations
 
         #region Fields
 
@@ -127,14 +122,14 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// Private fields used for lighting
         /// </summary>
-        readonly Point3D[] _lightVectors = new Point3D[7];
+        private readonly Point3D[] _lightVectors = new Point3D[7];
 
         /// <summary>
         /// LightStyle Style
         /// </summary>
-        LightStyle _lightStyle;
+        private LightStyle _lightStyle;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Properties
 
@@ -162,7 +157,7 @@ namespace WebCharts.Services.Models.General
             get { return _perspective; }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Internal and Public Methods
 
@@ -183,12 +178,12 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Initialize Matrix 3D. This method calculates how much a chart area 
-        /// cube has to be resized to fit Inner Plotting Area rectangle. Order 
-        /// of operation is following: Translation for X and Y axes, Rotation 
-        /// by X-axis, Rotation by Y-axis and same scaling for all axes. All 
-        /// other elements, which belongs to this chart area cube (Data points, 
-        /// grid lines etc.) has to follow same order. Translation and rotation 
+        /// Initialize Matrix 3D. This method calculates how much a chart area
+        /// cube has to be resized to fit Inner Plotting Area rectangle. Order
+        /// of operation is following: Translation for X and Y axes, Rotation
+        /// by X-axis, Rotation by Y-axis and same scaling for all axes. All
+        /// other elements, which belongs to this chart area cube (Data points,
+        /// grid lines etc.) has to follow same order. Translation and rotation
         /// form composite matrix mainMatrix. Scale has to be allied separately.
         /// </summary>
         /// <param name="innerPlotRectangle">Inner Plotting Area position. Chart area cube has to be inside this rectangle</param>
@@ -234,22 +229,22 @@ namespace WebCharts.Services.Models.General
             // Non Isometric projection
             if (!rightAngleAxis)
             {
-                // Rotate Chart Area Cube by X axis. 
+                // Rotate Chart Area Cube by X axis.
                 Rotate(angleX, RotationAxis.X);
 
-                // Rotate Chart Area Cube by Y axis. 
+                // Rotate Chart Area Cube by Y axis.
                 Rotate(angleY, RotationAxis.Y);
             }
             else
             {
                 if (_angleY >= 45)
                 {
-                    // Rotate Chart Area Cube by Y axis. 
+                    // Rotate Chart Area Cube by Y axis.
                     Rotate(Math.PI / 2, RotationAxis.Y);
                 }
                 else if (_angleY <= -45)
                 {
-                    // Rotate Chart Area Cube by Y axis. 
+                    // Rotate Chart Area Cube by Y axis.
                     Rotate(-Math.PI / 2, RotationAxis.Y);
                 }
             }
@@ -318,8 +313,8 @@ namespace WebCharts.Services.Models.General
             foreach (Point3D point in points)
             {
                 // Find maximum relative distance for X axis.
-                // Relative distance is (distance from the center of plotting area 
-                // position) / (distance from the edge of rectangle to 
+                // Relative distance is (distance from the center of plotting area
+                // position) / (distance from the edge of rectangle to
                 // the center of the rectangle).
                 if (maxXScale < Math.Abs(point.X - _translateX) / width * 2)
                     maxXScale = Math.Abs(point.X - _translateX) / width * 2;
@@ -334,14 +329,13 @@ namespace WebCharts.Services.Models.General
 
             // Apply scaling
             Scale(points);
-
         }
 
         /// <summary>
-        /// Apply transformations on array od 3D Points. Order of operation is 
-        /// following: Translation ( Set coordinate system for 0:100 to -50:50 
-        /// Center of rotation is always 0), Composite Translation for X and Y 
-        /// axes ( Moving center of rotation ), Rotation by X-axis, Rotation 
+        /// Apply transformations on array od 3D Points. Order of operation is
+        /// following: Translation ( Set coordinate system for 0:100 to -50:50
+        /// Center of rotation is always 0), Composite Translation for X and Y
+        /// axes ( Moving center of rotation ), Rotation by X-axis, Rotation
         /// by Y-axis, perspective and same scaling for all axes.
         /// </summary>
         /// <param name="points">3D Points array.</param>
@@ -349,6 +343,7 @@ namespace WebCharts.Services.Models.General
         {
             TransformPoints(points, true);
         }
+
 #if RS_DEADCODE
 		/// <summary>
 		/// This Method returns scale factor
@@ -359,15 +354,16 @@ namespace WebCharts.Services.Models.General
 			return scale;
 		}
 #endif //RS_DEADCODE
-        #endregion // Internal and Public Methods
+
+        #endregion Internal and Public Methods
 
         #region Private Methods
 
         /// <summary>
-        /// Apply transformations on array od 3D Points. Order of operation is 
-        /// following: Translation ( Set coordinate system for 0:100 to -50:50 
-        /// Center of rotation is always 0), Composite Translation for X and Y 
-        /// axes ( Moving center of rotation ), Rotation by X-axis, Rotation 
+        /// Apply transformations on array od 3D Points. Order of operation is
+        /// following: Translation ( Set coordinate system for 0:100 to -50:50
+        /// Center of rotation is always 0), Composite Translation for X and Y
+        /// axes ( Moving center of rotation ), Rotation by X-axis, Rotation
         /// by Y-axis, perspective and same scaling for all axes.
         /// </summary>
         /// <param name="points">3D Points array.</param>
@@ -380,9 +376,9 @@ namespace WebCharts.Services.Models.General
                 throw new InvalidOperationException(SR.ExceptionMatrix3DNotinitialized);
             }
 
-            // Translate point. CENTER OF ROTATION is 0 and that center is in 
-            // the middle of chart area 3D CUBE. Translate method cannot 
-            // be used because composite translation WILL MOVE 
+            // Translate point. CENTER OF ROTATION is 0 and that center is in
+            // the middle of chart area 3D CUBE. Translate method cannot
+            // be used because composite translation WILL MOVE
             // CENTER OF ROTATION.
             foreach (Point3D point in points)
             {
@@ -391,7 +387,7 @@ namespace WebCharts.Services.Models.General
                 point.Z -= _translateZ;
             }
 
-            // Transform points using composite mainMatrix. (Translation of points together with 
+            // Transform points using composite mainMatrix. (Translation of points together with
             // Center of rotation and rotations by X and Y axes).
             GetValues(points);
 
@@ -408,16 +404,16 @@ namespace WebCharts.Services.Models.General
                 RightAngleShift(points);
             }
 
-            // Scales data points. Scaling has to be performed SEPARATELY from 
-            // composite matrix. If scale is used with composite matrix after 
+            // Scales data points. Scaling has to be performed SEPARATELY from
+            // composite matrix. If scale is used with composite matrix after
             // rotation, scaling will deform object.
             Scale(points);
         }
 
         /// <summary>
-        /// This method adjusts a position of 3D Chart Area cube. This 
-        /// method will translate chart for better use of the inner 
-        /// plotting area. Center of rotation is shifted for 
+        /// This method adjusts a position of 3D Chart Area cube. This
+        /// method will translate chart for better use of the inner
+        /// plotting area. Center of rotation is shifted for
         /// right Angle projection.
         /// </summary>
         /// <param name="points">3D Points array.</param>
@@ -466,7 +462,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Method is used for Planar Geometric projection. 
+        /// Method is used for Planar Geometric projection.
         /// </summary>
         /// <param name="points">3D Points array.</param>
         private void ApplyPerspective(Point3D[] points)
@@ -482,8 +478,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Scales data points. Scaling has to be performed SEPARATELY from 
-        /// composite matrix. If scale is used with composite matrix after 
+        /// Scales data points. Scaling has to be performed SEPARATELY from
+        /// composite matrix. If scale is used with composite matrix after
         /// rotation, scaling will deform object.
         /// </summary>
         /// <param name="points">3D Points array.</param>
@@ -497,7 +493,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Prepend to this Matrix object a translation. This method is used 
+        /// Prepend to this Matrix object a translation. This method is used
         /// only if CENTER OF ROTATION HAS TO BE MOVED.
         /// </summary>
         /// <param name="dx">Translate in x axis direction.</param>
@@ -518,7 +514,7 @@ namespace WebCharts.Services.Models.General
                 // Column loop
                 for (int column = 0; column < 4; column++)
                 {
-                    // For initialization: Diagonal matrix elements are equal to one 
+                    // For initialization: Diagonal matrix elements are equal to one
                     // and all other elements are equal to zero.
                     if (row == column)
                     {
@@ -538,7 +534,6 @@ namespace WebCharts.Services.Models.General
 
             // Translate main Matrix
             Multiply(translationMatrix, MatrixOrder.Prepend, true);
-
         }
 
         /// <summary>
@@ -560,7 +555,7 @@ namespace WebCharts.Services.Models.General
                 // Column loop
                 for (int column = 0; column < 4; column++)
                 {
-                    // For initialization: Diagonal matrix elements are equal to one 
+                    // For initialization: Diagonal matrix elements are equal to one
                     // and all other elements are equal to zero.
                     if (row == column)
                     {
@@ -574,9 +569,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// Multiplies this Matrix object by the matrix specified in the 
+        /// Multiplies this Matrix object by the matrix specified in the
         /// matrix parameter, and in the order specified in the order parameter.
         /// </summary>
         /// <param name="mulMatrix">The Matrix object by which this Matrix object is to be multiplied.</param>
@@ -627,9 +621,8 @@ namespace WebCharts.Services.Models.General
             return resultMatrix;
         }
 
-
         /// <summary>
-        /// Multiplies this Matrix object by the Vector specified in the 
+        /// Multiplies this Matrix object by the Vector specified in the
         /// vector parameter.
         /// </summary>
         /// <param name="mulVector">The vector object by which this Matrix object is to be multiplied.</param>
@@ -674,7 +667,7 @@ namespace WebCharts.Services.Models.General
                 // Column loop
                 for (int column = 0; column < 4; column++)
                 {
-                    // For initialization: Diagonal matrix elements are equal to one 
+                    // For initialization: Diagonal matrix elements are equal to one
                     // and all other elements are equal to zero.
                     if (row == column)
                     {
@@ -713,17 +706,15 @@ namespace WebCharts.Services.Models.General
                     rotationMatrix[1][0] = (float)Math.Sin(angle);
                     rotationMatrix[1][1] = (float)Math.Cos(angle);
                     break;
-
             }
 
             // Rotate Main matrix
             Multiply(rotationMatrix, MatrixOrder.Prepend, true);
-
         }
 
         /// <summary>
-        /// Returns transformed x and y values from x, y and z values 
-        /// and composed main matrix values (All rotations, 
+        /// Returns transformed x and y values from x, y and z values
+        /// and composed main matrix values (All rotations,
         /// translations and scaling).
         /// </summary>
         /// <param name="points">Array of 3D points.</param>
@@ -752,7 +743,6 @@ namespace WebCharts.Services.Models.General
                 point.Z = resultVector[2];
             }
         }
-
 
         /// <summary>
         /// Set points for 3D Bar which represents 3D Chart Area.
@@ -784,12 +774,12 @@ namespace WebCharts.Services.Models.General
             return points;
         }
 
-        #endregion // Private Methods
+        #endregion Private Methods
 
         #region Lighting Methods
 
         /// <summary>
-        /// Initial Lighting. Use matrix transformation only once 
+        /// Initial Lighting. Use matrix transformation only once
         /// for Normal vectors.
         /// </summary>
         /// <param name="lightStyle">LightStyle Style</param>
@@ -823,7 +813,7 @@ namespace WebCharts.Services.Models.General
             TransformPoints(_lightVectors, false);
 
             // ********************************************************
-            // LightStyle Vector and normal vectors have to have same center. 
+            // LightStyle Vector and normal vectors have to have same center.
             // Shift Normal vectors.
             // ********************************************************
 
@@ -856,15 +846,14 @@ namespace WebCharts.Services.Models.General
             _lightVectors[6].X -= _lightVectors[0].X;
             _lightVectors[6].Y -= _lightVectors[0].Y;
             _lightVectors[6].Z -= _lightVectors[0].Z;
-
         }
 
         /// <summary>
-        /// Return intensity of lightStyle for 3D Cube. There are tree types of lights: None, 
-        /// Simplistic and Realistic. None Style have same lightStyle intensity on 
-        /// all polygons. Normal vector doesn’t have influence on this type 
-        /// of lighting. Simplistic style have lightStyle source, which is 
-        /// rotated together with scene. Realistic lighting have fixed lightStyle 
+        /// Return intensity of lightStyle for 3D Cube. There are tree types of lights: None,
+        /// Simplistic and Realistic. None Style have same lightStyle intensity on
+        /// all polygons. Normal vector doesn’t have influence on this type
+        /// of lighting. Simplistic style have lightStyle source, which is
+        /// rotated together with scene. Realistic lighting have fixed lightStyle
         /// source and intensity of lightStyle is change when scene is rotated.
         /// </summary>
         /// <param name="surfaceColor">Color used for polygons without lighting</param>
@@ -903,7 +892,6 @@ namespace WebCharts.Services.Models.General
                 // LightStyle style is Realistic
                 default:
                     {
-
                         // For Right Axis angle Realistic lightStyle should be different
                         if (_rightAngleAxis)
                         {
@@ -914,7 +902,7 @@ namespace WebCharts.Services.Models.General
                             RightAngleProjection(rightPRpoints);
 
                             // ******************************************************************
-                            // Color correction. Angle between Normal vector of polygon and 
+                            // Color correction. Angle between Normal vector of polygon and
                             // vector of lightStyle source is used.
                             // ******************************************************************
                             if (_angleY >= 45 || _angleY <= -45)
@@ -948,7 +936,7 @@ namespace WebCharts.Services.Models.General
                             Point3D lightSource = new(0F, 0F, 1F);
 
                             // ******************************************************************
-                            // Color correction. Angle between Normal vector of polygon and 
+                            // Color correction. Angle between Normal vector of polygon and
                             // vector of lightStyle source is used.
                             // ******************************************************************
                             front = GetBrightGradientColor(surfaceColor, GetAngle(lightSource, _lightVectors[1]) / Math.PI);
@@ -969,13 +957,12 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// Return intensity of lightStyle for Polygons. There are tree types of lights: None, 
-        /// Simplistic and Realistic. None Style have same lightStyle intensity on 
-        /// all polygons. Normal vector doesn’t have influence on this type 
-        /// of lighting. Simplistic style have lightStyle source, which is 
-        /// rotated together with scene. Realistic lighting have fixed lightStyle 
+        /// Return intensity of lightStyle for Polygons. There are tree types of lights: None,
+        /// Simplistic and Realistic. None Style have same lightStyle intensity on
+        /// all polygons. Normal vector doesn’t have influence on this type
+        /// of lighting. Simplistic style have lightStyle source, which is
+        /// rotated together with scene. Realistic lighting have fixed lightStyle
         /// source and intensity of lightStyle is change when scene is rotated.
         /// </summary>
         /// <param name="points">Points of the polygon</param>
@@ -1096,7 +1083,6 @@ namespace WebCharts.Services.Models.General
                 // LightStyle style is Realistic
                 default:
                     {
-
                         // Find two vectors of polygon
                         Point3D firstVector = new();
                         firstVector.X = points[0].X - points[1].X;
@@ -1115,7 +1101,7 @@ namespace WebCharts.Services.Models.General
                         normalVector.Z = firstVector.X * secondVector.Y - firstVector.Y * secondVector.X;
 
                         // ******************************************************************
-                        // Color correction. Angle between Normal vector of polygon and 
+                        // Color correction. Angle between Normal vector of polygon and
                         // vector of lightStyle source is used.
                         // ******************************************************************
                         if (surfaceName == SurfaceNames.Front)
@@ -1142,7 +1128,6 @@ namespace WebCharts.Services.Models.General
                     }
             }
             return color;
-
         }
 
         /// <summary>
@@ -1170,7 +1155,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Returns the angle between two 3D vectors (a and b); 
+        /// Returns the angle between two 3D vectors (a and b);
         /// </summary>
         /// <param name="a">First vector</param>
         /// <param name="b">Second Vector</param>
@@ -1184,6 +1169,6 @@ namespace WebCharts.Services.Models.General
             return (float)angle;
         }
 
-        #endregion
+        #endregion Lighting Methods
     }
 }

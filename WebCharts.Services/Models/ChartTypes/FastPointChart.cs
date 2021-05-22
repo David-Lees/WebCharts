@@ -2,263 +2,252 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	When performance is critical, the FastPoint chart 
-//              type is a good alternative to the Point chart. FastPoint 
-//              charts significantly reduce the drawing time of a 
+//  Purpose:	When performance is critical, the FastPoint chart
+//              type is a good alternative to the Point chart. FastPoint
+//              charts significantly reduce the drawing time of a
 //              series that contains a very large number of data points.
-//              To make the FastPoint chart a high performance chart, 
-//              some charting features have been omitted. The features 
-//              omitted include the ability to control Point level 
-//              visual properties the use of data point labels, shadows, 
+//              To make the FastPoint chart a high performance chart,
+//              some charting features have been omitted. The features
+//              omitted include the ability to control Point level
+//              visual properties the use of data point labels, shadows,
 //              and the use of chart animation.
-//              FastPoint chart performance was improved by limiting 
-//              visual appearance features and by introducing data 
-//              point compacting algorithm. When chart contains 
-//              thousands of data points, it is common to have tens 
-//              or hundreds points displayed in the area comparable 
-//              to a single pixel. FastPoint algorithm accumulates 
-//              point information and only draw points if they extend 
+//              FastPoint chart performance was improved by limiting
+//              visual appearance features and by introducing data
+//              point compacting algorithm. When chart contains
+//              thousands of data points, it is common to have tens
+//              or hundreds points displayed in the area comparable
+//              to a single pixel. FastPoint algorithm accumulates
+//              point information and only draw points if they extend
 //              outside currently filled pixels.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
-
     /// <summary>
-    /// FastPointChart class implements a simplified point chart drawing 
+    /// FastPointChart class implements a simplified point chart drawing
     /// algorithm which is optimized for the performance.
     /// </summary>
     internal class FastPointChart : IChartType
-	{
-		#region Fields and Constructor
+    {
+        #region Fields and Constructor
 
-		/// <summary>
-		/// Indicates that chart is drawn in 3D area
-		/// </summary>
-		internal bool				chartArea3DEnabled = false;
-		
-		/// <summary>
-		/// Current chart graphics
-		/// </summary>
+        /// <summary>
+        /// Indicates that chart is drawn in 3D area
+        /// </summary>
+        internal bool chartArea3DEnabled = false;
+
+        /// <summary>
+        /// Current chart graphics
+        /// </summary>
         internal ChartGraphics Graph { get; set; }
 
-		/// <summary>
-		/// Z coordinate of the 3D series
-		/// </summary>
+        /// <summary>
+        /// Z coordinate of the 3D series
+        /// </summary>
         internal float seriesZCoordinate = 0f;
 
-		/// <summary>
-		/// 3D transformation matrix
-		/// </summary>
+        /// <summary>
+        /// 3D transformation matrix
+        /// </summary>
         internal Matrix3D matrix3D = null;
 
-		/// <summary>
-		/// Reference to common chart elements
-		/// </summary>
+        /// <summary>
+        /// Reference to common chart elements
+        /// </summary>
         internal CommonElements Common { get; set; }
 
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public FastPointChart()
-		{
-		}
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public FastPointChart()
+        {
+        }
 
-		#endregion
+        #endregion Fields and Constructor
 
-		#region IChartType interface implementation
+        #region IChartType interface implementation
 
-		/// <summary>
-		/// Chart type name
-		/// </summary>
-		virtual public string Name			{ get{ return ChartTypeNames.FastPoint;}}
+        /// <summary>
+        /// Chart type name
+        /// </summary>
+        virtual public string Name { get { return ChartTypeNames.FastPoint; } }
 
-		/// <summary>
-		/// True if chart type is stacked
-		/// </summary>
-		virtual public bool Stacked		{ get{ return false;}}
+        /// <summary>
+        /// True if chart type is stacked
+        /// </summary>
+        virtual public bool Stacked { get { return false; } }
 
+        /// <summary>
+        /// True if stacked chart type supports groups
+        /// </summary>
+        virtual public bool SupportStackedGroups { get { return false; } }
 
-		/// <summary>
-		/// True if stacked chart type supports groups
-		/// </summary>
-		virtual public bool SupportStackedGroups	{ get { return false; } }
+        /// <summary>
+        /// True if stacked chart type should draw separately positive and
+        /// negative data points ( Bar and column Stacked types ).
+        /// </summary>
+        public bool StackSign { get { return false; } }
 
+        /// <summary>
+        /// True if chart type supports axeses
+        /// </summary>
+        virtual public bool RequireAxes { get { return true; } }
 
-		/// <summary>
-		/// True if stacked chart type should draw separately positive and 
-		/// negative data points ( Bar and column Stacked types ).
-		/// </summary>
-		public bool StackSign		{ get{ return false;}}
+        /// <summary>
+        /// Chart type with two y values used for scale ( bubble chart type )
+        /// </summary>
+        virtual public bool SecondYScale { get { return false; } }
 
-		/// <summary>
-		/// True if chart type supports axeses
-		/// </summary>
-		virtual public bool RequireAxes	{ get{ return true;} }
+        /// <summary>
+        /// True if chart type requires circular chart area.
+        /// </summary>
+        public bool CircularChartArea { get { return false; } }
 
-		/// <summary>
-		/// Chart type with two y values used for scale ( bubble chart type )
-		/// </summary>
-		virtual public bool SecondYScale{ get{ return false;} }
+        /// <summary>
+        /// True if chart type supports logarithmic axes
+        /// </summary>
+        virtual public bool SupportLogarithmicAxes { get { return true; } }
 
-		/// <summary>
-		/// True if chart type requires circular chart area.
-		/// </summary>
-		public bool CircularChartArea	{ get{ return false;} }
+        /// <summary>
+        /// True if chart type requires to switch the value (Y) axes position
+        /// </summary>
+        virtual public bool SwitchValueAxes { get { return false; } }
 
-		/// <summary>
-		/// True if chart type supports logarithmic axes
-		/// </summary>
-		virtual public bool SupportLogarithmicAxes	{ get{ return true;} }
+        /// <summary>
+        /// True if chart series can be placed side-by-side.
+        /// </summary>
+        virtual public bool SideBySideSeries { get { return false; } }
 
-		/// <summary>
-		/// True if chart type requires to switch the value (Y) axes position
-		/// </summary>
-		virtual public bool SwitchValueAxes	{ get{ return false;} }
+        /// <summary>
+        /// True if each data point of a chart must be represented in the legend
+        /// </summary>
+        virtual public bool DataPointsInLegend { get { return false; } }
 
-		/// <summary>
-		/// True if chart series can be placed side-by-side.
-		/// </summary>
-		virtual public bool SideBySideSeries { get{ return false;} }
+        /// <summary>
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
+        /// types (Bar, column, area etc.)
+        /// </summary>
+        virtual public bool ZeroCrossing { get { return false; } }
 
-		/// <summary>
-		/// True if each data point of a chart must be represented in the legend
-		/// </summary>
-		virtual public bool DataPointsInLegend	{ get{ return false;} }
+        /// <summary>
+        /// True if palette colors should be applied for each data paoint.
+        /// Otherwise the color is applied to the series.
+        /// </summary>
+        virtual public bool ApplyPaletteColorsToPoints { get { return false; } }
 
-		/// <summary>
-		/// If the crossing value is auto Crossing value should be 
-		/// automatically set to zero for some chart 
-		/// types (Bar, column, area etc.)
-		/// </summary>
-		virtual public bool ZeroCrossing { get{ return false;} }
+        /// <summary>
+        /// Indicates that extra Y values are connected to the scale of the Y axis
+        /// </summary>
+        virtual public bool ExtraYValuesConnectedToYAxis { get { return false; } }
 
-		/// <summary>
-		/// True if palette colors should be applied for each data paoint.
-		/// Otherwise the color is applied to the series.
-		/// </summary>
-		virtual public bool ApplyPaletteColorsToPoints	{ get { return false; } }
+        /// <summary>
+        /// Indicates that it's a hundredred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercent { get { return false; } }
 
-		/// <summary>
-		/// Indicates that extra Y values are connected to the scale of the Y axis
-		/// </summary>
-		virtual public bool ExtraYValuesConnectedToYAxis{ get { return false; } }
-		
-		/// <summary>
-		/// Indicates that it's a hundredred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercent{ get{return false;} }
+        /// <summary>
+        /// Indicates that it's a hundredred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercentSupportNegative { get { return false; } }
 
-		/// <summary>
-		/// Indicates that it's a hundredred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercentSupportNegative{ get{return false;} }
+        /// <summary>
+        /// How to draw series/points in legend:
+        /// Filled rectangle, Line or Marker
+        /// </summary>
+        /// <param name="series">Legend item series.</param>
+        /// <returns>Legend item style.</returns>
+        virtual public LegendImageStyle GetLegendImageStyle(Series series)
+        {
+            return LegendImageStyle.Marker;
+        }
 
-		/// <summary>
-		/// How to draw series/points in legend:
-		/// Filled rectangle, Line or Marker
-		/// </summary>
-		/// <param name="series">Legend item series.</param>
-		/// <returns>Legend item style.</returns>
-		virtual public LegendImageStyle GetLegendImageStyle(Series series)
-		{
-			return LegendImageStyle.Marker;
-		}
+        /// <summary>
+        /// Number of supported Y value(s) per point
+        /// </summary>
+        virtual public int YValuesPerPoint { get { return 1; } }
 
-		/// <summary>
-		/// Number of supported Y value(s) per point 
-		/// </summary>
-		virtual public int YValuesPerPoint	{ get { return 1; } }
+        /// <summary>
+        /// Gets chart type image.
+        /// </summary>
+        /// <param name="registry">Chart types registry object.</param>
+        /// <returns>Chart type image.</returns>
+        virtual public SKImage GetImage(ChartTypeRegistry registry)
+        {
+            return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
+        }
 
-		/// <summary>
-		/// Gets chart type image.
-		/// </summary>
-		/// <param name="registry">Chart types registry object.</param>
-		/// <returns>Chart type image.</returns>
-		virtual public SKImage GetImage(ChartTypeRegistry registry)
-		{
-			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
-		}
+        #endregion IChartType interface implementation
 
-		#endregion
+        #region Painting
 
-		#region Painting
+        /// <summary>
+        /// Paint FastPoint Chart.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual public void Paint(
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            Series seriesToDraw)
+        {
+            Common = common;
+            Graph = graph;
+            if (area.Area3DStyle.Enable3D)
+            {
+                // Initialize variables
+                chartArea3DEnabled = true;
+                matrix3D = area.matrix3D;
+            }
+            else
+            {
+                chartArea3DEnabled = false;
+            }
 
-		/// <summary>
-		/// Paint FastPoint Chart.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual public void Paint( 
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			Series seriesToDraw )
-		{	
-			Common = common;
-			Graph = graph;
-			if(area.Area3DStyle.Enable3D)
-			{
-				// Initialize variables
-				chartArea3DEnabled = true;
-				matrix3D = area.matrix3D;
-			}
-			else
-			{
-				chartArea3DEnabled = false;
-			}
-			
-			//************************************************************
-			//** Loop through all series
-			//************************************************************
-			foreach( Series series in common.DataManager.Series )
-			{
-				// Process non empty series of the area with FastPoint chart type
-				if( String.Compare( series.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture ) != 0 
-					|| series.ChartArea != area.Name || 
-					!series.IsVisible())
-				{
-					continue;
-				}
+            //************************************************************
+            //** Loop through all series
+            //************************************************************
+            foreach (Series series in common.DataManager.Series)
+            {
+                // Process non empty series of the area with FastPoint chart type
+                if (String.Compare(series.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) != 0
+                    || series.ChartArea != area.Name ||
+                    !series.IsVisible())
+                {
+                    continue;
+                }
 
-				// Get 3D series depth and Z position
-				if(chartArea3DEnabled)
-				{
+                // Get 3D series depth and Z position
+                if (chartArea3DEnabled)
+                {
                     area.GetSeriesZPositionAndDepth(series, out float seriesDepth, out seriesZCoordinate);
-                    seriesZCoordinate += seriesDepth/2.0f;
-				}
+                    seriesZCoordinate += seriesDepth / 2.0f;
+                }
 
-				// Set active horizontal/vertical axis
-				Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : series.XSubAxisName);
-				Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : series.YSubAxisName);
-				double hAxisMin = hAxis.ViewMinimum;
-				double hAxisMax = hAxis.ViewMaximum;
-				double vAxisMin = vAxis.ViewMinimum;
-				double vAxisMax = vAxis.ViewMaximum;
+                // Set active horizontal/vertical axis
+                Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : series.XSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : series.YSubAxisName);
+                double hAxisMin = hAxis.ViewMinimum;
+                double hAxisMax = hAxis.ViewMaximum;
+                double vAxisMin = vAxis.ViewMinimum;
+                double vAxisMax = vAxis.ViewMaximum;
 
-				// Get "PermittedPixelError" attribute.
-				// By default use 1/3 of the marker size.
-				float	permittedPixelError = series.MarkerSize / 3f;
+                // Get "PermittedPixelError" attribute.
+                // By default use 1/3 of the marker size.
+                float permittedPixelError = series.MarkerSize / 3f;
                 if (series.IsCustomPropertySet(CustomPropertyName.PermittedPixelError))
-				{
+                {
                     string attrValue = series[CustomPropertyName.PermittedPixelError];
 
                     bool parseSucceed = float.TryParse(attrValue, NumberStyles.Any, CultureInfo.CurrentCulture, out float pixelError);
@@ -277,32 +266,32 @@ namespace WebCharts.Services.Models.ChartTypes
                     {
                         throw (new InvalidOperationException(SR.ExceptionCustomAttributeIsNotInRange0to1("PermittedPixelError")));
                     }
-				}
+                }
 
-				// Get pixel size in axes coordinates
-				SKSize pixelSize = graph.GetRelativeSize(new SKSize(permittedPixelError, permittedPixelError));
-				SKSize axesMin = graph.GetRelativeSize(new SKSize((float)hAxisMin, (float)vAxisMin));
-				double axesValuesPixelSizeX = Math.Abs(hAxis.PositionToValue(axesMin.Width + pixelSize.Width, false) - hAxis.PositionToValue(axesMin.Width, false));
-				double axesValuesPixelSizeY = Math.Abs(vAxis.PositionToValue(axesMin.Height + pixelSize.Height, false) - vAxis.PositionToValue(axesMin.Height, false));
+                // Get pixel size in axes coordinates
+                SKSize pixelSize = graph.GetRelativeSize(new SKSize(permittedPixelError, permittedPixelError));
+                SKSize axesMin = graph.GetRelativeSize(new SKSize((float)hAxisMin, (float)vAxisMin));
+                double axesValuesPixelSizeX = Math.Abs(hAxis.PositionToValue(axesMin.Width + pixelSize.Width, false) - hAxis.PositionToValue(axesMin.Width, false));
+                double axesValuesPixelSizeY = Math.Abs(vAxis.PositionToValue(axesMin.Height + pixelSize.Height, false) - vAxis.PositionToValue(axesMin.Height, false));
 
                 // Create point marker brush
                 SKPaint markerBrush = new() { Color = (series.MarkerColor == SKColor.Empty) ? series.Color : series.MarkerColor, Style = SKPaintStyle.Fill };
                 SKPaint emptyMarkerBrush = new() { Color = (series.EmptyPointStyle.MarkerColor == SKColor.Empty) ? series.EmptyPointStyle.Color : series.EmptyPointStyle.MarkerColor, Style = SKPaintStyle.Fill };
 
                 // Create point marker border pen
-                SKPaint	borderPen = null;
-				SKPaint	emptyBorderPen = null;
-				if(series.MarkerBorderColor != SKColor.Empty && series.MarkerBorderWidth > 0)
-				{
-					borderPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = series.MarkerBorderColor, StrokeWidth = series.MarkerBorderWidth };
-				}
-				if(series.EmptyPointStyle.MarkerBorderColor != SKColor.Empty && series.EmptyPointStyle.MarkerBorderWidth > 0)
-				{
-					emptyBorderPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = series.EmptyPointStyle.MarkerBorderColor, StrokeWidth = series.EmptyPointStyle.MarkerBorderWidth };
-				}
+                SKPaint borderPen = null;
+                SKPaint emptyBorderPen = null;
+                if (series.MarkerBorderColor != SKColor.Empty && series.MarkerBorderWidth > 0)
+                {
+                    borderPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = series.MarkerBorderColor, StrokeWidth = series.MarkerBorderWidth };
+                }
+                if (series.EmptyPointStyle.MarkerBorderColor != SKColor.Empty && series.EmptyPointStyle.MarkerBorderWidth > 0)
+                {
+                    emptyBorderPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = series.EmptyPointStyle.MarkerBorderColor, StrokeWidth = series.EmptyPointStyle.MarkerBorderWidth };
+                }
 
-				// Check if series is indexed
-				bool indexedSeries = ChartHelper.IndexedSeries(Common, series.Name );
+                // Check if series is indexed
+                bool indexedSeries = ChartHelper.IndexedSeries(Common, series.Name);
 
                 // Get marker size taking in consideration current DPIs
                 int markerSize = series.MarkerSize;
@@ -312,17 +301,17 @@ namespace WebCharts.Services.Models.ChartTypes
                     markerSize = Math.Max(markerSize, markerSize);
                 }
 
-				// Loop through all ponts in the series
-				int		index = 0;
+                // Loop through all ponts in the series
+                int index = 0;
                 double xValuePrev = 0.0;
-				double	yValuePrev = 0.0;
-				SKPoint	currentPoint = SKPoint.Empty;
+                double yValuePrev = 0.0;
+                SKPoint currentPoint = SKPoint.Empty;
                 double xPixelConverter = (graph.Common.ChartPicture.Width - 1.0) / 100.0;
-				double	yPixelConverter = (graph.Common.ChartPicture.Height - 1.0) / 100.0;
-				MarkerStyle	markerStyle = series.MarkerStyle;
-				MarkerStyle	emptyMarkerStyle = series.EmptyPointStyle.MarkerStyle;
-				foreach( DataPoint point in series.Points )
-				{
+                double yPixelConverter = (graph.Common.ChartPicture.Height - 1.0) / 100.0;
+                MarkerStyle markerStyle = series.MarkerStyle;
+                MarkerStyle emptyMarkerStyle = series.EmptyPointStyle.MarkerStyle;
+                foreach (DataPoint point in series.Points)
+                {
                     // Get point X and Y values
                     double xValue = (indexedSeries) ? index + 1 : point.XValue;
                     xValue = hAxis.GetLogValue(xValue);
@@ -330,16 +319,16 @@ namespace WebCharts.Services.Models.ChartTypes
                     bool currentPointIsEmpty = point.IsEmpty;
 
                     // Check if point is completly out of the data scaleView
-                    if ( xValue < hAxisMin ||
-						xValue > hAxisMax ||
-						yValue < vAxisMin ||
-						yValue > vAxisMax )
-					{
-						xValuePrev = xValue;
-						yValuePrev = yValue;
-						++index;
-						continue;
-					}
+                    if (xValue < hAxisMin ||
+                        xValue > hAxisMax ||
+                        yValue < vAxisMin ||
+                        yValue > vAxisMax)
+                    {
+                        xValuePrev = xValue;
+                        yValuePrev = yValue;
+                        ++index;
+                        continue;
+                    }
 
                     // Check if point may be skipped
                     if (index > 0 && Math.Abs(xValue - xValuePrev) < axesValuesPixelSizeX &&
@@ -352,305 +341,306 @@ namespace WebCharts.Services.Models.ChartTypes
 
                     // Get point pixel position
                     currentPoint.X = (float)
-						(hAxis.GetLinearPosition( xValue ) * xPixelConverter);
-					currentPoint.Y = (float)
-						(vAxis.GetLinearPosition( yValue ) * yPixelConverter);
+                        (hAxis.GetLinearPosition(xValue) * xPixelConverter);
+                    currentPoint.Y = (float)
+                        (vAxis.GetLinearPosition(yValue) * yPixelConverter);
 
-					// Draw point marker
-                    MarkerStyle	currentMarkerStyle = (currentPointIsEmpty) ? emptyMarkerStyle : markerStyle;
-                    if(currentMarkerStyle != MarkerStyle.None)
+                    // Draw point marker
+                    MarkerStyle currentMarkerStyle = (currentPointIsEmpty) ? emptyMarkerStyle : markerStyle;
+                    if (currentMarkerStyle != MarkerStyle.None)
                     {
-					    this.DrawMarker(
-						    graph,
-						    point,
-						    index,
-						    currentPoint,
+                        this.DrawMarker(
+                            graph,
+                            point,
+                            index,
+                            currentPoint,
                             currentMarkerStyle,
-						    markerSize,
-						    (currentPointIsEmpty) ? emptyMarkerBrush : markerBrush,
-						    (currentPointIsEmpty) ? emptyBorderPen : borderPen);
+                            markerSize,
+                            (currentPointIsEmpty) ? emptyMarkerBrush : markerBrush,
+                            (currentPointIsEmpty) ? emptyBorderPen : borderPen);
                     }
 
-					// Remember last point coordinates
-					xValuePrev = xValue;
-					yValuePrev = yValue;
-					++index;
-				}
+                    // Remember last point coordinates
+                    xValuePrev = xValue;
+                    yValuePrev = yValue;
+                    ++index;
+                }
 
-				// Dispose used brushes and pens
-				markerBrush.Dispose();
-				emptyMarkerBrush.Dispose();
-				if(borderPen != null)
-				{
-					borderPen.Dispose();
-				}
-				if(emptyBorderPen != null)
-				{
-					emptyBorderPen.Dispose();
-				}
-			}
-		}
+                // Dispose used brushes and pens
+                markerBrush.Dispose();
+                emptyMarkerBrush.Dispose();
+                if (borderPen != null)
+                {
+                    borderPen.Dispose();
+                }
+                if (emptyBorderPen != null)
+                {
+                    emptyBorderPen.Dispose();
+                }
+            }
+        }
 
-		/// <summary>
-		/// Draws a marker that represents a data point in FastPoint series.
-		/// </summary>
-		/// <param name="graph">Chart graphics used to draw the marker.</param>
-		/// <param name="point">Series data point drawn.</param>
-		/// <param name="pointIndex">Data point index in the series.</param>
-		/// <param name="location">Marker location in pixels.</param>
-		/// <param name="markerStyle">Marker style.</param>
-		/// <param name="markerSize">Marker size in pixels.</param>
-		/// <param name="brush">Brush used to fill marker shape.</param>
-		/// <param name="borderPen">Marker border pen.</param>
-		virtual protected void DrawMarker(
-			ChartGraphics graph, 
-			DataPoint point, 
-			int pointIndex, 
-			SKPoint location, 
-			MarkerStyle markerStyle, 
-			int markerSize, 
-			SKPaint brush,
-			SKPaint borderPen)
-		{
-			// Transform 3D coordinates
-			if(chartArea3DEnabled)
-			{
-				Point3D [] points = new Point3D[1];
-				location = graph.GetRelativePoint(location);
-				points[0] = new Point3D(location.X, location.Y, seriesZCoordinate);
-				matrix3D.TransformPoints( points );
-				location.X = points[0].X;
-				location.Y = points[0].Y;
-				location = graph.GetAbsolutePoint(location);
-			}
+        /// <summary>
+        /// Draws a marker that represents a data point in FastPoint series.
+        /// </summary>
+        /// <param name="graph">Chart graphics used to draw the marker.</param>
+        /// <param name="point">Series data point drawn.</param>
+        /// <param name="pointIndex">Data point index in the series.</param>
+        /// <param name="location">Marker location in pixels.</param>
+        /// <param name="markerStyle">Marker style.</param>
+        /// <param name="markerSize">Marker size in pixels.</param>
+        /// <param name="brush">Brush used to fill marker shape.</param>
+        /// <param name="borderPen">Marker border pen.</param>
+        virtual protected void DrawMarker(
+            ChartGraphics graph,
+            DataPoint point,
+            int pointIndex,
+            SKPoint location,
+            MarkerStyle markerStyle,
+            int markerSize,
+            SKPaint brush,
+            SKPaint borderPen)
+        {
+            // Transform 3D coordinates
+            if (chartArea3DEnabled)
+            {
+                Point3D[] points = new Point3D[1];
+                location = graph.GetRelativePoint(location);
+                points[0] = new Point3D(location.X, location.Y, seriesZCoordinate);
+                matrix3D.TransformPoints(points);
+                location.X = points[0].X;
+                location.Y = points[0].Y;
+                location = graph.GetAbsolutePoint(location);
+            }
 
-			// Create marker bounding rectangle in pixels
-			SKRect markerBounds = new(
-				location.X - markerSize / 2f, location.Y - markerSize / 2f, markerSize, markerSize);
+            // Create marker bounding rectangle in pixels
+            SKRect markerBounds = new(
+                location.X - markerSize / 2f, location.Y - markerSize / 2f, markerSize, markerSize);
 
-			// Draw Marker
-			switch(markerStyle)
-			{
-				case(MarkerStyle.Star4):
-				case(MarkerStyle.Star5):
-				case(MarkerStyle.Star6):
-				case(MarkerStyle.Star10):
-				{
-					// Set number of corners
-					int cornerNumber = 4;
-					if(markerStyle == MarkerStyle.Star5)
-					{
-						cornerNumber = 5;
-					}
-					else if(markerStyle == MarkerStyle.Star6)
-					{
-						cornerNumber = 6;
-					}
-					else if(markerStyle == MarkerStyle.Star10)
-					{
-						cornerNumber = 10;
-					}
+            // Draw Marker
+            switch (markerStyle)
+            {
+                case (MarkerStyle.Star4):
+                case (MarkerStyle.Star5):
+                case (MarkerStyle.Star6):
+                case (MarkerStyle.Star10):
+                    {
+                        // Set number of corners
+                        int cornerNumber = 4;
+                        if (markerStyle == MarkerStyle.Star5)
+                        {
+                            cornerNumber = 5;
+                        }
+                        else if (markerStyle == MarkerStyle.Star6)
+                        {
+                            cornerNumber = 6;
+                        }
+                        else if (markerStyle == MarkerStyle.Star10)
+                        {
+                            cornerNumber = 10;
+                        }
 
-					// Get star polygon
-					SKPoint[]	points = ChartGraphics.CreateStarPolygon(markerBounds, cornerNumber);
+                        // Get star polygon
+                        SKPoint[] points = ChartGraphics.CreateStarPolygon(markerBounds, cornerNumber);
 
-					// Fill shape
-					graph.FillPolygon(brush, points);
+                        // Fill shape
+                        graph.FillPolygon(brush, points);
 
-					// Draw border
-					if(borderPen != null)
-					{
-						graph.DrawPolygon(borderPen, points);
-					}
-					break;
-				}
-				case(MarkerStyle.Circle):
-				{
-					graph.FillEllipse(brush, markerBounds);
+                        // Draw border
+                        if (borderPen != null)
+                        {
+                            graph.DrawPolygon(borderPen, points);
+                        }
+                        break;
+                    }
+                case (MarkerStyle.Circle):
+                    {
+                        graph.FillEllipse(brush, markerBounds);
 
-					// Draw border
-					if(borderPen != null)
-					{
-						graph.DrawEllipse(borderPen, markerBounds);
-					}
+                        // Draw border
+                        if (borderPen != null)
+                        {
+                            graph.DrawEllipse(borderPen, markerBounds);
+                        }
 
-					break;
-				}
-				case(MarkerStyle.Square):
-				{
-					graph.FillRectangle(brush, markerBounds);
+                        break;
+                    }
+                case (MarkerStyle.Square):
+                    {
+                        graph.FillRectangle(brush, markerBounds);
 
-					// Draw border
-					if(borderPen != null)
-					{
-						graph.DrawRectangle(
-							borderPen, 
-							(int)Math.Round(markerBounds.Left, 0), 
-							(int)Math.Round(markerBounds.Top, 0), 
-							(int)Math.Round(markerBounds.Width, 0), 
-							(int)Math.Round(markerBounds.Height, 0) );
-					}
+                        // Draw border
+                        if (borderPen != null)
+                        {
+                            graph.DrawRectangle(
+                                borderPen,
+                                (int)Math.Round(markerBounds.Left, 0),
+                                (int)Math.Round(markerBounds.Top, 0),
+                                (int)Math.Round(markerBounds.Width, 0),
+                                (int)Math.Round(markerBounds.Height, 0));
+                        }
 
-					break;
-				}
-				case(MarkerStyle.Cross):
-				{
-					// Calculate cross line width and size
-					float crossLineWidth = (float)Math.Ceiling(markerSize/4F);
-					float crossSize = markerSize;	// * (float)Math.Sin(45f/180f*Math.PI)
+                        break;
+                    }
+                case (MarkerStyle.Cross):
+                    {
+                        // Calculate cross line width and size
+                        float crossLineWidth = (float)Math.Ceiling(markerSize / 4F);
+                        float crossSize = markerSize;   // * (float)Math.Sin(45f/180f*Math.PI)
 
-					// Calculate cross coordinates
-					SKPoint[] points = new SKPoint[12];
-					points[0].X = location.X - crossSize/2F;
-					points[0].Y = location.Y + crossLineWidth/2F;
-					points[1].X = location.X - crossSize/2F;
-					points[1].Y = location.Y - crossLineWidth/2F;
+                        // Calculate cross coordinates
+                        SKPoint[] points = new SKPoint[12];
+                        points[0].X = location.X - crossSize / 2F;
+                        points[0].Y = location.Y + crossLineWidth / 2F;
+                        points[1].X = location.X - crossSize / 2F;
+                        points[1].Y = location.Y - crossLineWidth / 2F;
 
-					points[2].X = location.X - crossLineWidth/2F;
-					points[2].Y = location.Y - crossLineWidth/2F;
-					points[3].X = location.X - crossLineWidth/2F;
-					points[3].Y = location.Y - crossSize/2F;
-					points[4].X = location.X + crossLineWidth/2F;
-					points[4].Y = location.Y - crossSize/2F;
+                        points[2].X = location.X - crossLineWidth / 2F;
+                        points[2].Y = location.Y - crossLineWidth / 2F;
+                        points[3].X = location.X - crossLineWidth / 2F;
+                        points[3].Y = location.Y - crossSize / 2F;
+                        points[4].X = location.X + crossLineWidth / 2F;
+                        points[4].Y = location.Y - crossSize / 2F;
 
-					points[5].X = location.X + crossLineWidth/2F;
-					points[5].Y = location.Y - crossLineWidth/2F;
-					points[6].X = location.X + crossSize/2F;
-					points[6].Y = location.Y - crossLineWidth/2F;
-					points[7].X = location.X + crossSize/2F;
-					points[7].Y = location.Y + crossLineWidth/2F;
+                        points[5].X = location.X + crossLineWidth / 2F;
+                        points[5].Y = location.Y - crossLineWidth / 2F;
+                        points[6].X = location.X + crossSize / 2F;
+                        points[6].Y = location.Y - crossLineWidth / 2F;
+                        points[7].X = location.X + crossSize / 2F;
+                        points[7].Y = location.Y + crossLineWidth / 2F;
 
-					points[8].X = location.X + crossLineWidth/2F;
-					points[8].Y = location.Y + crossLineWidth/2F;
-					points[9].X = location.X + crossLineWidth/2F;
-					points[9].Y = location.Y + crossSize/2F;
-					points[10].X = location.X - crossLineWidth/2F;
-					points[10].Y = location.Y + crossSize/2F;
-					points[11].X = location.X - crossLineWidth/2F;
-					points[11].Y = location.Y + crossLineWidth/2F;
+                        points[8].X = location.X + crossLineWidth / 2F;
+                        points[8].Y = location.Y + crossLineWidth / 2F;
+                        points[9].X = location.X + crossLineWidth / 2F;
+                        points[9].Y = location.Y + crossSize / 2F;
+                        points[10].X = location.X - crossLineWidth / 2F;
+                        points[10].Y = location.Y + crossSize / 2F;
+                        points[11].X = location.X - crossLineWidth / 2F;
+                        points[11].Y = location.Y + crossLineWidth / 2F;
 
-					// Rotate cross coordinates 45 degrees
-					SKMatrix rotationMatrix = SKMatrix.CreateRotationDegrees(45, location.X, location.Y);
-					rotationMatrix.TransformPoints(points);
+                        // Rotate cross coordinates 45 degrees
+                        SKMatrix rotationMatrix = SKMatrix.CreateRotationDegrees(45, location.X, location.Y);
+                        rotationMatrix.TransformPoints(points);
 
-					// Fill shape
-					graph.FillPolygon(brush, points);
+                        // Fill shape
+                        graph.FillPolygon(brush, points);
 
-					// Draw border
-					if(borderPen != null)
-					{
-						graph.DrawPolygon(borderPen, points);
-					}
-					break;
-				}
-				case(MarkerStyle.Diamond):
-				{
-					SKPoint[] points = new SKPoint[4];
-					points[0].X = markerBounds.Left;
-					points[0].Y = markerBounds.Top + markerBounds.Height/2F;
-					points[1].X = markerBounds.Left + markerBounds.Width/2F;
-					points[1].Y = markerBounds.Top;
-					points[2].X = markerBounds.Right;
-					points[2].Y = markerBounds.Top + markerBounds.Height/2F;
-					points[3].X = markerBounds.Left + markerBounds.Width/2F;
-					points[3].Y = markerBounds.Bottom;
+                        // Draw border
+                        if (borderPen != null)
+                        {
+                            graph.DrawPolygon(borderPen, points);
+                        }
+                        break;
+                    }
+                case (MarkerStyle.Diamond):
+                    {
+                        SKPoint[] points = new SKPoint[4];
+                        points[0].X = markerBounds.Left;
+                        points[0].Y = markerBounds.Top + markerBounds.Height / 2F;
+                        points[1].X = markerBounds.Left + markerBounds.Width / 2F;
+                        points[1].Y = markerBounds.Top;
+                        points[2].X = markerBounds.Right;
+                        points[2].Y = markerBounds.Top + markerBounds.Height / 2F;
+                        points[3].X = markerBounds.Left + markerBounds.Width / 2F;
+                        points[3].Y = markerBounds.Bottom;
 
-					graph.FillPolygon(brush, points);
+                        graph.FillPolygon(brush, points);
 
-					// Draw border
-					if(borderPen != null)
-					{
-						graph.DrawPolygon(borderPen, points);
-					}
-					break;
-				}
-				case(MarkerStyle.Triangle):
-				{
-					SKPoint[] points = new SKPoint[3];
-					points[0].X = markerBounds.Left;
-					points[0].Y = markerBounds.Bottom;
-					points[1].X = markerBounds.Top + markerBounds.Width/2F;
-					points[1].Y = markerBounds.Top;
-					points[2].X = markerBounds.Right;
-					points[2].Y = markerBounds.Bottom;
+                        // Draw border
+                        if (borderPen != null)
+                        {
+                            graph.DrawPolygon(borderPen, points);
+                        }
+                        break;
+                    }
+                case (MarkerStyle.Triangle):
+                    {
+                        SKPoint[] points = new SKPoint[3];
+                        points[0].X = markerBounds.Left;
+                        points[0].Y = markerBounds.Bottom;
+                        points[1].X = markerBounds.Top + markerBounds.Width / 2F;
+                        points[1].Y = markerBounds.Top;
+                        points[2].X = markerBounds.Right;
+                        points[2].Y = markerBounds.Bottom;
 
-					graph.FillPolygon(brush, points);
+                        graph.FillPolygon(brush, points);
 
-					// Draw border
-					if(borderPen != null)
-					{
-						graph.DrawPolygon(borderPen, points);
-					}
-					break;
-				}
-				default:
-				{
-                    throw (new InvalidOperationException(SR.ExceptionFastPointMarkerStyleUnknown));
-				}
-			}
-			
-			// Process selection regions
-			if( Common.ProcessModeRegions )
-			{
-				Common.HotRegionsList.AddHotRegion(
-					graph.GetRelativeRectangle(markerBounds),
-					point, 
-					point.series.Name, 
-					pointIndex );
-			}
-		}
+                        // Draw border
+                        if (borderPen != null)
+                        {
+                            graph.DrawPolygon(borderPen, points);
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        throw (new InvalidOperationException(SR.ExceptionFastPointMarkerStyleUnknown));
+                    }
+            }
 
-		#endregion
+            // Process selection regions
+            if (Common.ProcessModeRegions)
+            {
+                Common.HotRegionsList.AddHotRegion(
+                    graph.GetRelativeRectangle(markerBounds),
+                    point,
+                    point.series.Name,
+                    pointIndex);
+            }
+        }
 
-		#region Y values related methods
+        #endregion Painting
 
-		/// <summary>
-		/// Helper function, which returns the Y value of the location.
-		/// </summary>
-		/// <param name="common">Chart common elements.</param>
-		/// <param name="area">Chart area the series belongs to.</param>
-		/// <param name="series">Sereis of the location.</param>
-		/// <param name="point">Point object.</param>
-		/// <param name="pointIndex">Index of the location.</param>
-		/// <param name="yValueIndex">Index of the Y value to get.</param>
-		/// <returns>Y value of the location.</returns>
-		virtual public double GetYValue(
-			CommonElements common, 
-			ChartArea area, 
-			Series series, 
-			DataPoint point, 
-			int pointIndex, 
-			int yValueIndex)
-		{
-			return point.YValues[yValueIndex];
-		}
+        #region Y values related methods
 
-		#endregion
+        /// <summary>
+        /// Helper function, which returns the Y value of the location.
+        /// </summary>
+        /// <param name="common">Chart common elements.</param>
+        /// <param name="area">Chart area the series belongs to.</param>
+        /// <param name="series">Sereis of the location.</param>
+        /// <param name="point">Point object.</param>
+        /// <param name="pointIndex">Index of the location.</param>
+        /// <param name="yValueIndex">Index of the Y value to get.</param>
+        /// <returns>Y value of the location.</returns>
+        virtual public double GetYValue(
+            CommonElements common,
+            ChartArea area,
+            Series series,
+            DataPoint point,
+            int pointIndex,
+            int yValueIndex)
+        {
+            return point.YValues[yValueIndex];
+        }
 
-		#region SmartLabelStyle methods
+        #endregion Y values related methods
 
-		/// <summary>
-		/// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
-		/// </summary>
-		/// <param name="common">Common chart elements.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="series">Series values to be used.</param>
-		/// <param name="list">List to add to.</param>
-		public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)		
-		{
-			// Fast Point chart type do not support labels
-		}
+        #region SmartLabelStyle methods
 
-		#endregion
+        /// <summary>
+        /// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
+        /// </summary>
+        /// <param name="common">Common chart elements.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="series">Series values to be used.</param>
+        /// <param name="list">List to add to.</param>
+        public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
+        {
+            // Fast Point chart type do not support labels
+        }
+
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -661,6 +651,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
-	}
+
+        #endregion IDisposable interface implementation
+    }
 }

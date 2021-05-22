@@ -2,31 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	ChartRenderingEngine class provides a common interface 
-//              to the graphics rendering and animation engines. 
-//              Internally it uses SvgChartGraphics, FlashGraphics or 
-//              GdiGraphics classes depending on the ActiveRenderingType 
+//  Purpose:	ChartRenderingEngine class provides a common interface
+//              to the graphics rendering and animation engines.
+//              Internally it uses SvgChartGraphics, FlashGraphics or
+//              GdiGraphics classes depending on the ActiveRenderingType
 //              property settings.
 //              ValueA, PointA, RectangleA and ColorA classes are
 //              used to store data about animated values like colors
-//              position or rectangles. They store starting value/time, 
-//              end value/time, repeat flags and other settings. These 
+//              position or rectangles. They store starting value/time,
+//              end value/time, repeat flags and other settings. These
 //              clases are used with animation engines.
 //
 
-
 using SkiaSharp;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -38,20 +30,18 @@ namespace WebCharts.Services.Models.General
         /// <summary>
         /// GDI+ AxisName
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Gdi")]
         Gdi,
 
         /// <summary>
         /// SVG AxisName
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Svg")]
         Svg,
     }
 
-    #endregion // Enumerations
+    #endregion Enumerations
 
     /// <summary>
-    /// The ChartGraphics class provides a common interface to the 
+    /// The ChartGraphics class provides a common interface to the
     /// graphics rendering.
     /// </summary>
     public partial class ChartGraphics
@@ -62,15 +52,12 @@ namespace WebCharts.Services.Models.General
         private RenderingType _activeRenderingType = RenderingType.Gdi;
 
         // GDI+ rendering engine
-        private GdiGraphics _gdiGraphics = new GdiGraphics();
-
-        // Document title used for SVG rendering
-        //private string documentTitle = string.Empty;
+        private GdiGraphics _gdiGraphics = new();
 
         // True if text should be clipped
         internal bool IsTextClipped = false;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Drawing Methods
 
@@ -108,10 +95,8 @@ namespace WebCharts.Services.Models.General
             RenderingObject.DrawLine(pen, x1, y1, x2, y2);
         }
 
-   
-
         /// <summary>
-        /// Draws an ellipse defined by a bounding rectangle specified by 
+        /// Draws an ellipse defined by a bounding rectangle specified by
         /// a pair of coordinates, a height, and a width.
         /// </summary>
         /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
@@ -131,8 +116,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Draws a cardinal spline through a specified array of SKPoint structures 
-        /// using a specified tension. The drawing begins offset from 
+        /// Draws a cardinal spline through a specified array of SKPoint structures
+        /// using a specified tension. The drawing begins offset from
         /// the beginning of the array.
         /// </summary>
         /// <param name="pen">Pen object that determines the color, width, and height of the curve.</param>
@@ -148,15 +133,14 @@ namespace WebCharts.Services.Models.General
             float tension
             )
         {
-            ChartGraphics chartGraphics = this as ChartGraphics;
-            if (chartGraphics == null || !chartGraphics.IsMetafile)
+            if (!IsMetafile)
             {
                 RenderingObject.DrawCurve(pen, points, offset, numberOfSegments, tension);
             }
             else
             {
                 // Special handling required for the metafiles. We cannot pass large array of
-                // points because they will be persisted inside EMF file and cause exponential 
+                // points because they will be persisted inside EMF file and cause exponential
                 // increase in emf file size. Draw curve method uses additional 2, 3 or 4 points
                 // depending on which segement is drawn.
                 SKPoint[] pointsExact = null;
@@ -198,7 +182,7 @@ namespace WebCharts.Services.Models.General
                         offset = 1;
                     }
 
-                    // Render the curve using minimum number of required points in the array 
+                    // Render the curve using minimum number of required points in the array
                     RenderingObject.DrawCurve(pen, pointsExact, offset, numberOfSegments, tension);
                 }
             }
@@ -396,12 +380,12 @@ namespace WebCharts.Services.Models.General
             RenderingObject.DrawLines(pen, points);
         }
 
-        #endregion // Drawing Methods
+        #endregion Drawing Methods
 
         #region Filling Methods
 
         /// <summary>
-        /// Fills the interior of an ellipse defined by a bounding rectangle 
+        /// Fills the interior of an ellipse defined by a bounding rectangle
         /// specified by a SKRect structure.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
@@ -493,8 +477,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Fills the interior of a pie section defined by an ellipse 
-        /// specified by a pair of coordinates, a width, and a height 
+        /// Fills the interior of a pie section defined by an ellipse
+        /// specified by a pair of coordinates, a width, and a height
         /// and two radial lines.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
@@ -517,14 +501,12 @@ namespace WebCharts.Services.Models.General
             RenderingObject.FillPie(brush, x, y, width, height, startAngle, sweepAngle);
         }
 
-        #endregion // Filling Methods
+        #endregion Filling Methods
 
         #region Other Methods
 
-
-
         /// <summary>
-        /// Measures the specified string when drawn with the specified 
+        /// Measures the specified string when drawn with the specified
         /// Font object and formatted with the specified StringFormat object.
         /// </summary>
         /// <param name="text">String to measure.</param>
@@ -541,7 +523,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Measures the specified string when drawn with the specified 
+        /// Measures the specified string when drawn with the specified
         /// Font object and formatted with the specified StringFormat object.
         /// </summary>
         /// <param name="text">String to measure.</param>
@@ -605,7 +587,7 @@ namespace WebCharts.Services.Models.General
             RenderingObject.TranslateTransform(dx, dy);
         }
 
-        #endregion // Other Methods
+        #endregion Other Methods
 
         #region Properties
 
@@ -634,7 +616,7 @@ namespace WebCharts.Services.Models.General
         ///// <summary>
         ///// Gets or sets the rendering mode for text associated with this Graphics object.
         ///// </summary>
-        //internal TextRenderingHint TextRenderingHint 
+        //internal TextRenderingHint TextRenderingHint
         //{
         //	get
         //	{
@@ -664,7 +646,7 @@ namespace WebCharts.Services.Models.General
         ///// <summary>
         ///// Gets or sets the rendering quality for this Graphics object.
         ///// </summary>
-        //internal SmoothingMode SmoothingMode 
+        //internal SmoothingMode SmoothingMode
         //{
         //	get
         //	{
@@ -717,6 +699,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
     }
 }

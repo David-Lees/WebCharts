@@ -2,22 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	The chart element is base class for the big number 
+//  Purpose:	The chart element is base class for the big number
 //				of classes. It stores common methods and data.
 //
 
-
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing.Drawing2D;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
-
     #region ChartElement
 
     /// <summary>
@@ -32,7 +25,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal const int MaxNumOfGridlines = 10000;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructor
 
@@ -41,7 +34,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         private ChartHelper() { }
 
-        #endregion // Constructor
+        #endregion Constructor
 
         #region Methods
 
@@ -114,23 +107,20 @@ namespace WebCharts.Services.Models.General
                 DateTime newStartDate = DateTime.FromOADate(start);
 
                 // Adjust the months interval depending on size
-                if (intervalSize > 0.0 && intervalSize != 1.0)
+                if (intervalSize > 0.0 && intervalSize != 1.0 && type == DateTimeIntervalType.Months && intervalSize <= 12.0 && intervalSize > 1)
                 {
-                    if (type == DateTimeIntervalType.Months && intervalSize <= 12.0 && intervalSize > 1)
+                    // Make sure that the beginning is aligned correctly for cases
+                    // like quarters and half years
+                    DateTime resultDate = newStartDate;
+                    DateTime sizeAdjustedDate = new(newStartDate.Year, 1, 1, 0, 0, 0);
+                    while (sizeAdjustedDate < newStartDate)
                     {
-                        // Make sure that the beginning is aligned correctly for cases
-                        // like quarters and half years
-                        DateTime resultDate = newStartDate;
-                        DateTime sizeAdjustedDate = new(newStartDate.Year, 1, 1, 0, 0, 0);
-                        while (sizeAdjustedDate < newStartDate)
-                        {
-                            resultDate = sizeAdjustedDate;
-                            sizeAdjustedDate = sizeAdjustedDate.AddMonths((int)intervalSize);
-                        }
-
-                        newStartDate = resultDate;
-                        return newStartDate.ToOADate();
+                        resultDate = sizeAdjustedDate;
+                        sizeAdjustedDate = sizeAdjustedDate.AddMonths((int)intervalSize);
                     }
+
+                    newStartDate = resultDate;
+                    return newStartDate.ToOADate();
                 }
 
                 // Check interval type
@@ -207,7 +197,7 @@ namespace WebCharts.Services.Models.General
                     case (DateTimeIntervalType.Weeks):
 
                         // NOTE: Code below was changed to fix issue #5962
-                        // Elements that have interval set to weeks should be aligned to the 
+                        // Elements that have interval set to weeks should be aligned to the
                         // nearest Monday no matter how many weeks is the interval.
                         //newStartDate = newStartDate.AddDays(-((int)newStartDate.DayOfWeek * intervalSize));
                         newStartDate = newStartDate.AddDays(-((int)newStartDate.DayOfWeek));
@@ -219,7 +209,6 @@ namespace WebCharts.Services.Models.General
                 return newStartDate.ToOADate();
             }
         }
-
 
         /// <summary>
         /// Gets interval size as double number.
@@ -447,7 +436,7 @@ namespace WebCharts.Services.Models.General
                 }
                 else if (type == DateTimeIntervalType.Months)
                 {
-                    // Special case handling when current date points 
+                    // Special case handling when current date points
                     // to the last day of the month
                     bool lastMonthDay = false;
                     if (date.Day == DateTime.DaysInMonth(date.Year, date.Month))
@@ -496,11 +485,11 @@ namespace WebCharts.Services.Models.General
                 return true;
             }
 
-            if (Utilities.CustomPropertyRegistry.IsXAxisQuantitativeChartTypes.Contains(series.ChartType) &&
-                series.IsCustomPropertySet(Utilities.CustomPropertyName.IsXAxisQuantitative))
+            if (CustomPropertyRegistry.IsXAxisQuantitativeChartTypes.Contains(series.ChartType) &&
+                series.IsCustomPropertySet(CustomPropertyName.IsXAxisQuantitative))
             {
-                string attribValue = series[Utilities.CustomPropertyName.IsXAxisQuantitative];
-                if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                string attribValue = series[CustomPropertyName.IsXAxisQuantitative];
+                if (string.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     return false;
                 }
@@ -588,8 +577,8 @@ namespace WebCharts.Services.Models.General
             return true;
         }
 
-        #endregion
+        #endregion Methods
     }
 
-    #endregion //ChartElement
+    #endregion ChartElement
 }

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     internal interface IKeywordsRegistry
     {

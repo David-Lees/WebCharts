@@ -1,6 +1,4 @@
-﻿using WebCharts.Services.Models.Common;
-
-namespace WebCharts.Services.Enums
+﻿namespace WebCharts.Services
 {
     /// <summary>
     /// Line anchor cap style.
@@ -12,22 +10,25 @@ namespace WebCharts.Services.Enums
         /// No line anchor cap.
         /// </summary>
         None,
+
         /// <summary>
         /// Arrow line anchor cap.
         /// </summary>
         Arrow,
+
         /// <summary>
         /// Diamond line anchor cap.
         /// </summary>
         Diamond,
+
         /// <summary>
         /// Square line anchor cap.
         /// </summary>
         Square,
+
         /// <summary>
         /// Round line anchor cap.
         /// </summary>
         Round
     }
-
 }

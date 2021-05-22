@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
 
     internal static class Constants

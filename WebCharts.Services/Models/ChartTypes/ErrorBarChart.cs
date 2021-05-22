@@ -2,41 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Provides 2D and 3D drawing and hit testing of the 
+//  Purpose:	Provides 2D and 3D drawing and hit testing of the
 //              ErrorBar chart.
 //  -------------------------
 //  Error Bar Chart Overview:
 //  -------------------------
-//  Error bar charts consist of lines with markers that are used to 
-//  display statistical information about the data displayed in a 
-//  graph. An Error Bar chart type is a series that has 3 Y values. 
-//  While it is true that these values can be assigned to each point 
-//  in an Error Bar chart, in most cases, the values will be 
-//  calculated from the data present in another series. 
+//  Error bar charts consist of lines with markers that are used to
+//  display statistical information about the data displayed in a
+//  graph. An Error Bar chart type is a series that has 3 Y values.
+//  While it is true that these values can be assigned to each point
+//  in an Error Bar chart, in most cases, the values will be
+//  calculated from the data present in another series.
 //  :
-//  The order of the Y values is important because each position in 
+//  The order of the Y values is important because each position in
 //  the array of values represents a value on the Error Bar:
 //      0 - Center or Average point value
 //      1 - Lower Error value
 //      2 - Upper Error value
 //
 
-
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -44,1691 +36,1668 @@ namespace WebCharts.Services.Models.ChartTypes
     /// Defines the way error amount is calculated.
     /// </summary>
     internal enum ErrorBarType
-	{
-		/// <summary>
-		/// Error is a fixed value.
-		/// </summary>
-		FixedValue,
+    {
+        /// <summary>
+        /// Error is a fixed value.
+        /// </summary>
+        FixedValue,
 
-		/// <summary>
-		/// Error is percentage of the center value.
-		/// </summary>
-		Percentage,
+        /// <summary>
+        /// Error is percentage of the center value.
+        /// </summary>
+        Percentage,
 
-		/// <summary>
-		/// Error is standard deviation of all center values in series.
-		/// </summary>
-		StandardDeviation,
+        /// <summary>
+        /// Error is standard deviation of all center values in series.
+        /// </summary>
+        StandardDeviation,
 
-		/// <summary>
-		/// Error is standard error of all center values in series.
-		/// </summary>
-		StandardError
-	}
+        /// <summary>
+        /// Error is standard error of all center values in series.
+        /// </summary>
+        StandardError
+    }
 
-	/// <summary>
-	/// Error bars drawing styles.
-	/// </summary>
-	internal enum ErrorBarStyle
-	{
-		/// <summary>
-		/// Draws both lower and upper error bar.
-		/// </summary>
-		Both,
+    /// <summary>
+    /// Error bars drawing styles.
+    /// </summary>
+    internal enum ErrorBarStyle
+    {
+        /// <summary>
+        /// Draws both lower and upper error bar.
+        /// </summary>
+        Both,
 
-		/// <summary>
-		/// Draws only upper error bar.
-		/// </summary>
-		UpperError,
+        /// <summary>
+        /// Draws only upper error bar.
+        /// </summary>
+        UpperError,
 
-		/// <summary>
-		/// Draws only lower error bar.
-		/// </summary>
-		LowerError
-	}
+        /// <summary>
+        /// Draws only lower error bar.
+        /// </summary>
+        LowerError
+    }
 
-	#endregion
+    #endregion Enumerations
 
-	/// <summary>
+    /// <summary>
     /// ErrorBarChart class provides 2D and 3D drawing and hit testing of
     /// the ErrorBar chart.
-	/// </summary>
-	internal class ErrorBarChart : IChartType
-	{
-		#region Fields
+    /// </summary>
+    internal class ErrorBarChart : IChartType
+    {
+        #region Fields
 
-		/// <summary>
-		/// Vertical axis
-		/// </summary>
-		protected	Axis	vAxis = null;	
+        /// <summary>
+        /// Vertical axis
+        /// </summary>
+        protected Axis vAxis = null;
 
-		/// <summary>
-		/// Horizontal axis
-		/// </summary>
-		protected	Axis	hAxis = null;
+        /// <summary>
+        /// Horizontal axis
+        /// </summary>
+        protected Axis hAxis = null;
 
-		#endregion
+        #endregion Fields
 
-		#region Constructor
+        #region Constructor
 
-		/// <summary>
-		/// Error bar chart constructor.
-		/// </summary>
-		public ErrorBarChart()
-		{
-		}
+        /// <summary>
+        /// Error bar chart constructor.
+        /// </summary>
+        public ErrorBarChart()
+        {
+        }
 
-		#endregion
+        #endregion Constructor
 
-		#region IChartType interface implementation
+        #region IChartType interface implementation
 
-		/// <summary>
-		/// Chart type name
-		/// </summary>
-		virtual public string Name			{ get{ return ChartTypeNames.ErrorBar;}}
+        /// <summary>
+        /// Chart type name
+        /// </summary>
+        virtual public string Name { get { return ChartTypeNames.ErrorBar; } }
 
-		/// <summary>
-		/// True if chart type is stacked
-		/// </summary>
-		virtual public bool Stacked		{ get{ return false;}}
+        /// <summary>
+        /// True if chart type is stacked
+        /// </summary>
+        virtual public bool Stacked { get { return false; } }
 
+        /// <summary>
+        /// True if stacked chart type supports groups
+        /// </summary>
+        virtual public bool SupportStackedGroups { get { return false; } }
 
-		/// <summary>
-		/// True if stacked chart type supports groups
-		/// </summary>
-		virtual public bool SupportStackedGroups	{ get { return false; } }
+        /// <summary>
+        /// True if stacked chart type should draw separately positive and
+        /// negative data points ( Bar and column Stacked types ).
+        /// </summary>
+        public bool StackSign { get { return false; } }
 
+        /// <summary>
+        /// True if chart type supports axes
+        /// </summary>
+        virtual public bool RequireAxes { get { return true; } }
 
-		/// <summary>
-		/// True if stacked chart type should draw separately positive and 
-		/// negative data points ( Bar and column Stacked types ).
-		/// </summary>
-		public bool StackSign		{ get{ return false;}}
+        /// <summary>
+        /// Chart type with two y values used for scale ( bubble chart type )
+        /// </summary>
+        public bool SecondYScale { get { return false; } }
 
-		/// <summary>
-		/// True if chart type supports axes
-		/// </summary>
-		virtual public bool RequireAxes	{ get{ return true;} }
+        /// <summary>
+        /// True if chart type requires circular chart area.
+        /// </summary>
+        public bool CircularChartArea { get { return false; } }
 
-		/// <summary>
-		/// Chart type with two y values used for scale ( bubble chart type )
-		/// </summary>
-		public bool SecondYScale{ get{ return false;} }
+        /// <summary>
+        /// True if chart type supports logarithmic axes
+        /// </summary>
+        virtual public bool SupportLogarithmicAxes { get { return true; } }
 
-		/// <summary>
-		/// True if chart type requires circular chart area.
-		/// </summary>
-		public bool CircularChartArea	{ get{ return false;} }
+        /// <summary>
+        /// True if chart type requires to switch the value (Y) axes position
+        /// </summary>
+        virtual public bool SwitchValueAxes { get { return false; } }
 
-		/// <summary>
-		/// True if chart type supports logarithmic axes
-		/// </summary>
-		virtual public bool SupportLogarithmicAxes	{ get{ return true;} }
+        /// <summary>
+        /// True if chart series can be placed side-by-side.
+        /// </summary>
+        public bool SideBySideSeries { get { return false; } }
 
-		/// <summary>
-		/// True if chart type requires to switch the value (Y) axes position
-		/// </summary>
-		virtual public bool SwitchValueAxes	{ get{ return false;} }
+        /// <summary>
+        /// True if each data point of a chart must be represented in the legend
+        /// </summary>
+        virtual public bool DataPointsInLegend { get { return false; } }
 
-		/// <summary>
-		/// True if chart series can be placed side-by-side.
-		/// </summary>
-		public bool SideBySideSeries { get{ return false;} }
+        /// <summary>
+        /// If the crossing value is auto Crossing value ZeroCrossing should be
+        /// automatically set to zero for some chart
+        /// types (Bar, column, area etc.)
+        /// </summary>
+        virtual public bool ZeroCrossing { get { return false; } }
 
-		/// <summary>
-		/// True if each data point of a chart must be represented in the legend
-		/// </summary>
-		virtual public bool DataPointsInLegend	{ get{ return false;} }
+        /// <summary>
+        /// True if palette colors should be applied for each data paoint.
+        /// Otherwise the color is applied to the series.
+        /// </summary>
+        virtual public bool ApplyPaletteColorsToPoints { get { return false; } }
 
-		/// <summary>
-		/// If the crossing value is auto Crossing value ZeroCrossing should be 
-		/// automatically set to zero for some chart 
-		/// types (Bar, column, area etc.)
-		/// </summary>
-		virtual public bool ZeroCrossing { get{ return false;} }
+        /// <summary>
+        /// Indicates that extra Y values are connected to the scale of the Y axis
+        /// </summary>
+        virtual public bool ExtraYValuesConnectedToYAxis { get { return true; } }
 
-		/// <summary>
-		/// True if palette colors should be applied for each data paoint.
-		/// Otherwise the color is applied to the series.
-		/// </summary>
-		virtual public bool ApplyPaletteColorsToPoints	{ get { return false; } }
+        /// <summary>
+        /// Indicates that this is a one hundred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercent { get { return false; } }
 
-		/// <summary>
-		/// Indicates that extra Y values are connected to the scale of the Y axis
-		/// </summary>
-		virtual public bool ExtraYValuesConnectedToYAxis{ get { return true; } }
-		
-		/// <summary>
-		/// Indicates that this is a one hundred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercent{ get{return false;} }
+        /// <summary>
+        /// Indicates that this is a one hundred percent chart.
+        /// Axis scale from 0 to 100 percent should be used.
+        /// </summary>
+        virtual public bool HundredPercentSupportNegative { get { return false; } }
 
-		/// <summary>
-		/// Indicates that this is a one hundred percent chart.
-		/// Axis scale from 0 to 100 percent should be used.
-		/// </summary>
-		virtual public bool HundredPercentSupportNegative{ get{return false;} }
+        /// <summary>
+        /// How to draw series/points in legend:
+        /// Filled rectangle, Line or Marker
+        /// </summary>
+        /// <param name="series">Legend item series.</param>
+        /// <returns>Legend item style.</returns>
+        virtual public LegendImageStyle GetLegendImageStyle(Series series)
+        {
+            return LegendImageStyle.Line;
+        }
 
-		/// <summary>
-		/// How to draw series/points in legend:
-		/// Filled rectangle, Line or Marker
-		/// </summary>
-		/// <param name="series">Legend item series.</param>
-		/// <returns>Legend item style.</returns>
-		virtual public LegendImageStyle GetLegendImageStyle(Series series)
-		{
-			return LegendImageStyle.Line;
-		}
-	
-		/// <summary>
-		/// Number of supported Y value(s) per point 
-		/// </summary>
-		virtual public int YValuesPerPoint	{ get { return 3; } }
+        /// <summary>
+        /// Number of supported Y value(s) per point
+        /// </summary>
+        virtual public int YValuesPerPoint { get { return 3; } }
 
-		/// <summary>
-		/// Gets chart type image.
-		/// </summary>
-		/// <param name="registry">Chart types registry object.</param>
-		/// <returns>Chart type image.</returns>
+        /// <summary>
+        /// Gets chart type image.
+        /// </summary>
+        /// <param name="registry">Chart types registry object.</param>
+        /// <returns>Chart type image.</returns>
         virtual public SKImage GetImage(ChartTypeRegistry registry)
-		{
-			return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
-		}
+        {
+            return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
+        }
 
-		#endregion
+        #endregion IChartType interface implementation
 
-		#region Painting and Selection methods
+        #region Painting and Selection methods
 
-		/// <summary>
-		/// Paint error bar chart.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual public void Paint( ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw )
-		{	
-			ProcessChartType( false, graph, common, area, seriesToDraw );
-		}
+        /// <summary>
+        /// Paint error bar chart.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual public void Paint(ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw)
+        {
+            ProcessChartType(false, graph, common, area, seriesToDraw);
+        }
 
-		/// <summary>
-		/// This method recalculates size of the bars. This method is used 
-		/// from Paint or Select method.
-		/// </summary>
-		/// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual protected void ProcessChartType( 
-			bool selection, 
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			Series seriesToDraw )
-		{
-			// Prosess 3D chart type
-			if(area.Area3DStyle.Enable3D)
-			{
-				ProcessChartType3D( selection, graph, common, area, seriesToDraw );
-				return;
-			}
+        /// <summary>
+        /// This method recalculates size of the bars. This method is used
+        /// from Paint or Select method.
+        /// </summary>
+        /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual protected void ProcessChartType(
+            bool selection,
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            Series seriesToDraw)
+        {
+            // Prosess 3D chart type
+            if (area.Area3DStyle.Enable3D)
+            {
+                ProcessChartType3D(selection, graph, common, area, seriesToDraw);
+                return;
+            }
 
-			// All data series from chart area which have Error bar chart type
-			List<string>	typeSeries = area.GetSeriesFromChartType(Name);
+            // All data series from chart area which have Error bar chart type
+            List<string> typeSeries = area.GetSeriesFromChartType(Name);
 
-			// Zero X values mode.
+            // Zero X values mode.
             bool indexedSeries = ChartHelper.IndexedSeries(common, typeSeries.ToArray());
 
-			//************************************************************
-			//** Loop through all series
-			//************************************************************
-			int seriesIndex = 0;
-			foreach( Series ser in common.DataManager.Series )
-			{
-				// Process non empty series of the area with error bar chart type
-				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-					|| ser.ChartArea != area.Name || !ser.IsVisible())
-				{
-					continue;
-				}
+            //************************************************************
+            //** Loop through all series
+            //************************************************************
+            int seriesIndex = 0;
+            foreach (Series ser in common.DataManager.Series)
+            {
+                // Process non empty series of the area with error bar chart type
+                if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                    || ser.ChartArea != area.Name || !ser.IsVisible())
+                {
+                    continue;
+                }
 
-				// Set active horizontal/vertical axis
-				hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-				vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                // Set active horizontal/vertical axis
+                hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
 
-				// Get interval between points
-				double interval = (indexedSeries) ? 1 : area.GetPointsInterval( hAxis.IsLogarithmic, hAxis.logarithmBase );
+                // Get interval between points
+                double interval = (indexedSeries) ? 1 : area.GetPointsInterval(hAxis.IsLogarithmic, hAxis.logarithmBase);
 
-				// Calculates points width
-				float	width = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.4));
+                // Calculates points width
+                float width = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.4));
 
+                // Align error bar X position with linked series
+                float sideBySideWidth = width;
+                int numberOfLinkedSeries = 1;
+                int indexOfLinkedSeries = 0;
+                bool showSideBySide = false;
+                string linkedSeriesName = string.Empty;
+                bool currentDrawSeriesSideBySide = false;
+                if (ser.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
+                {
+                    // Get series name
+                    linkedSeriesName = ser[CustomPropertyName.ErrorBarSeries];
+                    int valueTypeIndex = linkedSeriesName.IndexOf(":", StringComparison.Ordinal);
+                    if (valueTypeIndex >= 0)
+                    {
+                        linkedSeriesName = linkedSeriesName.Substring(0, valueTypeIndex);
+                    }
 
-				// Align error bar X position with linked series				
-				float	sideBySideWidth = width;
-				int		numberOfLinkedSeries = 1;
-				int		indexOfLinkedSeries = 0;
-				bool	showSideBySide = false;
-				string	linkedSeriesName = string.Empty;
-				bool	currentDrawSeriesSideBySide = false;
-				if(ser.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
-				{
-					// Get series name
-					linkedSeriesName = ser[CustomPropertyName.ErrorBarSeries];
-					int valueTypeIndex = linkedSeriesName.IndexOf(":", StringComparison.Ordinal);
-					if(valueTypeIndex >= 0)
-					{
-						linkedSeriesName = linkedSeriesName.Substring(0, valueTypeIndex);
-					}
-
-					// All linked data series from chart area which have Error bar chart type
-					string linkedSeriesChartType = common.DataManager.Series[linkedSeriesName].ChartTypeName;
+                    // All linked data series from chart area which have Error bar chart type
+                    string linkedSeriesChartType = common.DataManager.Series[linkedSeriesName].ChartTypeName;
                     ChartArea linkedSeriesArea = common.ChartPicture.ChartAreas[common.DataManager.Series[linkedSeriesName].ChartArea];
                     List<string> typeLinkedSeries = linkedSeriesArea.GetSeriesFromChartType(linkedSeriesChartType);
 
-					// Get index of linked serries
-					foreach(string name in typeLinkedSeries)
-					{
-						if(name == linkedSeriesName)
-						{
-							break;
-						}
-						++indexOfLinkedSeries;
-					}
+                    // Get index of linked serries
+                    foreach (string name in typeLinkedSeries)
+                    {
+                        if (name == linkedSeriesName)
+                        {
+                            break;
+                        }
+                        ++indexOfLinkedSeries;
+                    }
 
-					
-					currentDrawSeriesSideBySide = false;
-					if(String.Compare(linkedSeriesChartType, ChartTypeNames.Column, StringComparison.OrdinalIgnoreCase) ==0 
+                    currentDrawSeriesSideBySide = false;
+                    if (String.Compare(linkedSeriesChartType, ChartTypeNames.Column, StringComparison.OrdinalIgnoreCase) == 0
                         || String.Compare(linkedSeriesChartType, ChartTypeNames.RangeColumn, StringComparison.OrdinalIgnoreCase) == 0
                         )
-					{
-						currentDrawSeriesSideBySide = true;
-					}
-					foreach(string seriesName in typeLinkedSeries)
-					{
-						if(common.DataManager.Series[seriesName].IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
-						{
-							string attribValue = common.DataManager.Series[seriesName][CustomPropertyName.DrawSideBySide];
-							if(String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								currentDrawSeriesSideBySide = false;
-							}
-							else if(String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								currentDrawSeriesSideBySide = true;
-							}
-							else if(String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								// Do nothing
-							}
-							else
-							{
+                    {
+                        currentDrawSeriesSideBySide = true;
+                    }
+                    foreach (string seriesName in typeLinkedSeries)
+                    {
+                        if (common.DataManager.Series[seriesName].IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
+                        {
+                            string attribValue = common.DataManager.Series[seriesName][CustomPropertyName.DrawSideBySide];
+                            if (String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                currentDrawSeriesSideBySide = false;
+                            }
+                            else if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                currentDrawSeriesSideBySide = true;
+                            }
+                            else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                // Do nothing
+                            }
+                            else
+                            {
                                 throw (new InvalidOperationException(SR.ExceptionAttributeDrawSideBySideInvalid));
-							}
-						}
-					}
+                            }
+                        }
+                    }
 
-					if(currentDrawSeriesSideBySide)
-					{
-						// Find the number of linked data series
-						numberOfLinkedSeries = typeLinkedSeries.Count;
-						width /= numberOfLinkedSeries;
-						showSideBySide = true;
+                    if (currentDrawSeriesSideBySide)
+                    {
+                        // Find the number of linked data series
+                        numberOfLinkedSeries = typeLinkedSeries.Count;
+                        width /= numberOfLinkedSeries;
+                        showSideBySide = true;
 
-						// Check if side by side
-						if(!indexedSeries)
-						{
-							area.GetPointsInterval( typeLinkedSeries, hAxis.IsLogarithmic, hAxis.logarithmBase, true, out showSideBySide );
-						}
+                        // Check if side by side
+                        if (!indexedSeries)
+                        {
+                            area.GetPointsInterval(typeLinkedSeries, hAxis.IsLogarithmic, hAxis.logarithmBase, true, out showSideBySide);
+                        }
 
-						sideBySideWidth = (float)(common.DataManager.Series[linkedSeriesName].GetPointWidth(graph, hAxis, interval, 0.8)) / numberOfLinkedSeries;
-					}
-				}
+                        sideBySideWidth = (float)(common.DataManager.Series[linkedSeriesName].GetPointWidth(graph, hAxis, interval, 0.8)) / numberOfLinkedSeries;
+                    }
+                }
 
-				// Check if side-by-side attribute is set
-				if(!currentDrawSeriesSideBySide && ser.IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
-				{
-					string attribValue = ser[CustomPropertyName.DrawSideBySide];
-					if(String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) ==0)
-					{
-						showSideBySide = false;
-					}
-					else if(String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) ==0)
-					{
-						showSideBySide = true;
-						numberOfLinkedSeries = typeSeries.Count;
-						indexOfLinkedSeries = seriesIndex;
-						width /= numberOfLinkedSeries;
+                // Check if side-by-side attribute is set
+                if (!currentDrawSeriesSideBySide && ser.IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
+                {
+                    string attribValue = ser[CustomPropertyName.DrawSideBySide];
+                    if (String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        showSideBySide = false;
+                    }
+                    else if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        showSideBySide = true;
+                        numberOfLinkedSeries = typeSeries.Count;
+                        indexOfLinkedSeries = seriesIndex;
+                        width /= numberOfLinkedSeries;
 
-						// NOTE: Lines of code below were added to fix issue #4048
-						sideBySideWidth = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.8)) / numberOfLinkedSeries;
-					}
-					else if(String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) ==0)
-					{
-					}
-					else
-					{
+                        // NOTE: Lines of code below were added to fix issue #4048
+                        sideBySideWidth = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.8)) / numberOfLinkedSeries;
+                    }
+                    else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                    }
+                    else
+                    {
                         throw (new InvalidOperationException(SR.ExceptionAttributeDrawSideBySideInvalid));
-					}
-				}
+                    }
+                }
 
-
-				// Call Back Paint event
-				if( !selection )
-				{
+                // Call Back Paint event
+                if (!selection)
+                {
                     common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-				}
+                }
 
+                //************************************************************
+                //** Series data points loop
+                //************************************************************
+                int index = 1;
+                foreach (DataPoint point in ser.Points)
+                {
+                    // Check required Y values number
+                    if (point.YValues.Length < YValuesPerPoint)
+                    {
+                        throw (new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
+                    }
 
-				//************************************************************
-				//** Series data points loop
-				//************************************************************
-				int	index = 1;
-				foreach( DataPoint point in ser.Points )
-				{
-					// Check required Y values number
-					if(point.YValues.Length < YValuesPerPoint)
-					{
-						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
-					}
+                    // Reset pre-calculated point position
+                    point.positionRel = new SKPoint(float.NaN, float.NaN);
 
-					// Reset pre-calculated point position
-					point.positionRel = new SKPoint(float.NaN, float.NaN);
+                    // Get point X position
+                    float xPosition = 0f;
+                    double xValue = point.XValue;
+                    if (indexedSeries)
+                    {
+                        xValue = (double)index;
+                        //	xPosition = (float)(hAxis.GetPosition( (double)index ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
+                    }
 
-					// Get point X position
-					float xPosition = 0f;
-					double	xValue = point.XValue;
-					if( indexedSeries )
-					{
-						xValue = (double)index;
-					//	xPosition = (float)(hAxis.GetPosition( (double)index ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-					}
-					
-					if( showSideBySide )
-					{
-						xPosition = (float)(hAxis.GetPosition( xValue ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-					}
-					else
-					{
-						xPosition = (float)hAxis.GetPosition( xValue );
-					}
-						
-					double yValue0 = vAxis.GetLogValue( point.YValues[1] );
-					double yValue1 = vAxis.GetLogValue( point.YValues[2] );
-					xValue = hAxis.GetLogValue(xValue);
-					
-					// Check if chart is completly out of the data scaleView
-					if(xValue < hAxis.ViewMinimum || 
-						xValue > hAxis.ViewMaximum ||
-						(yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
-						(yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum) )
-					{
-						++index;
-						continue;
-					}
-						
-					// Make sure High/Low values are in data scaleView range						
-					double	low = vAxis.GetLogValue( point.YValues[1] );
-					double	high = vAxis.GetLogValue( point.YValues[2] );
+                    if (showSideBySide)
+                    {
+                        xPosition = (float)(hAxis.GetPosition(xValue) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                    }
+                    else
+                    {
+                        xPosition = (float)hAxis.GetPosition(xValue);
+                    }
 
-					// Check if lower and/or upper error bar are drawn
-					ErrorBarStyle	barStyle = ErrorBarStyle.Both;
-					if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-					{
-						string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
-						if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-						{
-							errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
-						}
+                    double yValue0 = vAxis.GetLogValue(point.YValues[1]);
+                    double yValue1 = vAxis.GetLogValue(point.YValues[2]);
+                    xValue = hAxis.GetLogValue(xValue);
 
-                        if(String.Compare( errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase ) == 0)
-						{
-							// default - do nothing
-						}
-						else if(String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase ) == 0)
-						{
-							barStyle = ErrorBarStyle.UpperError;
-							low = vAxis.GetLogValue( point.YValues[0] );
-							high = vAxis.GetLogValue( point.YValues[2] );
-						}
-						else if(String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase ) == 0)
-						{
-							barStyle = ErrorBarStyle.LowerError;
-							low = vAxis.GetLogValue( point.YValues[1] );
-							high = vAxis.GetLogValue( point.YValues[0] );
-						}
-						else
-						{
-							throw(new InvalidOperationException( SR.ExceptionCustomAttributeValueInvalid( point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
-						}
-					}
+                    // Check if chart is completly out of the data scaleView
+                    if (xValue < hAxis.ViewMinimum ||
+                        xValue > hAxis.ViewMaximum ||
+                        (yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
+                        (yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum))
+                    {
+                        ++index;
+                        continue;
+                    }
 
-					// Check if values are in range
-					if( high > vAxis.ViewMaximum )
-					{
-						high = vAxis.ViewMaximum;
-					}
-					if( high < vAxis.ViewMinimum )
-					{
-						high = vAxis.ViewMinimum;
-					}
-					high = (float)vAxis.GetLinearPosition(high);
-					
-					if( low > vAxis.ViewMaximum )
-					{
-						low = vAxis.ViewMaximum;
-					}
-					if( low < vAxis.ViewMinimum )
-					{
-						low = vAxis.ViewMinimum;
-					}
-					low = vAxis.GetLinearPosition(low);
+                    // Make sure High/Low values are in data scaleView range
+                    double low = vAxis.GetLogValue(point.YValues[1]);
+                    double high = vAxis.GetLogValue(point.YValues[2]);
 
-					// Remeber pre-calculated point position
-					point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
+                    // Check if lower and/or upper error bar are drawn
+                    ErrorBarStyle barStyle = ErrorBarStyle.Both;
+                    if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                    {
+                        string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
+                        if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                        {
+                            errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
+                        }
 
-					if( common.ProcessModePaint )
-					{
+                        if (String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            // default - do nothing
+                        }
+                        else if (String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            barStyle = ErrorBarStyle.UpperError;
+                            low = vAxis.GetLogValue(point.YValues[0]);
+                            high = vAxis.GetLogValue(point.YValues[2]);
+                        }
+                        else if (String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            barStyle = ErrorBarStyle.LowerError;
+                            low = vAxis.GetLogValue(point.YValues[1]);
+                            high = vAxis.GetLogValue(point.YValues[0]);
+                        }
+                        else
+                        {
+                            throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
+                        }
+                    }
 
-						// Check if chart is partialy in the data scaleView
-						bool	clipRegionSet = false;
-						if(xValue == hAxis.ViewMinimum || xValue == hAxis.ViewMaximum )
-						{
-							// Set clipping region for line drawing 
-							graph.SetClip( area.PlotAreaPosition.ToSKRect() );
-							clipRegionSet = true;
-						}
+                    // Check if values are in range
+                    if (high > vAxis.ViewMaximum)
+                    {
+                        high = vAxis.ViewMaximum;
+                    }
+                    if (high < vAxis.ViewMinimum)
+                    {
+                        high = vAxis.ViewMinimum;
+                    }
+                    high = (float)vAxis.GetLinearPosition(high);
 
-						// Draw error bar line
-						graph.DrawLineRel( 
-							point.Color, 
-							point.BorderWidth, 
-							point.BorderDashStyle, 
-							new SKPoint(xPosition, (float)high), 
-							new SKPoint(xPosition, (float)low),
-							ser.ShadowColor, 
-							ser.ShadowOffset );
+                    if (low > vAxis.ViewMaximum)
+                    {
+                        low = vAxis.ViewMaximum;
+                    }
+                    if (low < vAxis.ViewMinimum)
+                    {
+                        low = vAxis.ViewMinimum;
+                    }
+                    low = vAxis.GetLinearPosition(low);
 
-						// Draw Error Bar marks
-						DrawErrorBarMarks(graph, barStyle, area, ser, point, xPosition, width);
+                    // Remeber pre-calculated point position
+                    point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
 
-						// Reset Clip Region
-						if(clipRegionSet)
-						{
-							graph.ResetClip();
-						}
-					}
+                    if (common.ProcessModePaint)
+                    {
+                        // Check if chart is partialy in the data scaleView
+                        bool clipRegionSet = false;
+                        if (xValue == hAxis.ViewMinimum || xValue == hAxis.ViewMaximum)
+                        {
+                            // Set clipping region for line drawing
+                            graph.SetClip(area.PlotAreaPosition.ToSKRect());
+                            clipRegionSet = true;
+                        }
 
-					if( common.ProcessModeRegions )
-					{
-						// Calculate rect around the error bar marks
-						SKRect	areaRect = SKRect.Empty;
-						areaRect.Left = xPosition - width / 2f;
-						areaRect.Top = (float)Math.Min(high, low);
-						areaRect.Size = new(width,(float)Math.Max(high, low) - areaRect.Top);
+                        // Draw error bar line
+                        graph.DrawLineRel(
+                            point.Color,
+                            point.BorderWidth,
+                            point.BorderDashStyle,
+                            new SKPoint(xPosition, (float)high),
+                            new SKPoint(xPosition, (float)low),
+                            ser.ShadowColor,
+                            ser.ShadowOffset);
 
-						// Add area
-						common.HotRegionsList.AddHotRegion( areaRect, point, ser.Name, index - 1 );
-					}
-					++index;
-				}
+                        // Draw Error Bar marks
+                        DrawErrorBarMarks(graph, barStyle, area, ser, point, xPosition, width);
 
-				//************************************************************
-				//** Second series data points loop, when labels are drawn.
-				//************************************************************
-				if( !selection )
-				{
-					index = 1;
-					foreach( DataPoint point in ser.Points )
-					{
-						// Get point X position
-						float xPosition = 0f;
-						double	xValue = point.XValue;
-						if( indexedSeries )
-						{
-							xValue = (double)index;
-							xPosition = (float)(hAxis.GetPosition( (double)index ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-						}
-						else if( showSideBySide )
-						{
-							xPosition = (float)(hAxis.GetPosition( xValue ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-						}
-						else
-						{
-							xPosition = (float)hAxis.GetPosition( xValue );
-						}
+                        // Reset Clip Region
+                        if (clipRegionSet)
+                        {
+                            graph.ResetClip();
+                        }
+                    }
 
-						double yValue0 = vAxis.GetLogValue( point.YValues[1] );
-						double yValue1 = vAxis.GetLogValue( point.YValues[2] );
-						xValue = hAxis.GetLogValue(xValue);
-					
-						// Check if chart is completly out of the data scaleView
-						if(xValue < hAxis.ViewMinimum || 
-							xValue > hAxis.ViewMaximum ||
-							(yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
-							(yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum) )
-						{
-							++index;
-							continue;
-						}
+                    if (common.ProcessModeRegions)
+                    {
+                        // Calculate rect around the error bar marks
+                        SKRect areaRect = SKRect.Empty;
+                        areaRect.Left = xPosition - width / 2f;
+                        areaRect.Top = (float)Math.Min(high, low);
+                        areaRect.Size = new(width, (float)Math.Max(high, low) - areaRect.Top);
 
-						// Make sure High/Low values are in data scaleView range						
-						double	high = vAxis.GetLogValue( point.YValues[1] );
-						double	low = vAxis.GetLogValue( point.YValues[2] );
-					
-						// Check if lower and/or upper error bar are drawn
-						if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-						{
-							string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
-							if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-							{
-								errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
-							}
-							if(String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								// default - do nothing
-							}
-							else if(String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								low = vAxis.GetLogValue( point.YValues[0] );
-								high = vAxis.GetLogValue( point.YValues[2] );
-							}
-							else if(String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								low = vAxis.GetLogValue( point.YValues[1] );
-								high = vAxis.GetLogValue( point.YValues[0] );
-							}
-							else
-							{
-								throw(new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
-							}
-						}
+                        // Add area
+                        common.HotRegionsList.AddHotRegion(areaRect, point, ser.Name, index - 1);
+                    }
+                    ++index;
+                }
 
+                //************************************************************
+                //** Second series data points loop, when labels are drawn.
+                //************************************************************
+                if (!selection)
+                {
+                    index = 1;
+                    foreach (DataPoint point in ser.Points)
+                    {
+                        // Get point X position
+                        float xPosition = 0f;
+                        double xValue = point.XValue;
+                        if (indexedSeries)
+                        {
+                            xValue = (double)index;
+                            xPosition = (float)(hAxis.GetPosition((double)index) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                        }
+                        else if (showSideBySide)
+                        {
+                            xPosition = (float)(hAxis.GetPosition(xValue) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                        }
+                        else
+                        {
+                            xPosition = (float)hAxis.GetPosition(xValue);
+                        }
 
-						if( high > vAxis.ViewMaximum )
-						{
-							high = vAxis.ViewMaximum;
-						}
-						if( high < vAxis.ViewMinimum )
-						{
-							high = vAxis.ViewMinimum;
-						}
-						high = (float)vAxis.GetLinearPosition(high);
-					
-						if( low > vAxis.ViewMaximum )
-						{
-							low = vAxis.ViewMaximum;
-						}
-						if( low < vAxis.ViewMinimum )
-						{
-							low = vAxis.ViewMinimum;
-						}
-						low = vAxis.GetLinearPosition(low);
+                        double yValue0 = vAxis.GetLogValue(point.YValues[1]);
+                        double yValue1 = vAxis.GetLogValue(point.YValues[2]);
+                        xValue = hAxis.GetLogValue(xValue);
 
-						// Draw label
-						DrawLabel(common, area, graph, ser, point, new SKPoint(xPosition, (float)Math.Min(high, low)), index);
+                        // Check if chart is completly out of the data scaleView
+                        if (xValue < hAxis.ViewMinimum ||
+                            xValue > hAxis.ViewMaximum ||
+                            (yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
+                            (yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum))
+                        {
+                            ++index;
+                            continue;
+                        }
 
-						++index;
-					}
-				}
-				
-				// Call Paint event
-				if( !selection )
-				{
+                        // Make sure High/Low values are in data scaleView range
+                        double high = vAxis.GetLogValue(point.YValues[1]);
+                        double low = vAxis.GetLogValue(point.YValues[2]);
+
+                        // Check if lower and/or upper error bar are drawn
+                        if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                        {
+                            string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
+                            if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                            {
+                                errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
+                            }
+                            if (String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                // default - do nothing
+                            }
+                            else if (String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                low = vAxis.GetLogValue(point.YValues[0]);
+                                high = vAxis.GetLogValue(point.YValues[2]);
+                            }
+                            else if (String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                low = vAxis.GetLogValue(point.YValues[1]);
+                                high = vAxis.GetLogValue(point.YValues[0]);
+                            }
+                            else
+                            {
+                                throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
+                            }
+                        }
+
+                        if (high > vAxis.ViewMaximum)
+                        {
+                            high = vAxis.ViewMaximum;
+                        }
+                        if (high < vAxis.ViewMinimum)
+                        {
+                            high = vAxis.ViewMinimum;
+                        }
+                        high = (float)vAxis.GetLinearPosition(high);
+
+                        if (low > vAxis.ViewMaximum)
+                        {
+                            low = vAxis.ViewMaximum;
+                        }
+                        if (low < vAxis.ViewMinimum)
+                        {
+                            low = vAxis.ViewMinimum;
+                        }
+                        low = vAxis.GetLinearPosition(low);
+
+                        // Draw label
+                        DrawLabel(common, area, graph, ser, point, new SKPoint(xPosition, (float)Math.Min(high, low)), index);
+
+                        ++index;
+                    }
+                }
+
+                // Call Paint event
+                if (!selection)
+                {
                     common.Chart.CallOnPostPaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-				}
+                }
 
-				++seriesIndex;
-			}
-		}
+                ++seriesIndex;
+            }
+        }
 
-		/// <summary>
-		/// Draws error bar markers.
-		/// </summary>
-		/// <param name="graph">Chart graphics object.</param>
-		/// <param name="barStyle">Style of the error bar.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="ser">Data point series.</param>
-		/// <param name="point">Data point to draw.</param>
-		/// <param name="xPosition">X position.</param>
-		/// <param name="width">Point width.</param>
-		virtual protected void DrawErrorBarMarks(
-			ChartGraphics graph, 
-			ErrorBarStyle barStyle,
-			ChartArea area,
-			Series ser, 
-			DataPoint point, 
-			float xPosition, 
-			float width)
-		{
-			double	yPosition = 0.0;
-			string	markerStyle = String.Empty;
+        /// <summary>
+        /// Draws error bar markers.
+        /// </summary>
+        /// <param name="graph">Chart graphics object.</param>
+        /// <param name="barStyle">Style of the error bar.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="ser">Data point series.</param>
+        /// <param name="point">Data point to draw.</param>
+        /// <param name="xPosition">X position.</param>
+        /// <param name="width">Point width.</param>
+        virtual protected void DrawErrorBarMarks(
+            ChartGraphics graph,
+            ErrorBarStyle barStyle,
+            ChartArea area,
+            Series ser,
+            DataPoint point,
+            float xPosition,
+            float width)
+        {
+            double yPosition = 0.0;
+            string markerStyle = String.Empty;
 
-			// Draw lower error marker
-			if(barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.LowerError)
-			{
-				// Get Y position
-				yPosition = vAxis.GetLogValue( point.YValues[1] );
+            // Draw lower error marker
+            if (barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.LowerError)
+            {
+                // Get Y position
+                yPosition = vAxis.GetLogValue(point.YValues[1]);
 
-				// Get marker style name
-				markerStyle = "LINE";
-				if(point.MarkerStyle != MarkerStyle.None)
-				{
-					markerStyle = point.MarkerStyle.ToString();
-				}
+                // Get marker style name
+                markerStyle = "LINE";
+                if (point.MarkerStyle != MarkerStyle.None)
+                {
+                    markerStyle = point.MarkerStyle.ToString();
+                }
 
-				// Draw marker
-				DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, (float)yPosition, 0f, width, false);
-			}
+                // Draw marker
+                DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, (float)yPosition, 0f, width, false);
+            }
 
-			// Draw upper error marker
-			if(barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.UpperError)
-			{
-				// Get Y position
-				yPosition = vAxis.GetLogValue( point.YValues[2] );
+            // Draw upper error marker
+            if (barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.UpperError)
+            {
+                // Get Y position
+                yPosition = vAxis.GetLogValue(point.YValues[2]);
 
-				// Get marker style name
-				markerStyle = "LINE";
-				if(point.MarkerStyle != MarkerStyle.None)
-				{
-					markerStyle = point.MarkerStyle.ToString();
-				}
+                // Get marker style name
+                markerStyle = "LINE";
+                if (point.MarkerStyle != MarkerStyle.None)
+                {
+                    markerStyle = point.MarkerStyle.ToString();
+                }
 
-				// Draw marker
-				DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, (float)yPosition, 0f, width, false);
-			}
+                // Draw marker
+                DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, (float)yPosition, 0f, width, false);
+            }
 
-			// Draw center value marker
-			if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle) || point.series.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
-			{
-				// Get Y position
-				yPosition = vAxis.GetLogValue( point.YValues[0] );
+            // Draw center value marker
+            if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle) || point.series.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
+            {
+                // Get Y position
+                yPosition = vAxis.GetLogValue(point.YValues[0]);
 
-				// Get marker style name
-				markerStyle = point.series[CustomPropertyName.ErrorBarCenterMarkerStyle];
-				if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
-				{
-					markerStyle = point[CustomPropertyName.ErrorBarCenterMarkerStyle];
-				}
+                // Get marker style name
+                markerStyle = point.series[CustomPropertyName.ErrorBarCenterMarkerStyle];
+                if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
+                {
+                    markerStyle = point[CustomPropertyName.ErrorBarCenterMarkerStyle];
+                }
                 markerStyle = markerStyle.ToUpper(System.Globalization.CultureInfo.InvariantCulture);
 
-				// Draw marker
-				DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, (float)yPosition, 0f, width, false);
-			}
-		}
+                // Draw marker
+                DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, (float)yPosition, 0f, width, false);
+            }
+        }
 
-		/// <summary>
-		/// Draws single marker on the error bar.
-		/// </summary>
-		/// <param name="graph">Chart graphics.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="point">Series point.</param>
-		/// <param name="markerStyle">Marker style name.</param>
-		/// <param name="xPosition">X position.</param>
-		/// <param name="yPosition">Y position.</param>
-		/// <param name="zPosition">Z position.</param>
-		/// <param name="width">Point width.</param>
-		/// <param name="draw3D">Used for 3d drawing.</param>
-		private void DrawErrorBarSingleMarker(
-			ChartGraphics graph, 
-			ChartArea area,
-			DataPoint point, 
-			string markerStyle,
-			float xPosition, 
-			float yPosition, 
-			float zPosition, 
-			float width,
-			bool draw3D)
-		{
-			markerStyle = markerStyle.ToUpper(CultureInfo.InvariantCulture);
-			if(markerStyle.Length > 0 && String.Compare(markerStyle, "None", StringComparison.OrdinalIgnoreCase) != 0)
-			{
-				// Make sure Y value is in range
-				if( yPosition > vAxis.ViewMaximum || yPosition < vAxis.ViewMinimum)
-				{
-					return;
-				}
-				yPosition = (float)vAxis.GetLinearPosition(yPosition);
+        /// <summary>
+        /// Draws single marker on the error bar.
+        /// </summary>
+        /// <param name="graph">Chart graphics.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="point">Series point.</param>
+        /// <param name="markerStyle">Marker style name.</param>
+        /// <param name="xPosition">X position.</param>
+        /// <param name="yPosition">Y position.</param>
+        /// <param name="zPosition">Z position.</param>
+        /// <param name="width">Point width.</param>
+        /// <param name="draw3D">Used for 3d drawing.</param>
+        private void DrawErrorBarSingleMarker(
+            ChartGraphics graph,
+            ChartArea area,
+            DataPoint point,
+            string markerStyle,
+            float xPosition,
+            float yPosition,
+            float zPosition,
+            float width,
+            bool draw3D)
+        {
+            markerStyle = markerStyle.ToUpper(CultureInfo.InvariantCulture);
+            if (markerStyle.Length > 0 && String.Compare(markerStyle, "None", StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                // Make sure Y value is in range
+                if (yPosition > vAxis.ViewMaximum || yPosition < vAxis.ViewMinimum)
+                {
+                    return;
+                }
+                yPosition = (float)vAxis.GetLinearPosition(yPosition);
 
-				// 3D Transform coordinates
-				if(draw3D)
-				{
-					Point3D[] points = new Point3D[1];
-					points[0] = new Point3D(xPosition, yPosition, zPosition);
-					area.matrix3D.TransformPoints(points);
-					xPosition = points[0].X;
-					yPosition = points[0].Y;
-				}
+                // 3D Transform coordinates
+                if (draw3D)
+                {
+                    Point3D[] points = new Point3D[1];
+                    points[0] = new Point3D(xPosition, yPosition, zPosition);
+                    area.matrix3D.TransformPoints(points);
+                    xPosition = points[0].X;
+                    yPosition = points[0].Y;
+                }
 
-				// Draw horizontal line marker
-				if(String.Compare(markerStyle, "Line", StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					graph.DrawLineRel(
-						point.Color, 
-						point.BorderWidth, 
-						point.BorderDashStyle, 
-						new SKPoint(xPosition - width/2f, yPosition), 
-						new SKPoint(xPosition + width/2f, yPosition),
-						(point.series != null) ? point.series.ShadowColor : SKColor.Empty, 
-						(point.series != null) ? point.series.ShadowOffset : 0 );
-				}
+                // Draw horizontal line marker
+                if (String.Compare(markerStyle, "Line", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    graph.DrawLineRel(
+                        point.Color,
+                        point.BorderWidth,
+                        point.BorderDashStyle,
+                        new SKPoint(xPosition - width / 2f, yPosition),
+                        new SKPoint(xPosition + width / 2f, yPosition),
+                        (point.series != null) ? point.series.ShadowColor : SKColor.Empty,
+                        (point.series != null) ? point.series.ShadowOffset : 0);
+                }
 
-				// Draw standard marker
-				else
-				{
-					MarkerStyle marker = (MarkerStyle)Enum.Parse(typeof(MarkerStyle), markerStyle, true);
+                // Draw standard marker
+                else
+                {
+                    MarkerStyle marker = (MarkerStyle)Enum.Parse(typeof(MarkerStyle), markerStyle, true);
 
-					// Get marker size
-					SKSize markerSize = GetMarkerSize(
-						graph, 
-						area.Common, 
-						area, 
-						point, 
-						point.MarkerSize, 
-						point.MarkerImage);
+                    // Get marker size
+                    SKSize markerSize = GetMarkerSize(
+                        graph,
+                        area.Common,
+                        area,
+                        point,
+                        point.MarkerSize,
+                        point.MarkerImage);
 
-					// Get marker color
-					SKColor markerColor = (point.MarkerColor == SKColor.Empty) ? point.Color : point.MarkerColor;
+                    // Get marker color
+                    SKColor markerColor = (point.MarkerColor == SKColor.Empty) ? point.Color : point.MarkerColor;
 
-					// Draw the marker
-					graph.DrawMarkerRel(
-						new SKPoint(xPosition, yPosition), 
-						marker,
-						point.MarkerSize,
-						markerColor,
-						point.MarkerBorderColor,
-						point.MarkerBorderWidth,
-						point.MarkerImage,
-						point.MarkerImageTransparentColor,
-						(point.series != null) ? point.series.ShadowOffset : 0,
-						(point.series != null) ? point.series.ShadowColor : SKColor.Empty,
-						new SKRect(xPosition, yPosition, markerSize.Width, markerSize.Height));
-				}
-			}
-		}
+                    // Draw the marker
+                    graph.DrawMarkerRel(
+                        new SKPoint(xPosition, yPosition),
+                        marker,
+                        point.MarkerSize,
+                        markerColor,
+                        point.MarkerBorderColor,
+                        point.MarkerBorderWidth,
+                        point.MarkerImage,
+                        point.MarkerImageTransparentColor,
+                        (point.series != null) ? point.series.ShadowOffset : 0,
+                        (point.series != null) ? point.series.ShadowColor : SKColor.Empty,
+                        new SKRect(xPosition, yPosition, markerSize.Width, markerSize.Height));
+                }
+            }
+        }
 
-		/// <summary>
-		/// Returns marker size.
-		/// </summary>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="point">Data point.</param>
-		/// <param name="markerSize">Marker size.</param>
-		/// <param name="markerImage">Marker image.</param>
-		/// <returns>Marker width and height.</returns>
-		virtual protected SKSize GetMarkerSize(
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			DataPoint point, 
-			int markerSize, 
-			string markerImage)
-		{
-			SKSize size = new SKSize(markerSize, markerSize);
+        /// <summary>
+        /// Returns marker size.
+        /// </summary>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="point">Data point.</param>
+        /// <param name="markerSize">Marker size.</param>
+        /// <param name="markerImage">Marker image.</param>
+        /// <returns>Marker width and height.</returns>
+        virtual protected SKSize GetMarkerSize(
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            DataPoint point,
+            int markerSize,
+            string markerImage)
+        {
+            SKSize size = new(markerSize, markerSize);
             if (graph != null && graph.Graphics != null)
             {
                 // Marker size is in pixels and we do the mapping for higher DPIs
                 size.Width = markerSize;
                 size.Height = markerSize;
+
+                if (markerImage.Length > 0)
+                    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
             }
-
-            if(markerImage.Length > 0)
-			    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
-			
             return size;
-		}
+        }
 
-
-		/// <summary>
-		/// Draws error bar chart data point label.
-		/// </summary>
-		/// <param name="common">The Common elements object</param>
-		/// <param name="area">Chart area for this chart</param>
-		/// <param name="graph">Chart graphics object.</param>
-		/// <param name="ser">Data point series.</param>
-		/// <param name="point">Data point to draw.</param>
-		/// <param name="position">Label position.</param>
-		/// <param name="pointIndex">Data point index.</param>
-		virtual protected void DrawLabel(
-			CommonElements common, 
-			ChartArea area,
-			ChartGraphics graph, 
-			Series ser, 
-			DataPoint point, 
-			SKPoint position,
-			int pointIndex)
-		{
-			if(ser.IsValueShownAsLabel || point.IsValueShownAsLabel || point.Label.Length > 0)
-			{
-				// Label text format
-                using (StringFormat format = new StringFormat())
+        /// <summary>
+        /// Draws error bar chart data point label.
+        /// </summary>
+        /// <param name="common">The Common elements object</param>
+        /// <param name="area">Chart area for this chart</param>
+        /// <param name="graph">Chart graphics object.</param>
+        /// <param name="ser">Data point series.</param>
+        /// <param name="point">Data point to draw.</param>
+        /// <param name="position">Label position.</param>
+        /// <param name="pointIndex">Data point index.</param>
+        virtual protected void DrawLabel(
+            CommonElements common,
+            ChartArea area,
+            ChartGraphics graph,
+            Series ser,
+            DataPoint point,
+            SKPoint position,
+            int pointIndex)
+        {
+            if (ser.IsValueShownAsLabel || point.IsValueShownAsLabel || point.Label.Length > 0)
+            {
+                // Label text format
+                using StringFormat format = new();
+                format.Alignment = StringAlignment.Near;
+                format.LineAlignment = StringAlignment.Center;
+                if (point.LabelAngle == 0)
                 {
-                    format.Alignment = StringAlignment.Near;
-                    format.LineAlignment = StringAlignment.Center;
-                    if (point.LabelAngle == 0)
+                    format.Alignment = StringAlignment.Center;
+                    format.LineAlignment = StringAlignment.Far;
+                }
+
+                // Get label text
+                string text;
+                if (point.Label.Length == 0)
+                {
+                    text = ValueConverter.FormatValue(
+                        ser.Chart,
+                        point,
+                        point.Tag,
+                        point.YValues[0],
+                        point.LabelFormat,
+                        ser.YValueType,
+                        ChartElementType.DataPoint);
+                }
+                else
+                {
+                    text = point.ReplaceKeywords(point.Label);
+                }
+
+                // Adjust label positio to the marker size
+                SKSize markerSizes = new(0f, 0f);
+                if (point.MarkerStyle != MarkerStyle.None)
+                {
+                    markerSizes = graph.GetRelativeSize(new SKSize(point.MarkerSize, point.MarkerSize));
+                    position.Y -= markerSizes.Height / 2f;
+                }
+
+                // Get text angle
+                int textAngle = point.LabelAngle;
+
+                // Check if text contains white space only
+                if (text.Trim().Length != 0)
+                {
+                    SKSize SKSizeont = SKSize.Empty;
+
+                    // Check if Smart Labels are enabled
+                    if (ser.SmartLabelStyle.Enabled)
                     {
-                        format.Alignment = StringAlignment.Center;
-                        format.LineAlignment = StringAlignment.Far;
+                        // Get text size
+                        SKSizeont = graph.GetRelativeSize(
+                            graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+
+                        // Adjust label position using SmartLabelStyle algorithm
+                        position = area.smartLabels.AdjustSmartLabelPosition(
+                            common,
+                            graph,
+                            area,
+                            ser.SmartLabelStyle,
+                            position,
+                            SKSizeont,
+                            format,
+                            position,
+                            markerSizes,
+                            LabelAlignmentStyles.Top);
+
+                        // Smart labels always use 0 degrees text angle
+                        textAngle = 0;
                     }
 
-                    // Get label text
-                    string text;
-                    if (point.Label.Length == 0)
+                    // Draw label
+                    if (!position.IsEmpty)
                     {
-                        text = ValueConverter.FormatValue(
-                            ser.Chart,
-                            point,
-                            point.Tag,
-                            point.YValues[0],
-                            point.LabelFormat,
-                            ser.YValueType,
-                            ChartElementType.DataPoint);
-                    }
-                    else
-                    {
-                        text = point.ReplaceKeywords(point.Label);
-                    }
-
-                    // Adjust label positio to the marker size
-                    SKSize markerSizes = new SKSize(0f, 0f);
-                    if (point.MarkerStyle != MarkerStyle.None)
-                    {
-                        markerSizes = graph.GetRelativeSize(new SKSize(point.MarkerSize, point.MarkerSize));
-                        position.Y -= markerSizes.Height / 2f;
-                    }
-
-                    // Get text angle
-                    int textAngle = point.LabelAngle;
-
-                    // Check if text contains white space only
-                    if (text.Trim().Length != 0)
-                    {
-                        SKSize SKSizeont = SKSize.Empty;
-
-
-                        // Check if Smart Labels are enabled
-                        if (ser.SmartLabelStyle.Enabled)
+                        // Get text size
+                        if (SKSizeont.IsEmpty)
                         {
-                            // Get text size
                             SKSizeont = graph.GetRelativeSize(
                                 graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
-
-                            // Adjust label position using SmartLabelStyle algorithm
-                            position = area.smartLabels.AdjustSmartLabelPosition(
-                                common,
-                                graph,
-                                area,
-                                ser.SmartLabelStyle,
-                                position,
-                                SKSizeont,
-                                format,
-                                position,
-                                markerSizes,
-                                LabelAlignmentStyles.Top);
-
-                            // Smart labels always use 0 degrees text angle
-                            textAngle = 0;
                         }
 
+                        // Get label background position
+                        SKRect labelBackPosition = SKRect.Empty;
+                        SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
+                        sizeLabel.Height += SKSizeont.Height / 8;
+                        sizeLabel.Width += sizeLabel.Width / text.Length;
+                        labelBackPosition = PointChart.GetLabelPosition(
+                            graph,
+                            position,
+                            sizeLabel,
+                            format,
+                            true);
 
+                        // Draw label text
+                        using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
+                        graph.DrawPointLabelStringRel(
+                            common,
+                            text,
+                            point.Font,
+                            brush,
+                            position,
+                            format,
+                            textAngle,
+                            labelBackPosition,
+                            point.LabelBackColor,
+                            point.LabelBorderColor,
+                            point.LabelBorderWidth,
+                            point.LabelBorderDashStyle,
+                            ser,
+                            point,
+                            pointIndex - 1);
+                    }
+                }
+            }
+        }
 
-                        // Draw label
-                        if (!position.IsEmpty)
+        #endregion Painting and Selection methods
+
+        #region 3D Drawing and Selection methods
+
+        /// <summary>
+        /// This method recalculates size of the bars. This method is used
+        /// from Paint or Select method.
+        /// </summary>
+        /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
+        /// <param name="graph">The Chart Graphics object.</param>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="area">Chart area for this chart.</param>
+        /// <param name="seriesToDraw">Chart series to draw.</param>
+        virtual protected void ProcessChartType3D(
+            bool selection,
+            ChartGraphics graph,
+            CommonElements common,
+            ChartArea area,
+            Series seriesToDraw)
+        {
+            // All data series from chart area which have Error Bar chart type
+            List<string> typeSeries = area.GetSeriesFromChartType(Name);
+
+            // Zero X values mode.
+            bool indexedSeries = ChartHelper.IndexedSeries(common, typeSeries.ToArray());
+
+            //************************************************************
+            //** Loop through all series
+            //************************************************************
+            foreach (Series ser in common.DataManager.Series)
+            {
+                // Process non empty series of the area with stock chart type
+                if (String.Compare(ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase) != 0
+                    || ser.ChartArea != area.Name || !ser.IsVisible())
+                {
+                    continue;
+                }
+
+                // Check that we have at least 4 Y values
+                if (ser.YValuesPerPoint < 3)
+                {
+                    throw (new ArgumentException(SR.ExceptionChartTypeRequiresYValues(ChartTypeNames.ErrorBar, ((int)(3)).ToString(CultureInfo.CurrentCulture))));
+                }
+
+                // Set active horizontal/vertical axis
+                hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+
+                // Get interval between points
+                double interval = (indexedSeries) ? 1 : area.GetPointsInterval(hAxis.IsLogarithmic, hAxis.logarithmBase);
+
+                // Calculates the width of the candles.
+                float width = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.4));
+
+                // Align error bar X position with linked series
+                float sideBySideWidth = width;
+                int numberOfLinkedSeries = 1;
+                int indexOfLinkedSeries = 0;
+                bool showSideBySide = false;
+                if (ser.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
+                {
+                    // Get series name
+                    string attribValue = ser[CustomPropertyName.ErrorBarSeries];
+                    int valueTypeIndex = attribValue.IndexOf(":", StringComparison.Ordinal);
+                    if (valueTypeIndex >= 0)
+                    {
+                        attribValue = attribValue.Substring(0, valueTypeIndex);
+                    }
+
+                    // All linked data series from chart area which have Error bar chart type
+                    string linkedSeriesChartType = common.DataManager.Series[attribValue].ChartTypeName;
+                    List<string> typeLinkedSeries = area.GetSeriesFromChartType(linkedSeriesChartType);
+
+                    // Get index of linked serries
+                    foreach (string name in typeLinkedSeries)
+                    {
+                        if (name == attribValue)
                         {
-                            // Get text size
-                            if (SKSizeont.IsEmpty)
+                            break;
+                        }
+                        ++indexOfLinkedSeries;
+                    }
+
+                    bool currentDrawSeriesSideBySide = false;
+                    if (String.Compare(linkedSeriesChartType, ChartTypeNames.Column, StringComparison.OrdinalIgnoreCase) == 0
+                        || String.Compare(linkedSeriesChartType, ChartTypeNames.RangeColumn, StringComparison.OrdinalIgnoreCase) == 0
+                        )
+                    {
+                        currentDrawSeriesSideBySide = true;
+                    }
+                    foreach (string seriesName in typeLinkedSeries)
+                    {
+                        if (common.DataManager.Series[seriesName].IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
+                        {
+                            attribValue = common.DataManager.Series[seriesName][CustomPropertyName.DrawSideBySide];
+                            if (String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
                             {
-                                SKSizeont = graph.GetRelativeSize(
-                                    graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                                currentDrawSeriesSideBySide = false;
                             }
+                            else if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                currentDrawSeriesSideBySide = true;
+                            }
+                            else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                // Do nothing
+                            }
+                            else
+                            {
+                                throw (new InvalidOperationException(SR.ExceptionAttributeDrawSideBySideInvalid));
+                            }
+                        }
+                    }
 
-                            // Get label background position
-                            SKRect labelBackPosition = SKRect.Empty;
-                            SKSize sizeLabel = new SKSize(SKSizeont.Width, SKSizeont.Height);
-                            sizeLabel.Height += SKSizeont.Height / 8;
-                            sizeLabel.Width += sizeLabel.Width / text.Length;
-                            labelBackPosition = PointChart.GetLabelPosition(
-                                graph,
-                                position,
-                                sizeLabel,
-                                format,
-                                true);
+                    if (currentDrawSeriesSideBySide)
+                    {
+                        // Find the number of linked data series
+                        numberOfLinkedSeries = typeLinkedSeries.Count;
+                        width /= numberOfLinkedSeries;
 
-                            // Draw label text
-                            using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
-                            graph.DrawPointLabelStringRel(
-                                common,
-                                text,
-                                point.Font,
-                                brush,
-                                position,
-                                format,
-                                textAngle,
-                                labelBackPosition,
-                                point.LabelBackColor,
-                                point.LabelBorderColor,
-                                point.LabelBorderWidth,
-                                point.LabelBorderDashStyle,
-                                ser,
-                                point,
-                                pointIndex - 1);
+                        // Check if side by side
+                        if (!indexedSeries)
+                        {
+                            area.GetPointsInterval(typeLinkedSeries, hAxis.IsLogarithmic, hAxis.logarithmBase, true, out showSideBySide);
                         }
                     }
                 }
-			}
-		}
 
-		#endregion
-
-		#region 3D Drawing and Selection methods
-
-		/// <summary>
-		/// This method recalculates size of the bars. This method is used 
-		/// from Paint or Select method.
-		/// </summary>
-		/// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
-		/// <param name="graph">The Chart Graphics object.</param>
-		/// <param name="common">The Common elements object.</param>
-		/// <param name="area">Chart area for this chart.</param>
-		/// <param name="seriesToDraw">Chart series to draw.</param>
-		virtual protected void ProcessChartType3D( 
-			bool selection, 
-			ChartGraphics graph, 
-			CommonElements common, 
-			ChartArea area, 
-			Series seriesToDraw )
-		{
-			// All data series from chart area which have Error Bar chart type
-			List<string>	typeSeries = area.GetSeriesFromChartType(Name);
-
-			// Zero X values mode.
-            bool indexedSeries = ChartHelper.IndexedSeries(common, typeSeries.ToArray());
-
-			//************************************************************
-			//** Loop through all series
-			//************************************************************
-			foreach( Series ser in common.DataManager.Series )
-			{
-				// Process non empty series of the area with stock chart type
-				if( String.Compare( ser.ChartTypeName, Name, StringComparison.OrdinalIgnoreCase ) != 0 
-					|| ser.ChartArea != area.Name || !ser.IsVisible())
-				{
-					continue;
-				}
-
-				// Check that we have at least 4 Y values
-				if(ser.YValuesPerPoint < 3)
-				{
-					throw(new ArgumentException(SR.ExceptionChartTypeRequiresYValues( ChartTypeNames.ErrorBar, ((int)(3)).ToString(CultureInfo.CurrentCulture))));
-				}
-
-				// Set active horizontal/vertical axis
-				hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-				vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
-
-				// Get interval between points
-				double interval = (indexedSeries) ? 1 : area.GetPointsInterval( hAxis.IsLogarithmic, hAxis.logarithmBase );
-
-				// Calculates the width of the candles.
-				float	width = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.4));
-
-				// Align error bar X position with linked series				
-				float	sideBySideWidth = width;
-				int		numberOfLinkedSeries = 1;
-				int		indexOfLinkedSeries = 0;
-				bool	showSideBySide = false;
-				if(ser.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
-				{
-					// Get series name
-					string attribValue = ser[CustomPropertyName.ErrorBarSeries];
-                    int valueTypeIndex = attribValue.IndexOf(":", StringComparison.Ordinal);
-					if(valueTypeIndex >= 0)
-					{
-						attribValue = attribValue.Substring(0, valueTypeIndex);
-					}
-
-					// All linked data series from chart area which have Error bar chart type
-					string linkedSeriesChartType = common.DataManager.Series[attribValue].ChartTypeName;
-					List<string>	typeLinkedSeries = area.GetSeriesFromChartType(linkedSeriesChartType);
-
-					// Get index of linked serries
-					foreach(string name in typeLinkedSeries)
-					{
-						if(name == attribValue)
-						{
-							break;
-						}
-						++indexOfLinkedSeries;
-					}
-
-					bool	currentDrawSeriesSideBySide = false;
-					if(String.Compare(linkedSeriesChartType, ChartTypeNames.Column, StringComparison.OrdinalIgnoreCase ) == 0
-                        || String.Compare(linkedSeriesChartType, ChartTypeNames.RangeColumn, StringComparison.OrdinalIgnoreCase) == 0
-                        )
-					{
-						currentDrawSeriesSideBySide = true;
-					}
-					foreach(string seriesName in typeLinkedSeries)
-					{
-						if(common.DataManager.Series[seriesName].IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
-						{
-							attribValue = common.DataManager.Series[seriesName][CustomPropertyName.DrawSideBySide];
-							if(String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase ) == 0)
-							{
-								currentDrawSeriesSideBySide = false;
-							}
-							else if(String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase ) == 0)
-							{
-								currentDrawSeriesSideBySide = true;
-							}
-							else if(String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase ) == 0)
-							{
-								// Do nothing
-							}
-							else
-							{
-                                throw (new InvalidOperationException(SR.ExceptionAttributeDrawSideBySideInvalid));
-							}
-						}
-					}
-
-					if(currentDrawSeriesSideBySide)
-					{
-						// Find the number of linked data series
-						numberOfLinkedSeries = typeLinkedSeries.Count;
-						width /= numberOfLinkedSeries;
-
-						// Check if side by side
-						if(!indexedSeries)
-						{
-							area.GetPointsInterval( typeLinkedSeries, hAxis.IsLogarithmic, hAxis.logarithmBase, true, out showSideBySide );
-						}
-					}
-				}
-
-				// Call Back Paint event
-				if( !selection )
-				{
+                // Call Back Paint event
+                if (!selection)
+                {
                     common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-				}
+                }
 
-				//************************************************************
-				//** Get series depth and Z position
-				//************************************************************
-				float seriesDepth, seriesZPosition;
-				area.GetSeriesZPositionAndDepth(ser, out seriesDepth, out seriesZPosition);
+                //************************************************************
+                //** Get series depth and Z position
+                //************************************************************
+                area.GetSeriesZPositionAndDepth(ser, out float seriesDepth, out float seriesZPosition);
 
-				//************************************************************
-				//** Series data points loop
-				//************************************************************
-				int	index = 1;
-				foreach( DataPoint point in ser.Points )
-				{
-					// Check required Y values number
-					if(point.YValues.Length < YValuesPerPoint)
-					{
-						throw(new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues( Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
-					}
+                //************************************************************
+                //** Series data points loop
+                //************************************************************
+                int index = 1;
+                foreach (DataPoint point in ser.Points)
+                {
+                    // Check required Y values number
+                    if (point.YValues.Length < YValuesPerPoint)
+                    {
+                        throw (new InvalidOperationException(SR.ExceptionChartTypeRequiresYValues(Name, YValuesPerPoint.ToString(CultureInfo.InvariantCulture))));
+                    }
 
-					// Reset pre-calculated point position
-					point.positionRel = new SKPoint(float.NaN, float.NaN);
+                    // Reset pre-calculated point position
+                    point.positionRel = new SKPoint(float.NaN, float.NaN);
 
-					// Get point X position
-					float xPosition = 0f;
-					double	xValue = point.XValue;
-					if( indexedSeries )
-					{
-						xValue = (double)index;
-						xPosition = (float)(hAxis.GetPosition( (double)index ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-					}
-					else if( showSideBySide )
-					{
-						xPosition = (float)(hAxis.GetPosition( xValue ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-					}
-					else
-					{
-						xPosition = (float)hAxis.GetPosition( xValue );
-					}
+                    // Get point X position
+                    float xPosition = 0f;
+                    double xValue = point.XValue;
+                    if (indexedSeries)
+                    {
+                        xValue = (double)index;
+                        xPosition = (float)(hAxis.GetPosition((double)index) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                    }
+                    else if (showSideBySide)
+                    {
+                        xPosition = (float)(hAxis.GetPosition(xValue) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                    }
+                    else
+                    {
+                        xPosition = (float)hAxis.GetPosition(xValue);
+                    }
 
-					double yValue0 = vAxis.GetLogValue( point.YValues[1] );
-					double yValue1 = vAxis.GetLogValue( point.YValues[2] );
-					xValue = hAxis.GetLogValue(xValue);
-					
-					// Check if chart is completly out of the data scaleView
-					if(xValue < hAxis.ViewMinimum || 
-						xValue > hAxis.ViewMaximum ||
-						(yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
-						(yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum) )
-					{
-						++index;
-						continue;
-					}
+                    double yValue0 = vAxis.GetLogValue(point.YValues[1]);
+                    double yValue1 = vAxis.GetLogValue(point.YValues[2]);
+                    xValue = hAxis.GetLogValue(xValue);
 
-					// Make sure High/Low values are in data scaleView range						
-					double	high = vAxis.GetLogValue( point.YValues[2] );
-					double	low = vAxis.GetLogValue( point.YValues[1] );
+                    // Check if chart is completly out of the data scaleView
+                    if (xValue < hAxis.ViewMinimum ||
+                        xValue > hAxis.ViewMaximum ||
+                        (yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
+                        (yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum))
+                    {
+                        ++index;
+                        continue;
+                    }
 
-					// Check if lower and/or upper error bar are drawn
-					ErrorBarStyle	barStyle = ErrorBarStyle.Both;
-					if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-					{
-						string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
-						if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-						{
-							errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
-						}
-						if(String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase) == 0)
-						{
-							// default - do nothing
-						}
-						else if(String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase) == 0)
-						{
-							barStyle = ErrorBarStyle.UpperError;
-							low = vAxis.GetLogValue( point.YValues[0] );
-							high = vAxis.GetLogValue( point.YValues[2] );
-						}
-						else if(String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase) == 0)
-						{
-							barStyle = ErrorBarStyle.LowerError;
-							low = vAxis.GetLogValue( point.YValues[1] );
-							high = vAxis.GetLogValue( point.YValues[0] );
-						}
-						else
-						{
-							throw(new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
-						}
-					}
-				
-					if( high > vAxis.ViewMaximum )
-					{
-						high = vAxis.ViewMaximum;
-					}
-					if( high < vAxis.ViewMinimum )
-					{
-						high = vAxis.ViewMinimum;
-					}
-					high = (float)vAxis.GetLinearPosition(high);
-					
-					if( low > vAxis.ViewMaximum )
-					{
-						low = vAxis.ViewMaximum;
-					}
-					if( low < vAxis.ViewMinimum )
-					{
-						low = vAxis.ViewMinimum;
-					}
-					low = vAxis.GetLinearPosition(low);
+                    // Make sure High/Low values are in data scaleView range
+                    double high = vAxis.GetLogValue(point.YValues[2]);
+                    double low = vAxis.GetLogValue(point.YValues[1]);
 
-					// Remeber pre-calculated point position
-					point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
+                    // Check if lower and/or upper error bar are drawn
+                    ErrorBarStyle barStyle = ErrorBarStyle.Both;
+                    if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                    {
+                        string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
+                        if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                        {
+                            errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
+                        }
+                        if (String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            // default - do nothing
+                        }
+                        else if (String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            barStyle = ErrorBarStyle.UpperError;
+                            low = vAxis.GetLogValue(point.YValues[0]);
+                            high = vAxis.GetLogValue(point.YValues[2]);
+                        }
+                        else if (String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            barStyle = ErrorBarStyle.LowerError;
+                            low = vAxis.GetLogValue(point.YValues[1]);
+                            high = vAxis.GetLogValue(point.YValues[0]);
+                        }
+                        else
+                        {
+                            throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
+                        }
+                    }
 
-					// 3D Transform coordinates
-					Point3D[] points = new Point3D[2];
-					points[0] = new Point3D(xPosition, (float)high, seriesZPosition+seriesDepth/2f);
-					points[1] = new Point3D(xPosition, (float)low, seriesZPosition+seriesDepth/2f);
-					area.matrix3D.TransformPoints(points);
+                    if (high > vAxis.ViewMaximum)
+                    {
+                        high = vAxis.ViewMaximum;
+                    }
+                    if (high < vAxis.ViewMinimum)
+                    {
+                        high = vAxis.ViewMinimum;
+                    }
+                    high = (float)vAxis.GetLinearPosition(high);
 
-					if( common.ProcessModePaint )
-					{
+                    if (low > vAxis.ViewMaximum)
+                    {
+                        low = vAxis.ViewMaximum;
+                    }
+                    if (low < vAxis.ViewMinimum)
+                    {
+                        low = vAxis.ViewMinimum;
+                    }
+                    low = vAxis.GetLinearPosition(low);
 
-						// Check if chart is partialy in the data scaleView
-						bool	clipRegionSet = false;
-						if(xValue == hAxis.ViewMinimum || xValue == hAxis.ViewMaximum )
-						{
-							// Set clipping region for line drawing 
-							graph.SetClip( area.PlotAreaPosition.ToSKRect() );
-							clipRegionSet = true;
-						}
+                    // Remeber pre-calculated point position
+                    point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
 
-						// Draw error bar line
-						graph.DrawLineRel( 
-							point.Color, 
-							point.BorderWidth, 
-							point.BorderDashStyle, 
-							points[0].SKPoint, 
-							points[1].SKPoint,
-							ser.ShadowColor, 
-							ser.ShadowOffset );
+                    // 3D Transform coordinates
+                    Point3D[] points = new Point3D[2];
+                    points[0] = new Point3D(xPosition, (float)high, seriesZPosition + seriesDepth / 2f);
+                    points[1] = new Point3D(xPosition, (float)low, seriesZPosition + seriesDepth / 2f);
+                    area.matrix3D.TransformPoints(points);
 
-						// Draw Error Bar marks
-						DrawErrorBarMarks3D(graph, barStyle, area, ser, point, xPosition, width, seriesZPosition, seriesDepth);
-						xPosition = points[0].X;
-						high = points[0].Y;
-						low = points[1].Y;
+                    if (common.ProcessModePaint)
+                    {
+                        // Check if chart is partialy in the data scaleView
+                        bool clipRegionSet = false;
+                        if (xValue == hAxis.ViewMinimum || xValue == hAxis.ViewMaximum)
+                        {
+                            // Set clipping region for line drawing
+                            graph.SetClip(area.PlotAreaPosition.ToSKRect());
+                            clipRegionSet = true;
+                        }
 
-						// Reset Clip Region
-						if(clipRegionSet)
-						{
-							graph.ResetClip();
-						}
-					}
+                        // Draw error bar line
+                        graph.DrawLineRel(
+                            point.Color,
+                            point.BorderWidth,
+                            point.BorderDashStyle,
+                            points[0].SKPoint,
+                            points[1].SKPoint,
+                            ser.ShadowColor,
+                            ser.ShadowOffset);
 
-					if( common.ProcessModeRegions )
-					{
-						xPosition = points[0].X;
-						high = points[0].Y;
-						low = points[1].Y;
+                        // Draw Error Bar marks
+                        DrawErrorBarMarks3D(graph, barStyle, area, ser, point, xPosition, width, seriesZPosition, seriesDepth);
+                        xPosition = points[0].X;
+                        high = points[0].Y;
+                        low = points[1].Y;
 
-						// Calculate rect around the error bar marks
-						SKRect	areaRect = SKRect.Empty;
-						areaRect.Left = xPosition - width / 2f;
-						areaRect.Top = (float)Math.Min(high, low);
-						areaRect.Size = new(width,(float)Math.Max(high, low) - areaRect.Top);
+                        // Reset Clip Region
+                        if (clipRegionSet)
+                        {
+                            graph.ResetClip();
+                        }
+                    }
 
-						// Add area
-						common.HotRegionsList.AddHotRegion( 
-							areaRect, 
-							point, 
-							ser.Name, 
-							index - 1 );
-					}
-				
-					++index;
-				}
+                    if (common.ProcessModeRegions)
+                    {
+                        xPosition = points[0].X;
+                        high = points[0].Y;
+                        low = points[1].Y;
 
-				//************************************************************
-				//** Second series data points loop, when labels are drawn.
-				//************************************************************
-				if( !selection )
-				{
-					index = 1;
-					foreach( DataPoint point in ser.Points )
-					{
-						// Get point X position
-						float xPosition = 0f;
-						double	xValue = point.XValue;
-						if( indexedSeries )
-						{
-							xValue = (double)index;
-							xPosition = (float)(hAxis.GetPosition( (double)index ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-						}
-						else if( showSideBySide )
-						{
-							xPosition = (float)(hAxis.GetPosition( xValue ) - sideBySideWidth * ((double) numberOfLinkedSeries) / 2.0 + sideBySideWidth/2 + indexOfLinkedSeries * sideBySideWidth);
-						}
-						else
-						{
-							xPosition = (float)hAxis.GetPosition( xValue );
-						}
+                        // Calculate rect around the error bar marks
+                        SKRect areaRect = SKRect.Empty;
+                        areaRect.Left = xPosition - width / 2f;
+                        areaRect.Top = (float)Math.Min(high, low);
+                        areaRect.Size = new(width, (float)Math.Max(high, low) - areaRect.Top);
 
+                        // Add area
+                        common.HotRegionsList.AddHotRegion(
+                            areaRect,
+                            point,
+                            ser.Name,
+                            index - 1);
+                    }
 
-						double yValue0 = vAxis.GetLogValue( point.YValues[1] );
-						double yValue1 = vAxis.GetLogValue( point.YValues[2] );
-						xValue = hAxis.GetLogValue(xValue);
-					
-						// Check if chart is completly out of the data scaleView
-						if(xValue < hAxis.ViewMinimum || 
-							xValue > hAxis.ViewMaximum ||
-							(yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
-							(yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum) )
-						{
-							++index;
-							continue;
-						}
+                    ++index;
+                }
 
-						// Make sure High/Low values are in data scaleView range						
-						double	high = vAxis.GetLogValue( point.YValues[2] );
-						double	low = vAxis.GetLogValue( point.YValues[1] );
+                //************************************************************
+                //** Second series data points loop, when labels are drawn.
+                //************************************************************
+                if (!selection)
+                {
+                    index = 1;
+                    foreach (DataPoint point in ser.Points)
+                    {
+                        // Get point X position
+                        float xPosition = 0f;
+                        double xValue = point.XValue;
+                        if (indexedSeries)
+                        {
+                            xValue = (double)index;
+                            xPosition = (float)(hAxis.GetPosition((double)index) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                        }
+                        else if (showSideBySide)
+                        {
+                            xPosition = (float)(hAxis.GetPosition(xValue) - sideBySideWidth * ((double)numberOfLinkedSeries) / 2.0 + sideBySideWidth / 2 + indexOfLinkedSeries * sideBySideWidth);
+                        }
+                        else
+                        {
+                            xPosition = (float)hAxis.GetPosition(xValue);
+                        }
 
-						// Check if lower and/or upper error bar are drawn
-						if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-						{
-							string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
-							if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
-							{
-								errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
-							}
-							if(String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase ) == 0)
-							{
-								// default - do nothing
-							}
-							else if(String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase ) == 0)
-							{
-								low = vAxis.GetLogValue( point.YValues[0] );
-								high = vAxis.GetLogValue( point.YValues[2] );
-							}
-							else if(String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase ) == 0)
-							{
-								low = vAxis.GetLogValue( point.YValues[1] );
-								high = vAxis.GetLogValue( point.YValues[0] );
-							}
-							else
-							{
-								throw(new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid( point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
-							}
-						}
-					
-						if( high > vAxis.ViewMaximum )
-						{
-							high = vAxis.ViewMaximum;
-						}
-						if( high < vAxis.ViewMinimum )
-						{
-							high = vAxis.ViewMinimum;
-						}
-						high = (float)vAxis.GetLinearPosition(high);
-					
-						if( low > vAxis.ViewMaximum )
-						{
-							low = vAxis.ViewMaximum;
-						}
-						if( low < vAxis.ViewMinimum )
-						{
-							low = vAxis.ViewMinimum;
-						}
-						low = vAxis.GetLinearPosition(low);
+                        double yValue0 = vAxis.GetLogValue(point.YValues[1]);
+                        double yValue1 = vAxis.GetLogValue(point.YValues[2]);
+                        xValue = hAxis.GetLogValue(xValue);
 
+                        // Check if chart is completly out of the data scaleView
+                        if (xValue < hAxis.ViewMinimum ||
+                            xValue > hAxis.ViewMaximum ||
+                            (yValue0 < vAxis.ViewMinimum && yValue1 < vAxis.ViewMinimum) ||
+                            (yValue0 > vAxis.ViewMaximum && yValue1 > vAxis.ViewMaximum))
+                        {
+                            ++index;
+                            continue;
+                        }
 
-						// 3D Transform coordinates
-						Point3D[] points = new Point3D[2];
-						points[0] = new Point3D(xPosition, (float)high, seriesZPosition+seriesDepth/2f);
-						points[1] = new Point3D(xPosition, (float)low, seriesZPosition+seriesDepth/2f);
-						area.matrix3D.TransformPoints(points);
-						xPosition = points[0].X;
-						high = points[0].Y;
-						low = points[1].Y;
+                        // Make sure High/Low values are in data scaleView range
+                        double high = vAxis.GetLogValue(point.YValues[2]);
+                        double low = vAxis.GetLogValue(point.YValues[1]);
 
-						// Draw label
-						DrawLabel(common, area, graph, ser, point, new SKPoint(xPosition, (float)Math.Min(high, low)), index);
-				
-						++index;
-					}
-				}
-				
-				// Call Paint event
-				if( !selection )
-				{
+                        // Check if lower and/or upper error bar are drawn
+                        if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle) || ser.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                        {
+                            string errorBarStyle = ser[CustomPropertyName.ErrorBarStyle];
+                            if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarStyle))
+                            {
+                                errorBarStyle = point[CustomPropertyName.ErrorBarStyle];
+                            }
+                            if (String.Compare(errorBarStyle, "Both", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                // default - do nothing
+                            }
+                            else if (String.Compare(errorBarStyle, "UpperError", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                low = vAxis.GetLogValue(point.YValues[0]);
+                                high = vAxis.GetLogValue(point.YValues[2]);
+                            }
+                            else if (String.Compare(errorBarStyle, "LowerError", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                low = vAxis.GetLogValue(point.YValues[1]);
+                                high = vAxis.GetLogValue(point.YValues[0]);
+                            }
+                            else
+                            {
+                                throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.ErrorBarStyle], "ErrorBarStyle")));
+                            }
+                        }
+
+                        if (high > vAxis.ViewMaximum)
+                        {
+                            high = vAxis.ViewMaximum;
+                        }
+                        if (high < vAxis.ViewMinimum)
+                        {
+                            high = vAxis.ViewMinimum;
+                        }
+                        high = (float)vAxis.GetLinearPosition(high);
+
+                        if (low > vAxis.ViewMaximum)
+                        {
+                            low = vAxis.ViewMaximum;
+                        }
+                        if (low < vAxis.ViewMinimum)
+                        {
+                            low = vAxis.ViewMinimum;
+                        }
+                        low = vAxis.GetLinearPosition(low);
+
+                        // 3D Transform coordinates
+                        Point3D[] points = new Point3D[2];
+                        points[0] = new Point3D(xPosition, (float)high, seriesZPosition + seriesDepth / 2f);
+                        points[1] = new Point3D(xPosition, (float)low, seriesZPosition + seriesDepth / 2f);
+                        area.matrix3D.TransformPoints(points);
+                        xPosition = points[0].X;
+                        high = points[0].Y;
+                        low = points[1].Y;
+
+                        // Draw label
+                        DrawLabel(common, area, graph, ser, point, new SKPoint(xPosition, (float)Math.Min(high, low)), index);
+
+                        ++index;
+                    }
+                }
+
+                // Call Paint event
+                if (!selection)
+                {
                     common.Chart.CallOnPostPaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
-				}
-			}
-		}
+                }
+            }
+        }
 
-		/// <summary>
-		/// Draws stock chart open-close marks depending on selected style.
-		/// </summary>
-		/// <param name="graph">Chart graphics object.</param>
-		/// <param name="barStyle">Style of the error bar.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="ser">Data point series.</param>
-		/// <param name="point">Data point to draw.</param>
-		/// <param name="xPosition">X position.</param>
-		/// <param name="width">Point width.</param>
-		/// <param name="zPosition">Series Z position.</param>
-		/// <param name="depth">Series depth.</param>
-		virtual protected void DrawErrorBarMarks3D(
-			ChartGraphics graph, 
-			ErrorBarStyle barStyle,
-			ChartArea area,
-			Series ser, 
-			DataPoint point, 
-			float xPosition, 
-			float width,
-			float zPosition,
-			float depth)
-		{
-			float	yPosition = 0f;
-			string	markerStyle = String.Empty;
+        /// <summary>
+        /// Draws stock chart open-close marks depending on selected style.
+        /// </summary>
+        /// <param name="graph">Chart graphics object.</param>
+        /// <param name="barStyle">Style of the error bar.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="ser">Data point series.</param>
+        /// <param name="point">Data point to draw.</param>
+        /// <param name="xPosition">X position.</param>
+        /// <param name="width">Point width.</param>
+        /// <param name="zPosition">Series Z position.</param>
+        /// <param name="depth">Series depth.</param>
+        virtual protected void DrawErrorBarMarks3D(
+            ChartGraphics graph,
+            ErrorBarStyle barStyle,
+            ChartArea area,
+            Series ser,
+            DataPoint point,
+            float xPosition,
+            float width,
+            float zPosition,
+            float depth)
+        {
+            float yPosition = 0f;
+            string markerStyle = String.Empty;
 
-			// Draw lower error marker
-			if(barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.LowerError)
-			{
-				// Get Y position
-				yPosition = (float)vAxis.GetLogValue( point.YValues[1] );
+            // Draw lower error marker
+            if (barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.LowerError)
+            {
+                // Get Y position
+                yPosition = (float)vAxis.GetLogValue(point.YValues[1]);
 
-				// Get marker style name
-				markerStyle = "LINE";
-				if(point.MarkerStyle != MarkerStyle.None)
-				{
-					markerStyle = point.MarkerStyle.ToString();
-				}
+                // Get marker style name
+                markerStyle = "LINE";
+                if (point.MarkerStyle != MarkerStyle.None)
+                {
+                    markerStyle = point.MarkerStyle.ToString();
+                }
 
-				// Draw marker
-				DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, yPosition, zPosition+depth/2f, width, true);
-			}
+                // Draw marker
+                DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, yPosition, zPosition + depth / 2f, width, true);
+            }
 
-			// Draw upper error marker
-			if(barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.UpperError)
-			{
-				// Get Y position
-				yPosition = (float)vAxis.GetLogValue( point.YValues[2] );
+            // Draw upper error marker
+            if (barStyle == ErrorBarStyle.Both || barStyle == ErrorBarStyle.UpperError)
+            {
+                // Get Y position
+                yPosition = (float)vAxis.GetLogValue(point.YValues[2]);
 
-				// Get marker style name
-				markerStyle = "LINE";
-				if(point.MarkerStyle != MarkerStyle.None)
-				{
-					markerStyle = point.MarkerStyle.ToString();
-				}
+                // Get marker style name
+                markerStyle = "LINE";
+                if (point.MarkerStyle != MarkerStyle.None)
+                {
+                    markerStyle = point.MarkerStyle.ToString();
+                }
 
-				// Draw marker
-				DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, yPosition, zPosition+depth/2f, width, true);
-			}
+                // Draw marker
+                DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, yPosition, zPosition + depth / 2f, width, true);
+            }
 
-			// Draw center value marker
-			if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle) || point.series.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
-			{
-				// Get Y position
-				yPosition = (float)vAxis.GetLogValue( point.YValues[0] );
+            // Draw center value marker
+            if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle) || point.series.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
+            {
+                // Get Y position
+                yPosition = (float)vAxis.GetLogValue(point.YValues[0]);
 
-				// Get marker style name
-				markerStyle = point.series[CustomPropertyName.ErrorBarCenterMarkerStyle];
-				if(point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
-				{
-					markerStyle = point[CustomPropertyName.ErrorBarCenterMarkerStyle];
-				}
-				markerStyle = markerStyle.ToUpper(CultureInfo.InvariantCulture);
+                // Get marker style name
+                markerStyle = point.series[CustomPropertyName.ErrorBarCenterMarkerStyle];
+                if (point.IsCustomPropertySet(CustomPropertyName.ErrorBarCenterMarkerStyle))
+                {
+                    markerStyle = point[CustomPropertyName.ErrorBarCenterMarkerStyle];
+                }
+                markerStyle = markerStyle.ToUpper(CultureInfo.InvariantCulture);
 
-				// Draw marker
-				DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, yPosition, zPosition+depth/2f, width, true);
-			}
-		}
+                // Draw marker
+                DrawErrorBarSingleMarker(graph, area, point, markerStyle, xPosition, yPosition, zPosition + depth / 2f, width, true);
+            }
+        }
 
-		#endregion
+        #endregion 3D Drawing and Selection methods
 
-		#region Y values related methods
+        #region Y values related methods
 
-		/// <summary>
-		/// Helper function that returns the Y value of the point.
-		/// </summary>
-		/// <param name="common">Chart common elements.</param>
-		/// <param name="area">Chart area the series belongs to.</param>
-		/// <param name="series">Sereis of the point.</param>
-		/// <param name="point">Point object.</param>
-		/// <param name="pointIndex">Index of the point.</param>
-		/// <param name="yValueIndex">Index of the Y value to get.</param>
-		/// <returns>Y value of the point.</returns>
-		virtual public double GetYValue(
-			CommonElements common, 
-			ChartArea area, 
-			Series series, 
-			DataPoint point, 
-			int pointIndex, 
-			int yValueIndex)
-		{
-			return point.YValues[yValueIndex];
-		}
+        /// <summary>
+        /// Helper function that returns the Y value of the point.
+        /// </summary>
+        /// <param name="common">Chart common elements.</param>
+        /// <param name="area">Chart area the series belongs to.</param>
+        /// <param name="series">Sereis of the point.</param>
+        /// <param name="point">Point object.</param>
+        /// <param name="pointIndex">Index of the point.</param>
+        /// <param name="yValueIndex">Index of the Y value to get.</param>
+        /// <returns>Y value of the point.</returns>
+        virtual public double GetYValue(
+            CommonElements common,
+            ChartArea area,
+            Series series,
+            DataPoint point,
+            int pointIndex,
+            int yValueIndex)
+        {
+            return point.YValues[yValueIndex];
+        }
 
-		#endregion
+        #endregion Y values related methods
 
-		#region Automatic Values Calculation methods
+        #region Automatic Values Calculation methods
 
-		/// <summary>
-		/// Calculates lower and upper error amount using specified formula.
-		/// </summary>
-		/// <param name="errorBarSeries">Error bar chart type series.</param>
-		internal static void CalculateErrorAmount(Series errorBarSeries)
-		{
-			// Check input parameters
-			if(String.Compare(errorBarSeries.ChartTypeName, ChartTypeNames.ErrorBar, StringComparison.OrdinalIgnoreCase) != 0 )
-			{
-				return;
-			}
+        /// <summary>
+        /// Calculates lower and upper error amount using specified formula.
+        /// </summary>
+        /// <param name="errorBarSeries">Error bar chart type series.</param>
+        internal static void CalculateErrorAmount(Series errorBarSeries)
+        {
+            // Check input parameters
+            if (String.Compare(errorBarSeries.ChartTypeName, ChartTypeNames.ErrorBar, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                return;
+            }
 
-			// Check if "ErrorBarType" custom attribute is set
-			if(!errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarType) && 
-				!errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
-			{
-				return;
-			}
+            // Check if "ErrorBarType" custom attribute is set
+            if (!errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarType) &&
+                !errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
+            {
+                return;
+            }
 
-			// Parase the value of the ErrorBarType attribute.
-			double param = double.NaN;
-			ErrorBarType errorBarType = ErrorBarType.StandardError;
-			if(errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarType))
-			{
-				string	typeName = errorBarSeries[CustomPropertyName.ErrorBarType];
-				if(typeName.StartsWith("FixedValue", StringComparison.OrdinalIgnoreCase))
-				{
-					errorBarType = ErrorBarType.FixedValue;
-				}
-				else if(typeName.StartsWith("Percentage", StringComparison.OrdinalIgnoreCase))
-				{
-					errorBarType = ErrorBarType.Percentage;
-				}
-				else if(typeName.StartsWith("StandardDeviation", StringComparison.OrdinalIgnoreCase))
-				{
-					errorBarType = ErrorBarType.StandardDeviation;
-				}
-				else if(typeName.StartsWith("StandardError", StringComparison.OrdinalIgnoreCase))
-				{
-					errorBarType = ErrorBarType.StandardError;
-				}
-				else if(typeName.StartsWith("None", StringComparison.OrdinalIgnoreCase))
-				{
-					return;
-				}
-				else
-				{
-					throw(new InvalidOperationException(SR.ExceptionErrorBarTypeInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
-				}
-		
-				// Check if parameter is specified
-				typeName = typeName.Substring(errorBarType.ToString().Length);
-				if(typeName.Length > 0)
-				{
-					// Must be followed by '(' and ends with ')'
+            // Parase the value of the ErrorBarType attribute.
+            double param = double.NaN;
+            ErrorBarType errorBarType = ErrorBarType.StandardError;
+            if (errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarType))
+            {
+                string typeName = errorBarSeries[CustomPropertyName.ErrorBarType];
+                if (typeName.StartsWith("FixedValue", StringComparison.OrdinalIgnoreCase))
+                {
+                    errorBarType = ErrorBarType.FixedValue;
+                }
+                else if (typeName.StartsWith("Percentage", StringComparison.OrdinalIgnoreCase))
+                {
+                    errorBarType = ErrorBarType.Percentage;
+                }
+                else if (typeName.StartsWith("StandardDeviation", StringComparison.OrdinalIgnoreCase))
+                {
+                    errorBarType = ErrorBarType.StandardDeviation;
+                }
+                else if (typeName.StartsWith("StandardError", StringComparison.OrdinalIgnoreCase))
+                {
+                    errorBarType = ErrorBarType.StandardError;
+                }
+                else if (typeName.StartsWith("None", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+                else
+                {
+                    throw (new InvalidOperationException(SR.ExceptionErrorBarTypeInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
+                }
+
+                // Check if parameter is specified
+                typeName = typeName.Substring(errorBarType.ToString().Length);
+                if (typeName.Length > 0)
+                {
+                    // Must be followed by '(' and ends with ')'
                     if (!typeName.StartsWith("(", StringComparison.Ordinal) || !typeName.EndsWith(")", StringComparison.Ordinal))
-					{
-						throw(new InvalidOperationException(SR.ExceptionErrorBarTypeFormatInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
-					}
-					typeName = typeName.Substring(1, typeName.Length - 2);
+                    {
+                        throw (new InvalidOperationException(SR.ExceptionErrorBarTypeFormatInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
+                    }
+                    typeName = typeName.Substring(1, typeName.Length - 2);
 
-
-					if(typeName.Length > 0)
-					{
+                    if (typeName.Length > 0)
+                    {
                         if (!double.TryParse(typeName, NumberStyles.Any, CultureInfo.InvariantCulture, out param))
                         {
                             throw (new InvalidOperationException(SR.ExceptionErrorBarTypeFormatInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
                         }
-					}
-				}
-			}
+                    }
+                }
+            }
 
-			// Points number
-			int	pointNumber = errorBarSeries.Points.Count;
+            // Points number
+            int pointNumber = errorBarSeries.Points.Count;
 
-			// Find number of empty data points
-			int numberOfEmptyPoints = 0;
-			foreach(DataPoint point in errorBarSeries.Points)
-			{
-				if( point.IsEmpty )
-				{
-					numberOfEmptyPoints++;
-				}
-			}
+            // Find number of empty data points
+            int numberOfEmptyPoints = 0;
+            foreach (DataPoint point in errorBarSeries.Points)
+            {
+                if (point.IsEmpty)
+                {
+                    numberOfEmptyPoints++;
+                }
+            }
 
-			// Number of poist without empty points
-			pointNumber -= numberOfEmptyPoints;
+            // Number of poist without empty points
+            pointNumber -= numberOfEmptyPoints;
 
             if (double.IsNaN(param))
             {
                 param = DefaultErrorBarTypeValue(errorBarType);
             }
 
-			// Calculate error amount
-			double	errorAmount = 0.0;
-			if(errorBarType == ErrorBarType.FixedValue)
-			{
-			    errorAmount = param;
-			}
-			else if(errorBarType == ErrorBarType.Percentage)
-			{
+            // Calculate error amount
+            double errorAmount = 0.0;
+            if (errorBarType == ErrorBarType.FixedValue)
+            {
+                errorAmount = param;
+            }
+            else if (errorBarType == ErrorBarType.Percentage)
+            {
                 // no processing or errorAmount
-			}
-			else if( errorBarType == ErrorBarType.StandardDeviation )
-			{
-				// Formula for standard deviation need 
-				// more then one data point
-				if( pointNumber > 1 )
-				{
-				
-					// Calculate series mean value
-					double mean = 0.0;
-					foreach(DataPoint point in errorBarSeries.Points)
-					{
-						mean += point.YValues[0];
-					}
-					mean /= pointNumber;
+            }
+            else if (errorBarType == ErrorBarType.StandardDeviation)
+            {
+                // Formula for standard deviation need
+                // more then one data point
+                if (pointNumber > 1)
+                {
+                    // Calculate series mean value
+                    double mean = 0.0;
+                    foreach (DataPoint point in errorBarSeries.Points)
+                    {
+                        mean += point.YValues[0];
+                    }
+                    mean /= pointNumber;
 
-					// Calculate series variance
-					errorAmount = 0.0;
-					foreach(DataPoint point in errorBarSeries.Points)
-					{
-						if( !point.IsEmpty )
-						{
-							errorAmount += Math.Pow(point.YValues[0] - mean, 2);
-						}
-					}
-				
-					errorAmount = param * Math.Sqrt(errorAmount/ ( pointNumber - 1 ) );
-				}
-				else
-				{
-					errorAmount = 0;
-				}
-			}
-			else if( errorBarType == ErrorBarType.StandardError )
-			{
-				// Formula for standard deviation need 
-				// more then one data point
-				if( pointNumber > 1 )
-				{
-					// Calculate standard error
-					errorAmount = 0.0;
-					foreach(DataPoint point in errorBarSeries.Points)
-					{
-						if( !point.IsEmpty )
-						{
-							errorAmount += Math.Pow(point.YValues[0], 2);
-						}
-					}
-				
-					errorAmount = param * Math.Sqrt( errorAmount/( pointNumber * ( pointNumber - 1 ) ) ) / 2.0;
-				}
-				else
-				{
-					errorAmount = 0;
-				}
-			}
+                    // Calculate series variance
+                    errorAmount = 0.0;
+                    foreach (DataPoint point in errorBarSeries.Points)
+                    {
+                        if (!point.IsEmpty)
+                        {
+                            errorAmount += Math.Pow(point.YValues[0] - mean, 2);
+                        }
+                    }
 
+                    errorAmount = param * Math.Sqrt(errorAmount / (pointNumber - 1));
+                }
+                else
+                {
+                    errorAmount = 0;
+                }
+            }
+            else if (errorBarType == ErrorBarType.StandardError)
+            {
+                // Formula for standard deviation need
+                // more then one data point
+                if (pointNumber > 1)
+                {
+                    // Calculate standard error
+                    errorAmount = 0.0;
+                    foreach (DataPoint point in errorBarSeries.Points)
+                    {
+                        if (!point.IsEmpty)
+                        {
+                            errorAmount += Math.Pow(point.YValues[0], 2);
+                        }
+                    }
 
-			// Loop through all points to calculate error amount
-			foreach(DataPoint point in errorBarSeries.Points)
-			{
-				if(errorBarType == ErrorBarType.Percentage)
-				{
-					point.YValues[1] = point.YValues[0] - point.YValues[0] * param / 100.0;
-					point.YValues[2] = point.YValues[0] + point.YValues[0] * param / 100.0;
-				}
-				else
-				{
-					point.YValues[1] = point.YValues[0] - errorAmount;
-					point.YValues[2] = point.YValues[0] + errorAmount;
-				}
-			}
+                    errorAmount = param * Math.Sqrt(errorAmount / (pointNumber * (pointNumber - 1))) / 2.0;
+                }
+                else
+                {
+                    errorAmount = 0;
+                }
+            }
 
-		}
+            // Loop through all points to calculate error amount
+            foreach (DataPoint point in errorBarSeries.Points)
+            {
+                if (errorBarType == ErrorBarType.Percentage)
+                {
+                    point.YValues[1] = point.YValues[0] - point.YValues[0] * param / 100.0;
+                    point.YValues[2] = point.YValues[0] + point.YValues[0] * param / 100.0;
+                }
+                else
+                {
+                    point.YValues[1] = point.YValues[0] - errorAmount;
+                    point.YValues[2] = point.YValues[0] + errorAmount;
+                }
+            }
+        }
 
         internal static double DefaultErrorBarTypeValue(ErrorBarType errorBarType)
         {
@@ -1737,9 +1706,11 @@ namespace WebCharts.Services.Models.ChartTypes
                 case ErrorBarType.FixedValue:
                 case ErrorBarType.Percentage:
                     return 10.0;
+
                 case ErrorBarType.StandardDeviation:
                 case ErrorBarType.StandardError:
                     return 1.0;
+
                 default:
                     System.Diagnostics.Debug.Fail("Unknown ErrorBarType=" + errorBarType.ToString());
                     break;
@@ -1747,87 +1718,87 @@ namespace WebCharts.Services.Models.ChartTypes
             return 10.0;
         }
 
-		/// <summary>
-		/// Populates error bar center value using the linked series specified by 
-		/// "ErrorBarSeries" custom attribute.
-		/// </summary>
-		/// <param name="errorBarSeries">Error bar chart type series.</param>
-		internal static void GetDataFromLinkedSeries(Series errorBarSeries)
-		{
-			// Check input parameters
-			if(String.Compare(errorBarSeries.ChartTypeName, ChartTypeNames.ErrorBar, StringComparison.OrdinalIgnoreCase) != 0 || errorBarSeries.Chart == null)
-			{
-				return;
-			}
+        /// <summary>
+        /// Populates error bar center value using the linked series specified by
+        /// "ErrorBarSeries" custom attribute.
+        /// </summary>
+        /// <param name="errorBarSeries">Error bar chart type series.</param>
+        internal static void GetDataFromLinkedSeries(Series errorBarSeries)
+        {
+            // Check input parameters
+            if (String.Compare(errorBarSeries.ChartTypeName, ChartTypeNames.ErrorBar, StringComparison.OrdinalIgnoreCase) != 0 || errorBarSeries.Chart == null)
+            {
+                return;
+            }
 
-			// Check if "ErrorBarSeries" custom attribute is set
-			if(!errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
-			{
-				return;
-			}
+            // Check if "ErrorBarSeries" custom attribute is set
+            if (!errorBarSeries.IsCustomPropertySet(CustomPropertyName.ErrorBarSeries))
+            {
+                return;
+            }
 
-			// Get series and value name
-			string	linkedSeriesName = errorBarSeries[CustomPropertyName.ErrorBarSeries];
-			string	valueName = "Y";
-			int valueTypeIndex = linkedSeriesName.IndexOf(":", StringComparison.Ordinal);
-			if(valueTypeIndex >= 0)
-			{
-				valueName = linkedSeriesName.Substring(valueTypeIndex + 1);
-				linkedSeriesName = linkedSeriesName.Substring(0, valueTypeIndex);
-			}
+            // Get series and value name
+            string linkedSeriesName = errorBarSeries[CustomPropertyName.ErrorBarSeries];
+            string valueName = "Y";
+            int valueTypeIndex = linkedSeriesName.IndexOf(":", StringComparison.Ordinal);
+            if (valueTypeIndex >= 0)
+            {
+                valueName = linkedSeriesName.Substring(valueTypeIndex + 1);
+                linkedSeriesName = linkedSeriesName.Substring(0, valueTypeIndex);
+            }
 
-			// Get reference to the chart control
-			ChartService control = errorBarSeries.Chart;
-			if(control != null)
-			{
-				// Get linked series and check existance
-				if(control.Series.IndexOf(linkedSeriesName) == -1)
-				{
+            // Get reference to the chart control
+            ChartService control = errorBarSeries.Chart;
+            if (control != null)
+            {
+                // Get linked series and check existance
+                if (control.Series.IndexOf(linkedSeriesName) == -1)
+                {
                     throw (new InvalidOperationException(SR.ExceptionDataSeriesNameNotFound(linkedSeriesName)));
-				}
-				Series linkedSeries = control.Series[linkedSeriesName];
+                }
+                Series linkedSeries = control.Series[linkedSeriesName];
 
-				// Make sure we use the same X and Y axis as the linked series
-				errorBarSeries.XAxisType = linkedSeries.XAxisType;
-				errorBarSeries.YAxisType = linkedSeries.YAxisType;
+                // Make sure we use the same X and Y axis as the linked series
+                errorBarSeries.XAxisType = linkedSeries.XAxisType;
+                errorBarSeries.YAxisType = linkedSeries.YAxisType;
 
-				// Get cennter values from the linked series
-				errorBarSeries.Points.Clear();
-				foreach(DataPoint point in linkedSeries.Points)
-				{
-					// Add new point into the collection
-					errorBarSeries.Points.AddXY(point.XValue, point.GetValueByName(valueName));
-				}
-			}
+                // Get cennter values from the linked series
+                errorBarSeries.Points.Clear();
+                foreach (DataPoint point in linkedSeries.Points)
+                {
+                    // Add new point into the collection
+                    errorBarSeries.Points.AddXY(point.XValue, point.GetValueByName(valueName));
+                }
+            }
+        }
 
-		}
+        #endregion Automatic Values Calculation methods
 
-		#endregion
+        #region SmartLabelStyle methods
 
-		#region SmartLabelStyle methods
+        /// <summary>
+        /// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
+        /// </summary>
+        /// <param name="common">Common chart elements.</param>
+        /// <param name="area">Chart area.</param>
+        /// <param name="series">Series values to be used.</param>
+        /// <param name="list">List to add to.</param>
+        public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
+        {
+            // No data point markers supported for SmartLabelStyle
+        }
 
-		/// <summary>
-		/// Adds markers position to the list. Used to check SmartLabelStyle overlapping.
-		/// </summary>
-		/// <param name="common">Common chart elements.</param>
-		/// <param name="area">Chart area.</param>
-		/// <param name="series">Series values to be used.</param>
-		/// <param name="list">List to add to.</param>
-		public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)		
-		{
-			// No data point markers supported for SmartLabelStyle
-		}
-
-		#endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -1838,7 +1809,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
-	}
-}
 
+        #endregion IDisposable interface implementation
+    }
+}

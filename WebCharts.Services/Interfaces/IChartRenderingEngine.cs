@@ -2,22 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Defines interfaces which must be implemented by 
-//				every rendering and animation engine class. These 
-//              interfaces are used in GDI+, SVG and Flash rendering. 
-//              Note that animation is only available in SVG and 
+//  Purpose:	Defines interfaces which must be implemented by
+//				every rendering and animation engine class. These
+//              interfaces are used in GDI+, SVG and Flash rendering.
+//              Note that animation is only available in SVG and
 //              Flash rendering engines.
 //
 
 using SkiaSharp;
 
-namespace WebCharts.Services.Interfaces
+namespace WebCharts.Services
 {
     /// <summary>
-    /// IChartRenderingEngine interface defines a set of methods and properties 
-    /// which must be implemented by any chart rendering engine. It contains 
+    /// IChartRenderingEngine interface defines a set of methods and properties
+    /// which must be implemented by any chart rendering engine. It contains
     /// methods for drawing basic shapes.
     /// </summary>
     internal interface IChartRenderingEngine
@@ -65,7 +64,7 @@ namespace WebCharts.Services.Interfaces
         void DrawImage(SKImage image, SKRect destRect, float srcX, float srcY, float srcWidth, float srcHeight, SKPaint paint);
 
         /// <summary>
-        /// Draws an ellipse defined by a bounding rectangle specified by 
+        /// Draws an ellipse defined by a bounding rectangle specified by
         /// a pair of coordinates, a height, and a width.
         /// </summary>
         /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
@@ -83,8 +82,8 @@ namespace WebCharts.Services.Interfaces
         void DrawEllipse(SKPaint pen, SKRect rect);
 
         /// <summary>
-        /// Draws a cardinal spline through a specified array of SKPoint structures 
-        /// using a specified tension. The drawing begins offset from 
+        /// Draws a cardinal spline through a specified array of SKPoint structures
+        /// using a specified tension. The drawing begins offset from
         /// the beginning of the array.
         /// </summary>
         /// <param name="pen">Pen object that determines the color, width, and height of the curve.</param>
@@ -177,12 +176,12 @@ namespace WebCharts.Services.Interfaces
         /// <param name="points">Array of SKPoint structures that represent the points to connect.</param>
         void DrawLines(SKPaint pen, SKPoint[] points);
 
-        #endregion // Drawing Methods
+        #endregion Drawing Methods
 
         #region Filling Methods
 
         /// <summary>
-        /// Fills the interior of an ellipse defined by a bounding rectangle 
+        /// Fills the interior of an ellipse defined by a bounding rectangle
         /// specified by a SKRect structure.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
@@ -249,8 +248,8 @@ namespace WebCharts.Services.Interfaces
             );
 
         /// <summary>
-        /// Fills the interior of a pie section defined by an ellipse 
-        /// specified by a pair of coordinates, a width, and a height 
+        /// Fills the interior of a pie section defined by an ellipse
+        /// specified by a pair of coordinates, a width, and a height
         /// and two radial lines.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
@@ -270,12 +269,12 @@ namespace WebCharts.Services.Interfaces
             float sweepAngle
             );
 
-        #endregion // Filling Methods
+        #endregion Filling Methods
 
         #region Other Methods
 
         /// <summary>
-        /// Measures the specified string when drawn with the specified 
+        /// Measures the specified string when drawn with the specified
         /// Font object and formatted with the specified StringFormat object.
         /// </summary>
         /// <param name="text">String to measure.</param>
@@ -289,7 +288,7 @@ namespace WebCharts.Services.Interfaces
             );
 
         /// <summary>
-        /// Measures the specified string when drawn with the specified 
+        /// Measures the specified string when drawn with the specified
         /// Font object and formatted with the specified StringFormat object.
         /// </summary>
         /// <param name="text">String to measure.</param>
@@ -299,8 +298,6 @@ namespace WebCharts.Services.Interfaces
             string text,
             SKFont font
             );
-
-
 
         /// <summary>
         /// Resets the clip region of this Graphics object to an infinite region.
@@ -315,7 +312,6 @@ namespace WebCharts.Services.Interfaces
             SKRect rect
             );
 
-
         /// <summary>
         /// Prepends the specified translation to the transformation matrix of this Graphics object.
         /// </summary>
@@ -326,7 +322,7 @@ namespace WebCharts.Services.Interfaces
             float dy
             );
 
-        #endregion // Other Methods
+        #endregion Other Methods
 
         #region Properties
 
@@ -350,6 +346,6 @@ namespace WebCharts.Services.Interfaces
         /// </summary>
         bool IsClipEmpty { get; }
 
-        #endregion // Properties
+        #endregion Properties
     }
 }

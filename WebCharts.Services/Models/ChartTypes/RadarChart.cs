@@ -2,25 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Provides 2D/3D drawing and hit testing functionality 
-//              for the Radar chart. RadarChart class is used as a 
+//  Purpose:	Provides 2D/3D drawing and hit testing functionality
+//              for the Radar chart. RadarChart class is used as a
 //              base class for the PolarChart.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -33,22 +25,24 @@ namespace WebCharts.Services.Models.ChartTypes
         /// Series are drawn as filled areas.
         /// </summary>
         Area,
+
         /// <summary>
         /// Series are drawn as lines.
         /// </summary>
         Line,
+
         /// <summary>
         /// Series are drawn as markers.
         /// </summary>
         Marker
     }
 
-    #endregion // Enumerations
+    #endregion Enumerations
 
     /// <summary>
-    /// RadarChart class provides 2D/3D drawing and hit testing 
+    /// RadarChart class provides 2D/3D drawing and hit testing
     /// functionality for the Radar chart. It is also used as a
-    /// base class for the PolarChart. 
+    /// base class for the PolarChart.
     /// </summary>
     internal class RadarChart : IChartType, ICircularChartType
     {
@@ -74,7 +68,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         private LabelAlignmentStyles _labelPosition = LabelAlignmentStyles.Top;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -85,7 +79,7 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion Constructors
 
         #region IChartType interface implementation
 
@@ -99,15 +93,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         virtual public bool Stacked { get { return false; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return false; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return false; } }
@@ -148,8 +140,8 @@ namespace WebCharts.Services.Models.ChartTypes
         virtual public bool DataPointsInLegend { get { return false; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return false; } }
@@ -201,7 +193,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 1; } }
 
@@ -215,7 +207,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region ICircularChartType interface implementation
 
@@ -292,7 +284,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return axesLocation;
         }
 
-        #endregion // ICircularChartType interface implementation
+        #endregion ICircularChartType interface implementation
 
         #region Painting and Selection
 
@@ -313,7 +305,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method recalculates size of the bars. This method is used 
+        /// This method recalculates size of the bars. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -328,7 +320,6 @@ namespace WebCharts.Services.Models.ChartTypes
             ChartArea area,
             Series seriesToDraw)
         {
-
             //************************************************************
             //** Loop through all series
             //************************************************************
@@ -389,14 +380,13 @@ namespace WebCharts.Services.Models.ChartTypes
                             secondPointIndex = 0;
                         }
 
-                        // Get visual properties of the point 
+                        // Get visual properties of the point
                         DataPointCustomProperties pointAttributes = point;
 
                         if (ser.Points[secondPointIndex].IsEmpty)
                         {
                             pointAttributes = ser.Points[secondPointIndex];
                         }
-
 
                         //************************************************************
                         //** Check what is the main element of radar point. It can be
@@ -468,7 +458,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
                 }
 
-
                 //************************************************************
                 //** Loop through all data points in the series and fill areas
                 //** and draw border lines.
@@ -486,14 +475,13 @@ namespace WebCharts.Services.Models.ChartTypes
                         secondPointIndex = 0;
                     }
 
-                    // Get visual properties of the point 
+                    // Get visual properties of the point
                     DataPointCustomProperties pointAttributes = point;
 
                     if (ser.Points[secondPointIndex].IsEmpty)
                     {
                         pointAttributes = ser.Points[secondPointIndex];
                     }
-
 
                     //************************************************************
                     //** Check what is the main element of radar point. It can be
@@ -530,7 +518,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
 
                     // Check if line should be always closed
-                    using (SKPath selectionPath = new SKPath())
+                    using (SKPath selectionPath = new())
                     {
                         if (secondPointIndex == 0 &&
                             !RequireClosedFigure() &&
@@ -564,7 +552,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         if (areaColor != SKColors.Transparent && areaColor != SKColor.Empty)
                         {
                             // Create sector path
-                            using (SKPath fillPath = new SKPath())
+                            using (SKPath fillPath = new())
                             {
                                 fillPath.AddLine(graph.GetAbsolutePoint(area.circularCenter), dataPointPos[index]);
                                 fillPath.AddLine(dataPointPos[index], dataPointPos[secondPointIndex]);
@@ -592,7 +580,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                 // Add area to the selection path
                                 AddSelectionPath(area, selectionPath, dataPointPos, index, secondPointIndex, graph.GetAbsolutePoint(area.circularCenter), 0);
                             }
-
                         }
 
                         //************************************************************
@@ -843,18 +830,16 @@ namespace WebCharts.Services.Models.ChartTypes
             else
             {
                 // Add line
-                SKPath linePath = new SKPath();
+                SKPath linePath = new();
                 if (!leftSidePoint.IsEmpty)
                 {
                     linePath.AddLine(leftSidePoint, dataPointPos[firstPointIndex]);
                 }
                 linePath.AddLine(dataPointPos[firstPointIndex], rightSidePoint);
 
-               
                 // Add to the selection path
                 selectionPath.AddPath(linePath);
             }
-
         }
 
         /// <summary>
@@ -889,17 +874,16 @@ namespace WebCharts.Services.Models.ChartTypes
             int markerSize,
             string markerImage)
         {
-            SKSize size = new SKSize(markerSize, markerSize);
+            SKSize size = new(markerSize, markerSize);
             if (graph != null && graph.Graphics != null)
             {
                 // Marker size is in pixels and we do the mapping for higher DPIs
                 size.Width = markerSize;
                 size.Height = markerSize;
+
+                if (markerImage.Length > 0)
+                    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
             }
-
-            if (markerImage.Length > 0)
-                common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
-
             return size;
         }
 
@@ -930,8 +914,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                 // Rotate position
                 float sectorAngle = 360f / area.CircularSectorsNumber * index;
-                SKMatrix matrix = new();
-                matrix.CreateRotationDegrees(sectorAngle, graph.GetAbsolutePoint(area.circularCenter));
+                SKMatrix matrix = SkiaSharpExtensions.CreateRotationDegrees(sectorAngle, graph.GetAbsolutePoint(area.circularCenter));
                 SKPoint[] rotatedPoint = new SKPoint[] { pointPos[index] };
                 matrix.TransformPoints(rotatedPoint);
                 pointPos[index] = rotatedPoint[0];
@@ -977,232 +960,234 @@ namespace WebCharts.Services.Models.ChartTypes
                 (pointShowLabelAsValue || pointLabel.Length > 0))
             {
                 // Label text format
-                using (StringFormat format = new StringFormat())
-                {
-                    format.Alignment = StringAlignment.Near;
-                    format.LineAlignment = StringAlignment.Center;
+                using StringFormat format = new();
+                format.Alignment = StringAlignment.Near;
+                format.LineAlignment = StringAlignment.Center;
 
-                    // Get label text
-                    string text;
-                    if (pointLabel.Length == 0)
+                // Get label text
+                string text;
+                if (pointLabel.Length == 0)
+                {
+                    text = ValueConverter.FormatValue(
+                        ser.Chart,
+                        point,
+                        point.Tag,
+                        point.YValues[0],
+                        point.LabelFormat,
+                        ser.YValueType,
+                        ChartElementType.DataPoint);
+                }
+                else
+                {
+                    text = point.ReplaceKeywords(pointLabel);
+                }
+
+                // Get point label style attribute
+                SKSize sizeMarker = new(markerSize, markerSize);
+                SKSize SKSizeont = graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic);
+
+                // Increase label size when background is drawn
+                SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
+                sizeLabel.Height += sizeLabel.Height / 2;
+                sizeLabel.Width += sizeLabel.Width / text.Length;
+
+                // Get attribute from point or series
+                _autoLabelPosition = true;
+                string attrib = point[CustomPropertyName.LabelStyle];
+                if (attrib == null || attrib.Length == 0)
+                {
+                    attrib = ser[CustomPropertyName.LabelStyle];
+                }
+                if (attrib != null && attrib.Length > 0)
+                {
+                    _autoLabelPosition = false;
+
+                    // Get label position from attribute
+                    if (String.Compare(attrib, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        text = ValueConverter.FormatValue(
-                            ser.Chart,
-                            point,
-                            point.Tag,
-                            point.YValues[0],
-                            point.LabelFormat,
-                            ser.YValueType,
-                            ChartElementType.DataPoint);
+                        _autoLabelPosition = true;
+                    }
+                    else if (String.Compare(attrib, "Center", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.Center;
+                    }
+                    else if (String.Compare(attrib, "Bottom", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.Bottom;
+                    }
+                    else if (String.Compare(attrib, "TopLeft", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.TopLeft;
+                    }
+                    else if (String.Compare(attrib, "TopRight", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.TopRight;
+                    }
+                    else if (String.Compare(attrib, "BottomLeft", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.BottomLeft;
+                    }
+                    else if (String.Compare(attrib, "BottomRight", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.BottomRight;
+                    }
+                    else if (String.Compare(attrib, "Left", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.Left;
+                    }
+                    else if (String.Compare(attrib, "Right", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.Right;
+                    }
+                    else if (String.Compare(attrib, "Top", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        _labelPosition = LabelAlignmentStyles.Top;
                     }
                     else
                     {
-                        text = point.ReplaceKeywords(pointLabel);
+                        throw (new ArgumentException(SR.ExceptionCustomAttributeValueInvalid(attrib, "LabelStyle")));
                     }
+                }
 
-                    // Get point label style attribute
-                    SKSize sizeMarker = new(markerSize, markerSize);
-                    SKSize SKSizeont = graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic);
+                // Try to get automatic label position
+                if (_autoLabelPosition)
+                {
+                    _labelPosition = GetAutoLabelPosition(area, ser, pointIndex);
+                }
 
-                    // Increase label size when background is drawn
-                    SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
-                    sizeLabel.Height += sizeLabel.Height / 2;
-                    sizeLabel.Width += sizeLabel.Width / text.Length;
+                // Calculate label position
+                SKPoint position = new(markerPosition.X, markerPosition.Y);
+                switch (_labelPosition)
+                {
+                    case LabelAlignmentStyles.Center:
+                        format.Alignment = StringAlignment.Center;
+                        break;
 
-                    // Get attribute from point or series
-                    _autoLabelPosition = true;
-                    string attrib = point[CustomPropertyName.LabelStyle];
-                    if (attrib == null || attrib.Length == 0)
+                    case LabelAlignmentStyles.Bottom:
+                        format.Alignment = StringAlignment.Center;
+                        position.Y += sizeMarker.Height / 1.75F;
+                        position.Y += sizeLabel.Height / 2F;
+                        break;
+
+                    case LabelAlignmentStyles.Top:
+                        format.Alignment = StringAlignment.Center;
+                        position.Y -= sizeMarker.Height / 1.75F;
+                        position.Y -= sizeLabel.Height / 2F;
+                        break;
+
+                    case LabelAlignmentStyles.Left:
+                        format.Alignment = StringAlignment.Far;
+                        position.X -= sizeMarker.Height / 1.75F;
+                        break;
+
+                    case LabelAlignmentStyles.TopLeft:
+                        format.Alignment = StringAlignment.Far;
+                        position.X -= sizeMarker.Height / 1.75F;
+                        position.Y -= sizeMarker.Height / 1.75F;
+                        position.Y -= sizeLabel.Height / 2F;
+                        break;
+
+                    case LabelAlignmentStyles.BottomLeft:
+                        format.Alignment = StringAlignment.Far;
+                        position.X -= sizeMarker.Height / 1.75F;
+                        position.Y += sizeMarker.Height / 1.75F;
+                        position.Y += sizeLabel.Height / 2F;
+                        break;
+
+                    case LabelAlignmentStyles.Right:
+                        //format.Alignment = StringAlignment.Near;
+                        position.X += sizeMarker.Height / 1.75F;
+                        break;
+
+                    case LabelAlignmentStyles.TopRight:
+                        //format.Alignment = StringAlignment.Near;
+                        position.X += sizeMarker.Height / 1.75F;
+                        position.Y -= sizeMarker.Height / 1.75F;
+                        position.Y -= sizeLabel.Height / 2F;
+                        break;
+
+                    case LabelAlignmentStyles.BottomRight:
+                        //format.Alignment = StringAlignment.Near;
+                        position.X += sizeMarker.Height / 1.75F;
+                        position.Y += sizeMarker.Height / 1.75F;
+                        position.Y += sizeLabel.Height / 2F;
+                        break;
+                }
+
+                // Get text angle
+                int textAngle = point.LabelAngle;
+
+                // Check if text contains white space only
+                if (text.Trim().Length != 0)
+                {
+                    // Check if Smart Labels are enabled
+                    if (ser.SmartLabelStyle.Enabled)
                     {
-                        attrib = ser[CustomPropertyName.LabelStyle];
-                    }
-                    if (attrib != null && attrib.Length > 0)
-                    {
-                        _autoLabelPosition = false;
+                        position = graph.GetRelativePoint(position);
+                        markerPosition = graph.GetRelativePoint(markerPosition);
+                        SKSizeont = graph.GetRelativeSize(SKSizeont);
+                        sizeMarker = graph.GetRelativeSize(sizeMarker);
 
-                        // Get label position from attribute
-                        if (String.Compare(attrib, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _autoLabelPosition = true;
-                        }
-                        else if (String.Compare(attrib, "Center", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.Center;
-                        }
-                        else if (String.Compare(attrib, "Bottom", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.Bottom;
-                        }
-                        else if (String.Compare(attrib, "TopLeft", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.TopLeft;
-                        }
-                        else if (String.Compare(attrib, "TopRight", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.TopRight;
-                        }
-                        else if (String.Compare(attrib, "BottomLeft", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.BottomLeft;
-                        }
-                        else if (String.Compare(attrib, "BottomRight", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.BottomRight;
-                        }
-                        else if (String.Compare(attrib, "Left", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.Left;
-                        }
-                        else if (String.Compare(attrib, "Right", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.Right;
-                        }
-                        else if (String.Compare(attrib, "Top", StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            _labelPosition = LabelAlignmentStyles.Top;
-                        }
-                        else
-                        {
-                            throw (new ArgumentException(SR.ExceptionCustomAttributeValueInvalid(attrib, "LabelStyle")));
-                        }
-                    }
+                        // Adjust label position using SmartLabelStyle algorithm
+                        position = area.smartLabels.AdjustSmartLabelPosition(
+                            common,
+                            graph,
+                            area,
+                            ser.SmartLabelStyle,
+                            position,
+                            SKSizeont,
+                            format,
+                            markerPosition,
+                            sizeMarker,
+                            _labelPosition);
 
-                    // Try to get automatic label position
-                    if (_autoLabelPosition)
-                    {
-                        _labelPosition = GetAutoLabelPosition(area, ser, pointIndex);
-                    }
-
-                    // Calculate label position
-                    SKPoint position = new SKPoint(markerPosition.X, markerPosition.Y);
-                    switch (_labelPosition)
-                    {
-                        case LabelAlignmentStyles.Center:
-                            format.Alignment = StringAlignment.Center;
-                            break;
-                        case LabelAlignmentStyles.Bottom:
-                            format.Alignment = StringAlignment.Center;
-                            position.Y += sizeMarker.Height / 1.75F;
-                            position.Y += sizeLabel.Height / 2F;
-                            break;
-                        case LabelAlignmentStyles.Top:
-                            format.Alignment = StringAlignment.Center;
-                            position.Y -= sizeMarker.Height / 1.75F;
-                            position.Y -= sizeLabel.Height / 2F;
-                            break;
-
-                        case LabelAlignmentStyles.Left:
-                            format.Alignment = StringAlignment.Far;
-                            position.X -= sizeMarker.Height / 1.75F;
-                            break;
-                        case LabelAlignmentStyles.TopLeft:
-                            format.Alignment = StringAlignment.Far;
-                            position.X -= sizeMarker.Height / 1.75F;
-                            position.Y -= sizeMarker.Height / 1.75F;
-                            position.Y -= sizeLabel.Height / 2F;
-                            break;
-                        case LabelAlignmentStyles.BottomLeft:
-                            format.Alignment = StringAlignment.Far;
-                            position.X -= sizeMarker.Height / 1.75F;
-                            position.Y += sizeMarker.Height / 1.75F;
-                            position.Y += sizeLabel.Height / 2F;
-                            break;
-                        case LabelAlignmentStyles.Right:
-                            //format.Alignment = StringAlignment.Near;
-                            position.X += sizeMarker.Height / 1.75F;
-                            break;
-                        case LabelAlignmentStyles.TopRight:
-                            //format.Alignment = StringAlignment.Near;
-                            position.X += sizeMarker.Height / 1.75F;
-                            position.Y -= sizeMarker.Height / 1.75F;
-                            position.Y -= sizeLabel.Height / 2F;
-                            break;
-                        case LabelAlignmentStyles.BottomRight:
-                            //format.Alignment = StringAlignment.Near;
-                            position.X += sizeMarker.Height / 1.75F;
-                            position.Y += sizeMarker.Height / 1.75F;
-                            position.Y += sizeLabel.Height / 2F;
-                            break;
-                    }
-
-                    // Get text angle
-                    int textAngle = point.LabelAngle;
-
-                    // Check if text contains white space only
-                    if (text.Trim().Length != 0)
-                    {
-
-
-                        // Check if Smart Labels are enabled
-                        if (ser.SmartLabelStyle.Enabled)
-                        {
-                            position = graph.GetRelativePoint(position);
-                            markerPosition = graph.GetRelativePoint(markerPosition);
-                            SKSizeont = graph.GetRelativeSize(SKSizeont);
-                            sizeMarker = graph.GetRelativeSize(sizeMarker);
-
-                            // Adjust label position using SmartLabelStyle algorithm
-                            position = area.smartLabels.AdjustSmartLabelPosition(
-                                common,
-                                graph,
-                                area,
-                                ser.SmartLabelStyle,
-                                position,
-                                SKSizeont,
-                                format,
-                                markerPosition,
-                                sizeMarker,
-                                _labelPosition);
-
-                            // Restore absolute coordinates
-                            if (!position.IsEmpty)
-                            {
-                                position = graph.GetAbsolutePoint(position);
-                            }
-                            SKSizeont = graph.GetAbsoluteSize(SKSizeont);
-
-                            // Smart labels always use 0 degrees text angle
-                            textAngle = 0;
-                        }
-
-
-                        // Draw label
+                        // Restore absolute coordinates
                         if (!position.IsEmpty)
                         {
-                            position = graph.GetRelativePoint(position);
+                            position = graph.GetAbsolutePoint(position);
+                        }
+                        SKSizeont = graph.GetAbsoluteSize(SKSizeont);
 
-                            // Get label background position
-                            SKRect labelBackPosition = SKRect.Empty;
-                            sizeLabel = graph.GetRelativeSize(SKSizeont);
-                            sizeLabel.Height += sizeLabel.Height / 8;
-                            labelBackPosition = PointChart.GetLabelPosition(
-                                graph,
+                        // Smart labels always use 0 degrees text angle
+                        textAngle = 0;
+                    }
+
+                    // Draw label
+                    if (!position.IsEmpty)
+                    {
+                        position = graph.GetRelativePoint(position);
+
+                        // Get label background position
+                        SKRect labelBackPosition = SKRect.Empty;
+                        sizeLabel = graph.GetRelativeSize(SKSizeont);
+                        sizeLabel.Height += sizeLabel.Height / 8;
+                        labelBackPosition = PointChart.GetLabelPosition(
+                            graph,
+                            position,
+                            sizeLabel,
+                            format,
+                            true);
+
+                        // Draw label text
+                        using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
+                        {
+                            graph.DrawPointLabelStringRel(
+                                common,
+                                text,
+                                point.Font,
+                                brush,
                                 position,
-                                sizeLabel,
                                 format,
-                                true);
+                                textAngle,
+                                labelBackPosition,
 
-                            // Draw label text
-                            using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
-                            {
-                                graph.DrawPointLabelStringRel(
-                                    common,
-                                    text,
-                                    point.Font,
-                                    brush,
-                                    position,
-                                    format,
-                                    textAngle,
-                                    labelBackPosition,
-
-                                    point.LabelBackColor,
-                                    point.LabelBorderColor,
-                                    point.LabelBorderWidth,
-                                    point.LabelBorderDashStyle,
-                                    ser,
-                                    point,
-                                    pointIndex);
-                            }
+                                point.LabelBackColor,
+                                point.LabelBorderColor,
+                                point.LabelBorderWidth,
+                                point.LabelBorderDashStyle,
+                                ser,
+                                point,
+                                pointIndex);
                         }
                     }
                 }
@@ -1300,7 +1285,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return drawingStyle;
         }
 
-        #endregion
+        #endregion Painting and Selection
 
         #region Y values related methods
 
@@ -1322,7 +1307,6 @@ namespace WebCharts.Services.Models.ChartTypes
             int pointIndex,
             int yValueIndex)
         {
-
             // Point chart do not have height
             if (yValueIndex == -1)
             {
@@ -1358,9 +1342,9 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method will find previous and next data point, which is not 
-        /// empty and recalculate a new value for current empty data point. 
-        /// New value depends on custom attribute “EmptyPointValue” and 
+        /// This method will find previous and next data point, which is not
+        /// empty and recalculate a new value for current empty data point.
+        /// New value depends on custom attribute “EmptyPointValue” and
         /// it could be zero or average.
         /// </summary>
         /// <param name="point">IsEmpty data point.</param>
@@ -1454,7 +1438,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return -aCoeff * (point.XValue - series.Points[prevIndx].XValue) + previousPoint;
         }
 
-        #endregion
+        #endregion Y values related methods
 
         #region SmartLabelStyle methods
 
@@ -1521,7 +1505,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     {
                         SKPoint markerPosition = common.graph.GetRelativePoint(dataPointPos[index]);
                         markerSize = common.graph.GetRelativeSize(markerSize);
-                        SKRect markerRect = new SKRect(
+                        SKRect markerRect = new(
                             markerPosition.X - markerSize.Width / 2f,
                             markerPosition.Y - markerSize.Height / 2f,
                             markerSize.Width,
@@ -1541,16 +1525,17 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -1561,12 +1546,13 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 
     /// <summary>
-    /// ICircularChartType interface provides behaviuour information for circular 
-    /// chart types like Radar or Polar. This interface is similar to IChartType 
+    /// ICircularChartType interface provides behaviuour information for circular
+    /// chart types like Radar or Polar. This interface is similar to IChartType
     /// interface.
     /// </summary>
     internal interface ICircularChartType
@@ -1612,7 +1598,6 @@ namespace WebCharts.Services.Models.ChartTypes
         /// <returns>Returns an array of one or more locations of Y axis.</returns>
         float[] GetYAxisLocations(ChartArea area);
 
-        #endregion // Methods
+        #endregion Methods
     }
-
 }

@@ -6,19 +6,18 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// ChartImage class adds image type and data binding functionality to 
+    /// ChartImage class adds image type and data binding functionality to
     /// the base ChartPicture class.
     /// </summary>
     public class ChartImage : ChartPicture, IChartImage
     {
-        public ChartImage(IServiceProvider provider) : base(provider)
+        public ChartImage(ChartService chart) : base(chart)
         {
+            chart.CommonElements.ChartPicture = this;
         }
 
         #region Fields
@@ -32,7 +31,7 @@ namespace WebCharts.Services.Models.General
         // Indicates that control was bound to the data source
         internal bool boundToDataSource = false;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -82,7 +81,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -138,7 +137,7 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-            // Creates a new Graphics object from the 
+            // Creates a new Graphics object from the
             // specified Image object.
 
             SKImageInfo imageInfo = new(300, 250);
@@ -147,9 +146,7 @@ namespace WebCharts.Services.Models.General
                 SKCanvas canvas = surface.Canvas;
             }
 
-
             var offScreen = new SKCanvas(image);
-
 
             SKColor backGroundColor;
 
@@ -182,7 +179,7 @@ namespace WebCharts.Services.Models.General
             return image;
         }
 
-        #endregion // Image Manipulation
+        #endregion Image Manipulation
 
         #region Data Binding
 
@@ -212,8 +209,6 @@ namespace WebCharts.Services.Models.General
 
             return false;
         }
-
-
 
         /// <summary>
         /// Gets an list of the data source member names.
@@ -278,7 +273,6 @@ namespace WebCharts.Services.Models.General
                     dataTable.Locale = CultureInfo.CurrentCulture;
                     dataTable = adapter.FillSchema(dataTable, SchemaType.Mapped);
                 }
-
                 else if (dataSource is SqlDataReader reader)
                 {
                     // Add table columns names
@@ -290,7 +284,6 @@ namespace WebCharts.Services.Models.General
                         }
                     }
                 }
-
                 else if (dataSource is SqlCommand command)
                 {
                     if (command.Connection != null)
@@ -332,7 +325,6 @@ namespace WebCharts.Services.Models.General
                     // Add first column or any data member name
                     names.Add("0");
                 }
-
             }
 
             return names;
@@ -349,7 +341,6 @@ namespace WebCharts.Services.Models.General
             object dataSource = DataSource;
             if (dataSource != null)
             {
-
                 // Convert data adapters to command object
                 if (dataSource is SqlDataAdapter adapter)
                 {
@@ -360,7 +351,6 @@ namespace WebCharts.Services.Models.General
                 if (dataSource is DataSet dataset && dataset.Tables.Count > 0)
                 {
                     dataSource = dataset.DefaultViewManager.CreateDataView(dataset.Tables[0]);
-
                 }
                 else if (dataSource is DataTable table)
                 {
@@ -434,7 +424,7 @@ namespace WebCharts.Services.Models.General
                     {
                         enumerator.Reset();
                     }
-                    // Some enumerators may not support Resetting 
+                    // Some enumerators may not support Resetting
                     catch (InvalidOperationException)
                     {
                     }
@@ -448,7 +438,6 @@ namespace WebCharts.Services.Models.General
 
                 bool autoDetectType = true;
 
-
                 //************************************************************
                 //** Loop through the enumerator.
                 //************************************************************
@@ -458,7 +447,7 @@ namespace WebCharts.Services.Models.General
                     // Move to the next item
                     valueExsists = enumerator.MoveNext();
 
-                    // Loop through all series 
+                    // Loop through all series
                     foreach (Series series in seriesList)
                     {
                         if (series.XValueMember.Length > 0 || series.YValueMembers.Length > 0)
@@ -481,13 +470,13 @@ namespace WebCharts.Services.Models.General
                             // Double check that a string object is not provided for data binding
                             if (dataSource is string)
                             {
-                                throw (new ArgumentException(SR.ExceptionDataBindYValuesToString, "dataSource"));
+                                throw new ArgumentException(SR.ExceptionDataBindYValuesToString, nameof(dataSource));
                             }
 
                             // Check number of fields
                             if (yFieldNames == null || yFieldNames.GetLength(0) > series.YValuesPerPoint)
                             {
-                                throw (new ArgumentOutOfRangeException("dataSource", SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                                throw new ArgumentOutOfRangeException(nameof(dataSource), SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture)));
                             }
 
                             //************************************************************
@@ -510,7 +499,6 @@ namespace WebCharts.Services.Models.General
 
                                     DataPointCollection.AutoDetectValuesType(series, enumerator, series.XValueMember.Trim(), enumerator, yField);
                                 }
-
 
                                 // Create new point
                                 DataPoint newDataPoint = new DataPoint(series);
@@ -564,7 +552,6 @@ namespace WebCharts.Services.Models.General
                                     }
                                 }
 
-
                                 // Add data point if X value is not Null
                                 if (!xValueIsNull)
                                 {
@@ -599,12 +586,9 @@ namespace WebCharts.Services.Models.General
                             }
                         }
                     }
-
                 } while (valueExsists);
-
             }
         }
-
 
         /// <summary>
         /// Aligns data points using their axis labels.
@@ -616,7 +600,6 @@ namespace WebCharts.Services.Models.General
             // Find series which are attached to the same X axis in the same chart area
             foreach (ChartArea chartArea in ChartAreas)
             {
-
                 // Check if chart area is visible
                 if (chartArea.Visible)
 
@@ -757,9 +740,7 @@ namespace WebCharts.Services.Models.General
                         }
                     }
                 }
-
             }
-
         }
 
         /// <summary>
@@ -796,7 +777,6 @@ namespace WebCharts.Services.Models.General
             if (string.IsNullOrEmpty(seriesGroupByField))
                 throw new ArgumentException(SR.ExceptionDataBindSeriesGroupByParameterIsEmpty, nameof(seriesGroupByField));
 
-
             // List of series and group by field values
             ArrayList seriesList = new ArrayList();
             ArrayList groupByValueList = new ArrayList();
@@ -822,7 +802,6 @@ namespace WebCharts.Services.Models.General
                 ref otherFieldNames,
                 ref otherValueFormat);
 
-
             // Get and reset enumerator
             IEnumerator enumerator = DataPointCollection.GetDataSourceEnumerator(dataSource);
             if (enumerator.GetType() != typeof(System.Data.Common.DbEnumerator))
@@ -831,7 +810,7 @@ namespace WebCharts.Services.Models.General
                 {
                     enumerator.Reset();
                 }
-                // Some enumerators may not support Resetting 
+                // Some enumerators may not support Resetting
                 catch (NotSupportedException)
                 {
                 }
@@ -841,7 +820,6 @@ namespace WebCharts.Services.Models.General
                 catch (InvalidOperationException)
                 {
                 }
-
             }
 
             // Add data points
@@ -890,8 +868,7 @@ namespace WebCharts.Services.Models.General
                         }
 
                         // Try to set series name based on grouping vlaue
-                        string groupObjStr = groupObj as string;
-                        if (groupObjStr != null)
+                        if (groupObj is string groupObjStr)
                         {
                             series.Name = groupObjStr;
                         }
@@ -900,12 +877,10 @@ namespace WebCharts.Services.Models.General
                             series.Name = seriesGroupByField + " - " + groupObj.ToString();
                         }
 
-
                         // Add series and group value into the lists
                         groupByValueList.Add(groupObj);
                         seriesList.Add(series);
                     }
-
 
                     // Auto detect valu(s) type
                     if (autoDetectType)
@@ -999,7 +974,6 @@ namespace WebCharts.Services.Models.General
                         series.Points.Add(newDataPoint);
                     }
                 }
-
             } while (valueExsist);
 
             // Sort series usig values of group by field
@@ -1008,7 +982,7 @@ namespace WebCharts.Services.Models.General
                 // Duplicate current list
                 ArrayList oldList = (ArrayList)groupByValueList.Clone();
 
-                // Sort list 
+                // Sort list
                 groupByValueList.Sort();
                 if (sortingOrder == PointSortOrder.Descending)
                 {
@@ -1032,9 +1006,9 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Automatically creates and binds series to specified data table. 
+        /// Automatically creates and binds series to specified data table.
         /// Each column of the table becomes a Y value in a separate series.
-        /// Series X value field may also be provided. 
+        /// Series X value field may also be provided.
         /// </summary>
         /// <param name="dataSource">Data source.</param>
         /// <param name="xField">Name of the field for series X values.</param>
@@ -1044,7 +1018,7 @@ namespace WebCharts.Services.Models.General
         {
             // Check arguments
             if (dataSource == null)
-                throw new ArgumentNullException("dataSource");
+                throw new ArgumentNullException(nameof(dataSource));
 
             // Get list of member names from the data source
             ArrayList dataSourceFields = GetDataSourceMemberNames(dataSource, true);
@@ -1096,7 +1070,6 @@ namespace WebCharts.Services.Models.General
                     ++index;
                 }
 
-
                 // Data bind series
                 DataBind(dataSource, seriesList);
 
@@ -1113,10 +1086,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Data Binding
+        #endregion Data Binding
 
-        #endregion
-
+        #endregion Methods
     }
-
 }

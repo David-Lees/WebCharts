@@ -15,12 +15,8 @@
 using SkiaSharp;
 using System;
 using System.Globalization;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
     /// BubbleChart class extends PointChart class to add support for

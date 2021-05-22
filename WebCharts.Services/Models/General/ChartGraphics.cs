@@ -15,13 +15,8 @@ using SkiaSharp;
 using System;
 using System.Linq;
 using System.Text;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Borders3D;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// The ChartGraphics class provides all chart drawing capabilities.
@@ -602,7 +597,7 @@ namespace WebCharts.Services.Models.General
 
                                 // Draw star
                                 FillPolygon(brush, points);
-                                using var starPen = new SKPaint() { Color = markerBorderColor, StrokeWidth = markerBorderSize };
+                                using var starPen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = markerBorderColor, StrokeWidth = markerBorderSize };
                                 DrawPolygon(starPen, points);
                                 break;
                             }
@@ -613,7 +608,7 @@ namespace WebCharts.Services.Models.General
                                 {
                                     if (!softShadows)
                                     {
-                                        using SKPaint shadowBrush = new() { Color = (shadowColor.Alpha != 255) ? shadowColor : Color.FromArgb(markerColor.Alpha / 2, shadowColor) };
+                                        using SKPaint shadowBrush = new() { Style = SKPaintStyle.Fill, Color = (shadowColor.Alpha != 255) ? shadowColor : Color.FromArgb(markerColor.Alpha / 2, shadowColor) };
                                         SKRect shadowRect = rect;
                                         shadowRect.Left += shadowSize;
                                         shadowRect.Top += shadowSize;
@@ -708,7 +703,7 @@ namespace WebCharts.Services.Models.General
 
                                     if (!softShadows)
                                     {
-                                        using SKPaint softShadowBrush = new() { Color = (shadowColor.Alpha != 255) ? shadowColor : Color.FromArgb(markerColor.Alpha / 2, shadowColor) };
+                                        using SKPaint softShadowBrush = new() { Style = SKPaintStyle.Fill, Color = (shadowColor.Alpha != 255) ? shadowColor : Color.FromArgb(markerColor.Alpha / 2, shadowColor) };
                                         FillPolygon(softShadowBrush, points);
                                     }
                                     else
@@ -718,7 +713,7 @@ namespace WebCharts.Services.Models.General
                                         path.AddPoly(points);
 
                                         // Create path brush
-                                        using SKPaint shadowBrush = new() { Color = SKColors.Transparent };
+                                        using SKPaint shadowBrush = new() { Style = SKPaintStyle.Fill, Color = SKColors.Transparent };
                                         // Define brush focus scale
                                         SKPoint focusScale = new(1 - 2f * shadowSize / rect.Width, 1 - 2f * shadowSize / rect.Height);
                                         if (focusScale.X < 0)
@@ -746,7 +741,7 @@ namespace WebCharts.Services.Models.General
                                 Transform = translateMatrixShape;
 
                                 FillPolygon(brush, points);
-                                using var pp = new SKPaint() { Color = markerBorderColor, StrokeWidth = markerBorderSize };
+                                using var pp = new SKPaint() { Style = SKPaintStyle.Stroke, Color = markerBorderColor, StrokeWidth = markerBorderSize };
                                 DrawPolygon(pp, points);
 
                                 Transform = oldMatrixShape;
@@ -814,7 +809,7 @@ namespace WebCharts.Services.Models.General
                                 points[2].X = rect.Right;
                                 points[2].Y = rect.Bottom;
 
-                                var pen = new SKPaint() { Color = markerBorderColor, StrokeWidth = markerBorderSize };
+                                var pen = new SKPaint() { Style = SKPaintStyle.Stroke, Color = markerBorderColor, StrokeWidth = markerBorderSize };
 
                                 // Draw image shadow
                                 if (shadowSize != 0 && shadowColor != SKColor.Empty)
@@ -898,7 +893,10 @@ namespace WebCharts.Services.Models.General
             {
                 text = GetStackedText(text);
             }
-            return this.MeasureString(text, font, layoutArea, stringFormat);
+            var p = new SKPaint() { Typeface = font.Typeface, TextSize = font.Size };
+            var width = Math.Clamp(p.MeasureText(text), 0, layoutArea.Width);
+            var height = Math.Clamp(p.TextSize, 0, layoutArea.Height);
+            return new SKSize(width, height);
         }
 
         /// <summary>
@@ -956,7 +954,7 @@ namespace WebCharts.Services.Models.General
             {
                 text = GetStackedText(text);
             }
-            this.DrawString(text, font, paint, rect, format, TextOrientation.Auto);
+            RenderingObject.DrawString(text, font, paint, rect/*, format, TextOrientation.Auto1*/);
         }
 
         /// <summary>
@@ -1329,14 +1327,6 @@ namespace WebCharts.Services.Models.General
 
             // Set Angle
             Transform = _myMatrix;
-
-            // Draw text with anti-aliasing
-            /*
-            if( (AntiAliasing & AntiAliasing.Text) == AntiAliasing.Text )
-                this.TextRenderingHint = TextRenderingHint.AntiAlias;
-            else
-                this.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
-            */
 
             // Draw a string
             this.DrawString(text, font, brush, absPosition);
@@ -2381,8 +2371,7 @@ namespace WebCharts.Services.Models.General
                 rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
             }
             // Create a matrix and rotate it.
-            _myMatrix = Transform;
-            _myMatrix.CreateRotationDegrees(angle, rotationCenter);
+            _myMatrix = SkiaSharpExtensions.CreateRotationDegrees(angle, rotationCenter);
 
             // Old angle
             oldTransform = Transform;
@@ -3374,8 +3363,7 @@ namespace WebCharts.Services.Models.General
             for (curentSector = 0f; curentSector < 360f; curentSector += sectorSize)
             {
                 // Create matrix
-                SKMatrix matrix = new();
-                matrix.CreateRotationDegrees(curentSector, centerPoint);
+                SKMatrix matrix = SkiaSharpExtensions.CreateRotationDegrees(curentSector, centerPoint);
 
                 // Get point and rotate it
                 SKPoint[] points = new SKPoint[] { firstPoint };
@@ -3454,8 +3442,7 @@ namespace WebCharts.Services.Models.General
                 for (curentSector = 0f; curentSector < 360f; curentSector += sectorSize)
                 {
                     // Create matrix
-                    SKMatrix matrix = new();
-                    matrix.CreateRotationDegrees(curentSector, centerPoint);
+                    SKMatrix matrix = SkiaSharpExtensions.CreateRotationDegrees(curentSector, centerPoint);
 
                     // Get point and rotate it
                     SKPoint[] points = new SKPoint[] { firstPoint };
@@ -4140,7 +4127,7 @@ namespace WebCharts.Services.Models.General
         {
             // Check arguments
             if (rectangle == SKRect.Empty)
-                throw new ArgumentNullException("rectangle");
+                throw new ArgumentNullException(nameof(rectangle));
 
             SKRect relative = SKRect.Empty;
 
@@ -4164,13 +4151,13 @@ namespace WebCharts.Services.Models.General
         {
             // Check arguments
             if (point == SKPoint.Empty)
-                throw new ArgumentNullException("point");
+                throw new ArgumentNullException(nameof(point));
 
             SKPoint relative = SKPoint.Empty;
 
             // Convert absolute coordinates to relative coordinates
-            relative.X = point.X * 100F / ((float)(_width - 1));
-            relative.Y = point.Y * 100F / ((float)(_height - 1));
+            relative.X = point.X * 100F / (_width - 1);
+            relative.Y = point.Y * 100F / (_height - 1);
 
             // Return Relative coordinates
             return relative;
@@ -4191,8 +4178,8 @@ namespace WebCharts.Services.Models.General
             SKSize relative = SKSize.Empty;
 
             // Convert absolute coordinates to relative coordinates
-            relative.Width = size.Width * 100F / ((float)(_width - 1));
-            relative.Height = size.Height * 100F / ((float)(_height - 1));
+            relative.Width = size.Width * 100F / (_width - 1);
+            relative.Height = size.Height * 100F / (_height - 1);
 
             // Return relative coordinates
             return relative;
@@ -4226,7 +4213,7 @@ namespace WebCharts.Services.Models.General
         {
             // Check arguments
             if (rectangle == SKRect.Empty)
-                throw new ArgumentNullException("rectangle");
+                throw new ArgumentNullException(nameof(rectangle));
 
             SKRect absolute = SKRect.Empty;
 
@@ -4771,7 +4758,7 @@ namespace WebCharts.Services.Models.General
             }
 
             // Set a color
-            using SKPaint brush = new() { Color = color };
+            using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = color };
             SKPoint endPoint = SKPoint.Empty; // End point of axis line
             SKPoint[] points; // arrow points
             SKPoint absolutePosition; // Absolute position of axis

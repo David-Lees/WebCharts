@@ -1,4 +1,4 @@
-﻿namespace WebCharts.Services.Enums
+﻿namespace WebCharts.Services
 {
     public enum WrapMode
     {

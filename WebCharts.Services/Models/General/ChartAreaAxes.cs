@@ -2,33 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	ChartAreaAxes is base class of Chart Area class. 
-//				This class searches for all series, which belongs 
-//				to this chart area and sets axes minimum and 
-//				maximum values using data. This class also checks 
-//				for chart types, which belong to this chart area 
-//				and prepare axis scale according to them (Stacked 
-//				chart types have different max and min values). 
-//				This class recognizes indexed values and prepares 
+//  Purpose:	ChartAreaAxes is base class of Chart Area class.
+//				This class searches for all series, which belongs
+//				to this chart area and sets axes minimum and
+//				maximum values using data. This class also checks
+//				for chart types, which belong to this chart area
+//				and prepare axis scale according to them (Stacked
+//				chart types have different max and min values).
+//				This class recognizes indexed values and prepares
 //				axes for them.
 //
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
-    /// ChartAreaAxes class represents axes (X, Y, X2 and Y2) in the chart area. 
-    /// It contains methods that collect statistical information on the series data and 
+    /// ChartAreaAxes class represents axes (X, Y, X2 and Y2) in the chart area.
+    /// It contains methods that collect statistical information on the series data and
     /// other axes related methods.
     /// </summary>
     public partial class ChartArea
@@ -37,6 +31,7 @@ namespace WebCharts.Services.Models.General
 
         // Axes which belong to this Chart Area
         internal Axis axisY = null;
+
         internal Axis axisX = null;
         internal Axis axisX2 = null;
         internal Axis axisY2 = null;
@@ -52,16 +47,16 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         private string _intervalSeriesList = "";
 
-        // Minimum interval between two data points for all 
+        // Minimum interval between two data points for all
         // series which belong to this chart area.
         internal double intervalData = double.NaN;
 
-        // Minimum interval between two data points for all 
+        // Minimum interval between two data points for all
         // series which belong to this chart area.
         // IsLogarithmic version of the interval.
         internal double intervalLogData = double.NaN;
 
-        // Series with minimum interval between two data points for all 
+        // Series with minimum interval between two data points for all
         // series which belong to this chart area.
         private Series _intervalSeries = null;
 
@@ -92,7 +87,7 @@ namespace WebCharts.Services.Models.General
         // Chart Area contains 100 % stacked chart types
         internal bool hundredPercentNegative = false;
 
-        #endregion
+        #endregion Fields
 
         #region Internal properties
 
@@ -103,8 +98,7 @@ namespace WebCharts.Services.Models.General
         {
             get
             {
-                if (((ChartArea)this).Area3DStyle.Enable3D ||
-                    ((ChartArea)this).chartAreaIsCurcular)
+                if (Area3DStyle.Enable3D || chartAreaIsCurcular)
                 {
                     return false;
                 }
@@ -134,14 +128,14 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Internal properties
 
         #region Methods
 
         /// <summary>
         /// Gets main or sub axis from the chart area.
         /// </summary>
-        /// <param name="axisName">Axis name. NOTE: This parameter only defines X or Y axis. 
+        /// <param name="axisName">Axis name. NOTE: This parameter only defines X or Y axis.
         /// Second axisType parameter is used to select primary or secondary axis. </param>
         /// <param name="axisType">Axis type.</param>
         /// <param name="subAxisName">Sub-axis name or empty string.</param>
@@ -149,7 +143,7 @@ namespace WebCharts.Services.Models.General
         internal Axis GetAxis(AxisName axisName, AxisType axisType, string subAxisName)
         {
             // Ignore sub axis in 3D
-            if (((ChartArea)this).Area3DStyle.Enable3D)
+            if (Area3DStyle.Enable3D)
             {
                 subAxisName = string.Empty;
             }
@@ -158,22 +152,22 @@ namespace WebCharts.Services.Models.General
             {
                 if (axisType == AxisType.Primary)
                 {
-                    return ((ChartArea)this).AxisX.GetSubAxis(subAxisName);
+                    return AxisX.GetSubAxis(subAxisName);
                 }
-                return ((ChartArea)this).AxisX2.GetSubAxis(subAxisName);
+                return AxisX2.GetSubAxis(subAxisName);
             }
             else
             {
                 if (axisType == AxisType.Primary)
                 {
-                    return ((ChartArea)this).AxisY.GetSubAxis(subAxisName);
+                    return AxisY.GetSubAxis(subAxisName);
                 }
-                return ((ChartArea)this).AxisY2.GetSubAxis(subAxisName);
+                return AxisY2.GetSubAxis(subAxisName);
             }
         }
 
         /// <summary>
-        /// Sets default axis values for all different chart type 
+        /// Sets default axis values for all different chart type
         /// groups. Chart type groups are sets of chart types.
         /// </summary>
         internal void SetDefaultAxesValues()
@@ -196,9 +190,9 @@ namespace WebCharts.Services.Models.General
                 axisY2.AxisPosition = AxisPosition.Right;
             }
 
-            // Reset opposite Axes field. This cashing 
+            // Reset opposite Axes field. This cashing
             // value is used for optimization.
-            foreach (Axis axisItem in ((ChartArea)this).Axes)
+            foreach (Axis axisItem in Axes)
             {
                 axisItem.oppositeAxis = null;
 #if SUBAXES
@@ -302,7 +296,7 @@ namespace WebCharts.Services.Models.General
 			}
 #endif // SUBAXES
 
-            // Sets axis position. Axis position depends 
+            // Sets axis position. Axis position depends
             // on crossing and reversed value.
             axisX.SetAxisPosition();
             axisX2.SetAxisPosition();
@@ -312,9 +306,6 @@ namespace WebCharts.Services.Models.General
             // Enable axes, which are
             // used in data series.
             EnableAxes();
-
-
-
 
             // Get scale break segments
             Axis[] axesYArray = new Axis[] { axisY, axisY2 };
@@ -340,22 +331,18 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-
-
             bool useScaleSegments = false;
 
             // Fill Labels
             Axis[] axesArray = new Axis[] { axisX, axisX2, axisY, axisY2 };
             foreach (Axis currentAxis in axesArray)
             {
-
                 useScaleSegments = (currentAxis.ScaleSegments.Count > 0);
 
                 if (!useScaleSegments)
                 {
                     currentAxis.FillLabels(true);
                 }
-
                 else
                 {
                     bool removeLabels = true;
@@ -379,7 +366,6 @@ namespace WebCharts.Services.Models.General
                         ++segmentIndex;
                     }
                 }
-
             }
             foreach (Axis currentAxis in axesArray)
             {
@@ -388,8 +374,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Sets the axis defaults. 
-        /// If the at least one of the series bound to this axis is Indexed then the defaults are set using the SetDefaultsFromIndexes(). 
+        /// Sets the axis defaults.
+        /// If the at least one of the series bound to this axis is Indexed then the defaults are set using the SetDefaultsFromIndexes().
         /// Otherwise the SetDefaultFromData() is used.
         /// </summary>
         /// <param name="axis">Axis to process</param>
@@ -405,42 +391,27 @@ namespace WebCharts.Services.Models.General
             bool indexedSeries = true;
             // DT comments 1:
             // If we have mix of indexed with non-indexed series
-            // enforce  all indexed series as non-indexed;
-            // The result of mixed type of series will be more natural 
-            // and easy to detect the problem - all datapoints of indexed 
+            // enforce  all indexed series as non-indexed.
+            // The result of mixed type of series will be more natural
+            // and easy to detect the problem - all datapoints of indexed
             // series will be displayed on zero position.
             //=====================================
-            // bool  nonIndexedSeries = false;
+            // bool  nonIndexedSeries = false
             //=======================================
             //Loop through the series looking for a indexed one
             foreach (string seriesName in axisSeriesNames)
             {
                 // Get series
                 Series series = Common.DataManager.Series[seriesName];
-                // Check if series is indexed                
+                // Check if series is indexed
                 if (!ChartHelper.IndexedSeries(series))
                 {
                     // found one nonindexed series - we will treat all series as non indexed.
                     indexedSeries = false;
                     break;
                 }
-                // DT comments 2
-                //else
-                //{
-                //    nonIndexedSeries = true;
-                //}
             }
 
-            //DT comments 3
-            //if (!indexedSeries && nonIndexedSeries)
-            //{
-            //    foreach (string seriesName in axisSeriesNames)
-            //    {
-            //        // Get series
-            //        Series series = Common.DataManager.Series[seriesName];
-            //        series.xValuesZeros = false;
-            //    }
-            //}
 
             if (indexedSeries)
             {
@@ -489,7 +460,6 @@ namespace WebCharts.Services.Models.General
 #else
                     Activate(axisX, true);
 #endif // SUBAXES
-
                 }
                 else
                 {
@@ -555,9 +525,9 @@ namespace WebCharts.Services.Models.General
 		private void Activate( Axis axis, bool active, string subAxisName )
 		{
 			// Auto-Enable axis
-			if( axis.autoEnabled == true ) 
+			if( axis.autoEnabled == true )
 			{
-				axis.enabled = active;		
+				axis.enabled = active;
 			}
 
 			// Auto-Enable sub axes
@@ -566,14 +536,15 @@ namespace WebCharts.Services.Models.General
 				SubAxis subAxis = axis.SubAxes.FindByName(subAxisName);
 				if(subAxis != null)
 				{
-					if( subAxis.autoEnabled == true ) 
+					if( subAxis.autoEnabled == true )
 					{
-						subAxis.enabled = active;		
+						subAxis.enabled = active;
 					}
 				}
 			}
 		}
 #else
+
         /// <summary>
 		/// Enable axis.
 		/// </summary>
@@ -581,19 +552,20 @@ namespace WebCharts.Services.Models.General
 		/// <param name="active">True if axis is active.</param>
 		private static void Activate(Axis axis, bool active)
         {
-            if (axis.autoEnabled == true)
+            if (axis.autoEnabled)
             {
                 axis.enabled = active;
             }
         }
+
 #endif // SUBAXES
 
         /// <summary>
-		/// Check if all data points from series in 
+		/// Check if all data points from series in
 		/// this chart area are empty.
 		/// </summary>
 		/// <returns>True if all points are empty</returns>
-		bool AllEmptyPoints()
+		private bool AllEmptyPoints()
         {
             // Data series from this chart area
             foreach (string seriesName in _series)
@@ -613,8 +585,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method sets default minimum and maximum 
-        /// values from values in the data manager. This 
+        /// This method sets default minimum and maximum
+        /// values from values in the data manager. This
         /// case is used if X values are not equal to 0 or IsXValueIndexed flag is set.
         /// </summary>
         /// <param name="axis">Axis</param>
@@ -631,7 +603,6 @@ namespace WebCharts.Services.Models.General
 			}
 #endif // SUBAXES
 
-
             // Used for scrolling with logarithmic axes.
             if (!Double.IsNaN(axis.ScaleView.Position) &&
                 !Double.IsNaN(axis.ScaleView.Size) &&
@@ -645,10 +616,10 @@ namespace WebCharts.Services.Models.General
             GetValuesFromData(axis, out double autoMinimum, out double autoMaximum);
 
             // ***************************************************
-            // This part of code is used to add a margin to the 
-            // axis and to set minimum value to zero if 
-            // IsStartedFromZero property is used. There is special 
-            // code for logarithmic scale, which will set minimum 
+            // This part of code is used to add a margin to the
+            // axis and to set minimum value to zero if
+            // IsStartedFromZero property is used. There is special
+            // code for logarithmic scale, which will set minimum
             // to one instead of zero.
             // ***************************************************
             // The minimum and maximum values from data manager don’t exist.
@@ -794,7 +765,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method checks if all series in the chart area have “integer type” 
+        /// This method checks if all series in the chart area have “integer type”
         /// for specified axes, which means int, uint, long and ulong.
         /// </summary>
         /// <param name="axisName">Name of the axis</param>
@@ -901,7 +872,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method checks if all series in the chart area have “date-time type” 
+        /// This method checks if all series in the chart area have “date-time type”
         /// for specified axes.
         /// </summary>
         /// <param name="axisName">Name of the axis</param>
@@ -1074,7 +1045,6 @@ namespace WebCharts.Services.Models.General
             }
             else // Y axis type is used (Y or Y2)
             {
-
                 // *****************************
                 // Stacked Chart AxisName
                 // *****************************
@@ -1114,7 +1084,6 @@ namespace WebCharts.Services.Models.General
                                 stackMaxArea = Math.Max(stackMaxArea, stackMaxAreaForGroup);
                                 stackMinArea = Math.Min(stackMinArea, stackMinAreaForGroup);
                             }
-
 
                             autoMaximum = Math.Max(stackMaxBarColumn, stackMaxArea);
                             autoMinimum = Math.Min(stackMinBarColumn, stackMinArea);
@@ -1170,19 +1139,18 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-            // Store Minimum and maximum from data. There is no 
+            // Store Minimum and maximum from data. There is no
             // reason to calculate this values every time.
             axis.maximumFromData = autoMaximum;
             axis.minimumFromData = autoMinimum;
             axis.refreshMinMaxFromData = false;
 
-            // Make extra test for stored minimum and maximum values 
-            // from data. If Number of points is different then data 
-            // source is changed. That means that we should read 
+            // Make extra test for stored minimum and maximum values
+            // from data. If Number of points is different then data
+            // source is changed. That means that we should read
             // data again.
             axis.numberOfPointsInAllSeries = currentPointsNumber;
         }
-
 
         /// <summary>
         /// Splits a single array of series names into multiple arrays
@@ -1241,8 +1209,6 @@ namespace WebCharts.Services.Models.General
             return result;
         }
 
-
-
         /// <summary>
         /// Find number of points for all series
         /// </summary>
@@ -1259,8 +1225,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method sets default minimum and maximum values from 
-        /// indexes. This case is used if all X values in a series 
+        /// This method sets default minimum and maximum values from
+        /// indexes. This case is used if all X values in a series
         /// have 0 value or IsXValueIndexed flag is set.
         /// </summary>
         /// <param name="axis">Axis</param>
@@ -1299,7 +1265,7 @@ namespace WebCharts.Services.Models.General
                 axis.SetAutoMinimum(autoMinimum - axis.margin / 100 + 1);
             }
 
-            // Find the interval. If the nuber of points 
+            // Find the interval. If the nuber of points
             // is less then 10 interval is 1.
             double axisInterval;
 
@@ -1319,19 +1285,18 @@ namespace WebCharts.Services.Models.General
 
                 axis.interval3DCorrection = double.NaN;
 
-                // Use interval 
+                // Use interval
                 if (axisInterval > 1.0 &&
                     axisInterval < 4.0 &&
                     axis.ViewMaximum - axis.ViewMinimum <= 4)
                 {
                     axisInterval = 1.0;
                 }
-
             }
 
             axis.SetInterval(axisInterval);
 
-            // If temporary offsets were defined for the margin, 
+            // If temporary offsets were defined for the margin,
             // adjust offset for minor ticks and grids.
             if (axis.offsetTempSet)
             {
@@ -1342,7 +1307,7 @@ namespace WebCharts.Services.Models.General
 
         /// <summary>
         /// Sets the names of all data series which belong to
-        /// this chart area to collection and sets a list of all 
+        /// this chart area to collection and sets a list of all
         /// different chart types.
         /// </summary>
         internal void SetData()
@@ -1469,7 +1434,7 @@ namespace WebCharts.Services.Models.General
                             try
                             {
                                 DataFormula.CheckXValuesAlignment(
-                                    Common.DataManipulator.ConvertToSeriesArray(seriesNamesStr.TrimEnd(','), false));
+                                    Common.ChartPicture.DataManipulator.ConvertToSeriesArray(seriesNamesStr.TrimEnd(','), false));
                             }
                             catch (Exception e)
                             {
@@ -1487,7 +1452,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Returns names of all series, which belong to this chart area 
+        /// Returns names of all series, which belong to this chart area
         /// and have same chart type.
         /// </summary>
         /// <param name="chartType">Chart type</param>
@@ -1618,7 +1583,6 @@ namespace WebCharts.Services.Models.General
 #endif // SUBAXES
                 }
 
-
 #if SUBAXES
 				if( seriesYAxisType == type &&
 					(Common.DataManager.Series[ser].YSubAxisName == seriesYSubAxisName || !this.IsSubAxesSupported) )
@@ -1665,7 +1629,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method returns minimum interval between 
+        /// This method returns minimum interval between
         /// any two data points from series which belong
         /// to this chart area.
         /// </summary>
@@ -1678,8 +1642,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method returns minimum interval between 
-        /// any two data points from specified series. 
+        /// This method returns minimum interval between
+        /// any two data points from specified series.
         /// </summary>
         /// <param name="seriesList">List of series.</param>
         /// <param name="isLogarithmic">Indicates logarithmic scale.</param>
@@ -1693,8 +1657,8 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method returns minimum interval between 
-        /// any two data points from specified series. 
+        /// This method returns minimum interval between
+        /// any two data points from specified series.
         /// </summary>
         /// <param name="seriesList">List of series.</param>
         /// <param name="isLogarithmic">Indicates logarithmic scale.</param>
@@ -1833,7 +1797,6 @@ namespace WebCharts.Services.Models.General
                                 {
                                     sameInterval = false;
                                 }
-
                             }
                         }
                         else
@@ -1888,14 +1851,12 @@ namespace WebCharts.Services.Models.General
                     ++listIndex;
                 }
 
-
                 // Use side-by-side if at least one xommon X value between eries found
                 if (sameXValue)
                 {
                     sameInterval = true;
                 }
             }
-
 
             // Interval not found. Interval is 1.
             if (oldInterval == Double.MaxValue)
@@ -1948,6 +1909,6 @@ namespace WebCharts.Services.Models.General
             ticksInterval += (date2.Millisecond - date1.Millisecond) * TimeSpan.TicksPerMillisecond;
         }
 
-        #endregion
+        #endregion Methods
     }
 }

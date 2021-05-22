@@ -2,31 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:    Provides 2D/3D drawing and hit testing functionality 
-//              for the Funnel and Pyramid charts. 
-//				Funnel and Pyramid Chart types display data that 
-//				equals 100% when totalled. This type of chart is a 
-//				single series chart representing the data as portions 
+//  Purpose:    Provides 2D/3D drawing and hit testing functionality
+//              for the Funnel and Pyramid charts.
+//				Funnel and Pyramid Chart types display data that
+//				equals 100% when totalled. This type of chart is a
+//				single series chart representing the data as portions
 //				of 100%, and this chart does not use any axes.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -115,7 +106,6 @@ namespace WebCharts.Services.Models.ChartTypes
         SquareBase
     }
 
-
     /// <summary>
     /// Funnel chart labels style enumeration.
     /// </summary>
@@ -142,10 +132,10 @@ namespace WebCharts.Services.Models.ChartTypes
         Disabled
     }
 
-    #endregion // Enumerations
+    #endregion Enumerations
 
     /// <summary>
-    /// FunnelChart class provides 2D/3D drawing and hit testing functionality 
+    /// FunnelChart class provides 2D/3D drawing and hit testing functionality
     /// for the Funnel and Pyramid charts.
     /// </summary>
     internal class FunnelChart : IChartType
@@ -155,7 +145,7 @@ namespace WebCharts.Services.Models.ChartTypes
         // Array list of funnel segments
         internal ArrayList segmentList = null;
 
-        // List of data point labels information 
+        // List of data point labels information
         internal ArrayList labelInfoList = null;
 
         // Chart graphics object.
@@ -237,16 +227,16 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion Fields and Constructor
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets the calculted plotting area of the chart 
+        /// Gets or sets the calculted plotting area of the chart
         /// </summary>
         internal SKRect PlotAreaPosition { get; set; } = SKRect.Empty;
 
-        #endregion // Properties
+        #endregion Properties
 
         #region IChartType interface implementation
 
@@ -260,15 +250,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         virtual public bool Stacked { get { return false; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return false; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return false; } }
@@ -309,8 +297,8 @@ namespace WebCharts.Services.Models.ChartTypes
         virtual public bool DataPointsInLegend { get { return true; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return false; } }
@@ -350,7 +338,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 1; } }
 
@@ -364,7 +352,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Painting
 
@@ -385,7 +373,7 @@ namespace WebCharts.Services.Models.ChartTypes
             _chartTypeSeries = null;
             _funnelMinPointHeight = 0f;
 
-            // Save reference to the input parameters 
+            // Save reference to the input parameters
             Graph = graph;
             Common = common;
             Area = area;
@@ -394,7 +382,7 @@ namespace WebCharts.Services.Models.ChartTypes
             // Calculate the sum of all Y and X values, which will be used to calculate point percentage.
             GetDataPointValuesStatistic();
 
-            // Check if there are non-zero points 
+            // Check if there are non-zero points
             if (yValueTotal == 0.0 || pointNumber == 0)
             {
                 return;
@@ -500,7 +488,6 @@ namespace WebCharts.Services.Models.ChartTypes
             out float startWidth,
             out float endWidth)
         {
-
             // Get plotting area position in pixels
             SKRect plotAreaPositionAbs = Graph.GetAbsoluteRectangle(PlotAreaPosition);
 
@@ -518,7 +505,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Check if X values are provided
                 if (_xValueTotal == 0.0)
                 {
-                    // Calculate segment height in pixels by deviding 
+                    // Calculate segment height in pixels by deviding
                     // plotting area height by number of points.
                     height = plotAreaHeightAbs / (pointNumber - 1);
                 }
@@ -624,7 +611,7 @@ namespace WebCharts.Services.Models.ChartTypes
             bool drawSegment,
             bool drawSegmentShadow)
         {
-            // Increase the height of the segment to make sure there is no gaps between segments 
+            // Increase the height of the segment to make sure there is no gaps between segments
             if (!nothingOnBottom)
             {
                 height += 0.3f;
@@ -721,8 +708,6 @@ namespace WebCharts.Services.Models.ChartTypes
             }
             segmentPath.Dispose();
 
-
-
             // Draw right part of the pyramid segment
             // Add top line
             segmentPath = new SKPath();
@@ -784,7 +769,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     pointIndex);
             }
             segmentPath.Dispose();
-
 
             // Add top 3D surface
             if (_rotation3D > 0f && startWidth > 0f && nothingOnTop && Area.Area3DStyle.Enable3D)
@@ -878,7 +862,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         pointIndex);
                 }
                 topCurve.Dispose();
-
             }
         }
 
@@ -924,7 +907,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 return;
             }
 
-            // Increase the height of the segment to make sure there is no gaps between segments 
+            // Increase the height of the segment to make sure there is no gaps between segments
             if (!nothingOnBottom)
             {
                 height += 0.3f;
@@ -1177,7 +1160,6 @@ namespace WebCharts.Services.Models.ChartTypes
             }
             segmentPath.Dispose();
 
-
             // Add top 3D surface
             if (_rotation3D > 0f && startWidth > 0f && nothingOnTop && Area.Area3DStyle.Enable3D)
             {
@@ -1271,7 +1253,6 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-
         /// <summary>
         /// Fill list with information about every segment of the funnel.
         /// </summary>
@@ -1286,7 +1267,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Series series = GetDataSeries();
             if (series != null)
             {
-                // Get funnel drawing style 
+                // Get funnel drawing style
                 _funnelStyle = GetFunnelStyle(series);
 
                 // Check if round or square base is used in 3D chart
@@ -1302,7 +1283,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 float currentLocation = Graph.GetAbsolutePoint(PlotAreaPosition.Location).Y;
                 if (isPyramid)
                 {
-                    // Pyramid is drawn in reversed order. 
+                    // Pyramid is drawn in reversed order.
                     currentLocation = Graph.GetAbsoluteRectangle(PlotAreaPosition).Bottom;
                 }
                 for (int pointIndex = 0; pointIndex >= 0 && pointIndex < series.Points.Count; pointIndex += 1)
@@ -1397,7 +1378,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         info.NothingOnBottom = nothingOnBottom;
                         list.Add(info);
 
-                        // Increase current Y location 
+                        // Increase current Y location
                         if (isPyramid)
                         {
                             currentLocation -= height + funnelSegmentGap;
@@ -1413,7 +1394,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return list;
         }
 
-        #endregion
+        #endregion Painting
 
         #region Labels Methods
 
@@ -1472,7 +1453,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             ChartDashStyle.Solid,
                             labelInfo.CalloutPoint1,
                             labelInfo.CalloutPoint2);
-
                     }
 
                     // Get label background position
@@ -1872,7 +1852,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                     labelInfo.CalloutPoint1.X = plotAreaCenterXAbs +
                                         ((lastLabel) ? segmentInfo.EndWidth : segmentInfo.StartWidth) / 2f;
                                     labelInfo.CalloutPoint2.X = labelInfo.Position.Left;
-
                                 }
                                 else
                                 {
@@ -1893,7 +1872,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                     labelInfo.CalloutPoint1.Y += segmentInfo.Height;
                                 }
                                 labelInfo.CalloutPoint2.Y = labelInfo.CalloutPoint1.Y;
-
                             }
                         }
                     }
@@ -1963,7 +1941,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         ++interation;
                     }
-
                 }
             }
         }
@@ -2034,7 +2011,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return labelStyle;
         }
 
-        #endregion // Labels Methods
+        #endregion Labels Methods
 
         #region Position Methods
 
@@ -2056,7 +2033,7 @@ namespace WebCharts.Services.Models.ChartTypes
             if (Area.InnerPlotPosition.Auto)
             {
                 // Set a position so that data labels fit
-                // This method is called several time to adjust label position while 
+                // This method is called several time to adjust label position while
                 // funnel side angle is changed
                 int iteration = 0;
                 while (!FitPointLabels() && iteration < 5)
@@ -2069,7 +2046,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 // Just get labels position
                 GetLabelsPosition();
             }
-
         }
 
         /// <summary>
@@ -2139,7 +2115,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return plotAreaPosition;
         }
 
-        #endregion // Position Methods
+        #endregion Position Methods
 
         #region Helper Methods
 
@@ -2267,7 +2243,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         throw new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(attrValue, "CalloutLineColor"));
                     }
                 }
-
             }
 
             return color;
@@ -2310,7 +2285,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 {
                     neckSize.Height = h;
                 }
-
 
                 if (!parseSucceed || neckSize.Height < 0 || neckSize.Height > 100)
                 {
@@ -2557,7 +2531,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
                     ++pointNumber;
                 }
-
             }
         }
 
@@ -2632,7 +2605,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return valueType;
         }
 
-        #endregion // Helper Methods
+        #endregion Helper Methods
 
         #region Y & X values related methods
 
@@ -2708,7 +2681,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return point.YValues[yValueIndex];
         }
 
-        #endregion // Y & X values related methods
+        #endregion Y & X values related methods
 
         #region SmartLabelStyle methods
 
@@ -2724,16 +2697,17 @@ namespace WebCharts.Services.Models.ChartTypes
             // Fast Line chart type do not support labels
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -2744,7 +2718,8 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 
     /// <summary>
@@ -2776,7 +2751,7 @@ namespace WebCharts.Services.Models.ChartTypes
             base.funnelOutsideLabelPlacementAttributeName = CustomPropertyName.PyramidOutsideLabelPlacement;
         }
 
-        #endregion
+        #endregion Fields and Constructor
 
         #region IChartType interface implementation
 
@@ -2785,7 +2760,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         override public string Name { get { return ChartTypeNames.Pyramid; } }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Methods
 
@@ -2864,7 +2839,7 @@ namespace WebCharts.Services.Models.ChartTypes
             series.Points[pointIndex].positionRel = Graph.GetRelativePoint(pointPositionAbs);
         }
 
-        #endregion // Methods
+        #endregion Methods
     }
 
     /// <summary>
@@ -2898,7 +2873,7 @@ namespace WebCharts.Services.Models.ChartTypes
         // Segment has nothing on the bottom
         public bool NothingOnBottom = false;
 
-        #endregion // Fields
+        #endregion Fields
     }
 
     /// <summary>
@@ -2938,6 +2913,6 @@ namespace WebCharts.Services.Models.ChartTypes
         // Label callout second point
         public SKPoint CalloutPoint2 = SKPoint.Empty;
 
-        #endregion // Fields
+        #endregion Fields
     }
 }

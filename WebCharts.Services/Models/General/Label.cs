@@ -2,26 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	LabelStyle and CustomLabel classes are used to determine 
-//              chart axis labels. Labels can be automatically 
-//              generated based on the series data or be “manually” 
+//  Purpose:	LabelStyle and CustomLabel classes are used to determine
+//              chart axis labels. Labels can be automatically
+//              generated based on the series data or be “manually”
 //              set by the user.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Labels enumerations
 
@@ -45,13 +38,11 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         LineSideMark,
 
-
         /// <summary>
         /// Draws a box around the label. The box always starts at the axis position.
         /// </summary>
         Box
     };
-
 
     /// <summary>
     /// An enumeration of custom grid lines and tick marks flags used in the custom labels.
@@ -80,7 +71,6 @@ namespace WebCharts.Services.Models.General
         All = TickMark | Gridline
     }
 
-
     /// <summary>
     /// An enumeration of label styles for circular chart area axis.
     /// </summary>
@@ -106,10 +96,11 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         Radial
     }
-    #endregion
+
+    #endregion Labels enumerations
 
     /// <summary>
-    /// The CustomLabelsCollection class is a strongly typed collection of 
+    /// The CustomLabelsCollection class is a strongly typed collection of
     /// custom axis labels.
     /// </summary>
     [
@@ -127,14 +118,16 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
+
         internal Axis Axis
         {
             get { return Parent as Axis; }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Labels adding methods
 
@@ -201,10 +194,9 @@ namespace WebCharts.Services.Models.General
             return label;
         }
 
-
         /// <summary>
         /// Adds multiple custom labels to the collection.
-        /// The labels will be DateTime labels with the specified interval type, 
+        /// The labels will be DateTime labels with the specified interval type,
         /// and will be generated for the axis range that is determined by the minimum and maximum arguments.
         /// </summary>
         /// <param name="labelsStep">The label step determines how often the custom labels will be drawn.</param>
@@ -232,7 +224,6 @@ namespace WebCharts.Services.Models.General
             SuspendUpdates();
             try
             {
-
                 // Loop through all label points
                 double labelStart = fromX;
                 double labelEnd = 0;
@@ -318,7 +309,7 @@ namespace WebCharts.Services.Models.General
 
         /// <summary>
         /// Adds multiple custom labels to the collection.
-        /// The labels will be DateTime labels with the specified interval type, 
+        /// The labels will be DateTime labels with the specified interval type,
         /// and will be generated for the axis range that is determined by the minimum and maximum arguments.
         /// </summary>
         /// <param name="labelsStep">The label step determines how often the custom labels will be drawn.</param>
@@ -330,7 +321,7 @@ namespace WebCharts.Services.Models.General
 
         /// <summary>
         /// Adds multiple custom labels to the collection.
-        /// The labels will be DateTime labels with the specified interval type, 
+        /// The labels will be DateTime labels with the specified interval type,
         /// and will be generated for the axis range that is determined by the minimum and maximum arguments.
         /// </summary>
         /// <param name="labelsStep">The label step determines how often the custom labels will be drawn.</param>
@@ -343,7 +334,7 @@ namespace WebCharts.Services.Models.General
 
         /// <summary>
         /// Adds multiple custom labels to the collection.
-        /// The labels will be DateTime labels with the specified interval type, 
+        /// The labels will be DateTime labels with the specified interval type,
         /// and will be generated for the axis range that is determined by the minimum and maximum arguments.
         /// </summary>
         /// <param name="labelsStep">The label step determines how often the custom labels will be drawn.</param>
@@ -356,13 +347,11 @@ namespace WebCharts.Services.Models.General
             Add(labelsStep, intervalType, 0, 0, format, rowIndex, markStyle);
         }
 
-        #endregion
-
+        #endregion Labels adding methods
     }
 
-
     /// <summary>
-    /// The CustomLabel class represents a single custom axis label. Text and 
+    /// The CustomLabel class represents a single custom axis label. Text and
     /// position along the axis is provided by the caller.
     /// </summary>
     [
@@ -374,6 +363,7 @@ namespace WebCharts.Services.Models.General
 
         // Private data members, which store properties values
         private double _fromPosition = 0;
+
         private double _toPosition = 0;
         private string _text = "";
         private LabelMarkStyle _labelMark = LabelMarkStyle.None;
@@ -392,11 +382,10 @@ namespace WebCharts.Services.Models.General
 
         // Image transparent color
         private SKColor _imageTransparentColor = SKColor.Empty;
+
         private Axis _axis = null;
 
-
-
-        #endregion
+        #endregion Fields and Constructors
 
         #region Constructors
 
@@ -444,7 +433,7 @@ namespace WebCharts.Services.Models.General
             _gridTick = gridTick;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Helper methods
 
@@ -465,15 +454,10 @@ namespace WebCharts.Services.Models.General
             newLabel.LabelMark = LabelMark;
             newLabel.GridTicks = GridTicks;
 
-
-
             newLabel.ToolTip = ToolTip;
             newLabel.Tag = Tag;
             newLabel.Image = Image;
             newLabel.ImageTransparentColor = ImageTransparentColor;
-
-
-
 
             return newLabel;
         }
@@ -506,7 +490,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Helper methods
 
         #region	CustomLabel properties
 
@@ -558,8 +542,6 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
-
-
 
         /// <summary>
         /// Custom label name. This property is for internal use only.
@@ -727,7 +709,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets a property which define the marks for the labels in the second row. 
+        /// Gets or sets a property which define the marks for the labels in the second row.
         /// </summary>
         [
         SRCategory("CategoryAttributeAppearance"),
@@ -747,14 +729,13 @@ namespace WebCharts.Services.Models.General
         }
 
         #endregion
-
     }
 
     /// <summary>
-    /// The LabelStyle class contains properties which define the visual appearance of 
-    /// the axis labels, their interval and position. This class is also 
-    /// responsible for calculating the position of all the labels and 
-    /// drawing them. 
+    /// The LabelStyle class contains properties which define the visual appearance of
+    /// the axis labels, their interval and position. This class is also
+    /// responsible for calculating the position of all the labels and
+    /// drawing them.
     /// </summary>
     [
         SRDescription("DescriptionAttributeLabel_Label"),
@@ -763,7 +744,7 @@ namespace WebCharts.Services.Models.General
     {
         #region Fields
 
-        // Reference to the Axis 
+        // Reference to the Axis
         private Axis _axis = null;
 
         // Private data members, which store properties values
@@ -820,7 +801,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="graph">Reference to the Chart Graphics object.</param>
         internal void PaintCircular(ChartGraphics graph)
         {
-            // Label string drawing format			
+            // Label string drawing format
             using StringFormat format = new();
             format.FormatFlags |= StringFormatFlags.LineLimit;
             format.Trimming = StringTrimming.EllipsisCharacter;
@@ -957,7 +938,7 @@ namespace WebCharts.Services.Models.General
                             labelPosition[0]);
                     }
 
-                    // Process selection region 
+                    // Process selection region
                     if (_axis.Common.ProcessModeRegions)
                     {
                         SKSize size = graph.MeasureString(circAxis.Title.Replace("\\n", "\n"), _axis.autoLabelFont ?? _font);
@@ -993,7 +974,6 @@ namespace WebCharts.Services.Models.General
 
                 ++index;
             }
-
         }
 
         /// <summary>
@@ -1048,7 +1028,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="backElements">Back elements of the axis should be drawn in 3D scene.</param>
         internal void Paint(ChartGraphics graph, bool backElements)
         {
-            // Label string drawing format			
+            // Label string drawing format
             using StringFormat format = new();
             format.FormatFlags |= StringFormatFlags.LineLimit;
             format.Trimming = StringTrimming.EllipsisCharacter;
@@ -1059,7 +1039,6 @@ namespace WebCharts.Services.Models.General
             // deliant fix-> VSTS #157848, #143286 - drawing custom label in empty axis
             if (Double.IsNaN(_axis.ViewMinimum) || Double.IsNaN(_axis.ViewMaximum))
                 return;
-
 
             // Draw labels in 3D space
             if (_axis.ChartArea.Area3DStyle.Enable3D && !_axis.ChartArea.chartAreaIsCurcular)
@@ -1230,7 +1209,6 @@ namespace WebCharts.Services.Models.General
                                     axisSeries, 0.0, DateTimeIntervalType.Number, true);
                                 ++labelIndex;
                             }
-
                         }
                     }
                     else
@@ -1243,9 +1221,7 @@ namespace WebCharts.Services.Models.General
                         }
                     }
 
-
-
-                    // Make sure label To and From coordinates are processed by one scale segment based 
+                    // Make sure label To and From coordinates are processed by one scale segment based
                     // on the label middle point position.
                     if (_axis.ScaleSegments.Count > 0)
                     {
@@ -1254,10 +1230,8 @@ namespace WebCharts.Services.Models.General
                         _axis.ScaleSegments.EnforceSegment(scaleSegment);
                     }
 
-
-
                     // Use center point instead of the To/From if label takes all scaleView
-                    // This is done to avoid issues with labels drawing with high 
+                    // This is done to avoid issues with labels drawing with high
                     // zooming levels.
                     if ((decimal)label.FromPosition < viewMin &&
                         (decimal)label.ToPosition > viewMax)
@@ -1265,7 +1239,7 @@ namespace WebCharts.Services.Models.General
                         // Indicates that chart relative coordinates should be used instead of axis values
                         useRelativeCoordiantes = true;
 
-                        // Calculate label From/To in relative coordinates using 
+                        // Calculate label From/To in relative coordinates using
                         // label middle point and 100% width.
                         labelFromRelative = _axis.GetLinearPosition(middlePoint) - 50.0;
                         labelToRelative = labelFromRelative + 100.0;
@@ -1358,7 +1332,6 @@ namespace WebCharts.Services.Models.General
                         // Adjust label rectangle if offset labels are used
                         if ((_axis.autoLabelOffset == -1) ? IsStaggered : (_axis.autoLabelOffset == 1))
                         {
-
                             var h = rect.Height / 2F;
                             rect.Bottom -= h;
                             if (labelIndex % 2 != 0F)
@@ -1611,7 +1584,7 @@ namespace WebCharts.Services.Models.General
         /// Gets position of axis labels.
         /// Top and Bottom axis labels can be drawn on the sides (left or right)
         /// of the plotting area. If angle between axis and it's projection is
-        /// between -25 and 25 degrees the axis are drawn at the bottom/top, 
+        /// between -25 and 25 degrees the axis are drawn at the bottom/top,
         /// otherwise labels are moved on the left or right side.
         /// </summary>
         /// <param name="axis">Axis object.</param>
@@ -1648,7 +1621,7 @@ namespace WebCharts.Services.Models.General
         /// <param name="backElements">Back elements of the axis should be drawn in 3D scene.</param>
         internal void Paint3D(ChartGraphics graph, bool backElements)
         {
-            // Label string drawing format			
+            // Label string drawing format
             using StringFormat format = new();
             format.Trimming = StringTrimming.EllipsisCharacter;
 
@@ -1663,8 +1636,7 @@ namespace WebCharts.Services.Models.General
             //*****************************************************************
             //** Set the labels Z position
             //*****************************************************************
-            bool axisOnEdge;
-            float labelsZPosition = _axis.GetMarksZPosition(out axisOnEdge);
+            float labelsZPosition = _axis.GetMarksZPosition(out bool axisOnEdge);
 
             // Adjust Z position for the "bent" tick marks
             bool adjustForWallWidth = false;
@@ -1745,8 +1717,8 @@ namespace WebCharts.Services.Models.General
             // Pre-calculated height of the first labels row
             float firstLabelsRowHeight = -1f;
 
-            // For 3D axis labels the first row of labels 
-            // has to be drawn after all other rows because 
+            // For 3D axis labels the first row of labels
+            // has to be drawn after all other rows because
             // of hot regions.
             for (int selectionRow = 0; selectionRow <= _axis.GetGroupLabelLevelCount(); selectionRow++)
             {
@@ -1800,7 +1772,6 @@ namespace WebCharts.Services.Models.General
                         }
                     }
 
-
                     // Calculate single label position
                     SKRect rect = rectLabels;
 
@@ -1818,7 +1789,7 @@ namespace WebCharts.Services.Models.General
                             // Adjust label rectangle if offset labels are used
                             if ((_axis.autoLabelOffset == -1) ? IsStaggered : (_axis.autoLabelOffset == 1))
                             {
-                                rect.Size = new(rect.Width / 2F,rect.Height);
+                                rect.Size = new(rect.Width / 2F, rect.Height);
                                 if (labelIndex % 2 != 0F)
                                 {
                                     rect.Left += rect.Width;
@@ -1829,7 +1800,7 @@ namespace WebCharts.Services.Models.General
                         {
                             if (!_axis.GetIsMarksNextToAxis())
                             {
-                               rect.Size = new( _axis.unRotatedLabelSize, rect.Height);
+                                rect.Size = new(_axis.unRotatedLabelSize, rect.Height);
                             }
 
                             // Adjust label rectangle if offset labels are used
@@ -1864,13 +1835,13 @@ namespace WebCharts.Services.Models.General
                         {
                             if (!_axis.GetIsMarksNextToAxis())
                             {
-                                rect.Size = new( rect.Width, _axis.unRotatedLabelSize);
+                                rect.Size = new(rect.Width, _axis.unRotatedLabelSize);
                             }
 
                             // Adjust label rectangle if offset labels are used
                             if ((_axis.autoLabelOffset == -1) ? IsStaggered : (_axis.autoLabelOffset == 1))
                             {
-                                rect.Size = new (rect.Width, rect.Height / 2F);
+                                rect.Size = new(rect.Width, rect.Height / 2F);
                                 if (labelIndex % 2 != 0F)
                                 {
                                     rect.Top += rect.Height;
@@ -1885,7 +1856,7 @@ namespace WebCharts.Services.Models.General
                     // Label is in the second row
                     else if (label.RowIndex > 0)
                     {
-                        // Hide grouping labels (where index of row > 0) when they are displayed 
+                        // Hide grouping labels (where index of row > 0) when they are displayed
                         // not on the same side as their axis. Fixes MS issue #64.
                         if (labelsPosition != _axis.AxisPosition)
                         {
@@ -1948,7 +1919,7 @@ namespace WebCharts.Services.Models.General
                         rect.Right = (float)Math.Max(fromPosition, toPosition);
                         if (rect.Width < pixelSize.Width)
                         {
-                            rect.Size = new( pixelSize.Width, rect.Height);
+                            rect.Size = new(pixelSize.Width, rect.Height);
                         }
 
                         // Adjust label To/From position if offset labels are used
@@ -1992,7 +1963,7 @@ namespace WebCharts.Services.Models.General
                         rectPoints[2] = new Point3D(rect.Right, rect.Bottom, labelsZPosition);
                         _axis.ChartArea.matrix3D.TransformPoints(rectPoints);
                         rect.Top = rectPoints[0].Y;
-                        rect.Size = new(rectPoints[1].X - rect.Left,rectPoints[2].Y - rect.Top);
+                        rect.Size = new(rectPoints[1].X - rect.Left, rectPoints[2].Y - rect.Top);
                     }
                     else if (_axis.AxisPosition == AxisPosition.Right)
                     {
@@ -2001,7 +1972,7 @@ namespace WebCharts.Services.Models.General
                         rectPoints[2] = new Point3D(rect.Left, rect.Bottom, labelsZPosition);
                         _axis.ChartArea.matrix3D.TransformPoints(rectPoints);
                         rect.Top = rectPoints[0].Y;
-                        rect.Size = new(rect.Right - rectPoints[1].X,rectPoints[2].Y - rect.Top);
+                        rect.Size = new(rect.Right - rectPoints[1].X, rectPoints[2].Y - rect.Top);
                         rect.Left = rectPoints[1].X;
                     }
                     else if (_axis.AxisPosition == AxisPosition.Top)
@@ -2015,21 +1986,21 @@ namespace WebCharts.Services.Models.General
                         if (labelsPosition == AxisPosition.Top)
                         {
                             rect.Left = rectPoints[0].X;
-                            rect.Size = new SKSize(rectPoints[2].X - rect.Left,rectPoints[1].Y - rect.Top);
+                            rect.Size = new SKSize(rectPoints[2].X - rect.Left, rectPoints[1].Y - rect.Top);
                         }
                         else if (labelsPosition == AxisPosition.Right)
                         {
                             SKRect rightLabelsRect = GetAllLabelsRect(_axis.ChartArea, labelsPosition, format);
                             rect.Top = rectPoints[0].Y;
                             rect.Left = rectPoints[1].X;
-                            rect.Size = new(rightLabelsRect.Right - rect.Left,rectPoints[2].Y - rect.Top);
+                            rect.Size = new(rightLabelsRect.Right - rect.Left, rectPoints[2].Y - rect.Top);
                         }
                         else if (labelsPosition == AxisPosition.Left)
                         {
                             SKRect rightLabelsRect = GetAllLabelsRect(_axis.ChartArea, labelsPosition, format);
                             rect.Top = rectPoints[2].Y;
                             rect.Left = rightLabelsRect.Left;
-                            rect.Size = new(rectPoints[1].X - rightLabelsRect.Left,rectPoints[0].Y - rect.Top);
+                            rect.Size = new(rectPoints[1].X - rightLabelsRect.Left, rectPoints[0].Y - rect.Top);
                         }
                     }
                     else if (_axis.AxisPosition == AxisPosition.Bottom)
@@ -2044,14 +2015,14 @@ namespace WebCharts.Services.Models.General
                         {
                             rect.Left = rectPoints[0].X;
                             rect.Top = rectPoints[1].Y;
-                            rect.Size = new(rectPoints[2].X - rect.Left,rect.Bottom - rectPoints[1].Y);
+                            rect.Size = new(rectPoints[2].X - rect.Left, rect.Bottom - rectPoints[1].Y);
                         }
                         else if (labelsPosition == AxisPosition.Right)
                         {
                             SKRect rightLabelsRect = GetAllLabelsRect(_axis.ChartArea, labelsPosition, format);
                             rect.Top = rectPoints[2].Y;
                             rect.Left = rectPoints[1].X;
-                            rect.Size = new(rightLabelsRect.Right - rect.Left,rectPoints[0].Y - rect.Top);
+                            rect.Size = new(rightLabelsRect.Right - rect.Left, rectPoints[0].Y - rect.Top);
 
                             // Adjust label rect by shifting it down by quarter of the tick size
                             if (_axis.autoLabelAngle == 0)
@@ -2064,7 +2035,7 @@ namespace WebCharts.Services.Models.General
                             SKRect rightLabelsRect = GetAllLabelsRect(_axis.ChartArea, labelsPosition, format);
                             rect.Top = rectPoints[0].Y;
                             rect.Left = rightLabelsRect.Left;
-                            rect.Size = new SKSize(rectPoints[1].X - rightLabelsRect.Left,rectPoints[2].Y - rect.Top);
+                            rect.Size = new SKSize(rectPoints[1].X - rightLabelsRect.Left, rectPoints[2].Y - rect.Top);
 
                             // Adjust label rect by shifting it down by quarter of the tick size
                             if (_axis.autoLabelAngle == 0)
@@ -2121,11 +2092,11 @@ namespace WebCharts.Services.Models.General
                     }
 
                     //********************************************************************
-                    //** NOTE: Code below improves chart labels readability in scenarios 
+                    //** NOTE: Code below improves chart labels readability in scenarios
                     //** described in MS issue #65.
                     //**
                     //** Prevent labels in the first row from overlapping the grouping
-                    //** labels in the rows below. The solution only apply to the limited 
+                    //** labels in the rows below. The solution only apply to the limited
                     //** use cases defined by the condition below.
                     //********************************************************************
                     StringFormatFlags oldFormatFlags = format.FormatFlags;
@@ -2153,14 +2124,13 @@ namespace WebCharts.Services.Models.General
                         // Resuse pre-calculated first labels row height
                         rect.Size = new(rect.Width, firstLabelsRowHeight);
 
-                        // Change current string format to prevent strings to go out of the 
+                        // Change current string format to prevent strings to go out of the
                         // specified bounding rectangle
                         if ((format.FormatFlags & StringFormatFlags.LineLimit) == 0)
                         {
                             format.FormatFlags |= StringFormatFlags.LineLimit;
                         }
                     }
-
 
                     //********************************************************************
                     //** Draw label text.
@@ -2209,13 +2179,11 @@ namespace WebCharts.Services.Models.General
             set { _axis = value; }
         }
 
-
         /// <summary>
         /// Invalidate chart picture
         /// </summary>
         internal override void Invalidate()
         {
-
             if (_axis != null)
             {
                 _axis.Invalidate();
@@ -2246,8 +2214,6 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
-
-
 
         /// <summary>
         /// Gets the interval offset.
@@ -2281,7 +2247,6 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
-
 
         /// <summary>
         /// Gets the type of the interval offset.
@@ -2323,7 +2288,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Gets the interval.
         /// </summary>
@@ -2364,7 +2328,6 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
         /// Gets the type of the interval.
         /// </summary>
@@ -2393,7 +2356,7 @@ namespace WebCharts.Services.Models.General
             }
             set
             {
-                // Turn off labels autofitting 
+                // Turn off labels autofitting
                 if (_axis != null && _axis.Common != null && _axis.Common.Chart != null && !_axis.Common.Chart.serializing)
                 {
                     _axis.IsLabelAutoFit = false;
@@ -2450,7 +2413,7 @@ namespace WebCharts.Services.Models.General
                     IsStaggered = false;
                 }
 
-                // Turn off labels autofitting 
+                // Turn off labels autofitting
                 if (_axis != null && _axis.Common != null && _axis.Common.Chart != null && !_axis.Common.Chart.serializing)
                 {
                     _axis.IsLabelAutoFit = false;
@@ -2482,7 +2445,7 @@ namespace WebCharts.Services.Models.General
                     Angle = 0;
                 }
 
-                // Turn off labels autofitting 
+                // Turn off labels autofitting
                 if (_axis != null && _axis.Common != null && _axis.Common.Chart != null && !_axis.Common.Chart.serializing)
                 {
                     _axis.IsLabelAutoFit = false;
@@ -2573,6 +2536,7 @@ namespace WebCharts.Services.Models.General
                 Invalidate();
             }
         }
+
         #endregion
 
         #region IDisposable Members
@@ -2591,6 +2555,5 @@ namespace WebCharts.Services.Models.General
         }
 
         #endregion
-
     }
 }

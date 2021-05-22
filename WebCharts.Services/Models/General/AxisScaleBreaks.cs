@@ -2,21 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Automatic scale breaks feature related classes.
 //
 
-
 using SkiaSharp;
 using System;
 using System.Collections;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Enumerations
 
@@ -66,10 +60,9 @@ namespace WebCharts.Services.Models.General
         /// Do not start the axis segment scale from zero.
         /// </summary>
         No
-
     };
 
-    #endregion // Enumerations
+    #endregion Enumerations
 
     /// <summary>
     /// <b>AxisScaleBreakStyle</b> class represents the settings that control the scale break.
@@ -87,7 +80,7 @@ namespace WebCharts.Services.Models.General
         // True if scale breaks are enabled
         private bool _enabled = false;
 
-        // AxisName of the break line 
+        // AxisName of the break line
         private BreakLineStyle _breakLineStyle = BreakLineStyle.Ragged;
 
         // Spacing between scale segments created by scale breaks
@@ -102,7 +95,7 @@ namespace WebCharts.Services.Models.General
         // Break line style
         private ChartDashStyle _breakLineDashStyle = ChartDashStyle.Solid;
 
-        // Minimum segment size in axis length percentage 
+        // Minimum segment size in axis length percentage
         private readonly double _minSegmentSize = 10.0;
 
         // Number of segments the axis is devided into to perform statistical analysis
@@ -117,7 +110,7 @@ namespace WebCharts.Services.Models.General
         // Indicates if scale segment should start from zero.
         private StartFromZero _startFromZero = StartFromZero.Auto;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructor
 
@@ -137,12 +130,12 @@ namespace WebCharts.Services.Models.General
             this.axis = axis;
         }
 
-        #endregion // Constructor
+        #endregion Constructor
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets a flag which indicates whether one of the axis segments should start its scale from zero 
+        /// Gets or sets a flag which indicates whether one of the axis segments should start its scale from zero
         /// when scale break is used.
         /// </summary>
         /// <remarks>
@@ -191,7 +184,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Minimum axis scale region size, in percentage of the total axis length, 
+        /// Minimum axis scale region size, in percentage of the total axis length,
         /// that can be collapsed with the scale break.
         /// </summary>
         [
@@ -343,7 +336,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Helper Methods
 
@@ -402,14 +395,12 @@ namespace WebCharts.Services.Models.General
             ArrayList axisSeries = AxisScaleBreakStyle.GetAxisSeries(axis);
             foreach (Series series in axisSeries)
             {
-
                 // Some special chart type are not supported
                 if (series.ChartType == SeriesChartType.Renko ||
                     series.ChartType == SeriesChartType.PointAndFigure)
                 {
                     return false;
                 }
-
 
                 // Get chart type interface
                 IChartType chartType = axis.ChartArea.Common.ChartTypeRegistry.GetChartType(series.ChartTypeName);
@@ -473,7 +464,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Helper Methods
+        #endregion Helper Methods
 
         #region Series StatisticFormula Methods
 
@@ -527,7 +518,7 @@ namespace WebCharts.Services.Models.General
                         ++index;
                     }
 
-                    // Defined axis scale segments cannot overlap. 
+                    // Defined axis scale segments cannot overlap.
                     // Check for overlapping and join segments or readjust min/max.
                     bool adjustPosition = false;
                     AxisScaleSegment prevSegment = axisSegments[0];
@@ -588,8 +579,8 @@ namespace WebCharts.Services.Models.General
                         index == (axisSegments.Count - 1))
                     {
                         // Check if setting minimum scale to zero will make the
-                        // data points in the segment hard to read. This may hapen 
-                        // when the distance from zero to current minimum is 
+                        // data points in the segment hard to read. This may hapen
+                        // when the distance from zero to current minimum is
                         // significantly larger than current scale size.
                         if (StartFromZero == StartFromZero.Auto &&
                             axisScaleSegment.ScaleMinimum > 2.0 * (axisScaleSegment.ScaleMaximum - axisScaleSegment.ScaleMinimum))
@@ -665,7 +656,7 @@ namespace WebCharts.Services.Models.General
                     }
                 }
 
-                // If height is too large find largest segment 
+                // If height is too large find largest segment
                 if (totalHeight > 100.0)
                 {
                     // Adjust segment size
@@ -683,9 +674,7 @@ namespace WebCharts.Services.Models.General
                         curentPosition += axisSegments[index].Size;
                     }
                 }
-
             } while (totalHeight > 100.0);
-
         }
 
         /// <summary>
@@ -849,7 +838,6 @@ namespace WebCharts.Services.Models.General
                     doneFlag = true;
                 }
             }
-
         }
 
         /// <summary>
@@ -1032,8 +1020,6 @@ namespace WebCharts.Services.Models.General
             return false;
         }
 
-        #endregion // Series StatisticFormula Methods
+        #endregion Series StatisticFormula Methods
     }
 }
-
-

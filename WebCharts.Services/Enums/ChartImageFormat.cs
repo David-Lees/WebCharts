@@ -1,4 +1,4 @@
-﻿namespace WebCharts.Services.Enums
+﻿namespace WebCharts.Services
 {
     /// <summary>
     /// Specifies the format of the image

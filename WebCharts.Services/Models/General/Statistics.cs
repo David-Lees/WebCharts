@@ -2,47 +2,43 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	StatisticFormula class provides helper methods for statistical
 //              calculations like TTest, FTest, Anova, ZTest and others.
-//              Actual calculations are made in the DataFormula class and 
-//              the StatisticFormula class mange formula parameters, input and 
+//              Actual calculations are made in the DataFormula class and
+//              the StatisticFormula class mange formula parameters, input and
 //              output series.
 //              :
 //              TTestResult, FTestResult, AnovaResult and ZTestResult
 //              classes are used to store the results of the calculatiions.
 //              :
-//              StatisticFormula class is exposed to the user through 
+//              StatisticFormula class is exposed to the user through
 //              DataManipulator.StatisticFormula property. Here is an example of
 //              using the Anova test:
 //              :
 //              AnovaResult result = Chart1.DataManipulator.StatisticFormula.Anova(0.6, "Group1,Group2,Group3");
 //              :
-//  NOTE:       First versions of the chart use single method to execute 
+//  NOTE:       First versions of the chart use single method to execute
 //              ALL formulas. Formula name and parameters were passed as
 //              strings. Input and outpat data was passed through data
 //              series.
 //              :
-//              This approach was hard to use by the end-user and was 
+//              This approach was hard to use by the end-user and was
 //              changed to a specific method for each formula. StatisticFormula
-//              class provides that simplified interface for all statistics 
+//              class provides that simplified interface for all statistics
 //              formulas. Internally it still uses the DataFormula.Formula
 //              method with string parameters.
 //
 
-
 using System;
-using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Models.DataManager;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// The StatisticFormula class provides helper methods for statistical calculations.
     /// Actual calculations are made in the DataFormula class and the StatisticFormula
-    /// class provide a simplified API which automatically prepares parameters and 
-    /// deals with input and output series. 
+    /// class provide a simplified API which automatically prepares parameters and
+    /// deals with input and output series.
     /// </summary>
     public class StatisticFormula
     {
@@ -51,11 +47,11 @@ namespace WebCharts.Services.Models.General
         // Name used for temporary data series
         private readonly string _tempOutputSeriesName = "Statistical Analyses Formula Temporary Output Series 2552003";
 
-        // Reference to the class which describes calculation settings and 
+        // Reference to the class which describes calculation settings and
         // provides access to chart common elements.
         private readonly DataFormula _formulaData = null;
 
-        #endregion // Fields
+        #endregion Fields
 
         #region Constructor
 
@@ -68,7 +64,7 @@ namespace WebCharts.Services.Models.General
             _formulaData = formulaData;
         }
 
-        #endregion // Constructor
+        #endregion Constructor
 
         #region Tests
 
@@ -137,7 +133,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return zTestResult;
-
         }
 
         /// <summary>
@@ -200,7 +195,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return tTestResult;
-
         }
 
         /// <summary>
@@ -266,7 +260,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Performs a T Test using Students distribution (T distribution) with paired samples. 
+        /// Performs a T Test using Students distribution (T distribution) with paired samples.
         /// This is useful when there is a natural pairing of observations in samples.
         /// </summary>
         /// <param name="hypothesizedMeanDifference">Hypothesized mean difference.</param>
@@ -326,7 +320,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return tTestResult;
-
         }
 
         /// <summary>
@@ -375,7 +368,6 @@ namespace WebCharts.Services.Models.General
             // Create temporary output series.
             _formulaData.Common.DataManager.Series.Add(new Series(_tempOutputSeriesName));
 
-
             // remove empty points from the collection.
             RemoveEmptyPoints(firstInputSeriesName);
             RemoveEmptyPoints(secondInputSeriesName);
@@ -404,12 +396,10 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return fTestResult;
-
         }
 
-
         /// <summary>
-        /// An Anova test is used to determine the existence, or absence of a statistically 
+        /// An Anova test is used to determine the existence, or absence of a statistically
         /// significant difference between the mean values of two or more groups of data.
         /// </summary>
         /// <param name="probability">Probability.</param>
@@ -461,7 +451,7 @@ namespace WebCharts.Services.Models.General
             return anovaResult;
         }
 
-        #endregion // Test
+        #endregion Tests
 
         #region Distributions
 
@@ -497,7 +487,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return result;
-
         }
 
         /// <summary>
@@ -507,7 +496,6 @@ namespace WebCharts.Services.Models.General
         /// <returns>Returns value from the inverse standard normal cumulative distribution function.</returns>
         public double InverseNormalDistribution(double probability)
         {
-
             // Make string with parameters
             string parameter = probability.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -547,7 +535,6 @@ namespace WebCharts.Services.Models.General
             int firstDegreeOfFreedom,
             int secondDegreeOfFreedom)
         {
-
             // Make string with parameters
             string parameter = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
             parameter += "," + firstDegreeOfFreedom.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -589,7 +576,6 @@ namespace WebCharts.Services.Models.General
             int firstDegreeOfFreedom,
             int secondDegreeOfFreedom)
         {
-
             // Make string with parameters
             string parameter = probability.ToString(System.Globalization.CultureInfo.InvariantCulture);
             parameter += "," + firstDegreeOfFreedom.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -631,7 +617,6 @@ namespace WebCharts.Services.Models.General
             int degreeOfFreedom,
             bool oneTail)
         {
-
             // Make string with parameters
             string parameter = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
             parameter += "," + degreeOfFreedom.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -643,7 +628,6 @@ namespace WebCharts.Services.Models.General
             {
                 parameter += ",2";
             }
-
 
             // Create temporary output series.
             _formulaData.Common.DataManager.Series.Add(new Series(_tempOutputSeriesName));
@@ -667,7 +651,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return result;
-
         }
 
         /// <summary>
@@ -680,7 +663,6 @@ namespace WebCharts.Services.Models.General
             double probability,
             int degreeOfFreedom)
         {
-
             // Make string with parameters
             string parameter = probability.ToString(System.Globalization.CultureInfo.InvariantCulture);
             parameter += "," + degreeOfFreedom.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -707,10 +689,9 @@ namespace WebCharts.Services.Models.General
 
             // Return result class
             return result;
-
         }
 
-        #endregion // Distributions
+        #endregion Distributions
 
         #region Correlation and Covariance
 
@@ -755,7 +736,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result
             return result;
-
         }
 
         /// <summary>
@@ -799,7 +779,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result
             return result;
-
         }
 
         /// <summary>
@@ -839,7 +818,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result
             return result;
-
         }
 
         /// <summary>
@@ -879,7 +857,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result
             return result;
-
         }
 
         /// <summary>
@@ -924,7 +901,6 @@ namespace WebCharts.Services.Models.General
 
             // Return result
             return result;
-
         }
 
         /// <summary>
@@ -977,7 +953,6 @@ namespace WebCharts.Services.Models.General
 		public double GammaFunction(
             double value)
         {
-
             // Create temporary output series.
             _formulaData.Common.DataManager.Series.Add(new Series(_tempOutputSeriesName));
 
@@ -1003,10 +978,9 @@ namespace WebCharts.Services.Models.General
 
             // Return result
             return result;
-
         }
 
-        #endregion
+        #endregion Correlation and Covariance
     }
 
     #region Output classes used to store statistical calculations results
@@ -1068,7 +1042,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal double tCriticalValueTwoTail = 0.0;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -1182,7 +1156,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 
     /// <summary>
@@ -1227,7 +1201,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal double fCriticalValueOneTail = 0.0;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -1308,7 +1282,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 
     /// <summary>
@@ -1368,7 +1342,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         internal double fCriticalValue = 0.0;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -1393,7 +1367,6 @@ namespace WebCharts.Services.Models.General
                 return sumOfSquaresWithinGroups;
             }
         }
-
 
         /// <summary>
         /// Gets the total sum of squares.
@@ -1483,7 +1456,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 
     /// <summary>
@@ -1500,12 +1473,13 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion // Constructor
+        #endregion Constructor
 
         #region Fields
 
         // Internal fields used for public properties
         internal double firstSeriesMean;
+
         internal double secondSeriesMean;
         internal double firstSeriesVariance;
         internal double secondSeriesVariance;
@@ -1515,8 +1489,7 @@ namespace WebCharts.Services.Models.General
         internal double probabilityZTwoTail;
         internal double zCriticalValueTwoTail;
 
-
-        #endregion // Fields
+        #endregion Fields
 
         #region Properties
 
@@ -1619,10 +1592,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion // Properties
+        #endregion Properties
     }
 
-    #endregion // Output Classes
+    #endregion Output classes used to store statistical calculations results
 }
-
-

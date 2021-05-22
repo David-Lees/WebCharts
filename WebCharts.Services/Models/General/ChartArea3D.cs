@@ -2,26 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	ChartArea3D class represents 3D chart area. It contains
 //              methods for coordinates transformation, drawing the 3D
 //              scene and many 3D related helper methods.
 //
 
-
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region 3D lightStyle style enumerations
 
@@ -34,17 +26,19 @@ namespace WebCharts.Services.Models.General
         /// No lighting.
         /// </summary>
         None,
+
         /// <summary>
         /// Simplistic lighting.
         /// </summary>
         Simplistic,
+
         /// <summary>
         /// Realistic lighting.
         /// </summary>
         Realistic
     }
 
-    #endregion
+    #endregion 3D lightStyle style enumerations
 
     #region 3D Center of Projetion coordinates enumeration
 
@@ -58,17 +52,19 @@ namespace WebCharts.Services.Models.General
         /// Check X coordinate.
         /// </summary>
         X = 1,
+
         /// <summary>
         /// Check Y coordinate.
         /// </summary>
         Y = 2,
+
         /// <summary>
         /// Check Z coordinate.
         /// </summary>
         Z = 4
     }
 
-    #endregion
+    #endregion 3D Center of Projetion coordinates enumeration
 
     /// <summary>
     /// The ChartArea3DStyleClass class provides the functionality for 3D attributes of chart areas,
@@ -102,7 +98,7 @@ namespace WebCharts.Services.Models.General
             _chartArea = chartArea;
         }
 
-        #endregion
+        #endregion Constructor and Initialization
 
         #region Fields
 
@@ -139,7 +135,7 @@ namespace WebCharts.Services.Models.General
         // Series points gap depth in percentages
         private int _pointGapDepth = 100;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -170,9 +166,8 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// Gets or sets a Boolean that determines if a chart area  is displayed using an isometric projection.  
+        /// Gets or sets a Boolean that determines if a chart area  is displayed using an isometric projection.
         /// </summary>
 		[
         SRCategory("CategoryAttribute3D"),
@@ -202,10 +197,9 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-
         /// <summary>
-        /// Gets or sets a Boolean value that determines if bar chart or column 
-        /// chart data series are clustered (displayed along distinct rows).  
+        /// Gets or sets a Boolean value that determines if bar chart or column
+        /// chart data series are clustered (displayed along distinct rows).
         /// </summary>
 		[
         SRCategory("CategoryAttribute3D"),
@@ -228,7 +222,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the style of lighting for a 3D chart area.  
+        /// Gets or sets the style of lighting for a 3D chart area.
         /// </summary>
         [
         SRCategory("CategoryAttribute3D"),
@@ -343,7 +337,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the width of the walls displayed in 3D chart areas.  
+        /// Gets or sets the width of the walls displayed in 3D chart areas.
         /// </summary>
         [
         SRCategory("CategoryAttribute3D"),
@@ -371,7 +365,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Gets or sets the depth of data points displayed in 3D chart areas (0-1000%).  
+        /// Gets or sets the depth of data points displayed in 3D chart areas (0-1000%).
         /// </summary>
         [
         SRCategory("CategoryAttribute3D"),
@@ -426,12 +420,12 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Properties
     }
 
     /// <summary>
-    /// ChartArea3D class represents 3D chart area. It contains all the 3D 
-    /// scene settings and methods for drawing the 3D plotting area, and calculating 
+    /// ChartArea3D class represents 3D chart area. It contains all the 3D
+    /// scene settings and methods for drawing the 3D plotting area, and calculating
     /// the depth of chart elements.
     /// </summary>
     public partial class ChartArea
@@ -489,7 +483,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
 		internal List<List<string>> seriesClusters = null;
 
-        #endregion
+        #endregion Fields
 
         #region 3D Style properties
 
@@ -511,7 +505,7 @@ namespace WebCharts.Services.Models.General
                 _area3DStyle = value;
 
                 // Initialize style object
-                _area3DStyle.Initialize((ChartArea)this);
+                _area3DStyle.Initialize(this);
             }
         }
 
@@ -531,7 +525,7 @@ namespace WebCharts.Services.Models.General
             get { return _stackGroupNames; }
         }
 
-        #endregion
+        #endregion 3D Style properties
 
         #region 3D Coordinates transfotmation methods
 
@@ -544,14 +538,14 @@ namespace WebCharts.Services.Models.General
             // Convert Z coordinates from 0-100% to axis values
             foreach (Point3D pt in points)
             {
-                pt.Z = (pt.Z / 100f) * areaSceneDepth;
+                pt.Z = pt.Z / 100f * areaSceneDepth;
             }
 
             // Transform points
             matrix3D.TransformPoints(points);
         }
 
-        #endregion
+        #endregion 3D Coordinates transfotmation methods
 
         #region 3D Scene drawing methods
 
@@ -563,7 +557,7 @@ namespace WebCharts.Services.Models.General
         internal void DrawArea3DScene(ChartGraphics graph, SKRect position)
         {
             // Reference to the chart area class
-            ChartArea chartArea = (ChartArea)this;
+            ChartArea chartArea = this;
 
             // Calculate relative size of the wall
             areaSceneWallWidth = graph.GetRelativeSize(new SKSize(Area3DStyle.WallWidth, Area3DStyle.WallWidth));
@@ -665,7 +659,7 @@ namespace WebCharts.Services.Models.General
 
             // Draw side wall on the left or right side
             wallRect2D = new(position.Left, position.Top, position.Right, position.Bottom);
-            wallRect2D.Size = new (areaSceneWallWidth.Width, wallRect2D.Height);
+            wallRect2D.Size = new(areaSceneWallWidth.Width, wallRect2D.Height);
             if (!IsSideSceneWallOnLeft())
             {
                 // Wall is on the right side
@@ -689,14 +683,13 @@ namespace WebCharts.Services.Models.General
                 wallRect2D = new(position.Left, position.Top, position.Right, position.Bottom);
                 wallRect2D.Top = position.Bottom - areaSceneWallWidth.Height;
 
-                wallRect2D.Size = new(wallRect2D.Width - areaSceneWallWidth.Width,areaSceneWallWidth.Height);
-                
+                wallRect2D.Size = new(wallRect2D.Width - areaSceneWallWidth.Width, areaSceneWallWidth.Height);
+
                 if (IsSideSceneWallOnLeft())
                 {
                     wallRect2D.Left += areaSceneWallWidth.Width;
                 }
 
-                wallZPosition = 0;
                 graph.Fill3DRectangle(
                     wallRect2D,
                     0f,
@@ -709,11 +702,10 @@ namespace WebCharts.Services.Models.General
                     chartArea.BorderDashStyle,
                     DrawingOperationTypes.DrawElement);
             }
-
         }
 
         /// <summary>
-        /// Helper method which return True if bottom wall of the 
+        /// Helper method which return True if bottom wall of the
         /// chart area scene is visible.
         /// </summary>
         /// <returns>True if bottom wall is visible.</returns>
@@ -723,7 +715,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Helper method which return True if main wall of the 
+        /// Helper method which return True if main wall of the
         /// chart area scene is displayed on the front side.
         /// </summary>
         /// <returns>True if front wall is visible.</returns>
@@ -734,7 +726,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Helper method which return True if side wall of the 
+        /// Helper method which return True if side wall of the
         /// chart area scene is displayed on the left side.
         /// </summary>
         /// <returns>True if bottom wall is visible.</returns>
@@ -743,7 +735,7 @@ namespace WebCharts.Services.Models.General
             return (Area3DStyle.Rotation > 0);
         }
 
-        #endregion
+        #endregion 3D Scene drawing methods
 
         #region 3D Scene depth claculation methods
 
@@ -754,8 +746,7 @@ namespace WebCharts.Services.Models.General
         /// <returns>The Z position of the specified series. Measured as a percentage of the chart area's depth.</returns>
         public float GetSeriesZPosition(Series series)
         {
-            float positionZ, depth;
-            GetSeriesZPositionAndDepth(series, out depth, out positionZ);
+            GetSeriesZPositionAndDepth(series, out float depth, out float positionZ);
             return ((positionZ + depth / 2f) / areaSceneDepth) * 100f;
         }
 
@@ -766,13 +757,12 @@ namespace WebCharts.Services.Models.General
         /// <returns>The depth of the specified series. Measured as a percentage of the chart area's depth.</returns>
         public float GetSeriesDepth(Series series)
         {
-            float positionZ, depth;
-            GetSeriesZPositionAndDepth(series, out depth, out positionZ);
+            GetSeriesZPositionAndDepth(series, out float depth, out _);
             return (depth / areaSceneDepth) * 100f;
         }
 
         /// <summary>
-        /// Calculates area 3D scene depth depending on the number of isClustered 
+        /// Calculates area 3D scene depth depending on the number of isClustered
         /// series and interval between points.
         /// </summary>
         /// <returns>Returns the depth of the chart area scene.</returns>
@@ -789,17 +779,17 @@ namespace WebCharts.Services.Models.General
             Series smallestIntervalSeries = null;
             if (_series.Count > 0)
             {
-                smallestIntervalSeries = Common.DataManager.Series[(string)_series[0]];
+                smallestIntervalSeries = Common.DataManager.Series[_series[0]];
             }
 
             // Get X axis
-            Axis xAxis = ((ChartArea)this).AxisX;
+            Axis xAxis = AxisX;
             if (_series.Count > 0)
             {
                 Series firstSeries = Common.DataManager.Series[_series[0]];
                 if (firstSeries != null && firstSeries.XAxisType == AxisType.Secondary)
                 {
-                    xAxis = ((ChartArea)this).AxisX2;
+                    xAxis = AxisX2;
                 }
             }
 
@@ -807,8 +797,7 @@ namespace WebCharts.Services.Models.General
             double clusteredInterval = 1;
             if (!indexedSeries)
             {
-                bool sameInterval;
-                clusteredInterval = GetPointsInterval(_series, xAxis.IsLogarithmic, xAxis.logarithmBase, false, out sameInterval, out smallestIntervalSeries);
+                clusteredInterval = GetPointsInterval(_series, xAxis.IsLogarithmic, xAxis.logarithmBase, false, out bool sameInterval, out smallestIntervalSeries);
             }
 
             //***********************************************************
@@ -827,11 +816,11 @@ namespace WebCharts.Services.Models.General
                         {
                             drawSideBySide = false;
                         }
-                        else if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                        else if (string.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
                         {
                             drawSideBySide = true;
                         }
-                        else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                        else if (string.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
                         {
                             // Do nothing
                         }
@@ -844,10 +833,10 @@ namespace WebCharts.Services.Models.General
             }
 
             // Get smallest interval categorical axis
-            Axis categoricalAxis = ((ChartArea)this).AxisX;
+            Axis categoricalAxis = AxisX;
             if (smallestIntervalSeries != null && smallestIntervalSeries.XAxisType == AxisType.Secondary)
             {
-                categoricalAxis = ((ChartArea)this).AxisX2;
+                categoricalAxis = AxisX2;
             }
 
             //***********************************************************
@@ -857,34 +846,29 @@ namespace WebCharts.Services.Models.General
             //***********************************************************
             double pointWidthSize = 0.8;
             int seriesNumber = 1;
-            if (smallestIntervalSeries != null)
+            // Check if series is side-by-side
+            if (smallestIntervalSeries != null && Area3DStyle.IsClustered && drawSideBySide)
             {
-                // Check if series is side-by-side
-                if (Area3DStyle.IsClustered && drawSideBySide)
+                // Count number of side-by-side series
+                seriesNumber = 0;
+                foreach (string seriesName in _series)
                 {
-                    // Count number of side-by-side series
-                    seriesNumber = 0;
-                    foreach (string seriesName in _series)
+                    // Get series object from name
+                    Series curSeries = Common.DataManager.Series[seriesName];
+                    if (string.Compare(curSeries.ChartTypeName, smallestIntervalSeries.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        // Get series object from name
-                        Series curSeries = Common.DataManager.Series[seriesName];
-                        if (String.Compare(curSeries.ChartTypeName, smallestIntervalSeries.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0)
-                        {
-                            ++seriesNumber;
-                        }
+                        ++seriesNumber;
                     }
                 }
             }
 
-
-
             //***********************************************************
             //** Stacked column and bar charts can be drawn side-by-side
-            //** using the StackGroupName custom properties. The code 
+            //** using the StackGroupName custom properties. The code
             //** checks if multiple groups are used how many of these
             //** groups exsist.
             //**
-            //** If isClustered mode enabled each stack group is drawn 
+            //** If isClustered mode enabled each stack group is drawn
             //** using it's own cluster.
             //***********************************************************
             if (smallestIntervalSeries != null && Area3DStyle.IsClustered)
@@ -918,8 +902,6 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-
-
             //***********************************************************
             //** Check if series provide custom value for point\gap depth
             //***********************************************************
@@ -945,7 +927,6 @@ namespace WebCharts.Services.Models.General
                     ref _pointsDepth,
                     ref _pointsGapDepth);
             }
-
 
             //***********************************************************
             //** Calculate scene depth
@@ -973,8 +954,6 @@ namespace WebCharts.Services.Models.General
             positionZ = (float)(_pointsGapDepth / 2.0 + (_pointsDepth + _pointsGapDepth) * seriesIndex);
         }
 
-
-
         /// <summary>
         /// Returns number of clusters on the Z axis.
         /// </summary>
@@ -984,8 +963,8 @@ namespace WebCharts.Services.Models.General
             if (seriesClusters == null)
             {
                 // Lists that hold processed chart types and stacked groups
-                ArrayList processedChartTypes = new ArrayList();
-                ArrayList processedStackedGroups = new ArrayList();
+                ArrayList processedChartTypes = new();
+                ArrayList processedStackedGroups = new();
 
                 // Reset series cluster list
                 seriesClusters = new List<List<string>>();
@@ -997,7 +976,7 @@ namespace WebCharts.Services.Models.General
                     // Get series object by name
                     Series curSeries = Common.DataManager.Series[seriesName];
 
-                    // Check if stacked chart type is using multiple groups that 
+                    // Check if stacked chart type is using multiple groups that
                     // can be displayed in individual clusters
                     if (!Area3DStyle.IsClustered &&
                         Common.ChartTypeRegistry.GetChartType(curSeries.ChartTypeName).SupportStackedGroups)
@@ -1033,7 +1012,6 @@ namespace WebCharts.Services.Models.General
                             processedStackedGroups.Add(stackGroupName);
                         }
                     }
-
 
                     // Chech if series is displayed in the same cluster than other series
                     else if (Common.ChartTypeRegistry.GetChartType(curSeries.ChartTypeName).Stacked ||
@@ -1123,18 +1101,16 @@ namespace WebCharts.Services.Models.General
             return 0;
         }
 
-
-
-        #endregion
+        #endregion 3D Scene depth claculation methods
 
         #region 3D Scene helper methods
 
         /// <summary>
-        /// This method is used to calculate estimated scene 
-        /// depth. Regular scene depth method can not be used 
-        /// because Plot area position is zero. Instead, Chart 
-        /// area position is used to find depth of the scene. 
-        /// Algorithm which draws axis labels will decide what 
+        /// This method is used to calculate estimated scene
+        /// depth. Regular scene depth method can not be used
+        /// because Plot area position is zero. Instead, Chart
+        /// area position is used to find depth of the scene.
+        /// Algorithm which draws axis labels will decide what
         /// should be size and position of plotting area.
         /// </summary>
         /// <returns>Returns estimated scene depth</returns>
@@ -1144,10 +1120,8 @@ namespace WebCharts.Services.Models.General
 
             ChartArea area = (ChartArea)this;
 
-
             // Reset current list of clusters
             seriesClusters = null;
-
 
             ElementPosition plottingAreaRect = area.InnerPlotPosition;
 
@@ -1167,7 +1141,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Estimate Interval for 3D Charts. When scene is rotated the 
+        /// Estimate Interval for 3D Charts. When scene is rotated the
         /// number of labels should be changed.
         /// </summary>
         /// <param name="graph">Chart graphics object.</param>
@@ -1212,7 +1186,7 @@ namespace WebCharts.Services.Models.General
                 yAngle,
                 Area3DStyle.Perspective,
                 Area3DStyle.IsRightAngleAxes);
-            bool notUsed;
+            
             float zPosition;
             double size;
 
@@ -1220,7 +1194,6 @@ namespace WebCharts.Services.Models.General
 
             if (area.switchValueAxes)
             {
-
                 // X Axis
                 zPosition = axisX.GetMarksZPosition(out _);
 
@@ -1272,7 +1245,7 @@ namespace WebCharts.Services.Models.General
                 points[7] = new Point3D(plottingRect.Left, plottingRect.Bottom, zPosition);
             }
 
-            // Crossing has to be reset because interval and 
+            // Crossing has to be reset because interval and
             // sometimes minimum and maximum are changed.
             foreach (Axis axis in area.Axes)
             {
@@ -1290,13 +1263,13 @@ namespace WebCharts.Services.Models.General
                     (points[axisIndx].X - points[axisIndx + 1].X) * (points[axisIndx].X - points[axisIndx + 1].X) +
                     (points[axisIndx].Y - points[axisIndx + 1].Y) * (points[axisIndx].Y - points[axisIndx + 1].Y));
 
-                // At the beginning plotting area chart is not calculated because 
-                // algorithm for labels calculates plotting area position. To 
-                // calculate labels position we need interval and interval 
-                // need this correction. Because of that Chart area is used 
-                // instead of plotting area position. If secondary label is 
-                // enabled error for using chart area position instead of 
-                // plotting area position is much bigger. This value 
+                // At the beginning plotting area chart is not calculated because
+                // algorithm for labels calculates plotting area position. To
+                // calculate labels position we need interval and interval
+                // need this correction. Because of that Chart area is used
+                // instead of plotting area position. If secondary label is
+                // enabled error for using chart area position instead of
+                // plotting area position is much bigger. This value
                 // corrects this error.
                 float plottingChartAreaCorrection = 1;
                 if (!area.switchValueAxes)
@@ -1329,10 +1302,8 @@ namespace WebCharts.Services.Models.General
                     axis.interval3DCorrection = 1.0;
 
                 axisIndx += 2;
-
             }
         }
-
 
         /// <summary>
         /// Calculates real Y angle from Y angle and reverseSeriesOrder field
@@ -1378,7 +1349,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Indicates that data points in all series of this 
+        /// Indicates that data points in all series of this
         /// chart area should be drawn in reversed order.
         /// </summary>
         /// <returns>True if series points should be drawn in reversed order.</returns>
@@ -1442,20 +1413,17 @@ namespace WebCharts.Services.Models.General
         internal bool DrawSeriesToCenter()
         {
             // Check only if perspective is set
-            if (Area3DStyle.Perspective != 0)
-            {
-                // Only when Left & Right sides of plotting area are invisible
-                if ((_visibleSurfaces & SurfaceNames.Front) == 0 &&
+            // Only when Left & Right sides of plotting area are invisible
+            if (Area3DStyle.Perspective != 0 && (_visibleSurfaces & SurfaceNames.Front) == 0 &&
                     (_visibleSurfaces & SurfaceNames.Back) == 0)
-                {
-                    return true;
-                }
+            {
+                return true;
             }
 
             return false;
         }
 
-        #endregion
+        #endregion 3D Scene helper methods
 
         #region 3D Series drawing and selection methods
 
@@ -1466,7 +1434,7 @@ namespace WebCharts.Services.Models.General
         internal void PaintChartSeries3D(ChartGraphics graph)
         {
             // Reference to the chart area object
-            ChartArea area = (ChartArea)this;
+            ChartArea area = this;
 
             // Get order of series drawing
             List<Series> seriesDrawingOrder = GetSeriesDrawingOrder(_reverseSeriesOrder);
@@ -1481,7 +1449,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion 3D Series drawing and selection methods
 
         #region 3D Series & Points drawing order methods
 
@@ -1511,7 +1479,7 @@ namespace WebCharts.Services.Models.General
 		private List<Series> GetSeriesDrawingOrder(bool reverseSeriesOrder)
         {
             // Create list of series
-            List<Series> seriesList = new List<Series>();
+            List<Series> seriesList = new();
 
             // Iterate through all clusters
             foreach (List<string> seriesNames in seriesClusters)
@@ -1538,22 +1506,20 @@ namespace WebCharts.Services.Models.General
                 matrix3D.IsInitialized())
             {
                 // Get Z coordinate of Center Of Projection
-                Point3D areaProjectionCenter = new Point3D(float.NaN, float.NaN, float.NaN);
-                areaProjectionCenter = GetCenterOfProjection(COPCoordinates.Z);
+                Point3D areaProjectionCenter = GetCenterOfProjection(COPCoordinates.Z);
                 if (!float.IsNaN(areaProjectionCenter.Z))
                 {
                     // Loop through all series
                     for (int seriesIndex = 0; seriesIndex < seriesList.Count; seriesIndex++)
                     {
                         // Check if series is not empty
-                        if (((Series)seriesList[seriesIndex]).Points.Count == 0)
+                        if (seriesList[seriesIndex].Points.Count == 0)
                         {
                             continue;
                         }
 
                         // Get series Z position
-                        float seriesDepth, seriesZPosition;
-                        GetSeriesZPositionAndDepth((Series)seriesList[seriesIndex], out seriesDepth, out seriesZPosition);
+                        GetSeriesZPositionAndDepth(seriesList[seriesIndex], out _, out float seriesZPosition);
 
                         // Check if series passes the Z coordinate of Center of Projection
                         if (seriesZPosition >= areaProjectionCenter.Z)
@@ -1571,7 +1537,6 @@ namespace WebCharts.Services.Models.General
 
             return seriesList;
         }
-
 
         /// <summary>
         /// Gets number of stack groups in specified array of series names.
@@ -1624,8 +1589,6 @@ namespace WebCharts.Services.Models.General
             return 0;
         }
 
-
-
         /// <summary>
         /// Determine the order of points drawing from one or several series of the same type.
         /// </summary>
@@ -1646,10 +1609,8 @@ namespace WebCharts.Services.Models.General
             int mainYValueIndex,
             bool sideBySide)
         {
-            ChartArea area = (ChartArea)this;
-
             // Array of points in all series
-            ArrayList pointsList = new ArrayList();
+            ArrayList pointsList = new();
 
             //************************************************************
             //** Analyse input series
@@ -1657,11 +1618,10 @@ namespace WebCharts.Services.Models.General
 
             // Find the number of data series for side-by-side drawing
             double numOfSeries = 1;
-            if (area.Area3DStyle.IsClustered && !chartType.Stacked && sideBySide)
+            if (Area3DStyle.IsClustered && !chartType.Stacked && sideBySide)
             {
                 numOfSeries = seriesNamesList.Count;
             }
-
 
             // Check stacked series group names
             if (chartType.SupportStackedGroups)
@@ -1677,7 +1637,6 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-
             // Check if chart series are indexed
             bool indexedSeries = ChartHelper.IndexedSeries(Common, seriesNamesList.ToArray());
 
@@ -1690,7 +1649,6 @@ namespace WebCharts.Services.Models.General
                 // Get series object
                 Series ser = Common.DataManager.Series[(string)seriesName];
 
-
                 // Check if stacked groups present
                 if (chartType.SupportStackedGroups &&
                     _stackGroupNames != null)
@@ -1700,25 +1658,22 @@ namespace WebCharts.Services.Models.General
                     seriesIndx = GetSeriesStackGroupIndex(ser, ref groupName);
 
                     // Set current group name
-                    StackedColumnChart stackedColumnChart = chartType as StackedColumnChart;
-                    if (stackedColumnChart != null)
+                    if (chartType is StackedColumnChart stackedColumnChart)
                     {
                         stackedColumnChart.currentStackGroup = groupName;
                     }
                     else
                     {
-                        StackedBarChart stackedBarChart = chartType as StackedBarChart;
-                        if (stackedBarChart != null)
+                        if (chartType is StackedBarChart stackedBarChart)
                         {
                             stackedBarChart.currentStackGroup = groupName;
                         }
                     }
                 }
 
-
                 // Set active vertical/horizontal axis and their max/min values
-                Axis vAxis = (ser.YAxisType == AxisType.Primary) ? area.AxisY : area.AxisY2;
-                Axis hAxis = (ser.XAxisType == AxisType.Primary) ? area.AxisX : area.AxisX2;
+                Axis vAxis = (ser.YAxisType == AxisType.Primary) ? AxisY : AxisY2;
+                Axis hAxis = (ser.XAxisType == AxisType.Primary) ? AxisX : AxisX2;
 
                 // Get points interval:
                 //  - set interval to 1 for indexed series
@@ -1728,15 +1683,14 @@ namespace WebCharts.Services.Models.General
                 double interval = 1;
                 if (!indexedSeries)
                 {
-                    interval = area.GetPointsInterval(seriesNamesList, hAxis.IsLogarithmic, hAxis.logarithmBase, true, out sameInterval);
+                    interval = GetPointsInterval(seriesNamesList, hAxis.IsLogarithmic, hAxis.logarithmBase, true, out sameInterval);
                 }
 
                 // Get column width
-                double width = ser.GetPointWidth(area.Common.graph, hAxis, interval, 0.8) / numOfSeries;
+                double width = ser.GetPointWidth(Common.graph, hAxis, interval, 0.8) / numOfSeries;
 
                 // Get series depth and Z position
-                float seriesDepth, seriesZPosition;
-                GetSeriesZPositionAndDepth(ser, out seriesDepth, out seriesZPosition);
+                GetSeriesZPositionAndDepth(ser, out float seriesDepth, out float seriesZPosition);
 
                 //************************************************************
                 //** Loop through all points in series
@@ -1752,15 +1706,14 @@ namespace WebCharts.Services.Models.General
                     double xPosition;
                     if (indexedSeries)
                     {
-                        // The formula for position is based on a distance 
+                        // The formula for position is based on a distance
                         //from the grid line or nPoints position.
-                        xPosition = hAxis.GetPosition((double)index) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width;
-                        xCenterVal = hAxis.GetPosition((double)index);
-
+                        xPosition = hAxis.GetPosition(index) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width;
+                        xCenterVal = hAxis.GetPosition(index);
                     }
                     else if (sameInterval)
                     {
-                        xPosition = hAxis.GetPosition(point.XValue) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width;
+                        xPosition = hAxis.GetPosition(point.XValue) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width;
                         xCenterVal = hAxis.GetPosition(point.XValue);
                     }
                     else
@@ -1769,29 +1722,27 @@ namespace WebCharts.Services.Models.General
                         xCenterVal = hAxis.GetPosition(point.XValue);
                     }
 
-
                     //************************************************************
                     //** Create and add new DataPoint3D object
                     //************************************************************
-                    DataPoint3D pointEx = new DataPoint3D();
+                    DataPoint3D pointEx = new();
                     pointEx.indexedSeries = indexedSeries;
                     pointEx.dataPoint = point;
                     pointEx.index = index;
                     pointEx.xPosition = xPosition;
                     pointEx.xCenterVal = xCenterVal;
-                    pointEx.width = ser.GetPointWidth(area.Common.graph, hAxis, interval, 0.8) / numOfSeries;
+                    pointEx.width = ser.GetPointWidth(Common.graph, hAxis, interval, 0.8) / numOfSeries;
                     pointEx.depth = seriesDepth;
                     pointEx.zPosition = seriesZPosition;
 
                     // Set Y value and height
-                    double yValue = chartType.GetYValue(Common, area, ser, point, index - 1, mainYValueIndex);
+                    double yValue = chartType.GetYValue(Common, this, ser, point, index - 1, mainYValueIndex);
                     if (point.IsEmpty && Double.IsNaN(yValue))
                     {
                         yValue = 0.0;
                     }
                     pointEx.yPosition = vAxis.GetPosition(yValue);
-                    pointEx.height = vAxis.GetPosition(yValue - chartType.GetYValue(Common, area, ser, point, index - 1, -1));
-
+                    pointEx.height = vAxis.GetPosition(yValue - chartType.GetYValue(Common, this, ser, point, index - 1, -1));
 
                     pointsList.Add(pointEx);
                 }
@@ -1808,14 +1759,14 @@ namespace WebCharts.Services.Models.General
             //************************************************************
             if (comparer == null)
             {
-                comparer = new PointsDrawingOrderComparer((ChartArea)this, selection, coord);
+                comparer = new PointsDrawingOrderComparer(this, selection, coord);
             }
             pointsList.Sort(comparer);
 
             return pointsList;
         }
 
-        #endregion
+        #endregion 3D Series & Points drawing order methods
 
         #region Points drawing order comparer class
 
@@ -1827,17 +1778,17 @@ namespace WebCharts.Services.Models.General
             /// <summary>
             /// Chart area object reference.
             /// </summary>
-            private ChartArea _area = null;
+            private readonly ChartArea _area;
 
             /// <summary>
             /// Area X position where visible sides are switched.
             /// </summary>
-            private Point3D _areaProjectionCenter = new Point3D(float.NaN, float.NaN, float.NaN);
+            private readonly Point3D _areaProjectionCenter = new(float.NaN, float.NaN, float.NaN);
 
             /// <summary>
             /// Selection mode. Points order should be reversed.
             /// </summary>
-            private bool _selection = false;
+            private readonly bool _selection;
 
             /// <summary>
             /// Public constructor.
@@ -1860,13 +1811,13 @@ namespace WebCharts.Services.Models.General
             /// <summary>
             /// Comparer method.
             /// </summary>
-            /// <param name="o1">First object.</param>
-            /// <param name="o2">Second object.</param>
+            /// <param name="x">First object.</param>
+            /// <param name="y">Second object.</param>
             /// <returns>Comparison result.</returns>
-			public int Compare(object o1, object o2)
+			public int Compare(object x, object y)
             {
-                DataPoint3D point1 = (DataPoint3D)o1;
-                DataPoint3D point2 = (DataPoint3D)o2;
+                DataPoint3D point1 = (DataPoint3D)x;
+                DataPoint3D point2 = (DataPoint3D)y;
 
                 int result = 0;
                 if (point1.xPosition < point2.xPosition)
@@ -1879,7 +1830,6 @@ namespace WebCharts.Services.Models.General
                 }
                 else
                 {
-
                     // If X coordinate is the same - filter by Y coordinate
                     if (point1.yPosition < point2.yPosition)
                     {
@@ -1908,11 +1858,9 @@ namespace WebCharts.Services.Models.General
                             {
                                 result = 1;
                             }
-
                         }
                         else
                         {
-
                             if (yMax1 >= _areaProjectionCenter.Y && yMax2 >= _areaProjectionCenter.Y)
                             {
                                 result *= 1;
@@ -1933,7 +1881,6 @@ namespace WebCharts.Services.Models.General
                     {
                         result *= -1;
                     }
-
                 }
 
                 if (point1.xPosition != point2.xPosition)
@@ -1959,7 +1906,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Points drawing order comparer class
 
         #region Center of Projection calculation methods
 
@@ -1976,17 +1923,16 @@ namespace WebCharts.Services.Models.General
             points[1] = new Point3D(PlotAreaPosition.Right, PlotAreaPosition.Y, areaSceneDepth);
 
             // Check if surfaces (points 1 & 2) has same orientation
-            bool xSameOrientation, ySameOrientation, zSameOrientation;
             CheckSurfaceOrientation(
                 coord,
                 points[0],
                 points[1],
-                out xSameOrientation,
-                out ySameOrientation,
-                out zSameOrientation);
+                out bool xSameOrientation,
+                out bool ySameOrientation,
+                out bool zSameOrientation);
 
             // If orientation of all surfaces is the same - no futher processing is required (COP is outside of plotting area)
-            Point3D resultPoint = new Point3D(
+            Point3D resultPoint = new(
                 (xSameOrientation) ? float.NaN : 0f,
                 (ySameOrientation) ? float.NaN : 0f,
                 (zSameOrientation) ? float.NaN : 0f);
@@ -1999,8 +1945,8 @@ namespace WebCharts.Services.Models.General
 
             // Calculate the smallest interval (0.5 pixels) in relative coordinates
             SKSize interval = new(0.5f, 0.5f);
-            interval.Width = interval.Width * 100F / ((float)(Common.Width - 1));
-            interval.Height = interval.Height * 100F / ((float)(Common.Height - 1));
+            interval.Width = interval.Width * 100F / (Common.Width - 1);
+            interval.Height = interval.Height * 100F / (Common.Height - 1);
 
             // Find middle point and check it's surface orientation
             bool doneFlag = false;
@@ -2143,6 +2089,7 @@ namespace WebCharts.Services.Models.General
                 zSameOrientation = (surf1 == surf2);
             }
         }
-        #endregion
+
+        #endregion Center of Projection calculation methods
     }
 }

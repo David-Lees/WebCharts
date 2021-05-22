@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebCharts.Services.Enums
+namespace WebCharts.Services
 {
     /// <summary>
     /// An enumeration of anti-aliasing flags.
@@ -27,7 +27,5 @@ namespace WebCharts.Services.Enums
         /// Use anti-alias for everything.
         /// </summary>
         All = Text | Graphics
-
     };
-
 }

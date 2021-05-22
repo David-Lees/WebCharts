@@ -2,25 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Text annotation class.
 //
 
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
-
     /// <summary>
     /// <b>TextAnnotation</b> is a class that represents a text annotation.
     /// </summary>
     /// <remarks>
-    /// Note that other annotations do display inner text (e.g. rectangle, 
+    /// Note that other annotations do display inner text (e.g. rectangle,
     /// ellipse annotations.).
     /// </remarks>
     [
@@ -50,7 +45,7 @@ namespace WebCharts.Services.Models.Annotations
         {
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
@@ -125,7 +120,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Text Visual Attributes
 
         #region Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -163,7 +158,6 @@ namespace WebCharts.Services.Models.Annotations
             set
             {
                 base.LineWidth = value;
-
             }
         }
 
@@ -257,7 +251,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
         #region Other
 
@@ -265,8 +259,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -298,9 +292,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -454,7 +448,7 @@ namespace WebCharts.Services.Models.Annotations
             }
 
             // Draw text
-            using (SKPaint textBrush = new() { Color = ForeColor })
+            using (SKPaint textBrush = new() { Style = SKPaintStyle.Fill, Color = ForeColor })
             {
                 using StringFormat format = StringFormat.GenericTypographic;
                 //***************************************************************
@@ -567,7 +561,7 @@ namespace WebCharts.Services.Models.Annotations
             return textActualPosition;
         }
 
-        #endregion // Painting
+        #endregion Painting
 
         #region Content Size
 
@@ -583,7 +577,7 @@ namespace WebCharts.Services.Models.Annotations
                 return new SKRect(float.NaN, float.NaN, contentSize.Width, contentSize.Height);
             }
 
-            // Create temporary bitmap based chart graphics if chart was not 
+            // Create temporary bitmap based chart graphics if chart was not
             // rendered yet and the graphics was not created.
             // NOTE: Fix for issue #3978.
             SKCanvas graphics = null;
@@ -608,7 +602,7 @@ namespace WebCharts.Services.Models.Annotations
                      "W" + ReplaceKeywords(Text.Replace("\\n", "\n")),
                      Font,
                      new SKSize(2000, 2000),
-                     StringFormat.GenericTypographic, 
+                     StringFormat.GenericTypographic,
                      TextOrientation.Auto);
 
                 contentSize.Height *= 1.04f;
@@ -668,7 +662,7 @@ namespace WebCharts.Services.Models.Annotations
             return rect;
         }
 
-        #endregion
+        #endregion Content Size
 
         #region Placement Methods
 
@@ -676,27 +670,27 @@ namespace WebCharts.Services.Models.Annotations
         /// Ends user placement of an annotation.
         /// </summary>
         /// <remarks>
-        /// Ends an annotation placement operation previously started by a 
+        /// Ends an annotation placement operation previously started by a
         /// <see cref="Annotation.BeginPlacement"/> method call.
         /// <para>
         /// Calling this method is not required, since placement will automatically
-        /// end when an end user enters all required points. However, it is useful when an annotation 
+        /// end when an end user enters all required points. However, it is useful when an annotation
         /// placement operation needs to be aborted for some reason.
         /// </para>
         /// </remarks>
         override public void EndPlacement()
         {
             // Call base class
-            base.EndPlacement();            
+            base.EndPlacement();
         }
 
-        #endregion // Placement Methods
+        #endregion Placement Methods
 
-        #endregion	// Methods
+        #endregion Methods
     }
 
     /// <summary>
-    /// The <b>AnnotationSmartLabelStyle</b> class is used to store an annotation's smart 
+    /// The <b>AnnotationSmartLabelStyle</b> class is used to store an annotation's smart
     /// labels properties.
     /// <seealso cref="Annotation.SmartLabelStyle"/>
     /// </summary>
@@ -729,10 +723,9 @@ namespace WebCharts.Services.Models.Annotations
         {
         }
 
-        #endregion
+        #endregion Constructors and initialization
 
         #region Non Applicable Appearance Attributes (set as Non-Browsable)
-
 
         /// <summary>
         /// Callout style of the repositioned smart labels.
@@ -866,6 +859,6 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Non Applicable Appearance Attributes (set as Non-Browsable)
     }
 }

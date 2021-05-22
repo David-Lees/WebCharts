@@ -11,19 +11,15 @@
 
 
 using SkiaSharp;
-using System;
-using System.Drawing;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
-	/// <summary>
+    /// <summary>
     /// DoughnutChart class provide only the behaviour information for the 
     /// Doughnut chart, all the drawing routines are located in the PieChart 
     /// base class.
-	/// </summary>
-	internal class DoughnutChart : PieChart
+    /// </summary>
+    internal class DoughnutChart : PieChart
 	{
 		#region IChartType interface implementation
 

@@ -5,7 +5,7 @@
 
 using SkiaSharp;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     internal static class Pens
     {

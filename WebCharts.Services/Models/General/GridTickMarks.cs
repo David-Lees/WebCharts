@@ -2,26 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Axis tick marks and grid lines a very similar chart 
-//              elements and most of the functionality is located 
-//              in the Grid class. TickMark class is derived from 
-//              the Grid class and provides tick mark specific 
+//  Purpose:	Axis tick marks and grid lines a very similar chart
+//              elements and most of the functionality is located
+//              in the Grid class. TickMark class is derived from
+//              the Grid class and provides tick mark specific
 //              functionality.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     #region Tick marks style enumeration
 
@@ -34,25 +27,28 @@ namespace WebCharts.Services.Models.General
         /// Tickmarks are disabled.
         /// </summary>
         None,
+
         /// <summary>
         /// Tickmarks are located outside of the chart area.
         /// </summary>
         OutsideArea,
+
         /// <summary>
         /// Tickmarks are located inside of the chart area.
         /// </summary>
         InsideArea,
+
         /// <summary>
         /// Tickmarks are set across the axis line.
         /// </summary>
         AcrossAxis
     };
 
-    #endregion
+    #endregion Tick marks style enumeration
 
     /// <summary>
-    /// The TickMark class represents axis tick marks which are drawn next to 
-    /// the axis line. TickMark shares many common properties with the Grid 
+    /// The TickMark class represents axis tick marks which are drawn next to
+    /// the axis line. TickMark shares many common properties with the Grid
     /// class. This class also contains methods for tick marks drawing.
     /// </summary>
     [
@@ -84,7 +80,7 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion
+        #endregion Private fields and Constructors
 
         #region Tick marks painting method
 
@@ -97,7 +93,7 @@ namespace WebCharts.Services.Models.General
         {
             SKPoint first = SKPoint.Empty; // The First point of a tick mark
             SKPoint second = SKPoint.Empty; // The Second point of a tick mark
-            float axisPosition; // Axis position. 
+            float axisPosition; // Axis position.
 
             // Tick Marks are disabled
             if (!enabled)
@@ -106,9 +102,9 @@ namespace WebCharts.Services.Models.General
             }
 
             // ****************************************************************
-            // This code creates auto interval for auto tick marks and 
-            // gridlines. If type is not date there are always four tickmarks 
-            // or gridlines between major gridlines and tickmarks. For date 
+            // This code creates auto interval for auto tick marks and
+            // gridlines. If type is not date there are always four tickmarks
+            // or gridlines between major gridlines and tickmarks. For date
             // type interval is calculated using CalcInterval function.
             // ****************************************************************
             double oldInterval = this.interval;
@@ -171,7 +167,6 @@ namespace WebCharts.Services.Models.General
             // Get offse type
             DateTimeIntervalType offsetType = (GetIntervalOffsetType() == DateTimeIntervalType.Auto) ? GetIntervalType() : GetIntervalOffsetType();
 
-
             // ***********************************
             // Check if the AJAX zooming and scrolling mode is enabled.
             // ***********************************
@@ -197,7 +192,7 @@ namespace WebCharts.Services.Models.General
                 return;
             }
 
-            // If Maximum, minimum and interval don’t have 
+            // If Maximum, minimum and interval don’t have
             // proper value do not draw tick marks.
             if (Axis.ViewMaximum <= Axis.ViewMinimum)
             {
@@ -207,7 +202,7 @@ namespace WebCharts.Services.Models.General
             // Left tickmarks
             if (Axis.AxisPosition == AxisPosition.Left)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -234,7 +229,7 @@ namespace WebCharts.Services.Models.General
             // Right tickmarks
             else if (Axis.AxisPosition == AxisPosition.Right)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -261,7 +256,7 @@ namespace WebCharts.Services.Models.General
             // Top tickmarks
             else if (Axis.AxisPosition == AxisPosition.Top)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -288,7 +283,7 @@ namespace WebCharts.Services.Models.General
             // Bottom tickmarks
             else if (Axis.AxisPosition == AxisPosition.Bottom)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -312,7 +307,6 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-
             // Loop for drawing grid tick marks
             int counter = 0;
             int logStep = 1;
@@ -322,24 +316,23 @@ namespace WebCharts.Services.Models.General
             {
                 double logInterval = 0;
 
-                // Take an interval between gridlines. Interval 
+                // Take an interval between gridlines. Interval
                 // depends on interval type.
                 if (majorGridTick || Axis.IsLogarithmic == false)
                 {
-                    // Take an interval between tickmarks. Interval 
+                    // Take an interval between tickmarks. Interval
                     // depends on interval type.
                     interval = ChartHelper.GetIntervalSize(current, GetInterval(), GetIntervalType(), axisSeries, GetIntervalOffset(), offsetType, true);
-
                 }
-                // Code for linear minor gridlines and tickmarks 
+                // Code for linear minor gridlines and tickmarks
                 // if scale is logarithmic.
                 else
                 {
-                    // This code is used only for logarithmic scale and minor tick marks or 
-                    // gridlines which have linear minor scale in logarithmic major scale. 
-                    // This code is used to find minimum value for the interval. For example 
-                    // if logarithmic base is 2 and interval is between 4 and 8; current value 
-                    // is 5.6; this method will return linearised value for 4. This code works 
+                    // This code is used only for logarithmic scale and minor tick marks or
+                    // gridlines which have linear minor scale in logarithmic major scale.
+                    // This code is used to find minimum value for the interval. For example
+                    // if logarithmic base is 2 and interval is between 4 and 8; current value
+                    // is 5.6; this method will return linearised value for 4. This code works
                     // like Math.Floor for logarithmic scale.
                     double logMinimum = GetLogMinimum(current, axisSeries);
 
@@ -455,7 +448,7 @@ namespace WebCharts.Services.Models.General
                         }
                         else if (!Axis.ChartArea.Area3DStyle.Enable3D || Axis.ChartArea.chartAreaIsCurcular)
                         {
-                            SKRect rect = new(first.X - 0.5f, first.Y - 0.5f, first.X -  +Math.Abs(second.X - first.X) + 1, first.Y + Math.Abs(second.Y - first.Y) + 1);
+                            SKRect rect = new(first.X - 0.5f, first.Y - 0.5f, first.X - +Math.Abs(second.X - first.X) + 1, first.Y + Math.Abs(second.Y - first.Y) + 1);
 
                             Axis.Common.HotRegionsList.AddHotRegion(rect, this, ChartElementType.TickMarks, true);
                         }
@@ -464,7 +457,6 @@ namespace WebCharts.Services.Models.General
                             if (!Axis.Common.ProcessModePaint) //if ProcessModePaint is true it will be called later
                                 Draw3DTickLine(graph, first, second, backElements);
                         }
-
                     }
 
                     if (Axis.Common.ProcessModePaint)
@@ -488,7 +480,7 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-            // Used for auto interval for auto tick marks and 
+            // Used for auto interval for auto tick marks and
             // gridlines
             if (!majorGridTick)
             {
@@ -500,7 +492,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method returns linearized logarithmic value 
+        /// This method returns linearized logarithmic value
         /// which is minimum for range with interval 1.
         /// </summary>
         /// <param name="current">Current value</param>
@@ -528,7 +520,7 @@ namespace WebCharts.Services.Models.General
         {
             SKPoint first = SKPoint.Empty;  // The First point of a tick mark
             SKPoint second = SKPoint.Empty; // The Second point of a tick mark
-            float axisPosition;             // Axis position. 
+            float axisPosition;             // Axis position.
 
             // Axis scroll bar will increase size of the Outside and Cross style tick marks
             float scrollBarSize = 0;
@@ -536,7 +528,7 @@ namespace WebCharts.Services.Models.General
             // Left tickmarks
             if (Axis.AxisPosition == AxisPosition.Left)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -563,7 +555,7 @@ namespace WebCharts.Services.Models.General
             // Right tickmarks
             else if (Axis.AxisPosition == AxisPosition.Right)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -590,7 +582,7 @@ namespace WebCharts.Services.Models.General
             // Top tickmarks
             else if (Axis.AxisPosition == AxisPosition.Top)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -617,7 +609,7 @@ namespace WebCharts.Services.Models.General
             // Bottom tickmarks
             else if (Axis.AxisPosition == AxisPosition.Bottom)
             {
-                // The tick marks will follow axis or they will 
+                // The tick marks will follow axis or they will
                 // be always on the border of the chart area.
                 if (Axis.GetIsMarksNextToAxis())
                     axisPosition = (float)Axis.GetAxisPosition();
@@ -722,7 +714,6 @@ namespace WebCharts.Services.Models.General
             bool backElements
             )
         {
-
             ChartArea area = Axis.ChartArea;
 
             //*****************************************************************
@@ -887,7 +878,6 @@ namespace WebCharts.Services.Models.General
 
                         point3 = new Point3D(axisPosition, point1.Y, wallZPosition);
                         point4 = new Point3D(axisPosition, point1.Y, -_size - area.areaSceneWallWidth.Width);
-
                     }
                     else if (_style == TickMarkStyle.AcrossAxis)
                     {
@@ -920,7 +910,6 @@ namespace WebCharts.Services.Models.General
                 ChartElementType.TickMarks
                 );
 
-
             //*****************************************************************
             //** Draw tick mark (second line)
             //*****************************************************************
@@ -938,7 +927,7 @@ namespace WebCharts.Services.Models.General
             }
         }
 
-        #endregion
+        #endregion Tick marks painting method
 
         #region	TickMark properties
 
@@ -986,9 +975,9 @@ namespace WebCharts.Services.Models.General
     }
 
     /// <summary>
-    /// The Grid class represents axis grid lines which are drawn in the 
-    /// plotting area. It contains grid interval and visual appearance 
-    /// properties. This class also contains methods for grid lines drawing. 
+    /// The Grid class represents axis grid lines which are drawn in the
+    /// plotting area. It contains grid interval and visual appearance
+    /// properties. This class also contains methods for grid lines drawing.
     /// </summary>
     [
         SRDescription("DescriptionAttributeGrid_Grid")
@@ -1002,6 +991,7 @@ namespace WebCharts.Services.Models.General
 
         // Flags indicate that interval properties where changed
         internal bool intervalOffsetChanged = false;
+
         internal bool intervalChanged = false;
         internal bool intervalTypeChanged = false;
         internal bool intervalOffsetTypeChanged = false;
@@ -1010,6 +1000,7 @@ namespace WebCharts.Services.Models.General
 
         // Data members, which store properties values
         internal double intervalOffset = 0;
+
         internal double interval = 0;
         internal DateTimeIntervalType intervalType = DateTimeIntervalType.Auto;
         internal DateTimeIntervalType intervalOffsetType = DateTimeIntervalType.Auto;
@@ -1023,6 +1014,7 @@ namespace WebCharts.Services.Models.General
 
         // Common number of intervals on the numeric and date-time axis
         internal const double NumberOfIntervals = 5.0;
+
         internal const double NumberOfDateTimeIntervals = 4.0;
 
         /// <summary>
@@ -1057,7 +1049,7 @@ namespace WebCharts.Services.Models.General
                 enabled = false;
             }
 
-            // If object was first created and populated with data and then added into the axis 
+            // If object was first created and populated with data and then added into the axis
             // we need to remember changed values.
             // NOTE: Fixes issue #6237
             if (_axis == null)
@@ -1116,12 +1108,12 @@ namespace WebCharts.Services.Models.General
 
             //		internal double							interval = 0;
             //		internal DateTimeIntervalType			intervalType = DateTimeIntervalType.Auto;
-
         }
 
         #endregion
 
         #region Grid helper functions
+
         /// <summary>
         /// Gets axes to which this object attached to
         /// </summary>
@@ -1130,6 +1122,7 @@ namespace WebCharts.Services.Models.General
         {
             return _axis;
         }
+
         /// <summary>
 		/// Invalidate chart area the axis belong to.
 		/// </summary>
@@ -1183,9 +1176,9 @@ namespace WebCharts.Services.Models.General
             }
 
             // ****************************************************************
-            // This code creates auto interval for auto tick marks and 
-            // gridlines. If type is not date there are always four tickmarks 
-            // or gridlines between major gridlines and tickmarks. For date 
+            // This code creates auto interval for auto tick marks and
+            // gridlines. If type is not date there are always four tickmarks
+            // or gridlines between major gridlines and tickmarks. For date
             // type interval is calculated using CalcInterval function.
             // ****************************************************************
             double oldInterval = interval;
@@ -1218,7 +1211,6 @@ namespace WebCharts.Services.Models.General
             // Current position for grid lines is minimum
             current = _axis.ViewMinimum;
 
-
             // ***********************************
             // Check if the AJAX zooming and scrolling mode is enabled.
             // ***********************************
@@ -1242,7 +1234,7 @@ namespace WebCharts.Services.Models.General
             if ((_axis.ViewMaximum - _axis.ViewMinimum) / ChartHelper.GetIntervalSize(current, GetInterval(), GetIntervalType(), axisSeries, 0, DateTimeIntervalType.Number, true) > ChartHelper.MaxNumOfGridlines)
                 return;
 
-            // If Maximum, minimum and interval don’t have 
+            // If Maximum, minimum and interval don’t have
             // proper value do not draw grid lines.
             if (_axis.ViewMaximum <= _axis.ViewMinimum)
                 return;
@@ -1257,7 +1249,7 @@ namespace WebCharts.Services.Models.General
             decimal viewMaximum = (decimal)_axis.ViewMaximum;
             while ((decimal)current <= viewMaximum)
             {
-                // Take an interval between gridlines. Interval 
+                // Take an interval between gridlines. Interval
                 // depends on interval type.
                 if (majorGridTick || _axis.IsLogarithmic == false)
                 {
@@ -1280,15 +1272,15 @@ namespace WebCharts.Services.Models.General
                     // Move position
                     current += gridInterval;
                 }
-                // Code for linear minor gridlines and tickmarks 
+                // Code for linear minor gridlines and tickmarks
                 // if scale is logarithmic.
                 else
                 {
-                    // This code is used only for logarithmic scale and minor tick marks or 
-                    // gridlines which have linear minor scale in logarithmic major scale. 
-                    // This code is used to find minimum value for the interval. For example 
-                    // if logarithmic base is 2 and interval is between 4 and 8; current value 
-                    // is 5.6; this method will return linearised value for 4. This code works 
+                    // This code is used only for logarithmic scale and minor tick marks or
+                    // gridlines which have linear minor scale in logarithmic major scale.
+                    // This code is used to find minimum value for the interval. For example
+                    // if logarithmic base is 2 and interval is between 4 and 8; current value
+                    // is 5.6; this method will return linearised value for 4. This code works
                     // like Math.Floor for logarithmic scale.
                     double logMinimum = GetLogMinimum(current, axisSeries);
 
@@ -1334,7 +1326,7 @@ namespace WebCharts.Services.Models.General
                 }
             }
 
-            // Used for auto interval for auto tick marks and 
+            // Used for auto interval for auto tick marks and
             // gridlines
             if (!majorGridTick)
             {
@@ -1346,7 +1338,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// This method returns linearized logarithmic value 
+        /// This method returns linearized logarithmic value
         /// which is minimum for range with interval 1.
         /// </summary>
         /// <param name="current">Current value</param>
@@ -1366,7 +1358,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Draw the grid line 
+        /// Draw the grid line
         /// </summary>
         /// <param name="graph">Chart Graphics object</param>
         /// <param name="current">Current position of the gridline</param>
@@ -1421,7 +1413,6 @@ namespace WebCharts.Services.Models.General
                             path.AddLine(first.X - 1, first.Y, second.X - 1, second.Y);
                             path.AddLine(second.X + 1, second.Y, first.X + 1, first.Y);
                             path.Close();
-
                         }
                         common.HotRegionsList.AddHotRegion(path, true, ChartElementType.Gridlines, this);
                     }
@@ -1470,7 +1461,6 @@ namespace WebCharts.Services.Models.General
             SKPoint second = SKPoint.Empty; // The Second point of a grid line
             SKRect plotArea = _axis.PlotAreaPosition.ToSKRect(); // Plot area position
 
-
             // Loop through all custom labels
             foreach (CustomLabel label in _axis.CustomLabels)
             {
@@ -1486,7 +1476,6 @@ namespace WebCharts.Services.Models.General
                             second.X = plotArea.Right;
                             first.Y = (float)_axis.GetLinearPosition(position);
                             second.Y = first.Y;
-
                         }
 
                         // Vertical gridlines
@@ -1515,7 +1504,6 @@ namespace WebCharts.Services.Models.General
                                     path.AddLine(first.X - 1, first.Y, second.X - 1, second.Y);
                                     path.AddLine(second.X + 1, second.Y, first.X + 1, first.Y);
                                     path.Close();
-
                                 }
                                 common.HotRegionsList.AddHotRegion(path, true, ChartElementType.Gridlines, this);
                             }
@@ -1579,7 +1567,6 @@ namespace WebCharts.Services.Models.General
             return intervalOffset != 0d;
         }
 
-
         /// <summary>
         /// Gets the interval offset.
         /// </summary>
@@ -1588,12 +1575,10 @@ namespace WebCharts.Services.Models.General
         {
             if (majorGridTick && double.IsNaN(intervalOffset) && _axis != null)
             {
-
                 return _axis.IntervalOffset;
             }
             return intervalOffset;
         }
-
 
         /// <summary>
         /// Gets or sets the unit of measurement of grid or tick mark offset.
@@ -1703,7 +1688,6 @@ namespace WebCharts.Services.Models.General
 
                 Invalidate();
             }
-
         }
 
         /// <summary>
@@ -1779,7 +1763,6 @@ namespace WebCharts.Services.Models.General
             }
             return intervalType != DateTimeIntervalType.Auto;
         }
-
 
         /// <summary>
         /// Gets the type of the interval.

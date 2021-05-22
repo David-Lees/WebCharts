@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Chart series collection class and series properties class.
 //
-
 
 using SkiaSharp;
 using System;
@@ -14,19 +12,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.ChartTypes;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.DataManager
+namespace WebCharts.Services
 {
     #region Series enumerations
 
     /// <summary>
-    /// Chart axis type (Primary or Secondary). 
+    /// Chart axis type (Primary or Secondary).
     /// </summary>
     public enum AxisType
     {
@@ -57,7 +49,7 @@ namespace WebCharts.Services.Models.DataManager
         Descending
     }
 
-    #endregion
+    #endregion Series enumerations
 
     /// <summary>
     /// Data series collection
@@ -67,7 +59,6 @@ namespace WebCharts.Services.Models.DataManager
     ]
     public class SeriesCollection : ChartNamedElementCollection<Series>
     {
-
         #region Constructors
 
         /// <summary>
@@ -78,7 +69,7 @@ namespace WebCharts.Services.Models.DataManager
         {
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
@@ -112,9 +103,11 @@ namespace WebCharts.Services.Models.DataManager
                 }
             }
         }
-        #endregion
+
+        #endregion Methods
 
         #region Event handlers
+
         /// <summary>
         /// Updates the Series' references to ChartAreas.
         /// </summary>
@@ -138,8 +131,8 @@ namespace WebCharts.Services.Models.DataManager
                 if (series.Legend == e.OldName)
                     series.Legend = e.NewName;
         }
-        #endregion
 
+        #endregion Event handlers
     }
 
     /// <summary>
@@ -154,6 +147,7 @@ namespace WebCharts.Services.Models.DataManager
 
         // Private data members, which store properties values
         private ChartValueType _xValueType = ChartValueType.Auto;
+
         private ChartValueType _yValueType = ChartValueType.Auto;
         private bool _isXValueIndexed = false;
         private int _yValuesPerPoint = 1;
@@ -183,6 +177,7 @@ namespace WebCharts.Services.Models.DataManager
 
         // Automatic values type flags
         internal bool autoXValueType = false;
+
         internal bool autoYValueType = false;
 
         // Total Y value of all data points
@@ -215,15 +210,13 @@ namespace WebCharts.Services.Models.DataManager
         // Indicates if check for series X zero values was done
         internal bool xValuesZerosChecked = false;
 
-
         // fake data points for selector service in design time.
-        // note: in design time fake points are generated 
+        // note: in design time fake points are generated
         // with short life time - during painting.
         // this collection keep a copy of design time datapoints.
         internal DataPointCollection fakeDataPoints;
 
-
-        #endregion
+        #endregion Fields
 
         #region Series properties fields
 
@@ -402,7 +395,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         internal string labelToolTip = "";
 
-        #endregion
+        #endregion Series properties fields
 
         #region Constructors and initialization
 
@@ -492,7 +485,7 @@ namespace WebCharts.Services.Models.DataManager
             _emptyPointCustomProperties.SetDefault(true);
             _emptyPointCustomProperties.pointCustomProperties = true;
             //TODO : check if this is still needed.
-            //#if !SQLRS_CONTROL 
+            //#if !SQLRS_CONTROL
             //			    // Use transparent colors for empty points
             //			    emptyPointAttributes.Color = SKColors.Transparent;
             //			    emptyPointAttributes.BorderColor = SKColors.Transparent;
@@ -503,10 +496,9 @@ namespace WebCharts.Services.Models.DataManager
 
             // Create SmartLabelStyle style object
             _smartLabelStyle = new SmartLabelStyle(this);
-
         }
 
-        #endregion
+        #endregion Constructors and initialization
 
         #region Helper methods
 
@@ -536,8 +528,6 @@ namespace WebCharts.Services.Models.DataManager
             ref double pointDepth,
             ref double pointGapDepth)
         {
-
-
             // Check if series provide custom value for point depth in pixels
             string attribValue = this[CustomPropertyName.PixelPointDepth];
             if (attribValue != null)
@@ -597,10 +587,7 @@ namespace WebCharts.Services.Models.DataManager
                     pointGapDepth = relativeSize.Height;
                 }
             }
-
-
         }
-
 
         /// <summary>
         /// Gets data point width in relative coordinates.
@@ -634,7 +621,6 @@ namespace WebCharts.Services.Models.DataManager
             {
                 pixelPointWidth = pointSize.Height;
             }
-
 
             // Check if series provide custom value for Min point width in pixels
             bool usePixelWidth = false;
@@ -797,7 +783,6 @@ namespace WebCharts.Services.Models.DataManager
         /// <returns>True if series uses "Fast" mode chart type.</returns>
         internal bool IsFastChartType()
         {
-
             // Check if fast mode chart type is used in the series
             if (ChartType == SeriesChartType.FastLine)
             {
@@ -841,7 +826,6 @@ namespace WebCharts.Services.Models.DataManager
 
             // Unsupported parameter type
             throw (new ArgumentException(SR.ExceptionDataSeriesPointTypeUnsupported(type.ToString())));
-
         }
 
         /// <summary>
@@ -899,7 +883,7 @@ namespace WebCharts.Services.Models.DataManager
             {
                 //TODO: Check, what is needed from here...
                 //#if !SQLRS_CONTROL
-                //				Random random2 = new Random(unchecked((int)DateTime.Now.Ticks + 
+                //				Random random2 = new Random(unchecked((int)DateTime.Now.Ticks +
                 //					this.Color.B + this.Color.G + this.Color.R));
                 //#else
                 int seed = 0;
@@ -1076,13 +1060,11 @@ namespace WebCharts.Services.Models.DataManager
                 YValueType,
                 "");
 
-
             // #LEGENDTEXT - series name
             result = result.Replace(KeywordName.LegendText, LegendText);
 
             return result;
         }
-
 
         /// <summary>
         /// Helper function which replaces one keyword.
@@ -1209,7 +1191,6 @@ namespace WebCharts.Services.Models.DataManager
             return result;
         }
 
-
         /// <summary>
         /// Helper function which replaces one keyword.
         /// </summary>
@@ -1256,8 +1237,7 @@ namespace WebCharts.Services.Models.DataManager
             return result;
         }
 
-
-        #endregion
+        #endregion Helper methods
 
         #region Points sorting methods
 
@@ -1270,10 +1250,10 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Check arguments
             if (sortBy == null)
-                throw new ArgumentNullException("sortBy");
+                throw new ArgumentNullException(nameof(sortBy));
 
             // Sort items using data points comparer class
-            DataPointComparer comparer = new DataPointComparer(this, pointSortOrder, sortBy);
+            DataPointComparer comparer = new(this, pointSortOrder, sortBy);
             Points.ItemList.Sort(comparer);
 
             // Invalidate chart area only
@@ -1297,17 +1277,16 @@ namespace WebCharts.Services.Models.DataManager
         {
             // Check arguments
             if (comparer == null)
-                throw new ArgumentNullException("comparer");
+                throw new ArgumentNullException(nameof(comparer));
 
             // Sort points
             Points.ItemList.Sort(comparer);
 
             // Invalidate chart area only
             Invalidate(true, false);
-
         }
 
-        #endregion
+        #endregion Points sorting methods
 
         #region Series preparation/cleanup for drawing
 
@@ -1373,7 +1352,6 @@ namespace WebCharts.Services.Models.DataManager
             {
                 result = true;
             }
-
 
             // Reset original value type which was temp. set to String
             if (_isXValueIndexed)
@@ -1546,7 +1524,6 @@ namespace WebCharts.Services.Models.DataManager
                             point.YValues[4] = point.YValues[2] + (point.YValues[3] - point.YValues[2]) / 2;
                             point.YValues[5] = point.YValues[2] + (point.YValues[3] - point.YValues[2]) / 3;
                         }
-
                     }
                 }
 
@@ -1624,7 +1601,6 @@ namespace WebCharts.Services.Models.DataManager
             // Check if Collected slice should be displayed in Pie/Doughnut charts
             PieChart.PrepareData(this);
 
-
             // Apply palette colors to the data points
             if (applyPaletteColors)
             {
@@ -1632,7 +1608,7 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-        #endregion
+        #endregion Series preparation/cleanup for drawing
 
         #region Series Properties
 
@@ -1641,7 +1617,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         [
         SRCategory("CategoryAttributeData"),
-        
+
         SRDescription("DescriptionAttributeSeries_Name"),
         ]
         public override string Name
@@ -1685,7 +1661,6 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     Common.ChartPicture.boundToDataSource = false;
                 }
-
             }
         }
 
@@ -1719,10 +1694,8 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     Common.ChartPicture.boundToDataSource = false;
                 }
-
             }
         }
-
 
         /// <summary>
         /// Name of the Chart legend used by the series.
@@ -2001,7 +1974,6 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-
 #if SUBAXES
 
 			/// <summary>
@@ -2009,7 +1981,7 @@ namespace WebCharts.Services.Models.DataManager
 			/// </summary>
 			[
 			SRCategory("CategoryAttributeAxes"),
-			
+
 			SRDescription("DescriptionAttributeSeries_YSubAxisName"),
 			DefaultValue("")
 			]
@@ -2030,9 +2002,9 @@ namespace WebCharts.Services.Models.DataManager
 			/// Name of the X sub-axis this series is attached to.
 			/// </summary>
 			[
- 
+
 			SRCategory("CategoryAttributeAxes"),
-			
+
 			SRDescription("DescriptionAttributeSeries_XSubAxisName"),
 			DefaultValue("")
 			]
@@ -2050,6 +2022,7 @@ namespace WebCharts.Services.Models.DataManager
 			}
 
 #else // SUBAXES
+
         /// <summary>
         /// Name of the Y sub-axis this series is attached to.
         /// </summary>
@@ -2062,9 +2035,6 @@ namespace WebCharts.Services.Models.DataManager
             get
             {
                 return string.Empty;
-            }
-            set
-            {
             }
         }
 
@@ -2082,10 +2052,8 @@ namespace WebCharts.Services.Models.DataManager
             {
                 return string.Empty;
             }
-            set
-            {
-            }
         }
+
 #endif // SUBAXES
 
         /// <summary>
@@ -2245,7 +2213,6 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-
         /// <summary>
         /// Chart area in which this series is drawn.
         /// </summary>
@@ -2272,13 +2239,14 @@ namespace WebCharts.Services.Models.DataManager
                 }
             }
         }
+
         /*
                 /// <summary>
                 /// If set to true, each data point of the series will use a random color from the palette.
                 /// </summary>
                 [
                 SRCategory("CategoryAttributeChart"),
-                
+
                 SRDescription("DescriptionAttributeDataSeriesGroupID"),
                 PersistenceModeAttribute(PersistenceMode.Attribute),
                 DefaultValue("")
@@ -2295,6 +2263,7 @@ namespace WebCharts.Services.Models.DataManager
                     }
                 }
         */
+
         /// <summary>
         /// Text of X axis label.
         /// </summary>
@@ -2336,7 +2305,6 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-
         /// <summary>
         /// Series font cache is reused by points.
         /// </summary>
@@ -2346,8 +2314,7 @@ namespace WebCharts.Services.Models.DataManager
             get { return _fontCache; }
         }
 
-
-        #endregion
+        #endregion Series Properties
 
         #region Invalidating method
 
@@ -2386,11 +2353,9 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-        #endregion
+        #endregion Invalidating method
 
         #region Series Enumeration
-
-
 
         /// <summary>
         /// Series values formula type used in the keywords
@@ -2405,9 +2370,7 @@ namespace WebCharts.Services.Models.DataManager
             Last
         }
 
-
-
-        #endregion // Series Enumeration
+        #endregion Series Enumeration
 
         #region IDisposable Members
 
@@ -2443,7 +2406,6 @@ namespace WebCharts.Services.Models.DataManager
             base.Dispose(disposing);
         }
 
-
-        #endregion
+        #endregion IDisposable Members
     }
 }

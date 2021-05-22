@@ -2,38 +2,30 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	Provides 2D and 3D drawing and hit testing of the 
+//  Purpose:	Provides 2D and 3D drawing and hit testing of the
 //              Box Plot chart.
 //  ------------------
 //  Box Plot Overview:
 //  ------------------
-//  The Box Plot chart type consists of one or more box symbols that 
-//  summarize the distribution of the data within one or more data 
-//  sets. A Box Chart displays a rectangle with whisker lines 
-//  extending from both ends. What makes a Box Plot unique, in 
-//  comparison to standard chart types, is that the values for a box 
-//  plot most often are calculated values from data that is present 
-//  in another series. One box symbol, or data point, is associated 
-//  with one data series. The data for a Box Plot series may still 
+//  The Box Plot chart type consists of one or more box symbols that
+//  summarize the distribution of the data within one or more data
+//  sets. A Box Chart displays a rectangle with whisker lines
+//  extending from both ends. What makes a Box Plot unique, in
+//  comparison to standard chart types, is that the values for a box
+//  plot most often are calculated values from data that is present
+//  in another series. One box symbol, or data point, is associated
+//  with one data series. The data for a Box Plot series may still
 //  be populated using Data Binding or the Points Collection.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
     /// BoxPlotChart class provides 2D and 3D drawing and hit testing of
@@ -58,7 +50,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         protected bool showSideBySide = true;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
@@ -69,7 +61,7 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -83,15 +75,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         virtual public bool Stacked { get { return false; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return false; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return false; } }
@@ -132,8 +122,8 @@ namespace WebCharts.Services.Models.ChartTypes
         virtual public bool DataPointsInLegend { get { return false; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value ZeroCrossing should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value ZeroCrossing should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return false; } }
@@ -173,7 +163,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 6; } }
 
@@ -187,7 +177,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Painting and Selection methods
 
@@ -204,7 +194,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method recalculates size of the bars. This method is used 
+        /// This method recalculates size of the bars. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -219,7 +209,6 @@ namespace WebCharts.Services.Models.ChartTypes
             ChartArea area,
             Series seriesToDraw)
         {
-
             // Prosess 3D chart type
             if (area.Area3DStyle.Enable3D)
             {
@@ -291,7 +280,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
                 }
 
-
                 //************************************************************
                 //** Series data points loop
                 //************************************************************
@@ -324,7 +312,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         xPosition = (float)hAxis.GetPosition(xValue);
                     }
 
-
                     double yValue0 = vAxis.GetLogValue(point.YValues[0]);
                     double yValue1 = vAxis.GetLogValue(point.YValues[1]);
                     xValue = hAxis.GetLogValue(xValue);
@@ -339,7 +326,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         continue;
                     }
 
-                    // Make sure High/Low values are in data scaleView range						
+                    // Make sure High/Low values are in data scaleView range
                     double low = vAxis.GetLogValue(point.YValues[0]);
                     double high = vAxis.GetLogValue(point.YValues[1]);
 
@@ -369,12 +356,11 @@ namespace WebCharts.Services.Models.ChartTypes
 
                     if (common.ProcessModePaint)
                     {
-
                         // Check if chart is partialy in the data scaleView
                         bool clipRegionSet = false;
                         if (xValue == hAxis.ViewMinimum || xValue == hAxis.ViewMaximum)
                         {
-                            // Set clipping region for line drawing 
+                            // Set clipping region for line drawing
                             graph.SetClip(area.PlotAreaPosition.ToSKRect());
                             clipRegionSet = true;
                         }
@@ -428,7 +414,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             ser.ShadowOffset,
                             PenAlignment.Inset);
 
-
                         // Check if average line should be drawn
                         bool showAverage = true;
                         if (point.IsCustomPropertySet(CustomPropertyName.BoxPlotShowAverage) || ser.IsCustomPropertySet(CustomPropertyName.BoxPlotShowAverage))
@@ -451,7 +436,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                 throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(point[CustomPropertyName.BoxPlotShowAverage], "BoxPlotShowAverage")));
                             }
                         }
-
 
                         // Draw average line
                         SKSize relBorderWidth = graph.GetRelativeSize(new SKSize(point.BorderWidth, point.BorderWidth));
@@ -595,7 +579,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             continue;
                         }
 
-                        // Make sure High/Low values are in data scaleView range	
+                        // Make sure High/Low values are in data scaleView range
                         double high = double.MaxValue;
                         for (int valueIndex = 0; valueIndex < point.YValues.Length; valueIndex++)
                         {
@@ -808,20 +792,18 @@ namespace WebCharts.Services.Models.ChartTypes
             int markerSize,
             string markerImage)
         {
-            SKSize size = new SKSize(markerSize, markerSize);
+            SKSize size = new(markerSize, markerSize);
             if (graph != null && graph.Graphics != null)
             {
                 // Marker size is in pixels and we do the mapping for higher DPIs
                 size.Width = markerSize;
                 size.Height = markerSize;
+
+                if (markerImage.Length > 0)
+                    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
             }
-
-            if (markerImage.Length > 0)
-                common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
-
             return size;
         }
-
 
         /// <summary>
         /// Draws box plot chart data point label.
@@ -873,10 +855,10 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
 
                 // Adjust label positio to the marker size
-                SKSize markerSizes = new SKSize(0f, 0f);
+                SKSize markerSizes = new(0f, 0f);
                 if (point.MarkerStyle != MarkerStyle.None)
                 {
-                    markerSizes = graph.GetRelativeSize(new SKSize(point.MarkerSize, point.MarkerSize));
+                    markerSizes = graph.GetRelativeSize(new(point.MarkerSize, point.MarkerSize));
                     position.Y -= markerSizes.Height / 2f;
                 }
 
@@ -887,7 +869,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 if (text.Trim().Length != 0)
                 {
                     SKSize SKSizeont = SKSize.Empty;
-
 
                     // Check if Smart Labels are enabled
                     if (ser.SmartLabelStyle.Enabled)
@@ -912,8 +893,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         // Smart labels always use 0 degrees text angle
                         textAngle = 0;
                     }
-
-
 
                     // Draw label
                     if (!position.IsEmpty)
@@ -960,12 +939,12 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion Painting and Selection methods
 
         #region 3D Drawing and Selection methods
 
         /// <summary>
-        /// This method recalculates size of the bars. This method is used 
+        /// This method recalculates size of the bars. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -1053,8 +1032,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 //************************************************************
                 //** Get series depth and Z position
                 //************************************************************
-                float seriesDepth, seriesZPosition;
-                area.GetSeriesZPositionAndDepth(ser, out seriesDepth, out seriesZPosition);
+                area.GetSeriesZPositionAndDepth(ser, out float seriesDepth, out float seriesZPosition);
 
                 //************************************************************
                 //** Series data points loop
@@ -1102,7 +1080,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         continue;
                     }
 
-                    // Make sure High/Low values are in data scaleView range						
+                    // Make sure High/Low values are in data scaleView range
                     double high = vAxis.GetLogValue(point.YValues[1]);
                     double low = vAxis.GetLogValue(point.YValues[0]);
 
@@ -1145,7 +1123,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         bool clipRegionSet = false;
                         if (xValue == hAxis.ViewMinimum || xValue == hAxis.ViewMaximum)
                         {
-                            // Set clipping region for line drawing 
+                            // Set clipping region for line drawing
                             graph.SetClip(area.PlotAreaPosition.ToSKRect());
                             clipRegionSet = true;
                         }
@@ -1181,7 +1159,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         SKRect rectSize = SKRect.Empty;
                         rectSize.Left = points[0].X - width / 2;
                         rectSize.Top = points[3].Y;
-                        rectSize.Size = new(width,Math.Abs(rectSize.Top - points[2].Y));
+                        rectSize.Size = new(width, Math.Abs(rectSize.Top - points[2].Y));
                         graph.FillRectangleRel(rectSize,
                             point.Color,
                             point.BackHatchStyle,
@@ -1316,7 +1294,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         SKRect areaRect = SKRect.Empty;
                         areaRect.Left = xPosition - width / 2f;
                         areaRect.Top = (float)Math.Min(high, low);
-                        areaRect.Size = new(width,(float)Math.Max(high, low) - areaRect.Top);
+                        areaRect.Size = new(width, (float)Math.Max(high, low) - areaRect.Top);
 
                         // Add area
                         common.HotRegionsList.AddHotRegion(areaRect, point, ser.Name, index - 1);
@@ -1350,7 +1328,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             xPosition = (float)hAxis.GetPosition(xValue);
                         }
 
-
                         double yValue0 = vAxis.GetLogValue(point.YValues[0]);
                         double yValue1 = vAxis.GetLogValue(point.YValues[1]);
                         xValue = hAxis.GetLogValue(xValue);
@@ -1365,7 +1342,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             continue;
                         }
 
-                        // Make sure High/Low values are in data scaleView range						
+                        // Make sure High/Low values are in data scaleView range
                         double high = vAxis.GetLogValue(point.YValues[1]);
                         double low = vAxis.GetLogValue(point.YValues[0]);
                         if (high > vAxis.ViewMaximum)
@@ -1387,7 +1364,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             low = vAxis.ViewMinimum;
                         }
                         low = vAxis.GetLinearPosition(low);
-
 
                         // 3D Transform coordinates
                         Point3D[] points = new Point3D[2];
@@ -1465,7 +1441,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion 3D Drawing and Selection methods
 
         #region Y values related methods
 
@@ -1490,7 +1466,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return point.YValues[yValueIndex];
         }
 
-        #endregion
+        #endregion Y values related methods
 
         #region Automatic Values Calculation methods
 
@@ -1545,17 +1521,15 @@ namespace WebCharts.Services.Models.ChartTypes
                         // Get linked series and check existance
                         if (control.Series.IndexOf(linkedSeriesName) == -1)
                         {
-                            throw (new InvalidOperationException(SR.ExceptionCustomAttributeSeriesNameNotFound("BoxPlotSeries", linkedSeriesName)));
+                            throw new InvalidOperationException(SR.ExceptionCustomAttributeSeriesNameNotFound("BoxPlotSeries", linkedSeriesName));
                         }
                         Series linkedSeries = control.Series[linkedSeriesName];
 
                         // Calculate box point values
                         CalculateBoxPlotValues(ref point, linkedSeries, valueName);
                     }
-
                 }
             }
-
         }
 
         /// <summary>
@@ -1586,7 +1560,7 @@ namespace WebCharts.Services.Models.ChartTypes
             averageValue /= valueCount;
 
             // Fill array of Y values
-            List<double> yValues = new List<double>(valueCount);
+            List<double> yValues = new(valueCount);
             foreach (DataPoint point in linkedSeries.Points)
             {
                 if (!point.IsEmpty)
@@ -1608,11 +1582,10 @@ namespace WebCharts.Services.Models.ChartTypes
                 boxWhiskerPercentile = boxPoint.series[CustomPropertyName.BoxPlotWhiskerPercentile];
             }
 
-            // Check specified 
+            // Check specified
             if (boxPercentile.Length > 0)
             {
-                double percentile;
-                bool parseSucceed = double.TryParse(boxPercentile, NumberStyles.Any, CultureInfo.InvariantCulture, out percentile);
+                bool parseSucceed = double.TryParse(boxPercentile, NumberStyles.Any, CultureInfo.InvariantCulture, out double percentile);
                 if (parseSucceed)
                 {
                     requiredPercentile[2] = percentile;
@@ -1628,14 +1601,11 @@ namespace WebCharts.Services.Models.ChartTypes
 
             if (boxWhiskerPercentile.Length > 0)
             {
-
-                double percentile;
-                bool parseSucceed = double.TryParse(boxWhiskerPercentile, NumberStyles.Any, CultureInfo.InvariantCulture, out percentile);
+                bool parseSucceed = double.TryParse(boxWhiskerPercentile, NumberStyles.Any, CultureInfo.InvariantCulture, out double percentile);
                 if (parseSucceed)
                 {
                     requiredPercentile[0] = percentile;
                 }
-
 
                 if (!parseSucceed || requiredPercentile[0] < 0 || requiredPercentile[0] > 50)
                 {
@@ -1679,7 +1649,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
 
-            // Add unusual point 
+            // Add unusual point
             if (addUnusualValues)
             {
                 BoxPlotAddUnusual(ref boxPoint, yValues);
@@ -1687,14 +1657,14 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Add unusual data point 
+        /// Add unusual data point
         /// </summary>
         /// <param name="boxPoint">Data Point.</param>
         /// <param name="yValues">Y values array.</param>
         static private void BoxPlotAddUnusual(ref DataPoint boxPoint, List<double> yValues)
         {
             // Get unusual values
-            ArrayList unusualValuesList = new ArrayList();
+            ArrayList unusualValuesList = new();
             foreach (double yValue in yValues)
             {
                 if (yValue < boxPoint.YValues[0] || yValue > boxPoint.YValues[1])
@@ -1745,7 +1715,7 @@ namespace WebCharts.Services.Models.ChartTypes
             int index = 0;
             foreach (double percentile in requiredPercentile)
             {
-                // Get percentile point index 
+                // Get percentile point index
                 double percentPointIndex = (yValues.Count - 1.0) / 100.0 * percentile;
                 double percentPointIndexInteger = Math.Floor(percentPointIndex);
                 double percentPointIndexReminder = percentPointIndex - percentPointIndexInteger;
@@ -1763,11 +1733,10 @@ namespace WebCharts.Services.Models.ChartTypes
                 ++index;
             }
 
-
             return result;
         }
 
-        #endregion
+        #endregion Automatic Values Calculation methods
 
         #region SmartLabelStyle methods
 
@@ -1783,16 +1752,17 @@ namespace WebCharts.Services.Models.ChartTypes
             // No data point markers supported for SmartLabelStyle
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -1803,7 +1773,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 }
-

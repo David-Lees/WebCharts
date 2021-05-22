@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	3D borders related classes:
 //				  BorderTypeRegistry	- known borders registry.
@@ -10,17 +9,13 @@
 //				  BorderSkin	        - border visual properties.
 //
 
-
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Reflection;
 using System.Resources;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Borders3D
+namespace WebCharts.Services
 {
     #region Border style enumeration
 
@@ -28,342 +23,359 @@ namespace WebCharts.Services.Models.Borders3D
     /// Styles of the border skin.
     /// </summary>
     public enum BorderSkinStyle
-	{
-		/// <summary>
-		/// Border not used.
-		/// </summary>
-		None,
-		/// <summary>
-		/// Emboss border.
-		/// </summary>
-		Emboss,
-		/// <summary>
-		/// Raised border.
-		/// </summary>
-		Raised,
-		/// <summary>
-		/// Sunken border.
-		/// </summary>
-		Sunken,
-		/// <summary>
-		/// Thin border with rounded corners.
-		/// </summary>
-		FrameThin1,
-		/// <summary>
-		/// Thin border with rounded top corners.
-		/// </summary>
-		FrameThin2,
-		/// <summary>
-		/// Thin border with square corners.
-		/// </summary>
-		FrameThin3,
-		/// <summary>
-		/// Thin border with square outside corners and rounded inside corners.
-		/// </summary>
-		FrameThin4,
-		/// <summary>
-		/// Thin border with rounded corners and screws.
-		/// </summary>
-		FrameThin5,
-		/// <summary>
-		/// Thin border with square inside corners and rounded outside corners.
-		/// </summary>
-		FrameThin6,
-		/// <summary>
-		/// Border with rounded corners. Supports title text.
-		/// </summary>
-		FrameTitle1,
-		/// <summary>
-		/// Border with rounded top corners. Supports title text.
-		/// </summary>
-		FrameTitle2,
-		/// <summary>
-		/// Border with square corners. Supports title text.
-		/// </summary>
-		FrameTitle3,
-		/// <summary>
-		/// Border with rounded inside corners and square outside corners. Supports title text.
-		/// </summary>
-		FrameTitle4,
-		/// <summary>
-		/// Border with rounded corners and screws. Supports title text.
-		/// </summary>
-		FrameTitle5,
-		/// <summary>
-		/// Border with rounded outside corners and square inside corners. Supports title text.
-		/// </summary>
-		FrameTitle6,
-		/// <summary>
-		/// Border with rounded corners. No border on the right side. Supports title text.
-		/// </summary>
-		FrameTitle7,
-		/// <summary>
-		/// Border with rounded corners on top and bottom sides only. Supports title text.
-		/// </summary>
-		FrameTitle8
-	}
+    {
+        /// <summary>
+        /// Border not used.
+        /// </summary>
+        None,
 
-	#endregion
+        /// <summary>
+        /// Emboss border.
+        /// </summary>
+        Emboss,
 
-	/// <summary>
-	/// Drawing properties of the 3D border skin.
-	/// </summary>
-	[
-		SRDescription("DescriptionAttributeBorderSkin_BorderSkin"),
-	]
+        /// <summary>
+        /// Raised border.
+        /// </summary>
+        Raised,
+
+        /// <summary>
+        /// Sunken border.
+        /// </summary>
+        Sunken,
+
+        /// <summary>
+        /// Thin border with rounded corners.
+        /// </summary>
+        FrameThin1,
+
+        /// <summary>
+        /// Thin border with rounded top corners.
+        /// </summary>
+        FrameThin2,
+
+        /// <summary>
+        /// Thin border with square corners.
+        /// </summary>
+        FrameThin3,
+
+        /// <summary>
+        /// Thin border with square outside corners and rounded inside corners.
+        /// </summary>
+        FrameThin4,
+
+        /// <summary>
+        /// Thin border with rounded corners and screws.
+        /// </summary>
+        FrameThin5,
+
+        /// <summary>
+        /// Thin border with square inside corners and rounded outside corners.
+        /// </summary>
+        FrameThin6,
+
+        /// <summary>
+        /// Border with rounded corners. Supports title text.
+        /// </summary>
+        FrameTitle1,
+
+        /// <summary>
+        /// Border with rounded top corners. Supports title text.
+        /// </summary>
+        FrameTitle2,
+
+        /// <summary>
+        /// Border with square corners. Supports title text.
+        /// </summary>
+        FrameTitle3,
+
+        /// <summary>
+        /// Border with rounded inside corners and square outside corners. Supports title text.
+        /// </summary>
+        FrameTitle4,
+
+        /// <summary>
+        /// Border with rounded corners and screws. Supports title text.
+        /// </summary>
+        FrameTitle5,
+
+        /// <summary>
+        /// Border with rounded outside corners and square inside corners. Supports title text.
+        /// </summary>
+        FrameTitle6,
+
+        /// <summary>
+        /// Border with rounded corners. No border on the right side. Supports title text.
+        /// </summary>
+        FrameTitle7,
+
+        /// <summary>
+        /// Border with rounded corners on top and bottom sides only. Supports title text.
+        /// </summary>
+        FrameTitle8
+    }
+
+    #endregion Border style enumeration
+
+    /// <summary>
+    /// Drawing properties of the 3D border skin.
+    /// </summary>
+    [
+        SRDescription("DescriptionAttributeBorderSkin_BorderSkin"),
+    ]
     public class BorderSkin : ChartElement
-	{
+    {
         #region Fields
 
-		// Private data members, which store properties values
-		private SKColor					_pageColor = SKColors.White;
-		private BorderSkinStyle			_skinStyle = BorderSkinStyle.None;
-		private GradientStyle			_backGradientStyle = GradientStyle.None;
-		private SKColor					_backSecondaryColor = SKColor.Empty;
-		private SKColor					_backColor = SKColors.Gray;
-		private string					_backImage = "";
-		private ChartImageWrapMode		_backImageWrapMode = ChartImageWrapMode.Tile;
-		private SKColor					_backImageTransparentColor = SKColor.Empty;
-		private ChartImageAlignmentStyle			_backImageAlignment = ChartImageAlignmentStyle.TopLeft;
-		private SKColor					_borderColor = SKColors.Black;
-		private int						_borderWidth = 1;
-		private ChartDashStyle			_borderDashStyle = ChartDashStyle.NotSet;
-		private ChartHatchStyle			_backHatchStyle = ChartHatchStyle.None;
+        // Private data members, which store properties values
+        private SKColor _pageColor = SKColors.White;
 
-		#endregion
+        private BorderSkinStyle _skinStyle = BorderSkinStyle.None;
+        private GradientStyle _backGradientStyle = GradientStyle.None;
+        private SKColor _backSecondaryColor = SKColor.Empty;
+        private SKColor _backColor = SKColors.Gray;
+        private string _backImage = "";
+        private ChartImageWrapMode _backImageWrapMode = ChartImageWrapMode.Tile;
+        private SKColor _backImageTransparentColor = SKColor.Empty;
+        private ChartImageAlignmentStyle _backImageAlignment = ChartImageAlignmentStyle.TopLeft;
+        private SKColor _borderColor = SKColors.Black;
+        private int _borderWidth = 1;
+        private ChartDashStyle _borderDashStyle = ChartDashStyle.NotSet;
+        private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
 
-		#region Constructors
+        #endregion Fields
 
-		/// <summary>
-		/// Default public constructor.
-		/// </summary>
-		public BorderSkin() : base()
-		{
-		}
+        #region Constructors
 
-		/// <summary>
-		/// Constructor.
-		/// </summary>
+        /// <summary>
+        /// Default public constructor.
+        /// </summary>
+        public BorderSkin() : base()
+        {
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         /// <param name="parent">The parent chart element.</param>
-		internal BorderSkin(IChartElement parent) : base (parent)
-		{
-		}
-	
-		#endregion
+        internal BorderSkin(IChartElement parent) : base(parent)
+        {
+        }
 
-		#region Border skin properties
+        #endregion Constructors
 
-		/// <summary>
+        #region Border skin properties
+
+        /// <summary>
         /// Gets or sets the page color of a border skin.
-		/// </summary>
-		[
+        /// </summary>
+        [
         SRCategory("CategoryAttributeAppearance"),
-		SRDescription("DescriptionAttributeBorderSkin_PageColor"),
+        SRDescription("DescriptionAttributeBorderSkin_PageColor"),
         ]
         public SKColor PageColor
-		{
-			get
-			{
-				return _pageColor;
-			}
-			set
-			{
-				_pageColor = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _pageColor;
+            }
+            set
+            {
+                _pageColor = value;
+                Invalidate();
+            }
+        }
 
-
-		/// <summary>
+        /// <summary>
         /// Gets or sets the style of a border skin.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeAppearance"),
-		SRDescription("DescriptionAttributeBorderSkin_SkinStyle"),
-		]
-		public BorderSkinStyle SkinStyle
-		{
-			get
-			{
-				return _skinStyle;
-			}
-			set
-			{
-				_skinStyle = value;
-				Invalidate();
-			}
-		}
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeAppearance"),
+        SRDescription("DescriptionAttributeBorderSkin_SkinStyle"),
+        ]
+        public BorderSkinStyle SkinStyle
+        {
+            get
+            {
+                return _skinStyle;
+            }
+            set
+            {
+                _skinStyle = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the background color of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
+        SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeFrameBackColor"),
         ]
         public SKColor BackColor
-		{
-			get
-			{
-				return _backColor;
-			}
-			set
-			{
-				_backColor = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _backColor;
+            }
+            set
+            {
+                _backColor = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the border color of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
+        SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeBorderColor"),
         ]
         public SKColor BorderColor
-		{
-			get
-			{
-				return _borderColor;
-			}
-			set
-			{
-				_borderColor = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _borderColor;
+            }
+            set
+            {
+                _borderColor = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the background hatch style of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
+        SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeFrameBackHatchStyle")
         ]
         public ChartHatchStyle BackHatchStyle
-		{
-			get
-			{
-				return _backHatchStyle;
-			}
-			set
-			{
-				_backHatchStyle = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _backHatchStyle;
+            }
+            set
+            {
+                _backHatchStyle = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the background image of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
         SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeBackImage"),
         ]
         public string BackImage
-		{
-			get
-			{
-				return _backImage;
-			}
-			set
-			{
-				_backImage = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _backImage;
+            }
+            set
+            {
+                _backImage = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the drawing mode for the background image of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
+        SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeImageWrapMode"),
-		]
-		public ChartImageWrapMode BackImageWrapMode
-		{
-			get
-			{
-				return _backImageWrapMode;
-			}
-			set
-			{
-				_backImageWrapMode = value;
-				Invalidate();
-			}
-		}
+        ]
+        public ChartImageWrapMode BackImageWrapMode
+        {
+            get
+            {
+                return _backImageWrapMode;
+            }
+            set
+            {
+                _backImageWrapMode = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
-        /// Gets or sets a color which will be replaced with a transparent color 
+        /// <summary>
+        /// Gets or sets a color which will be replaced with a transparent color
         /// while drawing the background image of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
         SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeImageTransparentColor"),
         ]
         public SKColor BackImageTransparentColor
-		{
-			get
-			{
-				return _backImageTransparentColor;
-			}
-			set
-			{
-				_backImageTransparentColor = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _backImageTransparentColor;
+            }
+            set
+            {
+                _backImageTransparentColor = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
-		/// Gets or sets the background image alignment of a skin frame.
-		/// </summary>
+        /// <summary>
+        /// Gets or sets the background image alignment of a skin frame.
+        /// </summary>
         /// <remarks>
         /// Used by ClampUnscale drawing mode.
         /// </remarks>
-		[
+        [
         SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeBackImageAlign"),
-		]
-		public ChartImageAlignmentStyle BackImageAlignment
-		{
-			get
-			{
-				return _backImageAlignment;
-			}
-			set
-			{
-				_backImageAlignment = value;
-				Invalidate();
-			}
-		}
+        ]
+        public ChartImageAlignmentStyle BackImageAlignment
+        {
+            get
+            {
+                return _backImageAlignment;
+            }
+            set
+            {
+                _backImageAlignment = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the background gradient style of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
+        SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeBackGradientStyle")
         ]
         public GradientStyle BackGradientStyle
-		{
-			get
-			{
-				return _backGradientStyle;
-			}
-			set
-			{
-				_backGradientStyle = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _backGradientStyle;
+            }
+            set
+            {
+                _backGradientStyle = value;
+                Invalidate();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the secondary background color of a skin frame.
@@ -374,70 +386,70 @@ namespace WebCharts.Services.Models.Borders3D
         /// </remarks>
 		[
 
-		SRCategory("CategoryAttributeAppearance"),
-		SRDescription("DescriptionAttributeBorderSkin_FrameBackSecondaryColor"),
+        SRCategory("CategoryAttributeAppearance"),
+        SRDescription("DescriptionAttributeBorderSkin_FrameBackSecondaryColor"),
         ]
         public SKColor BackSecondaryColor
-		{
-			get
-			{
-				return _backSecondaryColor;
-			}
-			set
-			{
-				_backSecondaryColor = value;
-				Invalidate();
-			}
-		}
+        {
+            get
+            {
+                return _backSecondaryColor;
+            }
+            set
+            {
+                _backSecondaryColor = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
-		/// Gets or sets the width of the border line of a skin frame.
-		/// </summary>
-		[
+        /// <summary>
+        /// Gets or sets the width of the border line of a skin frame.
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
-		SRDescription("DescriptionAttributeBorderSkin_FrameBorderWidth"),
-		]
-		public int BorderWidth
-		{
-			get
-			{
-				return _borderWidth;
-			}
-			set
-			{
-				if(value < 0)
-				{
-					throw(new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNotPositive));
-				}
-				_borderWidth = value;
-				Invalidate();
-			}
-		}
+        SRCategory("CategoryAttributeAppearance"),
+        SRDescription("DescriptionAttributeBorderSkin_FrameBorderWidth"),
+        ]
+        public int BorderWidth
+        {
+            get
+            {
+                return _borderWidth;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw (new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNotPositive));
+                }
+                _borderWidth = value;
+                Invalidate();
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Gets or sets the style of the border line of a skin frame.
-		/// </summary>
-		[
+        /// </summary>
+        [
 
-		SRCategory("CategoryAttributeAppearance"),
-		SRDescription("DescriptionAttributeBorderSkin_FrameBorderDashStyle"),
-		]
-		public ChartDashStyle BorderDashStyle
-		{
-			get
-			{
-				return _borderDashStyle;
-			}
-			set
-			{
-				_borderDashStyle = value;
-				Invalidate();
-			}
-		}
+        SRCategory("CategoryAttributeAppearance"),
+        SRDescription("DescriptionAttributeBorderSkin_FrameBorderDashStyle"),
+        ]
+        public ChartDashStyle BorderDashStyle
+        {
+            get
+            {
+                return _borderDashStyle;
+            }
+            set
+            {
+                _borderDashStyle = value;
+                Invalidate();
+            }
+        }
 
-		#endregion
-	}
+        #endregion Border skin properties
+    }
 
     /// <summary>
     /// Keep track of all registered 3D borders.
@@ -451,9 +463,10 @@ namespace WebCharts.Services.Models.Borders3D
 
         // Storage for all registered border types
         internal Hashtable registeredBorderTypes = new(StringComparer.OrdinalIgnoreCase);
+
         private readonly Hashtable _createdBorderTypes = new(StringComparer.OrdinalIgnoreCase);
 
-        #endregion
+        #endregion Fields
 
         #region Constructors and services
 
@@ -478,7 +491,7 @@ namespace WebCharts.Services.Models.Borders3D
             throw (new ArgumentException(SR.ExceptionBorderTypeRegistryUnsupportedType(serviceType.ToString())));
         }
 
-        #endregion
+        #endregion Constructors and services
 
         #region Methods
 
@@ -563,7 +576,7 @@ namespace WebCharts.Services.Models.Borders3D
             }
         }
 
-        #endregion
+        #endregion Methods
     }
 
     /// <summary>
@@ -571,13 +584,13 @@ namespace WebCharts.Services.Models.Borders3D
     /// properties for each border type.
     /// </summary>
 	internal interface IBorderType
-	{
-		#region Properties and Method
+    {
+        #region Properties and Method
 
-		/// <summary>
-		/// Border type name.
-		/// </summary>
-		string Name			{ get; }
+        /// <summary>
+        /// Border type name.
+        /// </summary>
+        string Name { get; }
 
         /// <summary>
         /// Sets/Gets the resolution to draw with;
@@ -586,6 +599,7 @@ namespace WebCharts.Services.Models.Borders3D
         {
             set;
         }
+
         /// <summary>
         /// Draws 3D border.
         /// </summary>
@@ -604,20 +618,20 @@ namespace WebCharts.Services.Models.Borders3D
         /// <param name="borderWidth">Border Width.</param>
         /// <param name="borderDashStyle">Border Style.</param>
 		void DrawBorder(
-			ChartGraphics graph, 
-			BorderSkin borderSkin,
-			SKRect rect, 
-			SKColor backColor, 
-			ChartHatchStyle backHatchStyle, 
-			string backImage, 
-			ChartImageWrapMode backImageWrapMode, 
-			SKColor backImageTransparentColor,
-			ChartImageAlignmentStyle backImageAlign,
-			GradientStyle backGradientStyle, 
-			SKColor backSecondaryColor, 
-			SKColor borderColor, 
-			int borderWidth, 
-			ChartDashStyle borderDashStyle);
+            ChartGraphics graph,
+            BorderSkin borderSkin,
+            SKRect rect,
+            SKColor backColor,
+            ChartHatchStyle backHatchStyle,
+            string backImage,
+            ChartImageWrapMode backImageWrapMode,
+            SKColor backImageTransparentColor,
+            ChartImageAlignmentStyle backImageAlign,
+            GradientStyle backGradientStyle,
+            SKColor backSecondaryColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle);
 
         /// <summary>
         /// Adjust areas rectangle coordinate to fit the 3D border.
@@ -626,13 +640,13 @@ namespace WebCharts.Services.Models.Borders3D
         /// <param name="areasRect">Position to adjust.</param>
 		void AdjustAreasPosition(ChartGraphics graph, ref SKRect areasRect);
 
-		/// <summary>
-		/// Returns the position of the rectangular area in the border where
-		/// title should be displayed. Returns empty rect if title can't be shown in the border.
-		/// </summary>
-		/// <returns>Title position in border.</returns>
-		SKRect GetTitlePositionInBorder();
+        /// <summary>
+        /// Returns the position of the rectangular area in the border where
+        /// title should be displayed. Returns empty rect if title can't be shown in the border.
+        /// </summary>
+        /// <returns>Title position in border.</returns>
+        SKRect GetTitlePositionInBorder();
 
-		#endregion
-	}
+        #endregion Properties and Method
+    }
 }

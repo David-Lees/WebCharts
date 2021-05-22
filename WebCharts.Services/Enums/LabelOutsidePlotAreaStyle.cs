@@ -1,6 +1,4 @@
-﻿using WebCharts.Services.Models.Common;
-
-namespace WebCharts.Services.Enums
+﻿namespace WebCharts.Services
 {
     /// <summary>
     /// Data point label outside of the plotting area style.
@@ -14,14 +12,15 @@ namespace WebCharts.Services.Enums
         /// Labels can be positioned outside of the plotting area.
         /// </summary>
         Yes,
+
         /// <summary>
         /// Labels can not be positioned outside of the plotting area.
         /// </summary>
         No,
+
         /// <summary>
         /// Labels can be partially outside of the plotting area.
         /// </summary>
         Partial
     }
-
 }

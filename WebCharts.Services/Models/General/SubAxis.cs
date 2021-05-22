@@ -41,7 +41,7 @@ using System.Windows.Forms.DataVisualization.Charting.Utilities;
 using System.Windows.Forms.DataVisualization.Charting.Borders3D;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
 	/// <summary>
 	/// SubAxis class is derived from the main Axis class and provides

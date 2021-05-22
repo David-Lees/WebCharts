@@ -12,10 +12,10 @@
 
 using System;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.General;
+using WebCharts.Services;
+using WebCharts.Services;
 
-namespace WebCharts.Services.Models.Utilities
+namespace WebCharts.Services
 {
     /// <summary>
     /// ValueConverter class is used when numeric or DateTime 

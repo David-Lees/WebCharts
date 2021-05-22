@@ -2,36 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:    Stock chart requires 4 Y values High, Low, Open and Close.
 //  :
-//  The Stock chart displays opening and closing values by using 
-//  markers, which are typically lines or triangles. “OpenCloseStyle” 
-//  custom attribute may be used to control the style of the markers. 
-//  The opening values are shown by the markers on the left, and the 
+//  The Stock chart displays opening and closing values by using
+//  markers, which are typically lines or triangles. “OpenCloseStyle”
+//  custom attribute may be used to control the style of the markers.
+//  The opening values are shown by the markers on the left, and the
 //  closing values are shown by the markers on the right.
 //  :
-//  A stock chart is typically used to illustrate significant stock 
-//  price points including a stock's open, close, high, and low price 
-//  points. However, this type of chart can also be used to analyze 
-//  scientific data, because each series of data displays a high, low, 
+//  A stock chart is typically used to illustrate significant stock
+//  price points including a stock's open, close, high, and low price
+//  points. However, this type of chart can also be used to analyze
+//  scientific data, because each series of data displays a high, low,
 //  open, and close value.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     #region Open/close marks style enumeration
 
@@ -56,10 +48,10 @@ namespace WebCharts.Services.Models.ChartTypes
         Candlestick
     }
 
-    #endregion
+    #endregion Open/close marks style enumeration
 
     /// <summary>
-    /// CandleStick class provides chart unique name and changes the marking 
+    /// CandleStick class provides chart unique name and changes the marking
     /// style in the StockChart class to StockOpenCloseMarkStyle.CandleStick.
     /// </summary>
     internal class CandleStickChart : StockChart
@@ -74,7 +66,7 @@ namespace WebCharts.Services.Models.ChartTypes
             forceCandleStick = true;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -93,11 +85,11 @@ namespace WebCharts.Services.Models.ChartTypes
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
 
-        #endregion
+        #endregion IChartType interface implementation
     }
 
     /// <summary>
-    /// StockChart class provides 2D/3D drawing and hit testing 
+    /// StockChart class provides 2D/3D drawing and hit testing
     /// functionality for the Stock and CandleStick charts.
     /// </summary>
     internal class StockChart : IChartType
@@ -124,7 +116,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         protected bool forceCandleStick = false;
 
-        #endregion
+        #endregion Fields
 
         #region Constructor
 
@@ -144,7 +136,7 @@ namespace WebCharts.Services.Models.ChartTypes
             openCloseStyle = style;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region IChartType interface implementation
 
@@ -158,15 +150,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         virtual public bool Stacked { get { return false; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return false; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return false; } }
@@ -207,8 +197,8 @@ namespace WebCharts.Services.Models.ChartTypes
         virtual public bool DataPointsInLegend { get { return false; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return false; } }
@@ -248,7 +238,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 4; } }
 
@@ -261,7 +251,8 @@ namespace WebCharts.Services.Models.ChartTypes
         {
             return (SKImage)registry.ResourceManager.GetObject(Name + "ChartType");
         }
-        #endregion
+
+        #endregion IChartType interface implementation
 
         #region Painting and Selection methods
 
@@ -278,7 +269,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method recalculates size of the bars. This method is used 
+        /// This method recalculates size of the bars. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -293,14 +284,12 @@ namespace WebCharts.Services.Models.ChartTypes
             ChartArea area,
             Series seriesToDraw)
         {
-
             // Prosess 3D chart type
             if (area.Area3DStyle.Enable3D)
             {
                 ProcessChartType3D(selection, graph, common, area, seriesToDraw);
                 return;
             }
-
 
             // All data series from chart area which have Stock chart type
             List<string> typeSeries = area.GetSeriesFromChartType(Name);
@@ -342,7 +331,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     common.Chart.CallOnPrePaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
                 }
 
-
                 //************************************************************
                 //** Series data points loop
                 //************************************************************
@@ -374,7 +362,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         continue;
                     }
 
-                    // Make sure High/Low values are in data scaleView range						
+                    // Make sure High/Low values are in data scaleView range
                     double high = VAxis.GetLogValue(point.YValues[0]);
                     double low = VAxis.GetLogValue(point.YValues[1]);
 
@@ -403,12 +391,11 @@ namespace WebCharts.Services.Models.ChartTypes
 
                     if (common.ProcessModePaint)
                     {
-
                         // Check if chart is partialy in the data scaleView
                         bool clipRegionSet = false;
                         if (xValue == HAxis.ViewMinimum || xValue == HAxis.ViewMaximum)
                         {
-                            // Set clipping region for line drawing 
+                            // Set clipping region for line drawing
                             graph.SetClip(area.PlotAreaPosition.ToSKRect());
                             clipRegionSet = true;
                         }
@@ -446,7 +433,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             point,
                             ser.Name,
                             index - 1);
-
                     }
                     ++index;
                 }
@@ -482,7 +468,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         continue;
                     }
 
-                    // Make sure High/Low values are in data scaleView range						
+                    // Make sure High/Low values are in data scaleView range
                     double high = VAxis.GetLogValue(point.YValues[0]);
                     double low = VAxis.GetLogValue(point.YValues[1]);
 
@@ -575,7 +561,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                         index - 1);
                                 }
                             }
-
                         }
 
                         // Increase the markers counter
@@ -700,11 +685,10 @@ namespace WebCharts.Services.Models.ChartTypes
             bool clipRegionSet = false;
             if (style == StockOpenCloseMarkStyle.Candlestick || (xPosition - width / 2f) < area.PlotAreaPosition.X || (xPosition + width / 2f) > area.PlotAreaPosition.Right)
             {
-                // Set clipping region for line drawing 
+                // Set clipping region for line drawing
                 graph.SetClip(area.PlotAreaPosition.ToSKRect());
                 clipRegionSet = true;
             }
-
 
             // Draw open-close marks as bar
             if (forceCandleStick || style == StockOpenCloseMarkStyle.Candlestick)
@@ -803,7 +787,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 SKPoint point2 = graph.GetAbsolutePoint(new SKPoint(xPosition - width / 2f, open + height / 2f));
                 SKPoint point3 = graph.GetAbsolutePoint(new SKPoint(xPosition - width / 2f, open - height / 2f));
 
-                using SKPaint brush = new() { Color = point.Color };
+                using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.Color };
                 // Draw Open mark line
                 if (showOpen)
                 {
@@ -831,7 +815,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         graph.FillPath(brush, path);
                     }
                 }
-
             }
 
             // Draw ope-close marks as lines
@@ -951,7 +934,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 {
                     SKSize SKSizeont = SKSize.Empty;
 
-
                     // Check if Smart Labels are enabled
                     if (ser.SmartLabelStyle.Enabled)
                     {
@@ -982,10 +964,7 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         // Smart labels always use 0 degrees text angle
                         textAngle = 0;
-
                     }
-
-
 
                     // Draw label
                     if (!position.IsEmpty)
@@ -1017,9 +996,8 @@ namespace WebCharts.Services.Models.ChartTypes
                                 true);
                         }
 
-
                         // Draw label text
-                        using SKPaint brush = new() { Color = point.LabelForeColor };
+                        using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
                         graph.DrawPointLabelStringRel(
                             common,
                             text,
@@ -1042,12 +1020,12 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion Painting and Selection methods
 
         #region 3D Drawing and Selection methods
 
         /// <summary>
-        /// This method recalculates size of the bars. This method is used 
+        /// This method recalculates size of the bars. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -1062,7 +1040,6 @@ namespace WebCharts.Services.Models.ChartTypes
             ChartArea area,
             Series seriesToDraw)
         {
-
             // All data series from chart area which have Stock chart type
             List<string> typeSeries = area.GetSeriesFromChartType(Name);
 
@@ -1149,12 +1126,12 @@ namespace WebCharts.Services.Models.ChartTypes
                     bool clipRegionSet = false;
                     if (xValue == HAxis.ViewMinimum || xValue == HAxis.ViewMaximum)
                     {
-                        // Set clipping region for line drawing 
+                        // Set clipping region for line drawing
                         graph.SetClip(area.PlotAreaPosition.ToSKRect());
                         clipRegionSet = true;
                     }
 
-                    // Make sure High/Low values are in data scaleView range						
+                    // Make sure High/Low values are in data scaleView range
                     double high = VAxis.GetLogValue(point.YValues[0]);
                     double low = VAxis.GetLogValue(point.YValues[1]);
 
@@ -1222,7 +1199,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             point,
                             ser.Name,
                             index - 1);
-
                     }
 
                     ++index;
@@ -1258,7 +1234,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         continue;
                     }
 
-                    // Make sure High/Low values are in data scaleView range						
+                    // Make sure High/Low values are in data scaleView range
                     double high = VAxis.GetLogValue(point.YValues[0]);
                     double low = VAxis.GetLogValue(point.YValues[1]);
 
@@ -1281,7 +1257,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         low = VAxis.ViewMinimum;
                     }
                     low = VAxis.GetLinearPosition(low);
-
 
                     // 3D Transform coordinates
                     Point3D[] points = new Point3D[2];
@@ -1487,11 +1462,10 @@ namespace WebCharts.Services.Models.ChartTypes
             bool clipRegionSet = false;
             if ((xPosition - width / 2f) < area.PlotAreaPosition.X || (xPosition + width / 2f) > area.PlotAreaPosition.Right)
             {
-                // Set clipping region for line drawing 
+                // Set clipping region for line drawing
                 graph.SetClip(area.PlotAreaPosition.ToSKRect());
                 clipRegionSet = true;
             }
-
 
             // Draw open-close marks as bar
             if (forceCandleStick || style == StockOpenCloseMarkStyle.Candlestick)
@@ -1506,7 +1480,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 {
                     try
                     {
-                        priceUpColor =SKColor.Parse(attrValue);
+                        priceUpColor = SKColor.Parse(attrValue);
                     }
                     catch (NotSupportedException)
                     {
@@ -1593,7 +1567,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 points[1].SKPoint = graph.GetAbsolutePoint(points[1].SKPoint);
                 points[2].SKPoint = graph.GetAbsolutePoint(points[2].SKPoint);
 
-                using SKPaint brush = new() { Color = point.Color };
+                using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.Color };
                 // Draw Open mark line
                 if (showOpen)
                 {
@@ -1675,7 +1649,7 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion 3D Drawing and Selection methods
 
         #region Y values related methods
 
@@ -1700,7 +1674,7 @@ namespace WebCharts.Services.Models.ChartTypes
             return point.YValues[yValueIndex];
         }
 
-        #endregion
+        #endregion Y values related methods
 
         #region SmartLabelStyle methods
 
@@ -1763,7 +1737,7 @@ namespace WebCharts.Services.Models.ChartTypes
                 markerPosition.Y = (float)vAxis.GetLinearPosition(yValue);
                 if (indexedSeries)
                 {
-                    // The formula for position is based on a distance 
+                    // The formula for position is based on a distance
                     // from the grid line or nPoints position.
                     markerPosition.X = (float)hAxis.GetPosition((double)index);
                 }
@@ -1838,16 +1812,17 @@ namespace WebCharts.Services.Models.ChartTypes
             }
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -1858,6 +1833,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable interface implementation
     }
 }

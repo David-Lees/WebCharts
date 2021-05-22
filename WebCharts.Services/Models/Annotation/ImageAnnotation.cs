@@ -2,21 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Image annotation classes.
 //
 
-
-
 using SkiaSharp;
 using System;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     /// <summary>
     /// <b>ImageAnnotation</b> is a class that represents an image annotation.
@@ -37,7 +30,7 @@ namespace WebCharts.Services.Models.Annotations
         // Image transparent color
         private SKColor _imageTransparentColor = SKColor.Empty;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -49,22 +42,22 @@ namespace WebCharts.Services.Models.Annotations
         {
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Properties
 
         #region Image properties
 
         /// <summary>
-        /// Gets or sets the name of an annotation's image. 
+        /// Gets or sets the name of an annotation's image.
         /// <seealso cref="ImageTransparentColor"/>
         /// </summary>
         /// <value>
         /// A string value representing the name of an annotation's image.
         /// </value>
         /// <remarks>
-        /// The name can be a file name, URL for the web control or a name from 
-        /// the <see cref="NamedImagesCollection"/> class.	
+        /// The name can be a file name, URL for the web control or a name from
+        /// the <see cref="NamedImagesCollection"/> class.
         /// </remarks>
         [
         SRCategory("CategoryAttributeImage"),
@@ -83,12 +76,11 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-
         /// <summary>
         /// Gets or sets the drawing mode of the image.
         /// </summary>
         /// <value>
-        /// A <see cref="ChartImageWrapMode"/> value that defines the drawing mode of the image. 
+        /// A <see cref="ChartImageWrapMode"/> value that defines the drawing mode of the image.
         /// </value>
         [
         SRCategory("CategoryAttributeImage"),
@@ -137,8 +129,8 @@ namespace WebCharts.Services.Models.Annotations
         /// A <see cref="ContentAlignment"/> value that represents the content alignment.
         /// </value>
         /// <remarks>
-        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,  
-        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align 
+        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,
+        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align
         /// a non-scaled image inside an <see cref="ImageAnnotation"/> object.
         /// </remarks>
 		[
@@ -178,7 +170,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion // Image properties
+        #endregion Image properties
 
         #region Other
 
@@ -186,8 +178,8 @@ namespace WebCharts.Services.Models.Annotations
         /// Gets or sets an annotation's type name.
         /// </summary>
         /// <remarks>
-        /// This property is used to get the name of each annotation type 
-        /// (e.g. Line, Rectangle, Ellipse). 
+        /// This property is used to get the name of each annotation type
+        /// (e.g. Line, Rectangle, Ellipse).
         /// <para>
         /// This property is for internal use and is hidden at design and run time.
         /// </para>
@@ -226,7 +218,7 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
-        #endregion
+        #endregion Other
 
         #region Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -401,10 +393,9 @@ namespace WebCharts.Services.Models.Annotations
             }
         }
 
+        #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
-        #endregion
-
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -568,7 +559,7 @@ namespace WebCharts.Services.Models.Annotations
             return ChartImageAlignmentStyle.Center;
         }
 
-        #endregion // Painting
+        #endregion Painting
 
         #region Content Size
 
@@ -614,8 +605,8 @@ namespace WebCharts.Services.Models.Annotations
             return new SKRect(float.NaN, float.NaN, float.NaN, float.NaN);
         }
 
-        #endregion
+        #endregion Content Size
 
-        #endregion
+        #endregion Methods
     }
 }

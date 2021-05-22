@@ -14,12 +14,8 @@
 using SkiaSharp;
 using System;
 using System.Collections;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// The ChartGraphics class is 3D chart rendering engine. All chart
@@ -313,8 +309,14 @@ namespace WebCharts.Services.Models.General
                         path.AddLine(bottomCenter, topCenter);
                     }
                     // Get surface colors
-                    SKColor frontLightColor, leftLightColor, topLightColor, backLightColor, rightLightColor, bottomLightColor;
-                    area.matrix3D.GetLight(brush.Color, out frontLightColor, out backLightColor, out leftLightColor, out rightLightColor, out topLightColor, out bottomLightColor);
+                    area.matrix3D.GetLight(
+                        brush.Color, 
+                        out SKColor frontLightColor, 
+                        out SKColor backLightColor, 
+                        out SKColor leftLightColor, 
+                        out SKColor rightLightColor, 
+                        out SKColor topLightColor, 
+                        out SKColor bottomLightColor);
 
                     SKColor lightColor;
                     if (area.Area3DStyle.Inclination < 0)
@@ -373,8 +375,14 @@ namespace WebCharts.Services.Models.General
                     }
 
                     // Get surface colors
-                    SKColor frontLightColor, leftLightColor, topLightColor, backLightColor, rightLightColor, bottomLightColor;
-                    area.matrix3D.GetLight(brush.Color, out frontLightColor, out backLightColor, out leftLightColor, out rightLightColor, out topLightColor, out bottomLightColor);
+                    area.matrix3D.GetLight(
+                        brush.Color, 
+                        out SKColor frontLightColor, 
+                        out SKColor backLightColor,
+                        out SKColor leftLightColor,
+                        out SKColor rightLightColor, 
+                        out SKColor topLightColor, 
+                        out SKColor bottomLightColor);
 
                     SKColor lightColor;
                     if (area.Area3DStyle.Inclination < 0)
@@ -2649,7 +2657,7 @@ namespace WebCharts.Services.Models.General
                             // Draw only completly visible surfaces
                             if ((visibleSurfaces & currentSurface) != 0)
                             {
-                                using (SKPaint brush = new() { Color = surfaceColor })
+                                using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = surfaceColor })
                                 {
                                     FillPolygon(brush, pointsSurface);
                                 }
@@ -2664,7 +2672,7 @@ namespace WebCharts.Services.Models.General
                             }
 
                             // Draw surface border
-                            using SKPaint pen = new() { Color = borderColor, StrokeWidth = borderWidth };
+                            using SKPaint pen = new() { Style = SKPaintStyle.Stroke, Color = borderColor, StrokeWidth = borderWidth };
                             pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
                             if (lightStyle != LightStyle.None &&
                                 (borderWidth == 0 || borderDashStyle == ChartDashStyle.NotSet || borderColor == SKColor.Empty))
@@ -2909,7 +2917,6 @@ namespace WebCharts.Services.Models.General
 
                         // Fill shadow path on the top side of the bar
                         FillPath(topBrush, path);
-
                     }
                 }
 

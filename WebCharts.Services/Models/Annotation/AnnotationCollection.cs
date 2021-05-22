@@ -2,26 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Collection of annotation objects.
 //
 
-
-using SkiaSharp;
-using System;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-
-namespace WebCharts.Services.Models.Annotations
+namespace WebCharts.Services
 {
     /// <summary>
     /// <b>AnnotationCollection</b> is a collection that stores chart annotation objects.
     /// <seealso cref="Charting.Chart.Annotations"/>
     /// </summary>
     /// <remarks>
-    /// All chart annotations are stored in this collection.  It is exposed as 
-    /// a <see cref="Charting.Chart.Annotations"/> property of the chart. It is also used to 
+    /// All chart annotations are stored in this collection.  It is exposed as
+    /// a <see cref="Charting.Chart.Annotations"/> property of the chart. It is also used to
     /// store annotations inside the <see cref="AnnotationGroup"/> class.
     /// <para>
     /// This class includes methods for adding, inserting, iterating and removing annotations.
@@ -45,7 +38,7 @@ namespace WebCharts.Services.Models.Annotations
         // Annotation object which is currently placed on the chart
         internal Annotation placingAnnotation = null;
 
-        #endregion
+        #endregion Fields
 
         #region Construction and Initialization
 
@@ -57,7 +50,7 @@ namespace WebCharts.Services.Models.Annotations
         {
         }
 
-        #endregion
+        #endregion Construction and Initialization
 
         #region Items Inserting and Removing Notification methods
 
@@ -94,7 +87,6 @@ namespace WebCharts.Services.Models.Annotations
             base.Deinitialize(item);
         }
 
-
         /// <summary>
 		/// Finds an annotation in the collection by name.
 		/// </summary>
@@ -108,7 +100,7 @@ namespace WebCharts.Services.Models.Annotations
         {
             foreach (Annotation annotation in this)
             {
-                // Compare annotation name 
+                // Compare annotation name
                 if (annotation.Name == name)
                 {
                     return annotation;
@@ -128,7 +120,7 @@ namespace WebCharts.Services.Models.Annotations
             return null;
         }
 
-        #endregion
+        #endregion Items Inserting and Removing Notification methods
 
         #region Painting
 
@@ -202,8 +194,7 @@ namespace WebCharts.Services.Models.Annotations
                 }
             }
 
-            #endregion
-
+            #endregion Painting
         }
     }
 }

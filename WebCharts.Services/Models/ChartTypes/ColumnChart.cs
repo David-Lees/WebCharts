@@ -12,13 +12,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
     /// ColumnChart class provides 2D/3D drawing and hit testing
@@ -1158,83 +1153,81 @@ namespace WebCharts.Services.Models.ChartTypes
             //************************************************************
 
             // Label text format
-            using (StringFormat format = new StringFormat())
+            using StringFormat format = new();
+            format.Alignment = StringAlignment.Center;
+            format.LineAlignment = StringAlignment.Center;
+
+            // Disable the clip region
+            SKRegion oldClipRegion = graph.Clip;
+            graph.Clip = new();
+
+            if (point.IsValueShownAsLabel || point.Label.Length > 0)
             {
-                format.Alignment = StringAlignment.Center;
-                format.LineAlignment = StringAlignment.Center;
-
-                // Disable the clip region
-                SKRegion oldClipRegion = graph.Clip;
-                graph.Clip = new();
-
-                if (point.IsValueShownAsLabel || point.Label.Length > 0)
+                // Get label text
+                string text;
+                if (point.Label.Length == 0)
                 {
-                    // Get label text
-                    string text;
-                    if (point.Label.Length == 0)
-                    {
-                        // Round Y values for 100% stacked area
-                        double pointLabelValue = GetYValue(common, area, series, point, pointIndex, 0);
+                    // Round Y values for 100% stacked area
+                    double pointLabelValue = GetYValue(common, area, series, point, pointIndex, 0);
 
-                        text = ValueConverter.FormatValue(
-                            series.Chart,
-                            point,
-                            point.Tag,
-                            pointLabelValue,
-                            point.LabelFormat,
-                            series.YValueType,
-                            ChartElementType.DataPoint);
-                    }
-                    else
-                    {
-                        text = point.ReplaceKeywords(point.Label);
-                    }
-
-                    // Calculate label position
-                    SKPoint labelPosition = SKPoint.Empty;
-                    labelPosition.X = intersection.Left + intersection.Width / 2f;
-                    labelPosition.Y = intersection.Top + intersection.Height / 2f;
-
-                    // Get string size
-                    SKSize SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
-
-                    // Get label background position
-                    SKRect labelBackPosition = SKRect.Empty;
-                    SKSize sizeLabel = new SKSize(SKSizeont.Width, SKSizeont.Height);
-                    sizeLabel.Width += sizeLabel.Width / text.Length;
-                    sizeLabel.Height += SKSizeont.Height / 8;
-                    labelBackPosition = GetLabelPosition(
-                        graph,
-                        labelPosition,
-                        sizeLabel,
-                        format,
-                        true);
-
-                    // Draw label text
-                    using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
-                    {
-                        graph.DrawPointLabelStringRel(
-                            common,
-                            text,
-                            point.Font,
-                            brush,
-                            labelPosition,
-                            format,
-                            point.LabelAngle,
-                            labelBackPosition,
-                            point.LabelBackColor,
-                            point.LabelBorderColor,
-                            point.LabelBorderWidth,
-                            point.LabelBorderDashStyle,
-                            series,
-                            point,
-                            pointIndex - 1);
-                    }
+                    text = ValueConverter.FormatValue(
+                        series.Chart,
+                        point,
+                        point.Tag,
+                        pointLabelValue,
+                        point.LabelFormat,
+                        series.YValueType,
+                        ChartElementType.DataPoint);
+                }
+                else
+                {
+                    text = point.ReplaceKeywords(point.Label);
                 }
 
-                // Restore old clip region
-                graph.Clip = oldClipRegion;
+                // Calculate label position
+                SKPoint labelPosition = SKPoint.Empty;
+                labelPosition.X = intersection.Left + intersection.Width / 2f;
+                labelPosition.Y = intersection.Top + intersection.Height / 2f;
+
+                // Get string size
+                SKSize SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+
+                // Get label background position
+                SKRect labelBackPosition = SKRect.Empty;
+                SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
+                sizeLabel.Width += sizeLabel.Width / text.Length;
+                sizeLabel.Height += SKSizeont.Height / 8;
+                labelBackPosition = GetLabelPosition(
+                    graph,
+                    labelPosition,
+                    sizeLabel,
+                    format,
+                    true);
+
+                // Draw label text
+                using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
+                {
+                    graph.DrawPointLabelStringRel(
+                        common,
+                        text,
+                        point.Font,
+                        brush,
+                        labelPosition,
+                        format,
+                        point.LabelAngle,
+                        labelBackPosition,
+                        point.LabelBackColor,
+                        point.LabelBorderColor,
+                        point.LabelBorderWidth,
+                        point.LabelBorderDashStyle,
+                        series,
+                        point,
+                        pointIndex - 1);
+                }
             }
+
+            // Restore old clip region
+            graph.Clip = oldClipRegion;
         }
 
         /// <summary>
@@ -1266,88 +1259,86 @@ namespace WebCharts.Services.Models.ChartTypes
             }
 
             // Label text format
-            using (StringFormat format = new StringFormat())
+            using StringFormat format = new();
+            format.Alignment = StringAlignment.Center;
+            format.LineAlignment = StringAlignment.Center;
+
+            // Disable the clip region
+            SKRegion oldClipRegion = graph.Clip;
+            graph.Clip = new();
+
+            if (point.IsValueShownAsLabel || point.Label.Length > 0)
             {
-                format.Alignment = StringAlignment.Center;
-                format.LineAlignment = StringAlignment.Center;
-
-                // Disable the clip region
-                SKRegion oldClipRegion = graph.Clip;
-                graph.Clip = new();
-
-                if (point.IsValueShownAsLabel || point.Label.Length > 0)
+                // Get label text
+                string text;
+                if (point.Label.Length == 0)
                 {
-                    // Get label text
-                    string text;
-                    if (point.Label.Length == 0)
-                    {
-                        // Get Y value
-                        double pointLabelValue = GetYValue(common, area, pointEx.dataPoint.series, point, pointEx.index - 1, 0);
-                        text = ValueConverter.FormatValue(
-                            pointEx.dataPoint.series.Chart,
-                            point,
-                            point.Tag,
-                            pointLabelValue,
-                            point.LabelFormat,
-                            pointEx.dataPoint.series.YValueType,
-                            ChartElementType.DataPoint);
-                    }
-                    else
-                    {
-                        text = point.ReplaceKeywords(point.Label);
-                    }
-
-                    // Calculate label position
-                    SKPoint labelPosition = SKPoint.Empty;
-                    labelPosition.X = columnPosition.Left + columnPosition.Width / 2f;
-                    labelPosition.Y = columnPosition.Top + columnPosition.Height / 2f;
-
-                    // Transform coordinates
-                    Point3D[] marker3DPosition = new Point3D[1];
-                    marker3DPosition[0] = new Point3D(labelPosition.X, labelPosition.Y, pointEx.zPosition + pointEx.depth);
-                    area.matrix3D.TransformPoints(marker3DPosition);
-
-                    labelPosition.X = marker3DPosition[0].X;
-                    labelPosition.Y = marker3DPosition[0].Y;
-
-                    // Get string size
-                    SKSize SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
-
-                    // Get label background position
-                    SKRect labelBackPosition = SKRect.Empty;
-                    SKSize sizeLabel = new SKSize(SKSizeont.Width, SKSizeont.Height);
-                    sizeLabel.Width += sizeLabel.Width / text.Length;
-                    sizeLabel.Height += SKSizeont.Height / 8;
-                    labelBackPosition = GetLabelPosition(
-                        graph,
-                        labelPosition,
-                        sizeLabel,
-                        format,
-                        true);
-
-                    // Draw label text
-                    using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
-                    graph.DrawPointLabelStringRel(
-                        common,
-                        text,
-                        point.Font,
-                        brush,
-                        labelPosition,
-                        format,
-                        point.LabelAngle,
-                        labelBackPosition,
-                        point.LabelBackColor,
-                        point.LabelBorderColor,
-                        point.LabelBorderWidth,
-                        point.LabelBorderDashStyle,
-                        point.series,
+                    // Get Y value
+                    double pointLabelValue = GetYValue(common, area, pointEx.dataPoint.series, point, pointEx.index - 1, 0);
+                    text = ValueConverter.FormatValue(
+                        pointEx.dataPoint.series.Chart,
                         point,
-                        pointIndex);
+                        point.Tag,
+                        pointLabelValue,
+                        point.LabelFormat,
+                        pointEx.dataPoint.series.YValueType,
+                        ChartElementType.DataPoint);
+                }
+                else
+                {
+                    text = point.ReplaceKeywords(point.Label);
                 }
 
-                // Restore old clip region
-                graph.Clip = oldClipRegion;
+                // Calculate label position
+                SKPoint labelPosition = SKPoint.Empty;
+                labelPosition.X = columnPosition.Left + columnPosition.Width / 2f;
+                labelPosition.Y = columnPosition.Top + columnPosition.Height / 2f;
+
+                // Transform coordinates
+                Point3D[] marker3DPosition = new Point3D[1];
+                marker3DPosition[0] = new Point3D(labelPosition.X, labelPosition.Y, pointEx.zPosition + pointEx.depth);
+                area.matrix3D.TransformPoints(marker3DPosition);
+
+                labelPosition.X = marker3DPosition[0].X;
+                labelPosition.Y = marker3DPosition[0].Y;
+
+                // Get string size
+                SKSize SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+
+                // Get label background position
+                SKRect labelBackPosition = SKRect.Empty;
+                SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
+                sizeLabel.Width += sizeLabel.Width / text.Length;
+                sizeLabel.Height += SKSizeont.Height / 8;
+                labelBackPosition = GetLabelPosition(
+                    graph,
+                    labelPosition,
+                    sizeLabel,
+                    format,
+                    true);
+
+                // Draw label text
+                using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
+                graph.DrawPointLabelStringRel(
+                    common,
+                    text,
+                    point.Font,
+                    brush,
+                    labelPosition,
+                    format,
+                    point.LabelAngle,
+                    labelBackPosition,
+                    point.LabelBackColor,
+                    point.LabelBorderColor,
+                    point.LabelBorderWidth,
+                    point.LabelBorderDashStyle,
+                    point.series,
+                    point,
+                    pointIndex);
             }
+
+            // Restore old clip region
+            graph.Clip = oldClipRegion;
         }
 
         #endregion 2D and 3D Labels Drawing

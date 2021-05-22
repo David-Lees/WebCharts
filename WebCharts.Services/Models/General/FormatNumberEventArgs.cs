@@ -1,7 +1,7 @@
 ﻿using System;
-using WebCharts.Services.Enums;
+using WebCharts.Services;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// Event arguments of localized numbers formatting event.

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
 //  Purpose:	Classes related to the Data Points:
 //				DataPointCollection - data points collection class
@@ -10,7 +9,6 @@
 //				DataPointCustomProperties - data point & series properties
 //				DataPointComparer - used for sorting data points in series
 //
-
 
 using SkiaSharp;
 using System;
@@ -21,12 +19,8 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.DataManager
+namespace WebCharts.Services
 {
     #region CustomProperties enumeration
 
@@ -85,7 +79,7 @@ namespace WebCharts.Services.Models.DataManager
         LabelBackColor,
     };
 
-    #endregion
+    #endregion CustomProperties enumeration
 
     /// <summary>
     /// Data points comparer class
@@ -103,7 +97,7 @@ namespace WebCharts.Services.Models.DataManager
         // Sorting value index
         private readonly int _sortingValueIndex = 1;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -156,7 +150,7 @@ namespace WebCharts.Services.Models.DataManager
             _sortingOrder = sortOrder;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Comparing method
 
@@ -165,7 +159,7 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
         /// <param name="x">First data point.</param>
         /// <param name="y">Second data point.</param>
-        /// <returns>If the two values are equal, it returns zero.  If point 1 is greater than point 2, 
+        /// <returns>If the two values are equal, it returns zero.  If point 1 is greater than point 2,
         /// it returns a positive integer; otherwise, it returns a negative integer.
         /// </returns>
         public int Compare(DataPoint x, DataPoint y)
@@ -197,7 +191,7 @@ namespace WebCharts.Services.Models.DataManager
             return result;
         }
 
-        #endregion
+        #endregion Comparing method
     }
 
     /// <summary>
@@ -213,7 +207,7 @@ namespace WebCharts.Services.Models.DataManager
         // Reference to the sereies of data points
         internal Series series = null;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors and Initialization
 
@@ -250,7 +244,7 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-        #endregion
+        #endregion Constructors and Initialization
 
         #region Data point binding, adding and inserting methods
 
@@ -268,7 +262,7 @@ namespace WebCharts.Services.Models.DataManager
 
         /// <summary>
         /// Parse the input parameter with other point attribute binding rule
-        /// in format: PointProperty=Field[{Format}] [,PointProperty=Field[{Format}]]. 
+        /// in format: PointProperty=Field[{Format}] [,PointProperty=Field[{Format}]].
         /// For example: "Tooltip=Price{C1},Url=WebSiteName".
         /// </summary>
         /// <param name="otherFields">Other fields parameter.</param>
@@ -370,7 +364,7 @@ namespace WebCharts.Services.Models.DataManager
                 {
                     enumerator.Reset();
                 }
-                // Some enumerators may not support Resetting 
+                // Some enumerators may not support Resetting
                 catch (InvalidOperationException)
                 {
                 }
@@ -493,9 +487,7 @@ namespace WebCharts.Services.Models.DataManager
                             Add(newDataPoint);
                         }
                     }
-
                 } while (valueExsist);
-
             }
             finally
             {
@@ -614,7 +606,7 @@ namespace WebCharts.Services.Models.DataManager
                     // Create and initialize data point
                     if (xValueExsist || yValueExsist)
                     {
-                        DataPoint newDataPoint = new DataPoint(series);
+                        DataPoint newDataPoint = new(series);
                         bool emptyValues = false;
 
                         // Set X to the value provided
@@ -667,11 +659,8 @@ namespace WebCharts.Services.Models.DataManager
                             DataPointInit(ref newDataPoint);
                             Add(newDataPoint);
                         }
-
                     }
-
                 } while (xValueExsist || yValueExsist);
-
             }
             finally
             {
@@ -794,7 +783,7 @@ namespace WebCharts.Services.Models.DataManager
                     // Create and initialize data point
                     if (xValueExsist || yValueExsist)
                     {
-                        DataPoint newDataPoint = new DataPoint(series);
+                        DataPoint newDataPoint = new(series);
                         bool emptyValues = false;
 
                         // Set X to the value provided or use sequence numbers starting with 1
@@ -806,7 +795,6 @@ namespace WebCharts.Services.Models.DataManager
                                 emptyValues = true;
                                 xValueObj = 0.0;
                             }
-
                         }
 
                         if (yFieldNames.Length == 0)
@@ -860,9 +848,7 @@ namespace WebCharts.Services.Models.DataManager
                             Add(newDataPoint);
                         }
                     }
-
                 } while (xValueExsist || yValueExsist);
-
             }
             finally
             {
@@ -881,11 +867,11 @@ namespace WebCharts.Services.Models.DataManager
             {
                 return true;
             }
-            if (val is double && double.IsNaN((double)val))
+            if (val is double val2 && double.IsNaN(val2))
             {
                 return true;
             }
-            if (val is Single && Single.IsNaN((Single)val))
+            if (val is float val3 && float.IsNaN(val3))
             {
                 return true;
             }
@@ -903,7 +889,7 @@ namespace WebCharts.Services.Models.DataManager
         public int AddY(double yValue)
         {
             // Create new point object
-            DataPoint newDataPoint = new DataPoint(series);
+            DataPoint newDataPoint = new(series);
             newDataPoint.SetValueY(yValue);
             DataPointInit(ref newDataPoint);
             Add(newDataPoint);
@@ -977,7 +963,6 @@ namespace WebCharts.Services.Models.DataManager
             Justification = "X and Y are cartesian coordinates and well understood")]
         public int AddXY(object xValue, params object[] yValue)
         {
-
             // Auto detect DateTime and String values type
             if (series.XValueType == ChartValueType.Auto)
             {
@@ -1077,7 +1062,7 @@ namespace WebCharts.Services.Models.DataManager
         }
 
         /// <summary>
-        /// Convert enumeration item object from DataRow and DataRowView 
+        /// Convert enumeration item object from DataRow and DataRowView
         /// to the actual value of specified column in row
         /// </summary>
         /// <param name="item">Enumeration item.</param>
@@ -1209,7 +1194,6 @@ namespace WebCharts.Services.Models.DataManager
                     {
                         throw (new ArgumentException(SR.ExceptionColumnNameNotFound(fieldName)));
                     }
-
                 }
                 else
                 {
@@ -1220,6 +1204,7 @@ namespace WebCharts.Services.Models.DataManager
 
             return result;
         }
+
         /// <summary>
         /// Auto detects the X and Y(s) values type
         /// </summary>
@@ -1282,7 +1267,6 @@ namespace WebCharts.Services.Models.DataManager
                 return type;
             }
 
-
             // If original object is DataRow
             if (enumerator.Current is DataRow)
             {
@@ -1317,7 +1301,6 @@ namespace WebCharts.Services.Models.DataManager
                     {
                         throw (new ArgumentException(SR.ExceptionColumnNameNotFound(field)));
                     }
-
                 }
                 else if (((DataRow)enumerator.Current).Table.Columns.Count > 0)
                 {
@@ -1358,7 +1341,6 @@ namespace WebCharts.Services.Models.DataManager
                     {
                         throw (new ArgumentException(SR.ExceptionColumnNameNotFound(field)));
                     }
-
                 }
                 else if (((DataRowView)enumerator.Current).DataView.Table.Columns.Count > 0)
                 {
@@ -1395,7 +1377,6 @@ namespace WebCharts.Services.Models.DataManager
                     {
                         throw (new ArgumentException(SR.ExceptionColumnNameNotFound(field)));
                     }
-
                 }
                 else if (((DbDataRecord)enumerator.Current).FieldCount > 0)
                 {
@@ -1439,7 +1420,7 @@ namespace WebCharts.Services.Models.DataManager
             return type;
         }
 
-        #endregion
+        #endregion Data point binding, adding and inserting methods
 
         #region DataPoint finding functions
 
@@ -1503,9 +1484,9 @@ namespace WebCharts.Services.Models.DataManager
         {
             //Check arguments
             if (useValue == null)
-                throw new ArgumentNullException("useValue");
+                throw new ArgumentNullException(nameof(useValue));
             if (startIndex < 0 || startIndex >= Count)
-                throw new ArgumentOutOfRangeException("startIndex");
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
 
             // Loop through all points from specified index
             for (int i = startIndex; i < Count; i++)
@@ -1552,9 +1533,9 @@ namespace WebCharts.Services.Models.DataManager
         {
             //Check arguments
             if (useValue == null)
-                throw new ArgumentNullException("useValue");
+                throw new ArgumentNullException(nameof(useValue));
             if (startIndex < 0 || startIndex >= Count)
-                throw new ArgumentOutOfRangeException("startIndex");
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
 
             bool isYValue = useValue.StartsWith("Y", StringComparison.OrdinalIgnoreCase);
             double maxValue = double.MinValue;
@@ -1608,9 +1589,9 @@ namespace WebCharts.Services.Models.DataManager
         public DataPoint FindMinByValue(string useValue, int startIndex)
         {
             if (useValue == null)
-                throw new ArgumentNullException("useValue");
+                throw new ArgumentNullException(nameof(useValue));
             if (startIndex < 0 || startIndex >= Count)
-                throw new ArgumentOutOfRangeException("startIndex");
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
 
             bool isYValue = useValue.StartsWith("Y", StringComparison.OrdinalIgnoreCase);
             double minValue = double.MaxValue;
@@ -1655,7 +1636,7 @@ namespace WebCharts.Services.Models.DataManager
             return FindMinByValue("Y");
         }
 
-        #endregion
+        #endregion DataPoint finding functions
 
         #region Collection<T> overrides
 
@@ -1674,9 +1655,8 @@ namespace WebCharts.Services.Models.DataManager
         /// </summary>
 		protected override void ClearItems()
         {
-
             // Refresh Minimum and Maximum from data
-            // after recalc and set data			
+            // after recalc and set data
             if (Common != null && Common.ChartPicture != null)
             {
                 Common.ChartPicture.ResetMinMaxFromData();
@@ -1685,7 +1665,7 @@ namespace WebCharts.Services.Models.DataManager
             base.ClearItems();
         }
 
-        #endregion
+        #endregion Collection<T> overrides
     }
 
     /// <summary>
@@ -1712,7 +1692,7 @@ namespace WebCharts.Services.Models.DataManager
         // This variable will cache the label content taken just before drawing.
         internal string _lastLabelText = String.Empty;
 
-        #endregion
+        #endregion Fields
 
         #region Constructors
 
@@ -1795,7 +1775,7 @@ namespace WebCharts.Services.Models.DataManager
             _xValue = xValue;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Data point methods
 
@@ -1811,14 +1791,13 @@ namespace WebCharts.Services.Models.DataManager
             string format)
         {
             // Convert value to string
-            string stringValue = obj as string;
-            if (stringValue == null)
+            if (obj is not string stringValue)
             {
-                double doubleObj = double.NaN;
                 ChartValueType valueType = ChartValueType.Auto;
-                if (obj is DateTime)
+                double doubleObj;
+                if (obj is DateTime time)
                 {
-                    doubleObj = ((DateTime)obj).ToOADate();
+                    doubleObj = time.ToOADate();
                     valueType = ChartValueType.Date;
                 }
                 else
@@ -1886,7 +1865,6 @@ namespace WebCharts.Services.Models.DataManager
                 }
             }
         }
-
 
         /// <summary>
         /// Converts object to double.
@@ -1990,7 +1968,7 @@ namespace WebCharts.Services.Models.DataManager
             {
                 if (base.series.XValueType == ChartValueType.Date)
                 {
-                    DateTime time = new DateTime(
+                    DateTime time = new(
                         ((DateTime)xValue).Year,
                         ((DateTime)xValue).Month,
                         ((DateTime)xValue).Day,
@@ -2002,7 +1980,7 @@ namespace WebCharts.Services.Models.DataManager
                 }
                 else if (base.series.XValueType == ChartValueType.Time)
                 {
-                    DateTime time = new DateTime(
+                    DateTime time = new(
                         1899,
                         12,
                         30,
@@ -2048,7 +2026,7 @@ namespace WebCharts.Services.Models.DataManager
             if (yValue == null)
                 throw new ArgumentNullException(nameof(yValue));
 
-            // Check number of parameters. Should be more than 0 and 
+            // Check number of parameters. Should be more than 0 and
             if (yValue.Length == 0 || (base.series != null && yValue.Length > base.series.YValuesPerPoint))
                 throw (new ArgumentOutOfRangeException(nameof(yValue), SR.ExceptionDataPointYValuesSettingCountMismatch(base.series.YValuesPerPoint.ToString(System.Globalization.CultureInfo.InvariantCulture))));
 
@@ -2104,7 +2082,6 @@ namespace WebCharts.Services.Models.DataManager
                         throw (new ArgumentException(SR.ExceptionDataPointYValueStringFormat));
                     }
                 }
-
             }
             else if (paramType == typeof(DateTime))
             {
@@ -2151,14 +2128,14 @@ namespace WebCharts.Services.Models.DataManager
                         if (base.series.YValueType == ChartValueType.Date)
                         {
                             DateTime yDate;
-                            if (yValue[i] is DateTime)
-                                yDate = (DateTime)yValue[i];
-                            else if (yValue[i] is Double)
-                                yDate = DateTime.FromOADate((Double)yValue[i]);
+                            if (yValue[i] is DateTime time)
+                                yDate = time;
+                            else if (yValue[i] is double d)
+                                yDate = DateTime.FromOADate(d);
                             else
                                 yDate = Convert.ToDateTime(yValue[i], CultureInfo.InvariantCulture); //This will throw an exception in case when the yValue type is not compatible with the DateTime
 
-                            DateTime date = new DateTime(
+                            DateTime date = new(
                                 yDate.Year,
                                 yDate.Month,
                                 yDate.Day,
@@ -2172,14 +2149,14 @@ namespace WebCharts.Services.Models.DataManager
                         else if (base.series.YValueType == ChartValueType.Time)
                         {
                             DateTime yTime;
-                            if (yValue[i] is DateTime)
-                                yTime = (DateTime)yValue[i];
-                            if (yValue[i] is Double)
-                                yTime = DateTime.FromOADate((Double)yValue[i]);
+                            if (yValue[i] is DateTime d2)
+                                yTime = d2;
+                            if (yValue[i] is double d3)
+                                yTime = DateTime.FromOADate(d3);
                             else
                                 yTime = Convert.ToDateTime(yValue[i], CultureInfo.InvariantCulture); //This will throw an exception in case when the yValue type is not compatible with the DateTime
 
-                            DateTime time = new DateTime(
+                            DateTime time = new(
                                 1899,
                                 12,
                                 30,
@@ -2193,7 +2170,6 @@ namespace WebCharts.Services.Models.DataManager
                     }
                 }
             }
-
         }
 
         /// <summary>
@@ -2203,7 +2179,7 @@ namespace WebCharts.Services.Models.DataManager
         public DataPoint Clone()
         {
             // Create new data point
-            DataPoint clonePoint = new DataPoint();
+            DataPoint clonePoint = new();
 
             // Reset series pointer
             clonePoint.series = null;
@@ -2447,10 +2423,9 @@ namespace WebCharts.Services.Models.DataManager
             return result;
         }
 
-
         /// <summary>
-        /// Replaces all "#CUSTOMPROPERTY(XXX)" (where XXX is the custom attribute name) 
-        /// keywords in the string provided. 
+        /// Replaces all "#CUSTOMPROPERTY(XXX)" (where XXX is the custom attribute name)
+        /// keywords in the string provided.
         /// </summary>
         /// <param name="originalString">String where the keyword need to be replaced.</param>
         /// <param name="properties">DataPoint or Series properties class.</param>
@@ -2537,10 +2512,10 @@ namespace WebCharts.Services.Models.DataManager
             sb.Append("}");
             return sb.ToString();
         }
-        #endregion
+
+        #endregion Data point methods
 
         #region	DataPoint Properties
-
 
         /// <summary>
 		/// X value of the data point.
@@ -2627,14 +2602,9 @@ namespace WebCharts.Services.Models.DataManager
             {
                 return "DataPoint";
             }
-            set
-            {
-                //Dont call the base method - the names don't need to be unique
-            }
         }
 
         #endregion
-
     }
 
     /// <summary>
@@ -2654,7 +2624,7 @@ namespace WebCharts.Services.Models.DataManager
         internal Series series = null;
 
         // Storage for the custom properties names/values
-        internal Hashtable properties = new Hashtable();
+        internal Hashtable properties = new();
 
         // Flag indicating that temp. color was set
         internal bool tempColorIsSet = false;
@@ -2761,7 +2731,7 @@ namespace WebCharts.Services.Models.DataManager
         /// Gets the data point custom property with the specified name.
         /// </summary>
         /// <param name="name">Name of the property to get.</param>
-        /// <returns>Returns the data point custom property with the specified name.  If the requested one is not set, 
+        /// <returns>Returns the data point custom property with the specified name.  If the requested one is not set,
         /// the default custom property of the data series will be returned.</returns>
         virtual public string GetCustomProperty(string name)
         {
@@ -2777,7 +2747,6 @@ namespace WebCharts.Services.Models.DataManager
 
                 if (!serializing)
                 {
-
                     if (isEmptyPoint)
                     {
                         // Return empty point properties from series
@@ -2796,7 +2765,6 @@ namespace WebCharts.Services.Models.DataManager
 
             return (string)properties[name];
         }
-
 
         /// <summary>
         /// Checks if data is currently serialized.
@@ -2866,7 +2834,7 @@ namespace WebCharts.Services.Models.DataManager
         }
 
         /// <summary>
-        /// Sets a custom property of the data point. 
+        /// Sets a custom property of the data point.
         /// </summary>
         /// <param name="name">Property name.</param>
         /// <param name="propertyValue">Property value.</param>
@@ -2876,7 +2844,7 @@ namespace WebCharts.Services.Models.DataManager
         }
 
         /// <summary>
-        /// Sets an attribute of the Data Point as an object. 
+        /// Sets an attribute of the Data Point as an object.
         /// </summary>
         /// <param name="attrib">Attribute name ID.</param>
         /// <param name="attributeValue">Attribute new value.</param>
@@ -2922,7 +2890,6 @@ namespace WebCharts.Services.Models.DataManager
                     SetAttributeObject(CommonCustomProperties.BorderWidth, 1);
                 if (!IsCustomPropertySet(CommonCustomProperties.BorderDashStyle))
                     SetAttributeObject(CommonCustomProperties.BorderDashStyle, ChartDashStyle.Solid);
-
 
                 if (!IsCustomPropertySet(CommonCustomProperties.AxisLabel))
                     SetAttributeObject(CommonCustomProperties.AxisLabel, "");
@@ -3146,7 +3113,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.axisLabel;
-
                     }
                 }
                 else
@@ -3262,7 +3228,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.showLabelAsValue;
-
                     }
                 }
                 else
@@ -3287,7 +3252,6 @@ namespace WebCharts.Services.Models.DataManager
         SRCategory("CategoryAttributeAppearance"),
 
         SRDescription("DescriptionAttributeColor4"),
-
 
         ]
         public SKColor Color
@@ -3415,7 +3379,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.borderDashStyle;
-
                     }
                 }
                 else
@@ -3463,7 +3426,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.borderWidth;
-
                     }
                 }
                 else
@@ -3514,7 +3476,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backImage;
-
                     }
                 }
                 else
@@ -3542,7 +3503,7 @@ namespace WebCharts.Services.Models.DataManager
         /// Gets or sets the drawing mode of the background image.
         /// </summary>
         /// <value>
-        /// A <see cref="ChartImageWrapMode"/> value that defines the drawing mode of the image. 
+        /// A <see cref="ChartImageWrapMode"/> value that defines the drawing mode of the image.
         /// </value>
 		[
         SRCategory("CategoryAttributeAppearance"),
@@ -3571,7 +3532,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backImageWrapMode;
-
                     }
                 }
                 else
@@ -3621,7 +3581,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backImageTransparentColor;
-
                     }
                 }
                 else
@@ -3668,7 +3627,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backImageAlignment;
-
                     }
                 }
                 else
@@ -3717,7 +3675,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backGradientStyle;
-
                     }
                 }
                 else
@@ -3764,7 +3721,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backSecondaryColor;
-
                     }
                 }
                 else
@@ -3811,7 +3767,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.backHatchStyle;
-
                     }
                 }
                 else
@@ -3884,7 +3839,6 @@ namespace WebCharts.Services.Models.DataManager
 
         SRDescription("DescriptionAttributeFontColor"),
 
-
         ]
         public SKColor LabelForeColor
         {
@@ -3909,7 +3863,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.fontColor;
-
                     }
                 }
                 else
@@ -3957,7 +3910,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.fontAngle;
-
                     }
                 }
                 else
@@ -4008,7 +3960,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerStyle;
-
                     }
                 }
                 else
@@ -4060,7 +4011,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerSize;
-
                     }
                 }
                 else
@@ -4107,7 +4057,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerImage;
-
                     }
                 }
                 else
@@ -4160,7 +4109,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerImageTransparentColor;
-
                     }
                 }
                 else
@@ -4207,7 +4155,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerColor;
-
                     }
                 }
                 else
@@ -4254,7 +4201,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerBorderColor;
-
                     }
                 }
                 else
@@ -4271,8 +4217,6 @@ namespace WebCharts.Services.Models.DataManager
                 Invalidate(true);
             }
         }
-
-
 
         /// <summary>
         /// Gets or sets the border width of the marker.
@@ -4305,7 +4249,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.markerBorderWidth;
-
                     }
                 }
                 else
@@ -4327,12 +4270,10 @@ namespace WebCharts.Services.Models.DataManager
             }
         }
 
-
-
         /// <summary>
         /// Gets or sets the extended custom properties of the data point.
-        /// Extended custom properties can be specified in the following format: 
-        /// AttrName1=Value1, AttrName2=Value2, ...  
+        /// Extended custom properties can be specified in the following format:
+        /// AttrName1=Value1, AttrName2=Value2, ...
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
@@ -4352,8 +4293,8 @@ namespace WebCharts.Services.Models.DataManager
 
         /// <summary>
         /// Gets or sets the custom properties of the data point.
-        /// Custom properties can be specified in the following format: 
-        /// AttrName1=Value1, AttrName2=Value2, ...  
+        /// Custom properties can be specified in the following format:
+        /// AttrName1=Value1, AttrName2=Value2, ...
         /// </summary>
         [
         SRCategory("CategoryAttributeMisc"),
@@ -4409,7 +4350,7 @@ namespace WebCharts.Services.Models.DataManager
                 }
 
                 // Copy all common properties to the new collection
-                Hashtable newAttributes = new Hashtable();
+                Hashtable newAttributes = new();
                 Array enumValues = Enum.GetValues(typeof(CommonCustomProperties));
                 foreach (object val in enumValues)
                 {
@@ -4460,7 +4401,6 @@ namespace WebCharts.Services.Models.DataManager
 
                         string newValue = values[1].Replace("\\x45", ",");
                         newAttributes[values[0]] = newValue.Replace("\\x46", "=");
-
                     }
                 }
                 properties = newAttributes;
@@ -4508,7 +4448,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.toolTip;
-
                     }
                 }
                 else
@@ -4661,7 +4600,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.legendToolTip;
-
                     }
                 }
                 else
@@ -4670,8 +4608,6 @@ namespace WebCharts.Services.Models.DataManager
                 }
             }
         }
-
-
 
         /// <summary>
         /// Background color of the data point label.
@@ -4794,7 +4730,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.labelBorderDashStyle;
-
                     }
                 }
                 else
@@ -4841,7 +4776,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.labelBorderWidth;
-
                     }
                 }
                 else
@@ -4899,7 +4833,6 @@ namespace WebCharts.Services.Models.DataManager
                         }
 
                         return series.labelToolTip;
-
                     }
                 }
                 else
@@ -4912,8 +4845,6 @@ namespace WebCharts.Services.Models.DataManager
         #endregion
 
         #region Serialization control
-
-
 
         private bool CheckIfSerializationRequired(CommonCustomProperties attribute)
         {
@@ -5293,8 +5224,6 @@ namespace WebCharts.Services.Models.DataManager
                 return !String.IsNullOrEmpty(series.legendToolTip);
         }
 
-
-
         /// <summary>
         /// Returns true if property should be serialized.
         /// </summary>
@@ -5354,7 +5283,6 @@ namespace WebCharts.Services.Models.DataManager
             else
                 return series.labelBorderWidth != 1;
         }
-
 
         /// <summary>
         /// Resets property to its default value.
@@ -5452,8 +5380,6 @@ namespace WebCharts.Services.Models.DataManager
                 series.borderWidth = 1;
         }
 
-
-
         /// <summary>
         /// Resets property to its default value.
         /// </summary>
@@ -5465,8 +5391,6 @@ namespace WebCharts.Services.Models.DataManager
             else
                 series.markerBorderWidth = 1;
         }
-
-
 
         /// <summary>
         /// Resets property to its default value.
@@ -5541,7 +5465,6 @@ namespace WebCharts.Services.Models.DataManager
                 series.font = series.FontCache.DefaultFont;
             }
         }
-
 
         /// <summary>
         /// Resets property to its default value.
@@ -5674,8 +5597,6 @@ namespace WebCharts.Services.Models.DataManager
                 series.legendToolTip = "";
         }
 
-
-
         /// <summary>
         /// Resets property to its default value.
         /// </summary>
@@ -5735,8 +5656,6 @@ namespace WebCharts.Services.Models.DataManager
             else
                 series.labelToolTip = "";
         }
-
-
 
         #endregion
 
@@ -5864,7 +5783,6 @@ namespace WebCharts.Services.Models.DataManager
             {
                 m_DataPointCustomProperties = value;
             }
-
         }
 
         #endregion //Properties
@@ -5974,9 +5892,6 @@ namespace WebCharts.Services.Models.DataManager
             DataPointCustomProperties.CustomProperties = properties;
         }
 
-
         #endregion // Methods
     }
 }
-
-

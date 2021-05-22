@@ -2,21 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	This class is used for calculations of 
+//  Purpose:	This class is used for calculations of
 //				time series and forecasting
 //
 
-
 using System;
 using System.Globalization;
-using WebCharts.Services.Models.Common;
 
-namespace WebCharts.Services.Models.Formulas
+namespace WebCharts.Services
 {
     /// <summary>
-    /// This class is used for calculations of 
+    /// This class is used for calculations of
     /// time series and forecasting
     /// </summary>
     internal class TimeSeriesAndForecasting : IFormula
@@ -49,7 +46,7 @@ namespace WebCharts.Services.Models.Formulas
             Exponential
         }
 
-        #endregion
+        #endregion Enumeration
 
         #region Properties
 
@@ -58,7 +55,7 @@ namespace WebCharts.Services.Models.Formulas
         /// </summary>
         virtual public string Name { get { return SR.FormulaNameTimeSeriesAndForecasting; } }
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -67,11 +64,10 @@ namespace WebCharts.Services.Models.Formulas
         /// </summary>
         public TimeSeriesAndForecasting()
         {
-
         }
 
         /// <summary>
-        /// The first method in the module, which converts a formula 
+        /// The first method in the module, which converts a formula
         /// name to the corresponding private method.
         /// </summary>
         /// <param name="formulaName">String which represent a formula name</param>
@@ -96,6 +92,7 @@ namespace WebCharts.Services.Models.Formulas
                     case "FORECASTING":
                         Forecasting(inputValues, out outputValues, parameterList);
                         break;
+
                     default:
                         outputValues = null;
                         break;
@@ -111,28 +108,28 @@ namespace WebCharts.Services.Models.Formulas
             }
         }
 
-        #endregion
+        #endregion Methods
 
         #region Formulas
 
         /// <summary>
-        /// Forecasting formula predicts future values of the time series variable. 
-        /// Multiple regressions are used for this forecasting model. Any method 
-        /// of fitting equations to data may be called regression. Such equations 
-        /// are valuable for at least two purposes: making predictions and judging 
-        /// the strength of relationships. Of the various methods of performing 
-        /// regression, Last Square is the most widely used. This formula returns 
-        /// two more series, which represents upper and lower bond of error. Error 
-        /// is based on standard deviation and represents a linear combination of 
+        /// Forecasting formula predicts future values of the time series variable.
+        /// Multiple regressions are used for this forecasting model. Any method
+        /// of fitting equations to data may be called regression. Such equations
+        /// are valuable for at least two purposes: making predictions and judging
+        /// the strength of relationships. Of the various methods of performing
+        /// regression, Last Square is the most widely used. This formula returns
+        /// two more series, which represents upper and lower bond of error. Error
+        /// is based on standard deviation and represents a linear combination of
         /// approximation error and forecasting error.
         /// ---------------------------------------------------------
-        /// Input: 
+        /// Input:
         /// 	- Y values.
-        /// Output: 
+        /// Output:
         /// 	- Forecasting
         /// 	- upper bond error
         /// 	- lower bond error
-        /// Parameters: 
+        /// Parameters:
         /// 	- Polynomial degree (Default: 2 - Linear regression )
         /// 	- Forecasting period (Default: Half of the series length )
         /// 	- Returns Approximation error (Default: true)
@@ -177,7 +174,6 @@ namespace WebCharts.Services.Models.Formulas
                     degree = 2;
                 }
             }
-
 
             if (degree > 5 || degree < 1)
                 throw new InvalidOperationException(SR.ExceptionForecastingDegreeInvalid);
@@ -274,11 +270,11 @@ namespace WebCharts.Services.Models.Formulas
         }
 
         /// <summary>
-        /// Any method of fitting equations to data may be called regression. 
-        /// Such equations are valuable for at least two purposes: making 
-        /// predictions and judging the strength of relationships. Of the 
-        /// various methods of performing regression, Last Square is the 
-        /// most widely used. 
+        /// Any method of fitting equations to data may be called regression.
+        /// Such equations are valuable for at least two purposes: making
+        /// predictions and judging the strength of relationships. Of the
+        /// various methods of performing regression, Last Square is the
+        /// most widely used.
         /// </summary>
         /// <param name="regressionType">AxisName of regression Polynomial, exponential, etc.</param>
         /// <param name="inputValues">Arrays of doubles - Input values</param>
@@ -299,8 +295,6 @@ namespace WebCharts.Services.Models.Formulas
                     }
                     inputValues[1][index] = Math.Log(inputValues[1][index]);
                 }
-
-
 
                 PolynomialRegression(regressionType, inputValues, out outputValues, 2, forecastingPeriod, 0);
 
@@ -370,11 +364,11 @@ namespace WebCharts.Services.Models.Formulas
         }
 
         /// <summary>
-        /// Any method of fitting equations to data may be called regression. 
-        /// Such equations are valuable for at least two purposes: making 
-        /// predictions and judging the strength of relationships. Of the 
-        /// various methods of performing regression, Last Square is the 
-        /// most widely used. 
+        /// Any method of fitting equations to data may be called regression.
+        /// Such equations are valuable for at least two purposes: making
+        /// predictions and judging the strength of relationships. Of the
+        /// various methods of performing regression, Last Square is the
+        /// most widely used.
         /// </summary>
         /// <param name="regressionType">AxisName of regression Polynomial, exponential, etc.</param>
         /// <param name="inputValues">Arrays of doubles - Input values</param>
@@ -397,7 +391,7 @@ namespace WebCharts.Services.Models.Formulas
             if (regressionType != RegressionType.Logarithmic)
             {
                 // Avoid Rounding error because of big X values.
-                // Find Minimum X value 
+                // Find Minimum X value
                 for (int xIndex = 0; xIndex < inputValues[0].Length; xIndex++)
                 {
                     if (minimumX > inputValues[0][xIndex])
@@ -520,7 +514,7 @@ namespace WebCharts.Services.Models.Formulas
         }
 
         /// <summary>
-        /// This method recalculates determinant. This method is used for 
+        /// This method recalculates determinant. This method is used for
         /// recursive calls for sub determinants too.
         /// </summary>
         /// <param name="inputDeterminant">Input determinant</param>
@@ -536,7 +530,7 @@ namespace WebCharts.Services.Models.Formulas
                 return inputDeterminant[0][0] * inputDeterminant[1][1] - inputDeterminant[0][1] * inputDeterminant[1][0];
             }
 
-            // Determinant is biger than 2X2. Go to recursive 
+            // Determinant is biger than 2X2. Go to recursive
             // call of Determinant method
             for (int column = 0; column < inputDeterminant.GetLength(0); column++)
             {
@@ -550,8 +544,8 @@ namespace WebCharts.Services.Models.Formulas
         }
 
         /// <summary>
-        /// This method will create a new determinant, which is 
-        /// smaller by one rank (dimension). Specified column 
+        /// This method will create a new determinant, which is
+        /// smaller by one rank (dimension). Specified column
         /// and zero rows will be skipped.
         /// </summary>
         /// <param name="inputDeterminant">Input determinant</param>
@@ -568,7 +562,6 @@ namespace WebCharts.Services.Models.Formulas
             {
                 newDeterminant[arrayIndex] = new double[size - 1];
             }
-
 
             int newColumn = 0;
             // Copy columns
@@ -623,6 +616,6 @@ namespace WebCharts.Services.Models.Formulas
             return newDeterminant;
         }
 
-        #endregion
+        #endregion Formulas
     }
 }

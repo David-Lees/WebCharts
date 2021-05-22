@@ -2,29 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	This class contains all necessary methods and 
-//				properties for drawing and selection of the stacked 
-//				Column	chart. Every data point in the Stacked Column 
-//				chart is represented with one rectangle. If there is 
-//				more then one series with this chart type from 
-//				same chart area, Column with same X values are 
+//  Purpose:	This class contains all necessary methods and
+//				properties for drawing and selection of the stacked
+//				Column	chart. Every data point in the Stacked Column
+//				chart is represented with one rectangle. If there is
+//				more then one series with this chart type from
+//				same chart area, Column with same X values are
 //				Stacked.
 //
-
 
 using SkiaSharp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.ChartTypes
+namespace WebCharts.Services
 {
     /// <summary>
     /// HundredPercentStackedColumnChart class extends StackedColumnChart class
@@ -44,17 +37,15 @@ namespace WebCharts.Services.Models.ChartTypes
             hundredPercentStacked = true;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Fields
 
-
         // Total Y values from all series at specified index orgonized by stacked groups
         // Hashtable will contain arrays of doubles stored by group name key.
-        Hashtable _stackedGroupsTotalPerPoint = null;
+        private Hashtable _stackedGroupsTotalPerPoint = null;
 
-
-        #endregion
+        #endregion Fields
 
         #region IChartType interface implementation
 
@@ -75,7 +66,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         override public bool HundredPercentSupportNegative { get { return true; } }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Painting and Selection methods
 
@@ -95,7 +86,7 @@ namespace WebCharts.Services.Models.ChartTypes
             base.Paint(graph, common, area, seriesToDraw);
         }
 
-        #endregion
+        #endregion Painting and Selection methods
 
         #region Y values methods
 
@@ -130,7 +121,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     // Allocate memory for the array of totals
                     double[] totals = new double[series.Points.Count];
 
-                    // Calculate the total of Y value per point 
+                    // Calculate the total of Y value per point
                     for (int index = 0; index < series.Points.Count; index++)
                     {
                         totals[index] = 0;
@@ -149,7 +140,6 @@ namespace WebCharts.Services.Models.ChartTypes
             // Find array of total Y values based on the current stacked group name
             double[] currentGroupTotalPerPoint = (double[])_stackedGroupsTotalPerPoint[currentStackedGroupName];
 
-
             // IsEmpty point
             if (!area.Area3DStyle.Enable3D && (point.YValues[0] == 0 || point.IsEmpty))
             {
@@ -165,7 +155,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
                 return (point.YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
             }
-
 
             // Get point Height if pointIndex == -1
             double yValue = double.NaN;
@@ -192,7 +181,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 return yValue - barZeroValue;
             }
 
-
             // Loop through all series to find point value
             prevPosY = double.NaN;
             prevNegY = double.NaN;
@@ -203,13 +191,11 @@ namespace WebCharts.Services.Models.ChartTypes
                     String.Compare(series.ChartTypeName, ser.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0 &&
                     ser.IsVisible())
                 {
-
                     // Series must belong to the same stacked group
                     if (currentStackedGroupName != HundredPercentStackedColumnChart.GetSeriesStackGroupName(ser))
                     {
                         continue;
                     }
-
 
                     if (double.IsNaN(yValue))
                     {
@@ -263,12 +249,12 @@ namespace WebCharts.Services.Models.ChartTypes
             return (yValue > 100.0) ? 100.0 : yValue;
         }
 
-        #endregion
+        #endregion Y values methods
     }
 
     /// <summary>
-    /// StackedColumnChart class contains all the code necessary to draw 
-    /// and hit test Stacked Column chart. 
+    /// StackedColumnChart class contains all the code necessary to draw
+    /// and hit test Stacked Column chart.
     /// </summary>
     internal class StackedColumnChart : IChartType
     {
@@ -289,8 +275,6 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         protected bool hundredPercentStacked = false;
 
-
-
         /// <summary>
         /// True if stacke group name is applicable
         /// </summary>
@@ -306,9 +290,7 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         internal string currentStackGroup = string.Empty;
 
-
-
-        #endregion
+        #endregion Fields
 
         #region IChartType interface implementation
 
@@ -332,15 +314,13 @@ namespace WebCharts.Services.Models.ChartTypes
         /// </summary>
         virtual public bool Stacked { get { return true; } }
 
-
         /// <summary>
         /// True if stacked chart type supports groups
         /// </summary>
         virtual public bool SupportStackedGroups { get { return true; } }
 
-
         /// <summary>
-        /// True if stacked chart type should draw separately positive and 
+        /// True if stacked chart type should draw separately positive and
         /// negative data points ( Bar and column Stacked types ).
         /// </summary>
         public bool StackSign { get { return true; } }
@@ -415,18 +395,18 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// Number of supported Y value(s) per point 
+        /// Number of supported Y value(s) per point
         /// </summary>
         virtual public int YValuesPerPoint { get { return 1; } }
 
         /// <summary>
-        /// If the crossing value is auto Crossing value should be 
-        /// automatically set to zero for some chart 
+        /// If the crossing value is auto Crossing value should be
+        /// automatically set to zero for some chart
         /// types (Bar, column, area etc.)
         /// </summary>
         virtual public bool ZeroCrossing { get { return true; } }
 
-        #endregion
+        #endregion IChartType interface implementation
 
         #region Constructor
 
@@ -437,7 +417,7 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Painting and Selection methods
 
@@ -450,10 +430,8 @@ namespace WebCharts.Services.Models.ChartTypes
         /// <param name="seriesToDraw">Chart series to draw.</param>
         virtual public void Paint(ChartGraphics graph, CommonElements common, ChartArea area, Series seriesToDraw)
         {
-
             // Reset stacked group names flag
             stackGroupNameUsed = true;
-
 
             // Set Clip Region in rounded to a pixel coordinates
             SKRect areaPosition = graph.GetAbsoluteRectangle(area.PlotAreaPosition.ToSKRect());
@@ -478,7 +456,7 @@ namespace WebCharts.Services.Models.ChartTypes
         }
 
         /// <summary>
-        /// This method recalculates size of the Columns. This method is used 
+        /// This method recalculates size of the Columns. This method is used
         /// from Paint or Select method.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -497,11 +475,9 @@ namespace WebCharts.Services.Models.ChartTypes
             bool labels,
             Series seriesToDraw)
         {
-
-
             //************************************************************
             //** If stacked series is attached to diferent X and Y axis
-            //** they can not be processed. To solve this issue series 
+            //** they can not be processed. To solve this issue series
             //** will be orgonized in groups based on the axes.
             //************************************************************
 
@@ -583,7 +559,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
 
-
             //************************************************************
             //** Prosess 3D chart type.
             //************************************************************
@@ -603,7 +578,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 return;
             }
 
-
             // All data series from chart area which have Column chart type
             string[] seriesList = area.GetSeriesFromChartType(Name).ToArray();
 
@@ -618,7 +592,6 @@ namespace WebCharts.Services.Models.ChartTypes
             //************************************************************
             for (int pointIndx = 0; pointIndx < maxNumOfPoints; pointIndx++)
             {
-
                 //************************************************************
                 //** Loop through all stack groups
                 //************************************************************
@@ -649,14 +622,12 @@ namespace WebCharts.Services.Models.ChartTypes
                             continue;
                         }
 
-
                         // Check if series belongs to the current group name
                         string seriesStackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
                         if (seriesStackGroupName != currentStackGroup)
                         {
                             continue;
                         }
-
 
                         // Get data point
                         DataPoint point = ser.Points[pointIndx];
@@ -702,10 +673,8 @@ namespace WebCharts.Services.Models.ChartTypes
                         // Calculates the width of Columns.
                         double width = ser.GetPointWidth(graph, hAxis, interval, 0.8);
 
-
                         // Adjust width by number of stacked groups
                         width = width / (double)stackGroupNames.Count;
-
 
                         // Call Back Paint event
                         if (!selection)
@@ -766,7 +735,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                 // Set Start position for a Column
                                 barZeroValue = vAxis.Crossing;
                             }
-
                         }
                         else if (GetYValue(common, area, ser, point, pointIndx, 0) >= 0)
                         {
@@ -782,7 +750,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         double xValue = point.XValue;
                         if (indexedSeries)
                         {
-                            // The formula for position is based on a distance 
+                            // The formula for position is based on a distance
                             //from the grid line or nPoints position.
                             xValue = (double)pointIndx + 1;
                         }
@@ -795,7 +763,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             xPosition = xPosition - width * ((double)stackGroupNames.Count) / 2.0 + width / 2.0 + groupIndex * width;
                         }
 
-
                         xValue = hAxis.GetLogValue(xValue);
 
                         // Calculate column position
@@ -806,7 +773,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             rectSize.Left = (float)(xPosition - width / 2);
                             rectSize.Right = rectSize.Left + (float)(width);
 
-                            // The top side of rectangle has always 
+                            // The top side of rectangle has always
                             // smaller value than a bottom value
                             if (zero < height)
                             {
@@ -852,7 +819,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
                             if (!skipPoint)
                             {
-
                                 // Ser shadow
                                 int shadowOffset = 0;
                                 if (shadow)
@@ -869,7 +835,7 @@ namespace WebCharts.Services.Models.ChartTypes
                                         rectSize.Top < area.PlotAreaPosition.Y ||
                                         rectSize.Bottom > area.PlotAreaPosition.Bottom)
                                     {
-                                        // Set clipping region for line drawing 
+                                        // Set clipping region for line drawing
                                         graph.SetClip(area.PlotAreaPosition.ToSKRect());
                                         clipRegionSet = true;
                                     }
@@ -924,7 +890,6 @@ namespace WebCharts.Services.Models.ChartTypes
                             common.Chart.CallOnPostPaint(new ChartPaintEventArgs(ser, graph, common, area.PlotAreaPosition));
                         }
 
-
                         // Axis is logarithmic
                         if (vAxis.IsLogarithmic)
                         {
@@ -942,12 +907,8 @@ namespace WebCharts.Services.Models.ChartTypes
                             PreviousNegY = originalYValue;
                         }
                     }
-
                 }
-
             }
-
-
 
             //************************************************************
             //** Remove stacked groups created for series attached to different axis
@@ -982,12 +943,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     }
                 }
             }
-
-
-
         }
-
-
 
         /// <summary>
         /// Helper method that gets an array of series that belong to the specified
@@ -1001,17 +957,14 @@ namespace WebCharts.Services.Models.ChartTypes
         static internal Series[] GetSeriesByStackedGroupName(CommonElements common, string groupName, string chartTypeName, string chartAreaName)
         {
             // Get a list of series with specified group name
-            ArrayList list = new ArrayList();
+            ArrayList list = new();
             foreach (Series series in common.DataManager.Series)
             {
-                if (String.Compare(series.ChartTypeName, chartTypeName, StringComparison.OrdinalIgnoreCase) == 0 &&
+                if (string.Compare(series.ChartTypeName, chartTypeName, StringComparison.OrdinalIgnoreCase) == 0 &&
                     chartAreaName == series.ChartArea &&
-                    series.IsVisible())
+                    series.IsVisible() && GetSeriesStackGroupName(series) == groupName)
                 {
-                    if (GetSeriesStackGroupName(series) == groupName)
-                    {
-                        list.Add(series);
-                    }
+                    list.Add(series);
                 }
             }
 
@@ -1058,8 +1011,6 @@ namespace WebCharts.Services.Models.ChartTypes
             }
             return false;
         }
-
-
 
         /// <summary>
         /// Draw Stacked Column labels.
@@ -1171,8 +1122,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         textAngle = 0;
                     }
 
-
-
                     // Draw label
                     if (!labelPosition.IsEmpty)
                     {
@@ -1203,7 +1152,7 @@ namespace WebCharts.Services.Models.ChartTypes
                             sizeLabel.Height);
 
                         // Draw label text
-                        using SKPaint brush = new() { Color = point.LabelForeColor };
+                        using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
 
                         graph.DrawPointLabelStringRel(
                             common,
@@ -1229,7 +1178,7 @@ namespace WebCharts.Services.Models.ChartTypes
             graph.Clip = oldClipRegion;
         }
 
-        #endregion
+        #endregion Painting and Selection methods
 
         #region Y values methods
 
@@ -1287,7 +1236,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     String.Compare(series.ChartTypeName, ser.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0 &&
                     ser.IsVisible())
                 {
-
                     // Check if series belongs to the current group name
                     string seriesStackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
                     if (stackGroupNameUsed &&
@@ -1295,8 +1243,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     {
                         continue;
                     }
-
-
 
                     if (double.IsNaN(yValue))
                     {
@@ -1337,12 +1283,12 @@ namespace WebCharts.Services.Models.ChartTypes
             return yValue;
         }
 
-        #endregion
+        #endregion Y values methods
 
         #region 3D Painting and Selection method
 
         /// <summary>
-        /// This method recalculates size of the Columns. This method is used 
+        /// This method recalculates size of the Columns. This method is used
         /// from Paint or Select method in 3D space.
         /// </summary>
         /// <param name="selection">If True selection mode is active, otherwise paint mode is active.</param>
@@ -1368,16 +1314,13 @@ namespace WebCharts.Services.Models.ChartTypes
             // Get list of series to draw
             List<string> typeSeries = null;
 
-
             // Get all series names that belong the same cluster
             typeSeries = area.GetClusterSeriesNames(seriesToDraw.Name);
-
 
             //************************************************************
             //** Get order of data points drawing
             //************************************************************
-            ArrayList dataPointDrawingOrder = area.GetDataPointDrawingOrder(typeSeries, (Interfaces.IChartType)this, selection, COPCoordinates.X | COPCoordinates.Y, null, 0, false);
-
+            ArrayList dataPointDrawingOrder = area.GetDataPointDrawingOrder(typeSeries, this, selection, COPCoordinates.X | COPCoordinates.Y, null, 0, false);
 
             //************************************************************
             //** Loop through all data poins and draw them
@@ -1390,10 +1333,8 @@ namespace WebCharts.Services.Models.ChartTypes
                 DataPoint point = pointEx.dataPoint;
                 Series ser = point.series;
 
-
                 // Set current stack group name
                 currentStackGroup = StackedColumnChart.GetSeriesStackGroupName(ser);
-
 
                 // Reset pre-calculated point position
                 point.positionRel = new SKPoint(float.NaN, float.NaN);
@@ -1459,8 +1400,6 @@ namespace WebCharts.Services.Models.ChartTypes
                     topDarkening = 0f;
                 }
 
-
-
                 // If stacked groups are used remove darkenning from the
                 // first/last series in the group
                 if (area.StackGroupNames != null &&
@@ -1489,7 +1428,6 @@ namespace WebCharts.Services.Models.ChartTypes
                                     {
                                         bottomDarkening = 0f;
                                     }
-
                                 }
                             }
 
@@ -1512,8 +1450,6 @@ namespace WebCharts.Services.Models.ChartTypes
                         topDarkening = 0f;
                     }
                 }
-
-
 
                 // Check if value is inside plotting area
                 double yValue = GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, 0);
@@ -1558,7 +1494,7 @@ namespace WebCharts.Services.Models.ChartTypes
                     rectSize.Left = (float)(pointEx.xPosition - pointEx.width / 2);
                     rectSize.Right = rectSize.Left + (float)(pointEx.width);
 
-                    // The top side of rectangle has always 
+                    // The top side of rectangle has always
                     // smaller value than a bottom value
                     if (zero < height)
                     {
@@ -1670,8 +1606,6 @@ namespace WebCharts.Services.Models.ChartTypes
                 }
             }
 
-
-
             //************************************************************
             //** Loop through all data poins and draw labels
             //************************************************************
@@ -1715,7 +1649,7 @@ namespace WebCharts.Services.Models.ChartTypes
                         rectSize.Top = (float)(pointEx.xPosition - pointEx.width / 2);
                         rectSize.Right = rectSize.Left + (float)pointEx.width;
 
-                        // The top side of rectangle has always 
+                        // The top side of rectangle has always
                         // smaller value than a bottom value
                         if (zero < height)
                         {
@@ -1755,7 +1689,6 @@ namespace WebCharts.Services.Models.ChartTypes
 
                         // Draw labels
                         DrawLabels3D(common, graph, area, pointEx, pointEx.index - 1, ser, rectSize);
-
                     }
                 }
             }
@@ -1783,62 +1716,104 @@ namespace WebCharts.Services.Models.ChartTypes
             DataPoint point = pointEx.dataPoint;
 
             // Label text format
-            using (StringFormat format = new StringFormat())
+            using StringFormat format = new();
+            format.Alignment = StringAlignment.Center;
+            format.LineAlignment = StringAlignment.Center;
+
+            // Disable the clip region
+            SKRegion oldClipRegion = graph.Clip;
+            graph.Clip = new();
+
+            if (point.IsValueShownAsLabel || point.Label.Length > 0)
             {
-                format.Alignment = StringAlignment.Center;
-                format.LineAlignment = StringAlignment.Center;
-
-                // Disable the clip region
-                SKRegion oldClipRegion = graph.Clip;
-                graph.Clip = new();
-
-                if (point.IsValueShownAsLabel || point.Label.Length > 0)
+                // Get label text
+                string text;
+                if (point.Label.Length == 0)
                 {
-                    // Get label text
-                    string text;
-                    if (point.Label.Length == 0)
+                    // Round Y values for 100% stacked area
+                    double pointLabelValue = GetYValue(common, area, series, point, pointIndex, -2);
+                    if (hundredPercentStacked && point.LabelFormat.Length == 0)
                     {
-                        // Round Y values for 100% stacked area
-                        double pointLabelValue = GetYValue(common, area, series, point, pointIndex, -2);
-                        if (hundredPercentStacked && point.LabelFormat.Length == 0)
-                        {
-                            pointLabelValue = Math.Round(pointLabelValue, 2);
-                        }
-
-                        text = ValueConverter.FormatValue(
-                            series.Chart,
-                            point,
-                            point.Tag,
-                            pointLabelValue,
-                            point.LabelFormat,
-                            series.YValueType,
-                            ChartElementType.DataPoint);
-                    }
-                    else
-                    {
-                        text = point.ReplaceKeywords(point.Label);
+                        pointLabelValue = Math.Round(pointLabelValue, 2);
                     }
 
-                    // Calculate label position
-                    SKPoint labelPosition = SKPoint.Empty;
-                    labelPosition.X = rectangle.Left + rectangle.Width / 2f;
-                    labelPosition.Y = rectangle.Top + rectangle.Height / 2f;
+                    text = ValueConverter.FormatValue(
+                        series.Chart,
+                        point,
+                        point.Tag,
+                        pointLabelValue,
+                        point.LabelFormat,
+                        series.YValueType,
+                        ChartElementType.DataPoint);
+                }
+                else
+                {
+                    text = point.ReplaceKeywords(point.Label);
+                }
 
-                    // Transform coordinates
-                    Point3D[] marker3DPosition = new Point3D[1];
-                    marker3DPosition[0] = new Point3D(labelPosition.X, labelPosition.Y, pointEx.zPosition + pointEx.depth);
-                    area.matrix3D.TransformPoints(marker3DPosition);
+                // Calculate label position
+                SKPoint labelPosition = SKPoint.Empty;
+                labelPosition.X = rectangle.Left + rectangle.Width / 2f;
+                labelPosition.Y = rectangle.Top + rectangle.Height / 2f;
 
-                    labelPosition.X = marker3DPosition[0].X;
-                    labelPosition.Y = marker3DPosition[0].Y;
+                // Transform coordinates
+                Point3D[] marker3DPosition = new Point3D[1];
+                marker3DPosition[0] = new Point3D(labelPosition.X, labelPosition.Y, pointEx.zPosition + pointEx.depth);
+                area.matrix3D.TransformPoints(marker3DPosition);
 
-                    int textAngle = point.LabelAngle;
+                labelPosition.X = marker3DPosition[0].X;
+                labelPosition.Y = marker3DPosition[0].Y;
 
-                    SKSize SKSizeont = SKSize.Empty;
+                int textAngle = point.LabelAngle;
 
+                SKSize SKSizeont = SKSize.Empty;
 
-                    // Check if Smart Labels are enabled
-                    if (series.SmartLabelStyle.Enabled)
+                // Check if Smart Labels are enabled
+                if (series.SmartLabelStyle.Enabled)
+                {
+                    SKSizeont = graph.GetRelativeSize(
+                        graph.MeasureString(
+                        text,
+                        point.Font,
+                        new SKSize(1000f, 1000f),
+                        StringFormat.GenericTypographic));
+
+                    // Force some SmartLabelStyle settings for column chart
+                    bool oldMarkerOverlapping = series.SmartLabelStyle.IsMarkerOverlappingAllowed;
+                    LabelAlignmentStyles oldMovingDirection = series.SmartLabelStyle.MovingDirection;
+                    series.SmartLabelStyle.IsMarkerOverlappingAllowed = true;
+
+                    // Change default moving direction
+                    if (series.SmartLabelStyle.MovingDirection == (LabelAlignmentStyles.Top | LabelAlignmentStyles.Bottom | LabelAlignmentStyles.Right | LabelAlignmentStyles.Left | LabelAlignmentStyles.TopLeft | LabelAlignmentStyles.TopRight | LabelAlignmentStyles.BottomLeft | LabelAlignmentStyles.BottomRight))
+                    {
+                        series.SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom | LabelAlignmentStyles.Top;
+                    }
+
+                    // Adjust label position using SmartLabelStyle algorithm
+                    labelPosition = area.smartLabels.AdjustSmartLabelPosition(
+                        common,
+                        graph,
+                        area,
+                        series.SmartLabelStyle,
+                        labelPosition,
+                        SKSizeont,
+                        format,
+                        labelPosition,
+                        new SKSize(0f, 0f),
+                        LabelAlignmentStyles.Center);
+
+                    // Restore forced values
+                    series.SmartLabelStyle.IsMarkerOverlappingAllowed = oldMarkerOverlapping;
+                    series.SmartLabelStyle.MovingDirection = oldMovingDirection;
+
+                    // Smart labels always use 0 degrees text angle
+                    textAngle = 0;
+                }
+
+                if (!labelPosition.IsEmpty)
+                {
+                    // Measure string
+                    if (SKSizeont.IsEmpty)
                     {
                         SKSizeont = graph.GetRelativeSize(
                             graph.MeasureString(
@@ -1846,91 +1821,45 @@ namespace WebCharts.Services.Models.ChartTypes
                             point.Font,
                             new SKSize(1000f, 1000f),
                             StringFormat.GenericTypographic));
-
-                        // Force some SmartLabelStyle settings for column chart
-                        bool oldMarkerOverlapping = series.SmartLabelStyle.IsMarkerOverlappingAllowed;
-                        LabelAlignmentStyles oldMovingDirection = series.SmartLabelStyle.MovingDirection;
-                        series.SmartLabelStyle.IsMarkerOverlappingAllowed = true;
-
-                        // Change default moving direction
-                        if (series.SmartLabelStyle.MovingDirection == (LabelAlignmentStyles.Top | LabelAlignmentStyles.Bottom | LabelAlignmentStyles.Right | LabelAlignmentStyles.Left | LabelAlignmentStyles.TopLeft | LabelAlignmentStyles.TopRight | LabelAlignmentStyles.BottomLeft | LabelAlignmentStyles.BottomRight))
-                        {
-                            series.SmartLabelStyle.MovingDirection = LabelAlignmentStyles.Bottom | LabelAlignmentStyles.Top;
-                        }
-
-                        // Adjust label position using SmartLabelStyle algorithm
-                        labelPosition = area.smartLabels.AdjustSmartLabelPosition(
-                            common,
-                            graph,
-                            area,
-                            series.SmartLabelStyle,
-                            labelPosition,
-                            SKSizeont,
-                            format,
-                            labelPosition,
-                            new SKSize(0f, 0f),
-                            LabelAlignmentStyles.Center);
-
-                        // Restore forced values
-                        series.SmartLabelStyle.IsMarkerOverlappingAllowed = oldMarkerOverlapping;
-                        series.SmartLabelStyle.MovingDirection = oldMovingDirection;
-
-                        // Smart labels always use 0 degrees text angle
-                        textAngle = 0;
                     }
 
+                    // Get label background position
+                    SKRect labelBackPosition = SKRect.Empty;
+                    SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
+                    sizeLabel.Height += SKSizeont.Height / 8;
+                    sizeLabel.Width += sizeLabel.Width / text.Length;
+                    labelBackPosition = new SKRect(
+                        labelPosition.X - sizeLabel.Width / 2,
+                        labelPosition.Y - sizeLabel.Height / 2 - SKSizeont.Height / 10,
+                        sizeLabel.Width,
+                        sizeLabel.Height);
 
-
-                    if (!labelPosition.IsEmpty)
-                    {
-                        // Measure string
-                        if (SKSizeont.IsEmpty)
-                        {
-                            SKSizeont = graph.GetRelativeSize(
-                                graph.MeasureString(
-                                text,
-                                point.Font,
-                                new SKSize(1000f, 1000f),
-                                StringFormat.GenericTypographic));
-                        }
-
-                        // Get label background position
-                        SKRect labelBackPosition = SKRect.Empty;
-                        SKSize sizeLabel = new SKSize(SKSizeont.Width, SKSizeont.Height);
-                        sizeLabel.Height += SKSizeont.Height / 8;
-                        sizeLabel.Width += sizeLabel.Width / text.Length;
-                        labelBackPosition = new SKRect(
-                            labelPosition.X - sizeLabel.Width / 2,
-                            labelPosition.Y - sizeLabel.Height / 2 - SKSizeont.Height / 10,
-                            sizeLabel.Width,
-                            sizeLabel.Height);
-
-                        // Draw label text
-                        using SKPaint brush = new() { Color = point.LabelForeColor };
-                        graph.DrawPointLabelStringRel(
-                            common,
-                            text,
-                            point.Font,
-                            brush,
-                            labelPosition,
-                            format,
-                            textAngle,
-                            labelBackPosition,
-                            point.LabelBackColor,
-                            point.LabelBorderColor,
-                            point.LabelBorderWidth,
-                            point.LabelBorderDashStyle,
-                            series,
-                            point,
-                            pointIndex);
-                    }
+                    // Draw label text
+                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.LabelForeColor };
+                    graph.DrawPointLabelStringRel(
+                        common,
+                        text,
+                        point.Font,
+                        brush,
+                        labelPosition,
+                        format,
+                        textAngle,
+                        labelBackPosition,
+                        point.LabelBackColor,
+                        point.LabelBorderColor,
+                        point.LabelBorderWidth,
+                        point.LabelBorderDashStyle,
+                        series,
+                        point,
+                        pointIndex);
                 }
-
-                // Restore old clip region
-                graph.Clip = oldClipRegion;
             }
+
+            // Restore old clip region
+            graph.Clip = oldClipRegion;
         }
-        #endregion
+
+        #endregion 3D Painting and Selection method
 
         #region SmartLabelStyle methods
 
@@ -1945,16 +1874,17 @@ namespace WebCharts.Services.Models.ChartTypes
         {
         }
 
-        #endregion
+        #endregion SmartLabelStyle methods
 
         #region IDisposable interface implementation
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            //Nothing to dispose at the base class. 
+            //Nothing to dispose at the base class.
         }
 
         /// <summary>
@@ -1965,7 +1895,7 @@ namespace WebCharts.Services.Models.ChartTypes
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
 
+        #endregion IDisposable interface implementation
     }
 }

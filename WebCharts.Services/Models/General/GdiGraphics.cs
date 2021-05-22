@@ -2,21 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-
 //
-//  Purpose:	GdiGraphics class is chart GDI+ rendering engine. It 
-//              implements IChartRenderingEngine interface by mapping 
-//              its methods to the drawing methods of GDI+. This 
+//  Purpose:	GdiGraphics class is chart GDI+ rendering engine. It
+//              implements IChartRenderingEngine interface by mapping
+//              its methods to the drawing methods of GDI+. This
 //              rendering engine do not support animation.
 //
 
-
 using SkiaSharp;
-using System.Diagnostics.CodeAnalysis;
-using WebCharts.Services.Interfaces;
-using WebCharts.Services.Models.Utilities;
 
-namespace WebCharts.Services.Models.General
+namespace WebCharts.Services
 {
     /// <summary>
     /// GdiGraphics class is chart GDI+ rendering engine.
@@ -32,7 +27,7 @@ namespace WebCharts.Services.Models.General
         {
         }
 
-        #endregion // Constructor
+        #endregion Constructors
 
         #region Drawing Methods
 
@@ -48,6 +43,7 @@ namespace WebCharts.Services.Models.General
             SKPoint pt2
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawLine(pt1, pt2, pen);
         }
 
@@ -67,12 +63,13 @@ namespace WebCharts.Services.Models.General
             float y2
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawLine(x1, y1, x2, y2, pen);
         }
 
         /// <summary>
-        /// Draws a cardinal spline through a specified array of SKPoint structures 
-        /// using a specified tension. The drawing begins offset from 
+        /// Draws a cardinal spline through a specified array of SKPoint structures
+        /// using a specified tension. The drawing begins offset from
         /// the beginning of the array.
         /// </summary>
         /// <param name="pen">Pen object that determines the color, width, and height of the curve.</param>
@@ -88,10 +85,9 @@ namespace WebCharts.Services.Models.General
             float tension
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawPath(SkiaSharpExtensions.CreateSpline(points), pen);
         }
-
-
 
         /// <summary>
         /// Draws a polygon defined by an array of SKPoint structures.
@@ -103,6 +99,7 @@ namespace WebCharts.Services.Models.General
             SKPoint[] points
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawPoints(SKPointMode.Polygon, points, pen);
         }
 
@@ -121,6 +118,10 @@ namespace WebCharts.Services.Models.General
             SKRect layoutRectangle
             )
         {
+            brush.IsAntialias = true;
+            brush.Style = SKPaintStyle.StrokeAndFill;
+            font.Hinting = SKFontHinting.Normal;
+            Graphics.DrawRect(layoutRectangle, new SKPaint() { Style = SKPaintStyle.Stroke, Color = SKColors.Red, StrokeWidth = 1 });
             Graphics.DrawText(s, layoutRectangle.Location.X, layoutRectangle.Location.Y, font, brush);
         }
 
@@ -138,6 +139,11 @@ namespace WebCharts.Services.Models.General
             SKPaint brush,
             SKPoint point)
         {
+            point = new SKPoint(1, 1);
+            brush.IsAntialias = true;
+            brush.Style = SKPaintStyle.StrokeAndFill;
+            font.Hinting = SKFontHinting.Normal;
+            Graphics.DrawRect(new SKRect(point.X, point.Y, point.X + 10, point.Y + 10), new SKPaint() { Style = SKPaintStyle.Stroke, Color = SKColors.Red, StrokeWidth = 1 });
             Graphics.DrawText(s, point.X, point.Y, font, brush);
         }
 
@@ -159,7 +165,7 @@ namespace WebCharts.Services.Models.General
                 float srcHeight,
                 SKPaint paint
                 )
-        {
+        { 
             Graphics.DrawImage(image, new SKRect(srcX, srcY, srcX + srcWidth, srcY + srcHeight), destRect, paint);
         }
 
@@ -186,7 +192,6 @@ namespace WebCharts.Services.Models.General
         {
             Graphics.DrawImage(image, new SKRect(srcX, srcY, srcX + srcWidth, srcY + srcHeight), destRect, paint);
         }
-
 
         /// <summary>
         /// Draws a rectangle specified by a coordinate pair: a width, and a height.
@@ -236,6 +241,7 @@ namespace WebCharts.Services.Models.General
             SKPath path
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawPath(path, pen);
         }
 
@@ -259,6 +265,7 @@ namespace WebCharts.Services.Models.General
             float sweepAngle
             )
         {
+            pen.IsAntialias = true;
             DrawArc(pen, x, y, width, height, startAngle, sweepAngle);
         }
 
@@ -282,7 +289,8 @@ namespace WebCharts.Services.Models.General
             float sweepAngle
             )
         {
-            Graphics.DrawArc(new SKRect(x, y, x + width, y + height), startAngle, sweepAngle,true, pen);
+            pen.IsAntialias = true;
+            Graphics.DrawArc(new SKRect(x, y, x + width, y + height), startAngle, sweepAngle, true, pen);
         }
 
         /// <summary>
@@ -295,11 +303,12 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawOval(rect, pen);
         }
 
         /// <summary>
-        /// Draws an ellipse defined by a bounding rectangle specified by 
+        /// Draws an ellipse defined by a bounding rectangle specified by
         /// a pair of coordinates: a height, and a width.
         /// </summary>
         /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
@@ -315,6 +324,7 @@ namespace WebCharts.Services.Models.General
             float height
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawOval(new SKPoint(x, y), new SKSize(width, height), pen);
         }
 
@@ -328,15 +338,16 @@ namespace WebCharts.Services.Models.General
             SKPoint[] points
             )
         {
+            pen.IsAntialias = true;
             Graphics.DrawPoints(SKPointMode.Lines, points, pen);
         }
 
-        #endregion // Drawing Methods
+        #endregion Drawing Methods
 
         #region Filling Methods
 
         /// <summary>
-        /// Fills the interior of an ellipse defined by a bounding rectangle 
+        /// Fills the interior of an ellipse defined by a bounding rectangle
         /// specified by a SKRect structure.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
@@ -346,6 +357,7 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawOval(rect, brush);
         }
 
@@ -359,6 +371,7 @@ namespace WebCharts.Services.Models.General
             SKPath path
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawPath(path, brush);
         }
 
@@ -372,6 +385,7 @@ namespace WebCharts.Services.Models.General
             SKRegion region
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawRegion(region, brush);
         }
 
@@ -385,6 +399,7 @@ namespace WebCharts.Services.Models.General
             SKRect rect
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawRect(rect, brush);
         }
 
@@ -404,6 +419,7 @@ namespace WebCharts.Services.Models.General
             float height
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawRect(x, y, width, height, brush);
         }
 
@@ -417,12 +433,13 @@ namespace WebCharts.Services.Models.General
             SKPoint[] points
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawPoints(SKPointMode.Polygon, points, brush);
         }
 
         /// <summary>
-        /// Fills the interior of a pie section defined by an ellipse 
-        /// specified by a pair of coordinates, a width, and a height 
+        /// Fills the interior of a pie section defined by an ellipse
+        /// specified by a pair of coordinates, a width, and a height
         /// and two radial lines.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
@@ -442,15 +459,16 @@ namespace WebCharts.Services.Models.General
             float sweepAngle
             )
         {
+            brush.IsAntialias = true;
             Graphics.DrawArc(new SKRect(x, y, x + width, y + height), startAngle, sweepAngle, true, brush);
         }
 
-        #endregion // Filling Methods
+        #endregion Filling Methods
 
         #region Other Methods
 
         /// <summary>
-        /// Measures the specified string when drawn with the specified 
+        /// Measures the specified string when drawn with the specified
         /// Font object and formatted with the specified StringFormat object.
         /// </summary>
         /// <param name="text">String to measure.</param>
@@ -470,7 +488,7 @@ namespace WebCharts.Services.Models.General
         }
 
         /// <summary>
-        /// Measures the specified string when drawn with the specified 
+        /// Measures the specified string when drawn with the specified
         /// Font object and formatted with the specified StringFormat object.
         /// </summary>
         /// <param name="text">String to measure.</param>
@@ -485,7 +503,6 @@ namespace WebCharts.Services.Models.General
             var width = p.MeasureText(text);
             var height = p.TextSize;
             return new SKSize(width, height);
-
         }
 
         /// <summary>
@@ -520,7 +537,7 @@ namespace WebCharts.Services.Models.General
             Graphics.Translate(dx, dy);
         }
 
-        #endregion // Other Methods
+        #endregion Other Methods
 
         #region Properties
 
@@ -538,8 +555,6 @@ namespace WebCharts.Services.Models.General
                 Graphics.SetMatrix(value);
             }
         }
-
-
 
         /// <summary>
         /// Gets or sets a Region object that limits the drawing region of this Graphics object.
@@ -573,7 +588,7 @@ namespace WebCharts.Services.Models.General
         /// </summary>
         public SKCanvas Graphics { get; set; } = null;
 
-        #endregion // Properties
+        #endregion Properties
 
         #region Fields
 
@@ -581,6 +596,6 @@ namespace WebCharts.Services.Models.General
         /// Graphics object
         /// </summary>
 
-        #endregion // Fields
+        #endregion Fields
     }
 }

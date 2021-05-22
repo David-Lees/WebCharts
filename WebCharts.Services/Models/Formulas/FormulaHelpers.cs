@@ -7,21 +7,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
-using WebCharts.Services.Enums;
-using WebCharts.Services.Models.Common;
-using WebCharts.Services.Models.DataManager;
-using WebCharts.Services.Models.General;
 
-namespace WebCharts.Services.Models.Formulas
+namespace WebCharts.Services
 {
-
     #region class FormulaHelper
+
     /// <summary>
     /// Formula helper is a static utility class implementing common formula related routines.
     /// </summary>
     internal static class FormulaHelper
     {
         #region Static
+
         /// <summary>
         /// Gets the formula info instance.
         /// </summary>
@@ -35,56 +32,78 @@ namespace WebCharts.Services.Models.Formulas
                 //Price indicators
                 case FinancialFormula.MovingAverage:
                     return new MovingAverageFormulaInfo();
+
                 case FinancialFormula.ExponentialMovingAverage:
                     return new ExponentialMovingAverageFormulaInfo();
+
                 case FinancialFormula.WeightedMovingAverage:
                     return new WeightedMovingAverageFormulaInfo();
+
                 case FinancialFormula.TriangularMovingAverage:
                     return new TriangularMovingAverageFormulaInfo();
+
                 case FinancialFormula.TripleExponentialMovingAverage:
                     return new TripleExponentialMovingAverageFormulaInfo();
+
                 case FinancialFormula.BollingerBands:
                     return new BollingerBandsFormulaInfo();
+
                 case FinancialFormula.TypicalPrice:
                     return new TypicalPriceFormulaInfo();
+
                 case FinancialFormula.WeightedClose:
                     return new WeightedCloseFormulaInfo();
+
                 case FinancialFormula.MedianPrice:
                     return new MedianPriceFormulaInfo();
+
                 case FinancialFormula.Envelopes:
                     return new EnvelopesFormulaInfo();
+
                 case FinancialFormula.StandardDeviation:
                     return new StandardDeviationFormulaInfo();
 
                 // Oscilators
                 case FinancialFormula.ChaikinOscillator:
                     return new ChaikinOscillatorFormulaInfo();
+
                 case FinancialFormula.DetrendedPriceOscillator:
                     return new DetrendedPriceOscillatorFormulaInfo();
+
                 case FinancialFormula.VolatilityChaikins:
                     return new VolatilityChaikinsFormulaInfo();
+
                 case FinancialFormula.VolumeOscillator:
                     return new VolumeOscillatorFormulaInfo();
+
                 case FinancialFormula.StochasticIndicator:
                     return new StochasticIndicatorFormulaInfo();
+
                 case FinancialFormula.WilliamsR:
                     return new WilliamsRFormulaInfo();
 
                 // General technical indicators
                 case FinancialFormula.AverageTrueRange:
                     return new AverageTrueRangeFormulaInfo();
+
                 case FinancialFormula.EaseOfMovement:
                     return new EaseOfMovementFormulaInfo();
+
                 case FinancialFormula.MassIndex:
                     return new MassIndexFormulaInfo();
+
                 case FinancialFormula.Performance:
                     return new PerformanceFormulaInfo();
+
                 case FinancialFormula.RateOfChange:
                     return new RateOfChangeFormulaInfo();
+
                 case FinancialFormula.RelativeStrengthIndex:
                     return new RelativeStrengthIndexFormulaInfo();
+
                 case FinancialFormula.MovingAverageConvergenceDivergence:
                     return new MovingAverageConvergenceDivergenceFormulaInfo();
+
                 case FinancialFormula.CommodityChannelIndex:
                     return new CommodityChannelIndexFormulaInfo();
 
@@ -95,14 +114,19 @@ namespace WebCharts.Services.Models.Formulas
                 // Volume Indicators
                 case FinancialFormula.MoneyFlow:
                     return new MoneyFlowFormulaInfo();
+
                 case FinancialFormula.PriceVolumeTrend:
                     return new PriceVolumeTrendFormulaInfo();
+
                 case FinancialFormula.OnBalanceVolume:
                     return new OnBalanceVolumeFormulaInfo();
+
                 case FinancialFormula.NegativeVolumeIndex:
                     return new NegativeVolumeIndexFormulaInfo();
+
                 case FinancialFormula.PositiveVolumeIndex:
                     return new PositiveVolumeIndexFormulaInfo();
+
                 case FinancialFormula.AccumulationDistribution:
                     return new AccumulationDistributionFormulaInfo();
 
@@ -122,28 +146,33 @@ namespace WebCharts.Services.Models.Formulas
             switch (chartType)
             {
                 case SeriesChartType.BoxPlot:
-                    return new DataField[] { 
-                        DataField.LowerWisker, DataField.UpperWisker, 
-                        DataField.LowerBox, DataField.UpperBox, 
+                    return new DataField[] {
+                        DataField.LowerWisker, DataField.UpperWisker,
+                        DataField.LowerBox, DataField.UpperBox,
                         DataField.Average, DataField.Median };
+
                 case SeriesChartType.Bubble:
-                    return new DataField[] { 
+                    return new DataField[] {
                         DataField.Bubble, DataField.BubbleSize };
+
                 case SeriesChartType.Candlestick:
                 case SeriesChartType.Stock:
-                    return new DataField[] { 
+                    return new DataField[] {
                         DataField.High, DataField.Low,
                         DataField.Open, DataField.Close };
+
                 case SeriesChartType.ErrorBar:
-                    return new DataField[] { 
-                        DataField.Center, 
+                    return new DataField[] {
+                        DataField.Center,
                         DataField.LowerError, DataField.UpperError};
+
                 case SeriesChartType.RangeBar:
                 case SeriesChartType.Range:
                 case SeriesChartType.RangeColumn:
                 case SeriesChartType.SplineRange:
-                    return new DataField[] { 
+                    return new DataField[] {
                         DataField.Top, DataField.Bottom };
+
                 default:
                     return new DataField[] { DataField.Y };
             }
@@ -161,6 +190,7 @@ namespace WebCharts.Services.Models.Formulas
                 default:
                 case DataField.Y:
                     return SeriesChartType.Line;
+
                 case DataField.LowerWisker:
                 case DataField.UpperWisker:
                 case DataField.LowerBox:
@@ -168,18 +198,22 @@ namespace WebCharts.Services.Models.Formulas
                 case DataField.Average:
                 case DataField.Median:
                     return SeriesChartType.BoxPlot;
+
                 case DataField.Bubble:
                 case DataField.BubbleSize:
                     return SeriesChartType.Bubble;
+
                 case DataField.High:
                 case DataField.Low:
                 case DataField.Open:
                 case DataField.Close:
                     return SeriesChartType.Stock;
+
                 case DataField.Center:
                 case DataField.LowerError:
                 case DataField.UpperError:
                     return SeriesChartType.ErrorBar;
+
                 case DataField.Top:
                 case DataField.Bottom:
                     return SeriesChartType.Range;
@@ -187,7 +221,7 @@ namespace WebCharts.Services.Models.Formulas
         }
 
         /// <summary>
-        /// Maps formula data field to a chart type specific data field. 
+        /// Maps formula data field to a chart type specific data field.
         /// </summary>
         /// <param name="chartType">Type of the chart.</param>
         /// <param name="formulaField">The formula field to be mapped.</param>
@@ -261,9 +295,10 @@ namespace WebCharts.Services.Models.Formulas
             }
         }
 
-        #endregion
+        #endregion Static
     }
-    #endregion
+
+    #endregion class FormulaHelper
 
     #region class FormulaInfo and inherited FormulaSpecific classes
 
@@ -273,41 +308,46 @@ namespace WebCharts.Services.Models.Formulas
     internal abstract class FormulaInfo
     {
         #region Fields
-        DataField[] _inputFields;
-        DataField[] _outputFields;
-        object[] _parameters;
-        #endregion
+
+        private DataField[] _inputFields;
+        private DataField[] _outputFields;
+        private object[] _parameters;
+
+        #endregion Fields
 
         #region Properties
+
         /// <summary>
         /// Gets the input data fields of the formula.
         /// </summary>
         /// <value>The input fields.</value>
-        public DataField[] InputFields 
-        { 
-            get { return _inputFields; } 
+        public DataField[] InputFields
+        {
+            get { return _inputFields; }
         }
 
         /// <summary>
         /// Gets the output data fields of the formula.
         /// </summary>
         /// <value>The output fields.</value>
-        public DataField[] OutputFields 
-        { 
-            get { return _outputFields; } 
+        public DataField[] OutputFields
+        {
+            get { return _outputFields; }
         }
 
         /// <summary>
         /// Gets the parameters of the formula.
         /// </summary>
         /// <value>The parameters.</value>
-        public object[] Parameters 
-        { 
+        public object[] Parameters
+        {
             get { return _parameters; }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FormulaInfo"/> class.
         /// </summary>
@@ -320,9 +360,11 @@ namespace WebCharts.Services.Models.Formulas
             _outputFields = outputFields;
             _parameters = defaultParams;
         }
-        #endregion
+
+        #endregion Constructors
 
         #region Methods
+
         /// <summary>
         /// Saves the formula parameters to a string.
         /// </summary>
@@ -410,7 +452,8 @@ namespace WebCharts.Services.Models.Formulas
                 }
             }
         }
-        #endregion
+
+        #endregion Methods
     }
 
     /// <summary>
@@ -426,6 +469,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MovingAverageFormulaInfo"/> class.
         /// </summary>
@@ -453,6 +497,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ExponentialMovingAverageFormulaInfo"/> class.
         /// </summary>
@@ -480,6 +525,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WeightedMovingAverageFormulaInfo"/> class.
         /// </summary>
@@ -507,6 +553,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TriangularMovingAverageFormulaInfo"/> class.
         /// </summary>
@@ -534,6 +581,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(12)                           //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TripleExponentialMovingAverageFormulaInfo"/> class.
         /// </summary>
@@ -560,6 +608,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(3, 2, true)                                          //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BollingerBandsFormulaInfo"/> class.
         /// </summary>
@@ -626,7 +675,6 @@ namespace WebCharts.Services.Models.Formulas
         }
     }
 
-
     /// <summary>
     /// Envelopes FormulaInfo
     /// </summary>
@@ -640,6 +688,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, 10, true)                                          //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvelopesFormulaInfo"/> class.
         /// </summary>
@@ -655,7 +704,6 @@ namespace WebCharts.Services.Models.Formulas
         }
     }
 
-
     /// <summary>
     /// StandardDeviation FormulaInfo
     /// </summary>
@@ -669,6 +717,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StandardDeviationFormulaInfo"/> class.
         /// </summary>
@@ -696,6 +745,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(3, 10, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChaikinOscillatorFormulaInfo"/> class.
         /// </summary>
@@ -724,6 +774,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2, false)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DetrendedPriceOscillatorFormulaInfo"/> class.
         /// </summary>
@@ -738,7 +789,6 @@ namespace WebCharts.Services.Models.Formulas
         }
     }
 
-
     /// <summary>
     /// VolatilityChaikins FormulaInfo
     /// </summary>
@@ -752,6 +802,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(10, 10)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="VolatilityChaikinsFormulaInfo"/> class.
         /// </summary>
@@ -779,6 +830,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(5, 10, true)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="VolumeOscillatorFormulaInfo"/> class.
         /// </summary>
@@ -807,6 +859,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(10, 10)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StochasticIndicatorFormulaInfo"/> class.
         /// </summary>
@@ -834,6 +887,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(14)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WilliamsRFormulaInfo"/> class.
         /// </summary>
@@ -860,6 +914,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(14)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AverageTrueRangeFormulaInfo"/> class.
         /// </summary>
@@ -903,6 +958,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(25, 9)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MassIndexFormulaInfo"/> class.
         /// </summary>
@@ -947,6 +1003,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(10)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RateOfChangeFormulaInfo"/> class.
         /// </summary>
@@ -973,6 +1030,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(10)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RelativeStrengthIndexFormulaInfo"/> class.
         /// </summary>
@@ -999,6 +1057,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(12, 26)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MovingAverageConvergenceDivergenceFormulaInfo"/> class.
         /// </summary>
@@ -1026,6 +1085,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(10)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CommodityChannelIndexFormulaInfo"/> class.
         /// </summary>
@@ -1045,7 +1105,7 @@ namespace WebCharts.Services.Models.Formulas
     internal class ForecastingFormulaInfo : FormulaInfo
     {
         //Fields
-        string _parameters;
+        private string _parameters;
 
         //Constructor
         /// <summary>
@@ -1055,6 +1115,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(TimeSeriesAndForecasting.RegressionType.Polynomial, 2, 0, true, true)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ForecastingFormulaInfo"/> class.
         /// </summary>
@@ -1136,6 +1197,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(2)                      //Defaults
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MoneyFlowFormulaInfo"/> class.
         /// </summary>
@@ -1196,6 +1258,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(double.NaN)
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NegativeVolumeIndexFormulaInfo"/> class.
         /// </summary>
@@ -1222,6 +1285,7 @@ namespace WebCharts.Services.Models.Formulas
             : this(double.NaN)
         {
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PositiveVolumeIndexFormulaInfo"/> class.
         /// </summary>
@@ -1252,9 +1316,10 @@ namespace WebCharts.Services.Models.Formulas
         }
     }
 
-    #endregion
+    #endregion class FormulaInfo and inherited FormulaSpecific classes
 
     #region enum DataField
+
     /// <summary>
     /// Chart data fields
     /// </summary>
@@ -1280,29 +1345,35 @@ namespace WebCharts.Services.Models.Formulas
         Top,
         Bottom
     }
-    #endregion
+
+    #endregion enum DataField
 
     #region class SeriesFieldInfo
+
     /// <summary>
     /// SeriesFieldInfo class is a OO representation formula input/output data params ("Series1:Y2")
     /// </summary>
     internal class SeriesFieldInfo
     {
         #region Fields
+
         private Series _series;
         private string _seriesName;
         private DataField _dataField;
-        #endregion
+
+        #endregion Fields
 
         #region Properties
+
         /// <summary>
         /// Gets the series.
         /// </summary>
         /// <value>The series.</value>
-        public Series Series 
-        { 
+        public Series Series
+        {
             get { return _series; }
         }
+
         /// <summary>
         /// Gets the name of the series.
         /// </summary>
@@ -1311,17 +1382,20 @@ namespace WebCharts.Services.Models.Formulas
         {
             get { return _series != null ? _series.Name : _seriesName; }
         }
+
         /// <summary>
         /// Gets the data field.
         /// </summary>
         /// <value>The data field.</value>
-        public DataField DataField 
-        { 
+        public DataField DataField
+        {
             get { return _dataField; }
         }
-        #endregion
+
+        #endregion Properties
 
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesFieldInfo"/> class.
         /// </summary>
@@ -1332,6 +1406,7 @@ namespace WebCharts.Services.Models.Formulas
             _series = series;
             _dataField = dataField;
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesFieldInfo"/> class.
         /// </summary>
@@ -1342,11 +1417,14 @@ namespace WebCharts.Services.Models.Formulas
             _seriesName = seriesName;
             _dataField = dataField;
         }
-        #endregion
+
+        #endregion Constructors
     }
-    #endregion
+
+    #endregion class SeriesFieldInfo
 
     #region class SeriesFieldList
+
     /// <summary>
     /// SeriesFieldInfo class is a OO representation formula input/output data params ("Series1:Y2,Series2.Y4")
     /// </summary>
@@ -1425,6 +1503,7 @@ namespace WebCharts.Services.Models.Formulas
                         case 1: //Only series name is specified: "Series1"
                             AddSeriesFieldInfo(result, series, unmappedFormulaFields);
                             break;
+
                         case 2: //Series and field names are provided: "Series1:Y3"
                             AddSeriesFieldInfo(result, series, unmappedFormulaFields, seriesFieldParts[1]);
                             break;
@@ -1437,6 +1516,7 @@ namespace WebCharts.Services.Models.Formulas
                         case 1: //Only series name is specified: "Series1"
                             AddSeriesFieldInfo(result, seriesName, unmappedFormulaFields);
                             break;
+
                         case 2: //Series and field names are provided: "Series1:Y3"
                             AddSeriesFieldInfo(result, seriesName, unmappedFormulaFields, seriesFieldParts[1]);
                             break;
@@ -1456,7 +1536,7 @@ namespace WebCharts.Services.Models.Formulas
         {
             List<DataField> seriesFields = new List<DataField>(FormulaHelper.GetDataFields(series.ChartType));
 
-            for (int i = 0; i < unmappedFormulaFields.Count && seriesFields.Count > 0; )
+            for (int i = 0; i < unmappedFormulaFields.Count && seriesFields.Count > 0;)
             {
                 DataField formulaField = unmappedFormulaFields[i];
                 DataField? seriesField = null;
@@ -1485,6 +1565,7 @@ namespace WebCharts.Services.Models.Formulas
                 }
             }
         }
+
         /// <summary>
         /// Adds the series field info.
         /// </summary>
@@ -1505,8 +1586,7 @@ namespace WebCharts.Services.Models.Formulas
             }
             else if (seriesFieldId.StartsWith("Y", StringComparison.Ordinal))
             {
-                int id = 0;
-                if (int.TryParse(seriesFieldId.Substring(1), out id))
+                if (int.TryParse(seriesFieldId[1..], out int id))
                     if (id - 1 < seriesFields.Count)
                     {
                         seriesField = seriesFields[id - 1];
@@ -1534,7 +1614,6 @@ namespace WebCharts.Services.Models.Formulas
             {
                 throw new ArgumentException(SR.ExceptionDataPointValueNameInvalid, seriesFieldId);
             }
-
         }
 
         /// <summary>
@@ -1548,7 +1627,7 @@ namespace WebCharts.Services.Models.Formulas
             SeriesChartType chartType = FormulaHelper.GetDefaultChartType(unmappedFormulaFields[0]);
             List<DataField> seriesFields = new List<DataField>(FormulaHelper.GetDataFields(chartType));
 
-            for (int i = 0; i < unmappedFormulaFields.Count && seriesFields.Count > 0; )
+            for (int i = 0; i < unmappedFormulaFields.Count && seriesFields.Count > 0;)
             {
                 DataField formulaField = unmappedFormulaFields[i];
                 DataField? seriesField = null;
@@ -1572,6 +1651,7 @@ namespace WebCharts.Services.Models.Formulas
                 }
             }
         }
+
         /// <summary>
         /// Adds the series field info.
         /// </summary>
@@ -1595,8 +1675,7 @@ namespace WebCharts.Services.Models.Formulas
             }
             else if (seriesFieldId.StartsWith("Y", StringComparison.Ordinal))
             {
-                int seriesFieldIndex = 0;
-                if (int.TryParse(seriesFieldId.Substring(1), out seriesFieldIndex))
+                if (int.TryParse(seriesFieldId[1..], out int seriesFieldIndex))
                     if (seriesFieldIndex < seriesFields.Count)
                     {
                         seriesField = seriesFields[seriesFieldIndex - 1];
@@ -1628,7 +1707,6 @@ namespace WebCharts.Services.Models.Formulas
             }
         }
     }
-    #endregion
 
+    #endregion class SeriesFieldList
 }
-
