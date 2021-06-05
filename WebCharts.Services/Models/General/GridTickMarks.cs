@@ -405,28 +405,16 @@ namespace WebCharts.Services
                 if ((decimal)current >= (decimal)Axis.ViewMinimum)
                 {
                     // Left tickmarks
-                    if (Axis.AxisPosition == AxisPosition.Left)
-                    {
-                        first.Y = (float)Axis.GetLinearPosition(current);
-                        second.Y = first.Y;
-                    }
-
                     // Right tickmarks
-                    else if (Axis.AxisPosition == AxisPosition.Right)
+                    if (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right)
                     {
                         first.Y = (float)Axis.GetLinearPosition(current);
                         second.Y = first.Y;
                     }
 
                     // Top tickmarks
-                    else if (Axis.AxisPosition == AxisPosition.Top)
-                    {
-                        first.X = (float)Axis.GetLinearPosition(current);
-                        second.X = first.X;
-                    }
-
                     // Bottom tickmarks
-                    else if (Axis.AxisPosition == AxisPosition.Bottom)
+                    else if (Axis.AxisPosition == AxisPosition.Top || Axis.AxisPosition == AxisPosition.Bottom)
                     {
                         first.X = (float)Axis.GetLinearPosition(current);
                         second.X = first.X;
@@ -642,28 +630,16 @@ namespace WebCharts.Services
                     if (position >= Axis.ViewMinimum && position <= Axis.ViewMaximum)
                     {
                         // Left tickmarks
-                        if (Axis.AxisPosition == AxisPosition.Left)
-                        {
-                            first.Y = (float)Axis.GetLinearPosition(position);
-                            second.Y = first.Y;
-                        }
-
                         // Right tickmarks
-                        else if (Axis.AxisPosition == AxisPosition.Right)
+                        if (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right)
                         {
                             first.Y = (float)Axis.GetLinearPosition(position);
                             second.Y = first.Y;
                         }
 
                         // Top tickmarks
-                        else if (Axis.AxisPosition == AxisPosition.Top)
-                        {
-                            first.X = (float)Axis.GetLinearPosition(position);
-                            second.X = first.X;
-                        }
-
                         // Bottom tickmarks
-                        else if (Axis.AxisPosition == AxisPosition.Bottom)
+                        else if (Axis.AxisPosition == AxisPosition.Top || Axis.AxisPosition == AxisPosition.Bottom)
                         {
                             first.X = (float)Axis.GetLinearPosition(position);
                             second.X = first.X;
@@ -987,7 +963,6 @@ namespace WebCharts.Services
         #region Grid fields and Constructors
 
         // Reference to the Axis object
-        private Axis _axis = null;
 
         // Flags indicate that interval properties where changed
         internal bool intervalOffsetChanged = false;
@@ -1043,7 +1018,7 @@ namespace WebCharts.Services
         {
             // Minor elements are disabled by default
             if (!enabledChanged &&
-                _axis == null &&
+                Axis == null &&
                 !major)
             {
                 enabled = false;
@@ -1052,7 +1027,7 @@ namespace WebCharts.Services
             // If object was first created and populated with data and then added into the axis
             // we need to remember changed values.
             // NOTE: Fixes issue #6237
-            if (_axis == null)
+            if (Axis == null)
             {
                 TickMark tickMark = this as TickMark;
 
@@ -1101,7 +1076,7 @@ namespace WebCharts.Services
             }
 
             // Set axis object reference
-            _axis = axis;
+            Axis = axis;
 
             // Set a flag if this object represent minor or major tick
             majorGridTick = major;
@@ -1120,7 +1095,7 @@ namespace WebCharts.Services
         /// <returns>Axis object.</returns>
         internal Axis GetAxis()
         {
-            return _axis;
+            return Axis;
         }
 
         /// <summary>
@@ -1128,9 +1103,9 @@ namespace WebCharts.Services
 		/// </summary>
 		internal void Invalidate()
         {
-            if (_axis != null)
+            if (Axis != null)
             {
-                _axis.Invalidate();
+                Axis.Invalidate();
             }
         }
 
@@ -1151,7 +1126,7 @@ namespace WebCharts.Services
             }
 
             // Check if custom grid lines should be drawn from custom labels
-            if (_axis.IsCustomGridLines())
+            if (Axis.IsCustomGridLines())
             {
                 PaintCustom(graph);
                 return;
@@ -1162,12 +1137,12 @@ namespace WebCharts.Services
 
             // Get first series attached to this axis
             Series axisSeries = null;
-            if (_axis.axisType == AxisName.X || _axis.axisType == AxisName.X2)
+            if (Axis.axisType == AxisName.X || Axis.axisType == AxisName.X2)
             {
-                List<string> seriesArray = _axis.ChartArea.GetXAxesSeries((_axis.axisType == AxisName.X) ? AxisType.Primary : AxisType.Secondary, _axis.SubAxisName);
+                List<string> seriesArray = Axis.ChartArea.GetXAxesSeries((Axis.axisType == AxisName.X) ? AxisType.Primary : AxisType.Secondary, Axis.SubAxisName);
                 if (seriesArray.Count > 0)
                 {
-                    axisSeries = _axis.Common.DataManager.Series[seriesArray[0]];
+                    axisSeries = Axis.Common.DataManager.Series[seriesArray[0]];
                     if (axisSeries != null && !axisSeries.IsXValueIndexed)
                     {
                         axisSeries = null;
@@ -1188,37 +1163,37 @@ namespace WebCharts.Services
             if (!majorGridTick && (interval == 0 || double.IsNaN(interval)))
             {
                 // Number type
-                if (_axis.majorGrid.GetIntervalType() == DateTimeIntervalType.Auto)
+                if (Axis.majorGrid.GetIntervalType() == DateTimeIntervalType.Auto)
                 {
-                    interval = _axis.majorGrid.GetInterval() / Grid.NumberOfIntervals;
+                    interval = Axis.majorGrid.GetInterval() / Grid.NumberOfIntervals;
                 }
                 // Date type
                 else
                 {
-                    DateTimeIntervalType localIntervalType = _axis.majorGrid.GetIntervalType();
-                    interval = _axis.CalcInterval(
-                        _axis.minimum,
-                        _axis.minimum + (_axis.maximum - _axis.minimum) / Grid.NumberOfDateTimeIntervals,
+                    DateTimeIntervalType localIntervalType = Axis.majorGrid.GetIntervalType();
+                    interval = Axis.CalcInterval(
+                        Axis.minimum,
+                        Axis.minimum + (Axis.maximum - Axis.minimum) / Grid.NumberOfDateTimeIntervals,
                         true,
                         out localIntervalType,
                         ChartValueType.DateTime);
                     intervalType = localIntervalType;
-                    intervalOffsetType = _axis.majorGrid.GetIntervalOffsetType();
-                    intervalOffset = _axis.majorGrid.GetIntervalOffset();
+                    intervalOffsetType = Axis.majorGrid.GetIntervalOffsetType();
+                    intervalOffset = Axis.majorGrid.GetIntervalOffset();
                 }
             }
 
             // Current position for grid lines is minimum
-            current = _axis.ViewMinimum;
+            current = Axis.ViewMinimum;
 
             // ***********************************
             // Check if the AJAX zooming and scrolling mode is enabled.
             // ***********************************
 
             // Adjust start position depending on the interval type
-            if (!_axis.ChartArea.chartAreaIsCurcular ||
-                _axis.axisType == AxisName.Y ||
-                _axis.axisType == AxisName.Y2)
+            if (!Axis.ChartArea.chartAreaIsCurcular ||
+                Axis.axisType == AxisName.Y ||
+                Axis.axisType == AxisName.Y2)
             {
                 current = ChartHelper.AlignIntervalStart(current, GetInterval(), GetIntervalType(), axisSeries, majorGridTick);
             }
@@ -1231,12 +1206,12 @@ namespace WebCharts.Services
             }
 
             // Too many gridlines
-            if ((_axis.ViewMaximum - _axis.ViewMinimum) / ChartHelper.GetIntervalSize(current, GetInterval(), GetIntervalType(), axisSeries, 0, DateTimeIntervalType.Number, true) > ChartHelper.MaxNumOfGridlines)
+            if ((Axis.ViewMaximum - Axis.ViewMinimum) / ChartHelper.GetIntervalSize(current, GetInterval(), GetIntervalType(), axisSeries, 0, DateTimeIntervalType.Number, true) > ChartHelper.MaxNumOfGridlines)
                 return;
 
             // If Maximum, minimum and interval don’t have
             // proper value do not draw grid lines.
-            if (_axis.ViewMaximum <= _axis.ViewMinimum)
+            if (Axis.ViewMaximum <= Axis.ViewMinimum)
                 return;
 
             if (GetInterval() <= 0)
@@ -1246,12 +1221,12 @@ namespace WebCharts.Services
             int counter = 0;
             int logStep = 1;
             double oldCurrent = current;
-            decimal viewMaximum = (decimal)_axis.ViewMaximum;
+            decimal viewMaximum = (decimal)Axis.ViewMaximum;
             while ((decimal)current <= viewMaximum)
             {
                 // Take an interval between gridlines. Interval
                 // depends on interval type.
-                if (majorGridTick || _axis.IsLogarithmic == false)
+                if (majorGridTick || !Axis.IsLogarithmic)
                 {
                     double autoInterval = GetInterval();
 
@@ -1264,7 +1239,7 @@ namespace WebCharts.Services
                     }
 
                     // Draw between min & max values only
-                    if ((decimal)current >= (decimal)_axis.ViewMinimum)
+                    if ((decimal)current >= (decimal)Axis.ViewMinimum)
                     {
                         DrawGrid(graph, current);
                     }
@@ -1291,7 +1266,7 @@ namespace WebCharts.Services
                     }
 
                     // Find interval for logarithmic linearised scale
-                    double logInterval = Math.Log(1 + interval * logStep, _axis.logarithmBase);
+                    double logInterval = Math.Log(1 + interval * logStep, Axis.logarithmBase);
 
                     current = oldCurrent;
 
@@ -1313,7 +1288,7 @@ namespace WebCharts.Services
                     }
 
                     // Draw between min & max values only
-                    if ((decimal)current >= (decimal)_axis.ViewMinimum && (decimal)current <= (decimal)_axis.ViewMaximum)
+                    if ((decimal)current >= (decimal)Axis.ViewMinimum && (decimal)current <= (decimal)Axis.ViewMaximum)
                     {
                         DrawGrid(graph, current);
                     }
@@ -1346,7 +1321,7 @@ namespace WebCharts.Services
         /// <returns>Returns Minimum for the range which contains current value</returns>
         private double GetLogMinimum(double current, Series axisSeries)
         {
-            double viewMinimum = _axis.ViewMinimum;
+            double viewMinimum = Axis.ViewMinimum;
             DateTimeIntervalType offsetType = (GetIntervalOffsetType() == DateTimeIntervalType.Auto) ? GetIntervalType() : GetIntervalOffsetType();
             if (GetIntervalOffset() != 0 && axisSeries == null)
             {
@@ -1365,85 +1340,86 @@ namespace WebCharts.Services
         private void DrawGrid(ChartGraphics graph, double current)
         {
             // Common elements
-            CommonElements common = _axis.Common;
+            CommonElements common = Axis.Common;
 
             SKPoint first = SKPoint.Empty; // The First point of a grid line
             SKPoint second = SKPoint.Empty; // The Second point of a grid line
             SKRect plotArea; // Plot area position
 
-            plotArea = _axis.PlotAreaPosition.ToSKRect();
+            plotArea = Axis.PlotAreaPosition.ToSKRect();
 
             // Horizontal gridlines
-            if (_axis.AxisPosition == AxisPosition.Left || _axis.AxisPosition == AxisPosition.Right)
+            if (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right)
             {
                 first.X = plotArea.Left;
                 second.X = plotArea.Right;
-                first.Y = (float)_axis.GetLinearPosition(current);
+                first.Y = (float)Axis.GetLinearPosition(current);
                 second.Y = first.Y;
             }
 
             // Vertical gridlines
-            if (_axis.AxisPosition == AxisPosition.Top || _axis.AxisPosition == AxisPosition.Bottom)
+            if (Axis.AxisPosition == AxisPosition.Top || Axis.AxisPosition == AxisPosition.Bottom)
             {
                 first.Y = plotArea.Top;
                 second.Y = plotArea.Bottom;
-                first.X = (float)_axis.GetLinearPosition(current);
+                first.X = (float)Axis.GetLinearPosition(current);
                 second.X = first.X;
             }
 
             if (common.ProcessModeRegions)
             {
-                if (_axis.ChartArea.Area3DStyle.Enable3D && !_axis.ChartArea.chartAreaIsCurcular)
+                if (Axis.ChartArea.Area3DStyle.Enable3D && !Axis.ChartArea.chartAreaIsCurcular)
                 {
                     if (!common.ProcessModePaint) //if ProcessModePaint is true it will be called later
-                        graph.Draw3DGridLine(_axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (_axis.AxisPosition == AxisPosition.Left || _axis.AxisPosition == AxisPosition.Right), common, this);
+                        graph.Draw3DGridLine(Axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right), common, this);
                 }
-                else if (!_axis.ChartArea.chartAreaIsCurcular)
+                else if (!Axis.ChartArea.chartAreaIsCurcular)
                 {
-                    using (SKPath path = new())
+                    using SKPath path = new();
+                    if (Math.Abs(first.X - second.X) > Math.Abs(first.Y - second.Y))
                     {
-                        if (Math.Abs(first.X - second.X) > Math.Abs(first.Y - second.Y))
-                        {
-                            path.AddLine(first.X, first.Y - 1, second.X, second.Y - 1);
-                            path.AddLine(second.X, second.Y + 1, first.X, first.Y + 1);
-                            path.Close();
-                        }
-                        else
-                        {
-                            path.AddLine(first.X - 1, first.Y, second.X - 1, second.Y);
-                            path.AddLine(second.X + 1, second.Y, first.X + 1, first.Y);
-                            path.Close();
-                        }
-                        common.HotRegionsList.AddHotRegion(path, true, ChartElementType.Gridlines, this);
+                        path.AddLine(first.X, first.Y - 1, second.X, second.Y - 1);
+                        path.AddLine(second.X, second.Y + 1, first.X, first.Y + 1);
+                        path.Close();
                     }
+                    else
+                    {
+                        path.AddLine(first.X - 1, first.Y, second.X - 1, second.Y);
+                        path.AddLine(second.X + 1, second.Y, first.X + 1, first.Y);
+                        path.Close();
+                    }
+                    common.HotRegionsList.AddHotRegion(path, true, ChartElementType.Gridlines, this);
                 }
             }
 
             if (common.ProcessModePaint)
             {
                 // Check if grid lines should be drawn for circular chart area
-                if (_axis.ChartArea.chartAreaIsCurcular)
+                if (Axis.ChartArea.chartAreaIsCurcular)
                 {
-                    if (_axis.axisType == AxisName.Y)
+                    if (Axis.axisType == AxisName.Y)
                     {
-                        _axis.DrawCircularLine(this, graph, borderColor, borderWidth, borderDashStyle, first.Y);
+                        Axis.DrawCircularLine(this, graph, borderColor, borderWidth, borderDashStyle, first.Y);
                     }
-                    if (_axis.axisType == AxisName.X)
+                    if (Axis.axisType == AxisName.X)
                     {
-                        ICircularChartType chartType = _axis.ChartArea.GetCircularChartType();
+                        ICircularChartType chartType = Axis.ChartArea.GetCircularChartType();
                         if (chartType != null && chartType.RadialGridLinesSupported())
                         {
-                            _axis.DrawRadialLine(this, graph, borderColor, borderWidth, borderDashStyle, current);
+                            Axis.DrawRadialLine(this, graph, borderColor, borderWidth, borderDashStyle, current);
                         }
                     }
                 }
-                else if (!_axis.ChartArea.Area3DStyle.Enable3D || _axis.ChartArea.chartAreaIsCurcular)
+                else if (!Axis.ChartArea.Area3DStyle.Enable3D || Axis.ChartArea.chartAreaIsCurcular)
                 {
+                    var sm = graph.SmoothingMode;
+                    graph.SmoothingMode = SmoothingMode.None;
                     graph.DrawLineRel(borderColor, borderWidth, borderDashStyle, first, second);
+                    graph.SmoothingMode = sm;
                 }
                 else
                 {
-                    graph.Draw3DGridLine(_axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (_axis.AxisPosition == AxisPosition.Left || _axis.AxisPosition == AxisPosition.Right), _axis.Common, this);
+                    graph.Draw3DGridLine(Axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right), Axis.Common, this);
                 }
             }
         }
@@ -1455,41 +1431,41 @@ namespace WebCharts.Services
         internal void PaintCustom(ChartGraphics graph)
         {
             // Common Elements
-            CommonElements common = _axis.Common;
+            CommonElements common = Axis.Common;
 
             SKPoint first = SKPoint.Empty; // The First point of a grid line
             SKPoint second = SKPoint.Empty; // The Second point of a grid line
-            SKRect plotArea = _axis.PlotAreaPosition.ToSKRect(); // Plot area position
+            SKRect plotArea = Axis.PlotAreaPosition.ToSKRect(); // Plot area position
 
             // Loop through all custom labels
-            foreach (CustomLabel label in _axis.CustomLabels)
+            foreach (CustomLabel label in Axis.CustomLabels)
             {
                 if ((label.GridTicks & GridTickTypes.Gridline) == GridTickTypes.Gridline)
                 {
                     double position = (label.ToPosition + label.FromPosition) / 2.0;
-                    if (position >= _axis.ViewMinimum && position <= _axis.ViewMaximum)
+                    if (position >= Axis.ViewMinimum && position <= Axis.ViewMaximum)
                     {
                         // Horizontal gridlines
-                        if (_axis.AxisPosition == AxisPosition.Left || _axis.AxisPosition == AxisPosition.Right)
+                        if (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right)
                         {
                             first.X = plotArea.Left;
                             second.X = plotArea.Right;
-                            first.Y = (float)_axis.GetLinearPosition(position);
+                            first.Y = (float)Axis.GetLinearPosition(position);
                             second.Y = first.Y;
                         }
 
                         // Vertical gridlines
-                        if (_axis.AxisPosition == AxisPosition.Top || _axis.AxisPosition == AxisPosition.Bottom)
+                        if (Axis.AxisPosition == AxisPosition.Top || Axis.AxisPosition == AxisPosition.Bottom)
                         {
                             first.Y = plotArea.Top;
                             second.Y = plotArea.Bottom;
-                            first.X = (float)_axis.GetLinearPosition(position);
+                            first.X = (float)Axis.GetLinearPosition(position);
                             second.X = first.X;
                         }
 
                         if (common.ProcessModeRegions)
                         {
-                            if (!_axis.ChartArea.Area3DStyle.Enable3D || _axis.ChartArea.chartAreaIsCurcular)
+                            if (!Axis.ChartArea.Area3DStyle.Enable3D || Axis.ChartArea.chartAreaIsCurcular)
                             {
                                 using SKPath path = new();
 
@@ -1509,19 +1485,19 @@ namespace WebCharts.Services
                             }
                             else
                             {
-                                graph.Draw3DGridLine(_axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (_axis.AxisPosition == AxisPosition.Left || _axis.AxisPosition == AxisPosition.Right), common, this);
+                                graph.Draw3DGridLine(Axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right), common, this);
                             }
                         }
 
                         if (common.ProcessModePaint)
                         {
-                            if (!_axis.ChartArea.Area3DStyle.Enable3D || _axis.ChartArea.chartAreaIsCurcular)
+                            if (!Axis.ChartArea.Area3DStyle.Enable3D || Axis.ChartArea.chartAreaIsCurcular)
                             {
                                 graph.DrawLineRel(borderColor, borderWidth, borderDashStyle, first, second);
                             }
                             else
                             {
-                                graph.Draw3DGridLine(_axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (_axis.AxisPosition == AxisPosition.Left || _axis.AxisPosition == AxisPosition.Right), _axis.Common, this);
+                                graph.Draw3DGridLine(Axis.ChartArea, borderColor, borderWidth, borderDashStyle, first, second, (Axis.AxisPosition == AxisPosition.Left || Axis.AxisPosition == AxisPosition.Right), Axis.Common, this);
                             }
                         }
                     }
@@ -1573,9 +1549,9 @@ namespace WebCharts.Services
         /// <returns></returns>
 		internal double GetIntervalOffset()
         {
-            if (majorGridTick && double.IsNaN(intervalOffset) && _axis != null)
+            if (majorGridTick && double.IsNaN(intervalOffset) && Axis != null)
             {
-                return _axis.IntervalOffset;
+                return Axis.IntervalOffset;
             }
             return intervalOffset;
         }
@@ -1620,9 +1596,9 @@ namespace WebCharts.Services
         /// <returns></returns>
 		internal DateTimeIntervalType GetIntervalOffsetType()
         {
-            if (majorGridTick && intervalOffsetType == DateTimeIntervalType.NotSet && _axis != null)
+            if (majorGridTick && intervalOffsetType == DateTimeIntervalType.NotSet && Axis != null)
             {
-                return _axis.IntervalOffsetType;
+                return Axis.IntervalOffsetType;
             }
             return intervalOffsetType;
         }
@@ -1653,35 +1629,35 @@ namespace WebCharts.Services
                 if (!majorGridTick && value != 0.0 && !Double.IsNaN(value))
                 {
                     // Prevent grids enabling during the serialization
-                    if (_axis != null && _axis.Chart != null && _axis.Chart.serializing)
+                    if (Axis != null && Axis.Chart != null && Axis.Chart.serializing)
                     {
                         Enabled = true;
                     }
                 }
 
                 // Reset original property value fields
-                if (_axis != null)
+                if (Axis != null)
                 {
                     if (this is TickMark)
                     {
                         if (majorGridTick)
                         {
-                            _axis.tempMajorTickMarkInterval = interval;
+                            Axis.tempMajorTickMarkInterval = interval;
                         }
                         else
                         {
-                            _axis.tempMinorTickMarkInterval = interval;
+                            Axis.tempMinorTickMarkInterval = interval;
                         }
                     }
                     else
                     {
                         if (majorGridTick)
                         {
-                            _axis.tempMajorGridInterval = interval;
+                            Axis.tempMajorGridInterval = interval;
                         }
                         else
                         {
-                            _axis.tempMinorGridInterval = interval;
+                            Axis.tempMinorGridInterval = interval;
                         }
                     }
                 }
@@ -1709,9 +1685,9 @@ namespace WebCharts.Services
         /// <returns></returns>
 		internal double GetInterval()
         {
-            if (majorGridTick && double.IsNaN(interval) && _axis != null)
+            if (majorGridTick && double.IsNaN(interval) && Axis != null)
             {
-                return _axis.Interval;
+                return Axis.Interval;
             }
             return interval;
         }
@@ -1735,15 +1711,15 @@ namespace WebCharts.Services
                 intervalTypeChanged = true;
 
                 // Reset original property value fields
-                if (_axis != null)
+                if (Axis != null)
                 {
                     if (this is TickMark)
                     {
-                        _axis.tempTickMarkIntervalType = intervalType;
+                        Axis.tempTickMarkIntervalType = intervalType;
                     }
                     else
                     {
-                        _axis.tempGridIntervalType = intervalType;
+                        Axis.tempGridIntervalType = intervalType;
                     }
                 }
 
@@ -1770,10 +1746,10 @@ namespace WebCharts.Services
         /// <returns></returns>
 		internal DateTimeIntervalType GetIntervalType()
         {
-            if (majorGridTick && intervalType == DateTimeIntervalType.NotSet && _axis != null)
+            if (majorGridTick && intervalType == DateTimeIntervalType.NotSet && Axis != null)
             {
                 // Return default value during serialization
-                return _axis.IntervalType;
+                return Axis.IntervalType;
             }
             return intervalType;
         }
@@ -1886,11 +1862,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Gets or sets the reference to the Axis object
         /// </summary>
-        internal Axis Axis
-        {
-            get { return _axis; }
-            set { _axis = value; }
-        }
+        internal Axis Axis { get; set; } = null;
 
         #endregion
     }

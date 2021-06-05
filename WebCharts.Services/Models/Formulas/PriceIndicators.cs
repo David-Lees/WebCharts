@@ -71,7 +71,6 @@ namespace WebCharts.Services
         internal void MovingAverage(double[] inputValues, out double[] outputValues, int period, bool FromFirst)
         {
             double[][] tempInput = new double[2][];
-            double[][] tempOutput = new double[2][];
             string[] parList = new string[1];
             string[] extList = new string[1];
 
@@ -81,7 +80,7 @@ namespace WebCharts.Services
             tempInput[0] = new double[inputValues.Length];
             tempInput[1] = inputValues;
 
-            MovingAverage(tempInput, out tempOutput, parList, extList);
+            MovingAverage(tempInput, out double[][] tempOutput, parList, extList);
 
             outputValues = tempOutput[1];
         }
@@ -249,7 +248,6 @@ namespace WebCharts.Services
         internal void ExponentialMovingAverage(double[] inputValues, out double[] outputValues, int period, bool startFromFirst)
         {
             double[][] tempInput = new double[2][];
-            double[][] tempOutput = new double[2][];
             string[] parList = new string[1];
             string[] extList = new string[1];
 
@@ -259,7 +257,7 @@ namespace WebCharts.Services
             tempInput[0] = new double[inputValues.Length];
             tempInput[1] = inputValues;
 
-            ExponentialMovingAverage(tempInput, out tempOutput, parList, extList);
+            ExponentialMovingAverage(tempInput, out double[][] tempOutput, parList, extList);
 
             outputValues = tempOutput[1];
         }
@@ -513,7 +511,7 @@ namespace WebCharts.Services
         /// <param name="outputValues">Arrays of doubles: 1. row - X values, 2. row - Moving average</param>
         /// <param name="parameterList">Array of strings: 1. Period</param>
         /// <param name="extraParameterList">Array of strings: 1. Start from zero</param>
-        private void WeightedMovingAverage(double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList)
+        private static void WeightedMovingAverage(double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList)
         {
             int length = inputValues.Length;
 
@@ -1057,7 +1055,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="inputValues">Input X and Y values</param>
         /// <param name="numOfYValues">The number of Y values</param>
-        public void CheckNumOfValues(double[][] inputValues, int numOfYValues)
+        public static void CheckNumOfValues(double[][] inputValues, int numOfYValues)
         {
             // Different number of x and y values
             if (inputValues[0].Length != inputValues[1].Length)

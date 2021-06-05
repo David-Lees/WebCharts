@@ -392,8 +392,9 @@ namespace WebCharts.Services
                         // NOTE: Lines of code below were added to fix issue #4048
                         sideBySideWidth = (float)(ser.GetPointWidth(graph, hAxis, interval, 0.8)) / numberOfLinkedSeries;
                     }
-                    else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                    else if (string.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
                     {
+                        // Do nothing
                     }
                     else
                     {
@@ -1577,7 +1578,7 @@ namespace WebCharts.Services
                 }
 
                 // Check if parameter is specified
-                typeName = typeName.Substring(errorBarType.ToString().Length);
+                typeName = typeName[errorBarType.ToString().Length..];
                 if (typeName.Length > 0)
                 {
                     // Must be followed by '(' and ends with ')'
@@ -1585,14 +1586,11 @@ namespace WebCharts.Services
                     {
                         throw (new InvalidOperationException(SR.ExceptionErrorBarTypeFormatInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
                     }
-                    typeName = typeName.Substring(1, typeName.Length - 2);
+                    typeName = typeName[1..^1];
 
-                    if (typeName.Length > 0)
+                    if (typeName.Length > 0 && !double.TryParse(typeName, NumberStyles.Any, CultureInfo.InvariantCulture, out param))
                     {
-                        if (!double.TryParse(typeName, NumberStyles.Any, CultureInfo.InvariantCulture, out param))
-                        {
-                            throw (new InvalidOperationException(SR.ExceptionErrorBarTypeFormatInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
-                        }
+                        throw (new InvalidOperationException(SR.ExceptionErrorBarTypeFormatInvalid(errorBarSeries[CustomPropertyName.ErrorBarType])));
                     }
                 }
             }
@@ -1743,7 +1741,7 @@ namespace WebCharts.Services
             int valueTypeIndex = linkedSeriesName.IndexOf(":", StringComparison.Ordinal);
             if (valueTypeIndex >= 0)
             {
-                valueName = linkedSeriesName.Substring(valueTypeIndex + 1);
+                valueName = linkedSeriesName[(valueTypeIndex + 1)..];
                 linkedSeriesName = linkedSeriesName.Substring(0, valueTypeIndex);
             }
 

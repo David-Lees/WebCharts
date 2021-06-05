@@ -448,7 +448,7 @@ namespace WebCharts.Services
                 }
 
                 // Get original Renko series
-                Series pieSeries = chart.Series[series.Name.Substring(18)];
+                Series pieSeries = chart.Series[series.Name[18..]];
 
                 // Copy data back to original Pie series
                 pieSeries.Points.Clear();
@@ -498,7 +498,7 @@ namespace WebCharts.Services
             // 3D Pie Chart
             if (area.Area3DStyle.Enable3D)
             {
-                float pieWidth = 10 * area.Area3DStyle.PointDepth / 100;
+                float pieWidth = 10 * area.Area3DStyle.PointDepth / 100.0f;
 
                 // Set Clip Region
                 graph.SetClip(area.Position.ToSKRect());
@@ -1821,7 +1821,7 @@ namespace WebCharts.Services
             DataPoint firstPoint, lastPoint;
 
             firstPoint = points[0];
-            lastPoint = points[points.Count - 1];
+            lastPoint = points[^1];
 
             // Change color for last point if same as the first and if it is from pallete.
             if (firstPoint.tempColorIsSet && lastPoint.tempColorIsSet && firstPoint.Color == lastPoint.Color)
@@ -2139,9 +2139,9 @@ namespace WebCharts.Services
             {
                 shift = startArea - startOfIntervals[0];
             }
-            else if (endOfIntervals[endOfIntervals.Length - 1] > endArea)
+            else if (endOfIntervals[^1] > endArea)
             {
-                shift = endArea - endOfIntervals[endOfIntervals.Length - 1];
+                shift = endArea - endOfIntervals[^1];
             }
 
             for (int index = 0; index < startOfIntervals.Length; index++)
@@ -4249,17 +4249,17 @@ namespace WebCharts.Services
                 // rotation from -180 to 180 ), Front point could be at 90 and 450
                 // Case frontPoint == -1 is set because of rounding error.
                 // ***************************************************************
-                if (startAngle <= 90 && endAngle > 90 || startAngle <= 450 && endAngle > 450 && frontPoint == -1 && (points[points.Length - 1] == null || points.Length == 1))
+                if (startAngle <= 90 && endAngle > 90 || startAngle <= 450 && endAngle > 450 && frontPoint == -1 && (points[^1] == null || points.Length == 1))
                 {
                     /*
                    if( points[points.Length-1] != null && points.Length != 1)
                         throw new InvalidOperationException(SR.ExceptionPiePointOrderInvalid);
                     */
                     frontPoint = pointIndx;
-                    points[points.Length - 1] = point;
-                    newStartAngleList[points.Length - 1] = startAngleList[pointIndx];
-                    newSweepAngleList[points.Length - 1] = sweepAngleList[pointIndx];
-                    newPointIndexList[points.Length - 1] = pointIndexList[pointIndx];
+                    points[^1] = point;
+                    newStartAngleList[^1] = startAngleList[pointIndx];
+                    newSweepAngleList[^1] = sweepAngleList[pointIndx];
+                    newPointIndexList[^1] = pointIndexList[pointIndx];
                 }
 
                 pointIndx++;
@@ -4275,7 +4275,7 @@ namespace WebCharts.Services
             // put same point in two fields.
             if (frontPoint == backPoint && points.Length != 1)
             {
-                points[points.Length - 1] = null;
+                points[^1] = null;
                 newStartAngleList[points.Length - 1] = 0;
                 newSweepAngleList[points.Length - 1] = 0;
                 newPointIndexList[points.Length - 1] = 0;
@@ -4956,7 +4956,7 @@ namespace WebCharts.Services
                 }
 
                 // Find where are more empty spaces – on the top or on the bottom.
-                bool moreEmptyUp = numEmptyUp > numEmptyDown ? true : false;
+                bool moreEmptyUp = numEmptyUp > numEmptyDown;
 
                 // Find average number of empty spaces for top and bottom.
                 int numMove = (numEmptyUp + numEmptyDown) / 2;
@@ -5481,6 +5481,7 @@ namespace WebCharts.Services
         /// <param name="list">List to add to.</param>
         public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
         {
+            // TODO: Check if this should be empty
         }
 
         #endregion SmartLabelStyle methods

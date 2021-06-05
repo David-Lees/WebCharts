@@ -667,7 +667,7 @@ namespace WebCharts.Services
                         double width = ser.GetPointWidth(graph, vAxis, interval, 0.8);
 
                         // Adjust width by number of stacked groups
-                        width = width / (double)stackGroupNames.Count;
+                        width /= stackGroupNames.Count;
 
                         // Call Back Paint event
                         if (!selection)
@@ -681,11 +681,11 @@ namespace WebCharts.Services
                         {
                             if (yValue >= 0)
                             {
-                                yValue = yValue + PreviousPosY;
+                                yValue += PreviousPosY;
                             }
                             else
                             {
-                                yValue = yValue + PreviousNegY;
+                                yValue += PreviousNegY;
                             }
                         }
 
@@ -1111,7 +1111,7 @@ namespace WebCharts.Services
                         // Adjust label background position that can be changed by the
                         // Smart Labels algorithm
                         // NOTE: Fixes issue #4688
-                        labelBackPosition = area.smartLabels.GetLabelPosition(
+                        labelBackPosition = SmartLabel.GetLabelPosition(
                             graph,
                             labelPosition,
                             sizeLabel,
@@ -1271,7 +1271,7 @@ namespace WebCharts.Services
             Series seriesToDraw)
         {
             // Get list of series to draw
-            List<string> typeSeries = null;
+            List<string> typeSeries;
 
             // Get all series names that belong the same cluster
             typeSeries = area.GetClusterSeriesNames(seriesToDraw.Name);

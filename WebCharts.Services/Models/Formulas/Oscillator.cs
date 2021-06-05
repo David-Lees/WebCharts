@@ -82,10 +82,10 @@ namespace WebCharts.Services
             // Starting average from the first data point or after period.
             bool startFromFirst = bool.Parse(extraParameterList[0]);
 
-            VolumeIndicators volume = new VolumeIndicators();
+            VolumeIndicators volume = new();
 
             // Accumulation Distribution
-            volume.AccumulationDistribution(inputValues, out double[][] outputDistribution);
+            VolumeIndicators.AccumulationDistribution(inputValues, out double[][] outputDistribution);
 
             // Exponential Moving average of Accumulation Distribution
             ExponentialMovingAverage(outputDistribution[1], out double[] ExpAvgDistribution, longPeriod, startFromFirst);

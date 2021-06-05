@@ -1255,7 +1255,7 @@ namespace WebCharts.Services
                     {
                         axisPosition = plottingRect.Top;
                     }
-                    axisPosition = axisPosition - plottingRect.Top;
+                    axisPosition -= plottingRect.Top;
                 }
                 else if (axis.AxisPosition == AxisPosition.Right)
                 {
@@ -1271,7 +1271,7 @@ namespace WebCharts.Services
                     {
                         axisPosition = plottingRect.Left;
                     }
-                    axisPosition = axisPosition - plottingRect.Left;
+                    axisPosition -= plottingRect.Left;
                 }
 
                 //******************************************************
@@ -2016,11 +2016,10 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="graph">Chart graphics.</param>
         /// <param name="cursorOnly">Indicates that only cursors are redrawn.</param>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", Justification = "These parameters are used when compiling for the WinForms version of Chart")]
         internal void PaintCursors(ChartGraphics graph, bool cursorOnly)
         {
             // Cursors and selection are supoorted only in 2D charts
-            if (Area3DStyle.Enable3D == true)
+            if (Area3DStyle.Enable3D)
             {
                 return;
             }
@@ -2469,7 +2468,7 @@ namespace WebCharts.Services
                 for (int sectorIndex = 0; sectorIndex < sectorNumber; sectorIndex++)
                 {
                     // Create new axis object
-                    CircularChartAreaAxis axis = new CircularChartAreaAxis(sectorIndex * 360f / sectorNumber);
+                    CircularChartAreaAxis axis = new(sectorIndex * 360f / sectorNumber);
 
                     // Check if custom X axis labels will be used
                     if (AxisX.CustomLabels.Count > 0)
@@ -2532,7 +2531,7 @@ namespace WebCharts.Services
         /// <returns>List of 'ChartTypeAndSeriesInfo' objects.</returns>
         private ArrayList GetChartTypesAndSeriesToDraw()
         {
-            ArrayList resultList = new ArrayList();
+            ArrayList resultList = new();
 
             // Build chart type or series position based lists
             if (ChartTypes.Count > 1 &&
@@ -2542,8 +2541,8 @@ namespace WebCharts.Services
                 )
             {
                 // Array of chart type names that do not require furher processing
-                ArrayList processedChartType = new ArrayList();
-                ArrayList splitChartType = new ArrayList();
+                ArrayList processedChartType = new();
+                ArrayList splitChartType = new();
 
                 // Draw using the exact order in the series collection
                 int seriesIndex = 0;
@@ -2680,10 +2679,6 @@ namespace WebCharts.Services
         /// Releases unmanaged and - optionally - managed resources
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "axisX")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "axisX2")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "axisY")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "axisY2")]
         protected override void Dispose(bool disposing)
         {
             if (disposing)

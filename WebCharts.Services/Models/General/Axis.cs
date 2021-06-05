@@ -248,12 +248,6 @@ namespace WebCharts.Services
             {
                 _titleFont = _fontCache.DefaultFont;
             }
-#if SUBAXES
-			if(this.subAxes == null)
-			{
-				this.subAxes = new SubAxisCollection(this);
-			}
-#endif
 
             // Create collection of scale segments
             if (scaleSegments == null)
@@ -338,41 +332,6 @@ namespace WebCharts.Services
                 return string.Empty;
             }
         }
-
-#if SUBAXES
-
-		/// <summary>
-		/// Indicates if this axis object present the main or sub axis.
-		/// </summary>
-		virtual internal bool IsSubAxis
-		{
-			get
-			{
-				return false;
-			}
-		}
-
-		private SubAxisCollection subAxes = null;
-
-		/// <summary>
-		/// Sub-axes collection.
-		/// </summary>
-		[
-		SRCategory("CategoryAttributeSubAxes"),
-
-		SRDescription("DescriptionAttributeSubAxes"),
-		DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        Editor(Editors.ChartCollectionEditor.Editor, Editors.ChartCollectionEditor.Base)
-		]
-		virtual public SubAxisCollection SubAxes
-		{
-			get
-			{
-				return this.subAxes;
-			}
-		}
-
-#endif // SUBAXES
 
         /// <summary>
         /// Gets or sets a flag which indicates whether interlaced strip lines will be displayed for the axis.
@@ -1085,18 +1044,6 @@ namespace WebCharts.Services
                 // Paint Labels
                 labelStyle.Paint(graph, true);
             }
-
-#if SUBAXES
-			// Process all sub-axis
-			if(!ChartArea.Area3DStyle.Enable3D &&
-				!ChartArea.chartAreaIsCurcular)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.PrePaint( graph );
-				}
-			}
-#endif // SUBAXES
         }
 
         /// <summary>
@@ -1209,17 +1156,6 @@ namespace WebCharts.Services
             // Draw axis title
             DrawAxisTitle(graph);
 
-#if SUBAXES
-			// Process all sub-axis
-			if(ChartArea.IsSubAxesSupported)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.Paint( graph );
-				}
-			}
-#endif // SUBAXES
-
             // Reset temp axis offset for side-by-side charts like column
             ResetTempAxisOffset();
         }
@@ -1239,17 +1175,6 @@ namespace WebCharts.Services
                 // Paint Major Tick Marks
                 majorTickMark.Paint(graph, false);
             }
-
-#if SUBAXES
-			// Process all sub-axis
-			if(ChartArea.IsSubAxesSupported)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.PaintOnSegmentedScalePassOne( graph );
-				}
-			}
-#endif // SUBAXES
         }
 
         /// <summary>
@@ -1273,17 +1198,6 @@ namespace WebCharts.Services
 
             // Reset temp axis offset for side-by-side charts like column
             ResetTempAxisOffset();
-
-#if SUBAXES
-			// Process all sub-axis
-			if(ChartArea.IsSubAxesSupported)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.PaintOnSegmentedScalePassTwo( graph );
-				}
-			}
-#endif // SUBAXES
         }
 
         /// <summary>
@@ -1545,8 +1459,8 @@ namespace WebCharts.Services
 
             // Rotate left tile 90 degrees at center
             SKPoint center = SKPoint.Empty;
-            center.X = titlePosition.Left + titlePosition.Width / 2F;
-            center.Y = titlePosition.Top + titlePosition.Height / 2F;
+            center.X = titlePosition.MidX;
+            center.Y = titlePosition.MidY;
 
             // Create and set new transformation matrix
             float angle = (GetTextOrientation() == TextOrientation.Rotated90) ? 90f : -90f;
@@ -1583,13 +1497,15 @@ namespace WebCharts.Services
             {
                 if (rect.Width > rect.Height)
                 {
-                    rect.Left += (rect.Width - rect.Height) / 2f;
-                    rect.Right = rect.Left + rect.Height;
+                    var h = rect.Height;
+                    rect.Left += (rect.Width - h) / 2f;
+                    rect.Right = rect.Left + h;
                 }
                 else
                 {
-                    rect.Top += (rect.Height - rect.Width) / 2f;
-                    rect.Bottom = rect.Top + rect.Width;
+                    var w = rect.Width;
+                    rect.Top += (rect.Height - w) / 2f;
+                    rect.Bottom = rect.Top + w;
                 }
             }
 
@@ -1766,7 +1682,7 @@ namespace WebCharts.Services
             format.FormatFlags |= StringFormatFlags.LineLimit;
 
             // Measure title size for non-centered aligment
-            SKSize realTitleSize = graph.MeasureString(axisTitle.Replace("\\n", "\n"), TitleFont, new SKSize(10000f, 10000f), format, GetTextOrientation());
+            SKSize realTitleSize = ChartGraphics.MeasureString(axisTitle.Replace("\\n", "\n"), TitleFont, new SKSize(10000f, 10000f), format, GetTextOrientation());
             SKSize axisTitleSize = SKSize.Empty;
             if (format.Alignment != StringAlignment.Center)
             {
@@ -1993,18 +1909,6 @@ namespace WebCharts.Services
             switch (AxisPosition)
             {
                 case AxisPosition.Left:
-
-                    first.X = (float)GetAxisPosition();
-                    first.Y = PlotAreaPosition.Bottom;
-                    second.X = (float)GetAxisPosition();
-                    second.Y = PlotAreaPosition.Y;
-                    if (isReversed)
-                        arrowOrientation = ArrowOrientation.Bottom;
-                    else
-                        arrowOrientation = ArrowOrientation.Top;
-
-                    break;
-
                 case AxisPosition.Right:
 
                     first.X = (float)GetAxisPosition();
@@ -2019,18 +1923,6 @@ namespace WebCharts.Services
                     break;
 
                 case AxisPosition.Bottom:
-
-                    first.X = PlotAreaPosition.X;
-                    first.Y = (float)GetAxisPosition();
-                    second.X = PlotAreaPosition.Right;
-                    second.Y = (float)GetAxisPosition();
-                    if (isReversed)
-                        arrowOrientation = ArrowOrientation.Left;
-                    else
-                        arrowOrientation = ArrowOrientation.Right;
-
-                    break;
-
                 case AxisPosition.Top:
 
                     first.X = PlotAreaPosition.X;
@@ -2055,7 +1947,10 @@ namespace WebCharts.Services
             {
                 if (!ChartArea.Area3DStyle.Enable3D || ChartArea.chartAreaIsCurcular)
                 {
+                    var sm = graph.SmoothingMode;
+                    graph.SmoothingMode = SmoothingMode.None;
                     graph.DrawLineRel(_lineColor, _lineWidth, _lineDashStyle, first, second);
+                    graph.SmoothingMode = sm;
 
                     // Opposite axis. Arrow uses this axis to find
                     // a shift from Common.Chart area border. This shift
@@ -2395,18 +2290,6 @@ namespace WebCharts.Services
         {
             obj = null;
 
-#if SUBAXES
-			// Paint grids of sub-axis
-			if(!ChartArea.Area3DStyle.Enable3D &&
-				!ChartArea.chartAreaIsCurcular)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.PaintGrids( graph, out obj);
-				}
-			}
-#endif // SUBAXES
-
             // Axis is disabled
             if (!enabled)
                 return;
@@ -2441,17 +2324,6 @@ namespace WebCharts.Services
         internal void PaintStrips(ChartGraphics graph, bool selectionMode, int x, int y, out object obj, bool drawLinesOnly)
         {
             obj = null;
-
-#if SUBAXES
-			// Paint strips of sub-axis
-			if(ChartArea.IsSubAxesSupported)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.PaintStrips( graph, selectionMode, x, y, out obj, drawLinesOnly);
-				}
-			}
-#endif // SUBAXES
 
             // Axis is disabled
             if (!enabled)
@@ -2720,18 +2592,6 @@ namespace WebCharts.Services
             // This field synchronies the Storing and
             // resetting of temporary values
             _storeValuesEnabled = true;
-
-#if SUBAXES
-
-			// Reset auto values of all sub-axis
-			if(ChartArea.IsSubAxesSupported)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.ResetAutoValues( );
-				}
-			}
-#endif // SUBAXES
         }
 
         /// <summary>
@@ -2749,17 +2609,6 @@ namespace WebCharts.Services
             float axesNumber,
             bool autoPlotPosition)
         {
-#if SUBAXES
-			// Resize all sub-axis
-			if(ChartArea.IsSubAxesSupported)
-			{
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					subAxis.Resize(chartGraph, chartAreaPosition, plotArea, axesNumber, autoPlotPosition);
-				}
-			}
-#endif // SUBAXES
-
             // Disable Common.Chart invalidation
             bool oldDisableInvalidates = Common.Chart.disableInvalidates;
             Common.Chart.disableInvalidates = true;
@@ -2781,7 +2630,7 @@ namespace WebCharts.Services
 
                 // Switch Width & Heigth for vertical axes
                 // If axis is horizontal
-                float maxTitlesize = 0;
+                float maxTitlesize;
                 if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
                 {
                     maxTitlesize = (plotArea.Height / 100F) * (maxAxisTitleSize / axesNumber);
@@ -2799,7 +2648,7 @@ namespace WebCharts.Services
                 {
                     titleStringSize = chartGraph.GetAbsoluteSize(titleStringSize);
                     titleStringSize = chartGraph.GetRelativeSize(new SKSize(titleStringSize.Height, titleStringSize.Width));
-                    maxTitlesize = (plotArea.Width / 100F) * (Axis.maxAxisTitleSize / axesNumber);
+                    maxTitlesize = (plotArea.Width / 100F) * (maxAxisTitleSize / axesNumber);
                     if (IsTextVertical)
                     {
                         titleSize = Math.Min(titleStringSize.Width, maxTitlesize);
@@ -2815,13 +2664,9 @@ namespace WebCharts.Services
                 titleSize += elementSpacing;
             }
 
-            //*********************************************************
-            //** Get arrow size of the opposite axis
-            //*********************************************************
-            float arrowSize = 0F;
             SKSize arrowSizePrimary = SKSize.Empty;
             SKSize arrowSizeSecondary = SKSize.Empty;
-            ArrowOrientation arrowOrientation = ArrowOrientation.Bottom;
+            ArrowOrientation arrowOrientation;
             if (axisType == AxisName.X || axisType == AxisName.X2)
             {
                 if (ChartArea.AxisY.ArrowStyle != AxisArrowStyle.None)
@@ -2863,6 +2708,11 @@ namespace WebCharts.Services
                 }
             }
 
+
+            //*********************************************************
+            //** Get arrow size of the opposite axis
+            //*********************************************************
+            float arrowSize;
             // If axis is horizontal
             if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
             {
@@ -3149,7 +2999,6 @@ namespace WebCharts.Services
                         else if (!noWordWrap &&
                             (LabelAutoFitStyle & LabelAutoFitStyles.WordWrap) == LabelAutoFitStyles.WordWrap)
                         {
-                            bool changed = false;
                             autoLabelOffset = 0;
 
                             // Check if backup copy of the original lables was made
@@ -3164,7 +3013,7 @@ namespace WebCharts.Services
                             }
 
                             // Try to insert new line character into the longest label
-                            changed = WordWrapLongestLabel(CustomLabels);
+                            bool changed = WordWrapLongestLabel(CustomLabels);
 
                             // Word wrapping do not solve the labels overlapping issue
                             if (!changed)
@@ -3350,24 +3199,6 @@ namespace WebCharts.Services
                 labelSize += totlaGroupingLabelsSize;
             }
 
-#if SUBAXES
-			// Calculate offsets for all sub axes
-			if(!ChartArea.Area3DStyle.Enable3D &&
-				!ChartArea.chartAreaIsCurcular)
-			{
-				float currentOffset = this.markSize + this.labelSize + this.titleSize + this.scrollBarSize;
-				foreach(SubAxis subAxis in this.SubAxes)
-				{
-					if(subAxis.Enabled != AxisEnabled.False)
-					{
-						currentOffset += (float)subAxis.LocationOffset;
-						subAxis.offsetFromParent = currentOffset;
-						currentOffset += subAxis.markSize + subAxis.labelSize + subAxis.titleSize;
-					}
-				}
-			}
-#endif // SUBAXES
-
             // Restore previous invalidation flag
             Common.Chart.disableInvalidates = oldDisableInvalidates;
         }
@@ -3505,7 +3336,7 @@ namespace WebCharts.Services
                     return false;
                 }
                 // This feature is not supported if the axis doesn't have data range
-                if (Double.IsNaN(minimum) || Double.IsNaN(maximum))
+                if (Double.IsNaN(minimum) || double.IsNaN(maximum))
                 {
                     return false;
                 }
@@ -4887,27 +4718,13 @@ namespace WebCharts.Services
                         }
                         else
                         {
-                            if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
+                            if (width >= rect.Width * 2F && checkWidth)
                             {
-                                if (width >= rect.Width * 2F && checkWidth)
-                                {
-                                    return false;
-                                }
-                                if (height >= rect.Height * 2F && checkHeight)
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
-                            else
+                            if (height >= rect.Height * 2F && checkHeight)
                             {
-                                if (width >= rect.Width * 2F && checkWidth)
-                                {
-                                    return false;
-                                }
-                                if (height >= rect.Height * 2F && checkHeight)
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
                         }
 

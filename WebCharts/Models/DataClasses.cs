@@ -306,16 +306,16 @@ namespace WebCharts.Models
     }
 
     /// <summary>Label offset definition</summary>
-    public class labeloffet
+    public class LabelOffset
     {
         /// <summary>Left or right alignment</summary>
-        public string align { get; set; }
+        public string Align { get; set; }
 
         /// <summary>X Offset in pixels</summary>
-        public int xoffset { get; set; }
+        public int Xoffset { get; set; }
 
         /// <summary>Y offset in pixels</summary>
-        public int yoffset { get; set; }
+        public int Yoffset { get; set; }
     }
 
     /// <summary>Stores the text for the map labels drop down on the WaveNet map page</summary>

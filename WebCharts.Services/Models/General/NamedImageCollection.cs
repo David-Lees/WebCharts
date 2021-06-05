@@ -46,8 +46,6 @@ namespace WebCharts.Services
     {
         #region Fields
 
-        private string _name = string.Empty;
-        private SKImage _image = null;
 
         #endregion Fields
 
@@ -67,8 +65,8 @@ namespace WebCharts.Services
         /// <param name="image">Image object.</param>
         public NamedImage(string name, SKImage image)
         {
-            _name = name;
-            _image = image;
+            Name = name;
+            Image = image;
         }
 
         #endregion Constructor
@@ -81,17 +79,7 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeNamedImage_Name"),
         ]
-        public override string Name
-        {
-            get
-            {
-                return _name;
-            }
-            set
-            {
-                _name = value;
-            }
-        }
+        public override string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the image object.
@@ -99,17 +87,7 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeNamedImage_Image"),
         ]
-        public SKImage Image
-        {
-            get
-            {
-                return _image;
-            }
-            set
-            {
-                _image = value;
-            }
-        }
+        public SKImage Image { get; set; } = null;
 
         #endregion Properties
 
@@ -121,14 +99,10 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && Image != null)
             {
-                // Dispose managed resources
-                if (_image != null)
-                {
-                    _image.Dispose();
-                    _image = null;
-                }
+                Image.Dispose();
+                Image = null;
             }
             base.Dispose(disposing);
         }

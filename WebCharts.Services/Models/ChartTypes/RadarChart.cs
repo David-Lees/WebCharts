@@ -808,7 +808,7 @@ namespace WebCharts.Services
             {
                 if (area.CircularSectorsNumber == dataPointPos.Length - 1)
                 {
-                    leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[dataPointPos.Length - 2]);
+                    leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[^2]);
                 }
             }
 
@@ -1169,26 +1169,24 @@ namespace WebCharts.Services
                             true);
 
                         // Draw label text
-                        using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
-                        {
-                            graph.DrawPointLabelStringRel(
-                                common,
-                                text,
-                                point.Font,
-                                brush,
-                                position,
-                                format,
-                                textAngle,
-                                labelBackPosition,
+                        using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
+                        graph.DrawPointLabelStringRel(
+                            common,
+                            text,
+                            point.Font,
+                            brush,
+                            position,
+                            format,
+                            textAngle,
+                            labelBackPosition,
 
-                                point.LabelBackColor,
-                                point.LabelBorderColor,
-                                point.LabelBorderWidth,
-                                point.LabelBorderDashStyle,
-                                ser,
-                                point,
-                                pointIndex);
-                        }
+                            point.LabelBackColor,
+                            point.LabelBorderColor,
+                            point.LabelBorderWidth,
+                            point.LabelBorderDashStyle,
+                            ser,
+                            point,
+                            pointIndex);
                     }
                 }
             }

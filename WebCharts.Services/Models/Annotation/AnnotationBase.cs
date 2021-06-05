@@ -2386,7 +2386,7 @@ namespace WebCharts.Services
                         else
                         {
                             // Get new position using alignment in format
-                            SKRect newPosition = Chart.chartPicture.annotationSmartLabel.GetLabelPosition(
+                            SKRect newPosition = SmartLabel.GetLabelPosition(
                                 Chart.chartPicture.ChartGraph,
                                 newlocation,
                                 size,

@@ -374,10 +374,6 @@ namespace WebCharts.Services
                                 pointRangeMax = prevDataPoint;
                                 pointRangeMin = point;
                             }
-
-                            // NOTE: Prev. version code - A.G.
-                            //								yValueRangeMin = Math.Min(yValue, yValuePrev);
-                            //								yValueRangeMax = Math.Max(yValue, yValuePrev);
                         }
                         else
                         {
@@ -391,10 +387,6 @@ namespace WebCharts.Services
                                 yValueRangeMin = yValue;
                                 pointRangeMin = point;
                             }
-
-                            // NOTE: Prev. version code - A.G.
-                            //								yValueRangeMin = Math.Min(yValue, yValueRangeMin);
-                            //								yValueRangeMax = Math.Max(yValue, yValueRangeMax);
                         }
 
                         // Remember last point
@@ -501,17 +493,11 @@ namespace WebCharts.Services
                         pointRangeMin,
                         pointRangeMax,
                         index - 1,
-                        (prevPointIsEmpty) ? emptyLinePen : linePen,
+                        prevPointIsEmpty ? emptyLinePen : linePen,
                         prevPoint.X,
                         (float)yValueRangeMin,
                         prevPoint.X,
                         (float)yValueRangeMax);
-
-                    verticalLineDetected = false;
-                    yValueRangeMin = double.NaN;
-                    yValueRangeMax = double.NaN;
-                    pointRangeMin = null;
-                    pointRangeMax = null;
                 }
             }
 
@@ -548,9 +534,6 @@ namespace WebCharts.Services
             float secondPointY
             )
         {
-            Graph.Graphics.DrawCircle(firstPointX, firstPointY, 20, new SKPaint() { Color = SKColors.Red, Style = SKPaintStyle.Fill });
-            Graph.Graphics.DrawText("Test", firstPointX, firstPointY, pen);
-
             // Transform 3D coordinates
             if (chartArea3DEnabled)
             {

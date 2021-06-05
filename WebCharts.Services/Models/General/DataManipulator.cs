@@ -249,10 +249,8 @@ namespace WebCharts.Services
         #region Fields
 
         // Indicates that filtering do not remove points, just mark them as empty
-        private bool _filterSetEmptyPoints = false;
 
         // Indicates that points that match the criteria must be filtered out
-        private bool _filterMatchedPoints = true;
 
         #endregion Fields
 
@@ -328,7 +326,7 @@ namespace WebCharts.Services
                         {
                             if (createNew)
                             {
-                                Series newSeries = new Series(seriesName.Trim());
+                                Series newSeries = new(seriesName.Trim());
                                 Common.DataManager.Series.Add(newSeries);
                                 array[index] = newSeries;
                             }
@@ -378,7 +376,7 @@ namespace WebCharts.Services
             }
 
             // Sort series
-            DataPointComparer comparer = new DataPointComparer(series[0], pointSortOrder, sortBy);
+            DataPointComparer comparer = new(series[0], pointSortOrder, sortBy);
             this.Sort(comparer, series);
         }
 
@@ -636,7 +634,7 @@ namespace WebCharts.Services
             // Add offset to the start position
             if (intervalOffset != 0)
             {
-                fromX = fromX + ChartHelper.GetIntervalSize(fromX, intervalOffset, ConvertIntervalType(intervalOffsetType), null, 0, DateTimeIntervalType.Number, true, false);
+                fromX += ChartHelper.GetIntervalSize(fromX, intervalOffset, ConvertIntervalType(intervalOffsetType), null, 0, DateTimeIntervalType.Number, true, false);
             }
 
             //**************************************************
@@ -736,19 +734,19 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="type">Interval type value.</param>
         /// <returns>Date time interval type value.</returns>
-        private DateTimeIntervalType ConvertIntervalType(IntervalType type)
+        private static DateTimeIntervalType ConvertIntervalType(IntervalType type)
         {
             return type switch
             {
-                (IntervalType.Milliseconds) => DateTimeIntervalType.Milliseconds,
-                (IntervalType.Seconds) => DateTimeIntervalType.Seconds,
-                (IntervalType.Days) => DateTimeIntervalType.Days,
-                (IntervalType.Hours) => DateTimeIntervalType.Hours,
-                (IntervalType.Minutes) => DateTimeIntervalType.Minutes,
-                (IntervalType.Months) => DateTimeIntervalType.Months,
-                (IntervalType.Number) => DateTimeIntervalType.Number,
-                (IntervalType.Weeks) => DateTimeIntervalType.Weeks,
-                (IntervalType.Years) => DateTimeIntervalType.Years,
+                IntervalType.Milliseconds => DateTimeIntervalType.Milliseconds,
+                IntervalType.Seconds => DateTimeIntervalType.Seconds,
+                IntervalType.Days => DateTimeIntervalType.Days,
+                IntervalType.Hours => DateTimeIntervalType.Hours,
+                IntervalType.Minutes => DateTimeIntervalType.Minutes,
+                IntervalType.Months => DateTimeIntervalType.Months,
+                IntervalType.Number => DateTimeIntervalType.Number,
+                IntervalType.Weeks => DateTimeIntervalType.Weeks,
+                IntervalType.Years => DateTimeIntervalType.Years,
                 _ => DateTimeIntervalType.Auto,
             };
         }
@@ -932,7 +930,7 @@ namespace WebCharts.Services
                     //*****************************************************
                     //** Create new table for the series
                     //*****************************************************
-                    DataTable seriesTable = new DataTable(ser.Name);
+                    DataTable seriesTable = new(ser.Name);
                     seriesTable.Locale = System.Globalization.CultureInfo.CurrentCulture;
 
                     //*****************************************************
@@ -1103,17 +1101,7 @@ namespace WebCharts.Services
         /// If set to true, filtered points are marked as empty; otherwise they are removed.
         /// This property defaults to be false.
         /// </summary>
-        public bool FilterSetEmptyPoints
-        {
-            get
-            {
-                return _filterSetEmptyPoints;
-            }
-            set
-            {
-                _filterSetEmptyPoints = value;
-            }
-        }
+        public bool FilterSetEmptyPoints { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value that determines if points are filtered
@@ -1122,17 +1110,7 @@ namespace WebCharts.Services
         /// If set to false, points that do not match the criteria are filtered.
         /// This property defaults to be true.
         /// </summary>
-        public bool FilterMatchedPoints
-        {
-            get
-            {
-                return _filterMatchedPoints;
-            }
-            set
-            {
-                _filterMatchedPoints = value;
-            }
-        }
+        public bool FilterMatchedPoints { get; set; } = true;
 
         #endregion Filtering properties
 
@@ -1377,10 +1355,10 @@ namespace WebCharts.Services
         private class PointElementFilter : IDataSKPointilter
         {
             // Private fields
-            private DataManipulator _dataManipulator = null;
+            private readonly DataManipulator _dataManipulator = null;
 
-            private DateRangeType _dateRange;
-            private int[] _rangeElements = null;
+            private readonly DateRangeType _dateRange;
+            private readonly int[] _rangeElements = null;
 
             // Default constructor is not accesiable
             private PointElementFilter()
@@ -1397,7 +1375,7 @@ namespace WebCharts.Services
             {
                 _dataManipulator = dataManipulator;
                 _dateRange = dateRange;
-                _rangeElements = dataManipulator.ConvertElementIndexesToArray(rangeElements);
+                _rangeElements = ConvertElementIndexesToArray(rangeElements);
             }
 
             /// <summary>
@@ -1409,7 +1387,7 @@ namespace WebCharts.Services
             /// <returns>Indicates that point should be filtered.</returns>
             public bool FilterDataPoint(DataPoint point, Series series, int pointIndex)
             {
-                return _dataManipulator.CheckFilterElementCriteria(
+                return CheckFilterElementCriteria(
                     _dateRange,
                     _rangeElements,
                     point);
@@ -1423,10 +1401,10 @@ namespace WebCharts.Services
         private class PointValueFilter : IDataSKPointilter
         {
             // Private fields
-            private CompareMethod _compareMethod;
+            private readonly CompareMethod _compareMethod;
 
-            private string _usingValue;
-            private double _compareValue;
+            private readonly string _usingValue;
+            private readonly double _compareValue;
 
             /// <summary>
             /// Default constructor is not accessible
@@ -1504,7 +1482,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="rangeElements">Element indexes string. Ex:"3,5,6-9,15"</param>
         /// <returns>Array of integer indexes.</returns>
-        private int[] ConvertElementIndexesToArray(string rangeElements)
+        private static int[] ConvertElementIndexesToArray(string rangeElements)
         {
             // Split input string by comma
             string[] indexes = rangeElements.Split(',');
@@ -1578,7 +1556,7 @@ namespace WebCharts.Services
         /// <param name="rangeElements">Array of element indexes ranges (pairs).</param>
         /// <param name="point">Data point to check.</param>
         /// <returns>True if point matches the criteria.</returns>
-        private bool CheckFilterElementCriteria(
+        private static bool CheckFilterElementCriteria(
             DateRangeType dateRange,
             int[] rangeElements,
             DataPoint point)
@@ -2235,10 +2213,10 @@ namespace WebCharts.Services
                 // Copy input data into temp storage
                 if (input != output)
                 {
-                    Series inputTemp = new Series("Temp", input.YValuesPerPoint);
+                    Series inputTemp = new("Temp", input.YValuesPerPoint);
                     foreach (DataPoint point in input.Points)
                     {
-                        DataPoint dp = new DataPoint(inputTemp);
+                        DataPoint dp = new(inputTemp);
                         dp.AxisLabel = point.AxisLabel;
                         dp.XValue = point.XValue;
                         point.YValues.CopyTo(dp.YValues, 0);
@@ -2352,7 +2330,7 @@ namespace WebCharts.Services
                         //**************************************************
                         //** Create new point object
                         //**************************************************
-                        DataPoint newPoint = new DataPoint();
+                        DataPoint newPoint = new();
                         newPoint.ResizeYValueArray(outputValuesNumber - 1);
                         newPoint.XValue = pointTempValues[0];
                         newPoint.AxisLabel = currentLabel;
@@ -2629,7 +2607,7 @@ namespace WebCharts.Services
                             //**************************************************
                             //** Create new point object
                             //**************************************************
-                            DataPoint newPoint = new DataPoint();
+                            DataPoint newPoint = new();
                             newPoint.ResizeYValueArray(outputValuesNumber - 1);
                             newPoint.XValue = pointTempValues[0];
                             for (int i = 1; i < pointTempValues.Length; i++)
@@ -2898,7 +2876,7 @@ namespace WebCharts.Services
                         pointTempValues[functionInfo.outputIndex] = 0;
 
                         // Create a list of uniques values
-                        ArrayList uniqueValues = new ArrayList(intervalLastIndex - intervalFirstIndex + 1);
+                        ArrayList uniqueValues = new(intervalLastIndex - intervalFirstIndex + 1);
 
                         // Second pass through inteval points required for calculations
                         for (int secondPassIndex = intervalFirstIndex; secondPassIndex <= intervalLastIndex; secondPassIndex++)
@@ -2991,7 +2969,7 @@ namespace WebCharts.Services
             }
 
             // Check each formula in the array
-            GroupingFunctionInfo defaultFormula = new GroupingFunctionInfo();
+            GroupingFunctionInfo defaultFormula = new();
             foreach (string s in valueFormulas)
             {
                 // Trim white space and make upper case
@@ -3123,35 +3101,24 @@ namespace WebCharts.Services
             }
 
             // Check formula name
-            if (formulaParts[formulaParts.Length - 1] == "MIN")
-                return GroupingFunction.Min;
-            else if (formulaParts[formulaParts.Length - 1] == "MAX")
-                return GroupingFunction.Max;
-            else if (formulaParts[formulaParts.Length - 1] == "AVE")
-                return GroupingFunction.Ave;
-            else if (formulaParts[formulaParts.Length - 1] == "SUM")
-                return GroupingFunction.Sum;
-            else if (formulaParts[formulaParts.Length - 1] == "FIRST")
-                return GroupingFunction.First;
-            else if (formulaParts[formulaParts.Length - 1] == "LAST")
-                return GroupingFunction.Last;
-            else if (formulaParts[formulaParts.Length - 1] == "HILOOPCL")
-                return GroupingFunction.HiLoOpCl;
-            else if (formulaParts[formulaParts.Length - 1] == "HILO")
-                return GroupingFunction.HiLo;
-            else if (formulaParts[formulaParts.Length - 1] == "COUNT")
-                return GroupingFunction.Count;
-            else if (formulaParts[formulaParts.Length - 1] == "DISTINCTCOUNT")
-                return GroupingFunction.DistinctCount;
-            else if (formulaParts[formulaParts.Length - 1] == "VARIANCE")
-                return GroupingFunction.Variance;
-            else if (formulaParts[formulaParts.Length - 1] == "DEVIATION")
-                return GroupingFunction.Deviation;
-            else if (formulaParts[formulaParts.Length - 1] == "CENTER")
-                return GroupingFunction.Center;
-
-            // Invalid formula name
-            throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaNameInvalid(formulaString)));
+            return formulaParts[^1] switch
+            {
+                "MIN" => GroupingFunction.Min,
+                "MAX" => GroupingFunction.Max,
+                "AVE" => GroupingFunction.Ave,
+                "SUM" => GroupingFunction.Sum,
+                "FIRST" => GroupingFunction.First,
+                "LAST" => GroupingFunction.Last,
+                "HILOOPCL" => GroupingFunction.HiLoOpCl,
+                "HILO" => GroupingFunction.HiLo,
+                "COUNT" => GroupingFunction.Count,
+                "DISTINCTCOUNT" => GroupingFunction.DistinctCount,
+                "VARIANCE" => GroupingFunction.Variance,
+                "DEVIATION" => GroupingFunction.Deviation,
+                "CENTER" => GroupingFunction.Center,
+                // Invalid formula name
+                _ => throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaNameInvalid(formulaString))),
+            };
         }
 
         /// <summary>
@@ -3160,7 +3127,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="inputSeries">Input series array.</param>
         /// <param name="outputSeries">Output series array.</param>
-		private void CheckSeriesArrays(Series[] inputSeries, Series[] outputSeries)
+		private static void CheckSeriesArrays(Series[] inputSeries, Series[] outputSeries)
         {
             // At least one series must be in the input series
             if (inputSeries == null || inputSeries.Length == 0)

@@ -247,16 +247,17 @@ namespace WebCharts.Services
                 if (ser.IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
                 {
                     string attribValue = ser[CustomPropertyName.DrawSideBySide];
-                    if (String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
+                    if (string.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         currentShowSideBySide = false;
                     }
-                    else if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                    else if (string.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         currentShowSideBySide = true;
                     }
-                    else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                    else if (string.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
                     {
+                        // Do nothing
                     }
                     else
                     {
@@ -989,20 +990,21 @@ namespace WebCharts.Services
                 if (ser.IsCustomPropertySet(CustomPropertyName.DrawSideBySide))
                 {
                     string attribValue = ser[CustomPropertyName.DrawSideBySide];
-                    if (String.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
+                    if (string.Compare(attribValue, "False", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         currentShowSideBySide = false;
                     }
-                    else if (String.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
+                    else if (string.Compare(attribValue, "True", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         currentShowSideBySide = true;
                     }
-                    else if (String.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
+                    else if (string.Compare(attribValue, "Auto", StringComparison.OrdinalIgnoreCase) == 0)
                     {
+                        // Do nothing
                     }
                     else
                     {
-                        throw (new InvalidOperationException(SR.ExceptionAttributeDrawSideBySideInvalid));
+                        throw new InvalidOperationException(SR.ExceptionAttributeDrawSideBySideInvalid);
                     }
                 }
 

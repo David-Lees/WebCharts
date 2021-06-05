@@ -17,17 +17,25 @@ namespace WebCharts.Services
         SKColor[] PaletteCustomColors { get; set; }
         SeriesCollection Series { get; }
 
-        int GetNumberOfPoints(params string[] series);
+        double GetMaxHundredPercentStackedYValue(bool supportNegative, params string[] series);
 
-        double GetMaxYValue(int valueIndex, params string[] series);
+        double GetMaxStackedXValue(params string[] series);
 
-        double GetMaxYWithRadiusValue(ChartArea area, params string[] series);
+        double GetMaxStackedYValue(int valueIndex, params string[] series);
+
+        double GetMaxUnsignedStackedYValue(int valueIndex, params string[] series);
+
+        double GetMaxXValue(params string[] series);
 
         double GetMaxXWithRadiusValue(ChartArea area, params string[] series);
 
-        double GetMinXWithRadiusValue(ChartArea area, params string[] series);
+        double GetMaxYValue(int valueIndex, params string[] series);
 
-        double GetMaxXValue(params string[] series);
+        double GetMaxYValue(params string[] series);
+
+        double GetMaxYWithRadiusValue(ChartArea area, params string[] series);
+
+        double GetMinHundredPercentStackedYValue(bool supportNegative, params string[] series);
 
         void GetMinMaxXValue(out double min, out double max, params string[] series);
 
@@ -37,31 +45,23 @@ namespace WebCharts.Services
 
         void GetMinMaxYValue(System.Collections.ArrayList seriesList, out double min, out double max);
 
-        double GetMaxStackedYValue(int valueIndex, params string[] series);
-
-        double GetMaxYValue(params string[] series);
-
-        double GetMaxUnsignedStackedYValue(int valueIndex, params string[] series);
-
-        double GetMaxStackedXValue(params string[] series);
-
-        double GetMinYValue(int valueIndex, params string[] series);
-
-        double GetMinYWithRadiusValue(ChartArea area, params string[] series);
-
-        double GetMinYValue(params string[] series);
-
-        double GetMinXValue(params string[] series);
+        double GetMinStackedXValue(params string[] series);
 
         double GetMinStackedYValue(int valueIndex, params string[] series);
 
         double GetMinUnsignedStackedYValue(int valueIndex, params string[] series);
 
-        double GetMinStackedXValue(params string[] series);
+        double GetMinXValue(params string[] series);
 
-        double GetMaxHundredPercentStackedYValue(bool supportNegative, params string[] series);
+        double GetMinXWithRadiusValue(ChartArea area, params string[] series);
 
-        double GetMinHundredPercentStackedYValue(bool supportNegative, params string[] series);
+        double GetMinYValue(int valueIndex, params string[] series);
+
+        double GetMinYValue(params string[] series);
+
+        double GetMinYWithRadiusValue(ChartArea area, params string[] series);
+
+        int GetNumberOfPoints(params string[] series);
     }
 
     /// <summary>
@@ -71,12 +71,10 @@ namespace WebCharts.Services
     {
         #region Fields
 
+        // Chart color palette
+
         // Series collection
         private SeriesCollection _series = null;
-
-        // Chart color palette
-        private ChartColorPalette _colorPalette = ChartColorPalette.BrightPastel;
-
         #endregion Fields
 
         #region Constructors and initialization
@@ -118,6 +116,28 @@ namespace WebCharts.Services
         #endregion Constructors and initialization
 
         #region Chart picture painting events hanlers
+
+        /// <summary>
+        /// Event fired after chart picture was painted.
+        /// </summary>
+        /// <param name="sender">Sender object.</param>
+        /// <param name="e">Event arguments.</param>
+		private void ChartPicture_AfterPaint(object sender, ChartPaintEventArgs e)
+        {
+            ChartService control = Common.Chart;
+            if (control != null)
+            {
+                // Clean up series after drawing
+                for (int index = 0; index < Series.Count; index++)
+                {
+                    Series series = Series[index];
+                    if (series.UnPrepareData())
+                    {
+                        --index;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Event fired when chart picture is going to be painted.
@@ -169,29 +189,6 @@ namespace WebCharts.Services
                 }
             }
         }
-
-        /// <summary>
-        /// Event fired after chart picture was painted.
-        /// </summary>
-        /// <param name="sender">Sender object.</param>
-        /// <param name="e">Event arguments.</param>
-		private void ChartPicture_AfterPaint(object sender, ChartPaintEventArgs e)
-        {
-            ChartService control = Common.Chart;
-            if (control != null)
-            {
-                // Clean up series after drawing
-                for (int index = 0; index < Series.Count; index++)
-                {
-                    Series series = Series[index];
-                    if (series.UnPrepareData())
-                    {
-                        --index;
-                    }
-                }
-            }
-        }
-
         #endregion Chart picture painting events hanlers
 
         #region Series data preparation methods
@@ -266,34 +263,236 @@ namespace WebCharts.Services
         #region Series Min/Max values methods
 
         /// <summary>
-        /// This method checks if data point should be skipped. This
-        /// method will return true if data point is empty.
+        /// Gets maximum hundred percent stacked Y value
         /// </summary>
-        /// <param name="point">Data point</param>
-        /// <returns>This method returns true if data point is empty.</returns>
-        private static bool IsPointSkipped(DataPoint point)
+        /// <param name="supportNegative">Indicates that negative values are shown on the other side of the axis.</param>
+        /// <param name="series">Series names</param>
+        /// <returns>Maximum 100% stacked Y value</returns>
+        public double GetMaxHundredPercentStackedYValue(bool supportNegative, params string[] series)
         {
-            if (point.IsEmpty)
+            double returnValue = 0;
+
+            // Convert array of series names into array of series
+            Series[] seriesArray = new Series[series.Length];
+            int seriesIndex = 0;
+            foreach (string seriesName in series)
             {
-                return true;
+                seriesArray[seriesIndex++] = _series[seriesName];
             }
 
-            return false;
+            // Loop through all dat points
+            try
+            {
+                for (int pointIndex = 0; pointIndex < _series[series[0]].Points.Count; pointIndex++)
+                {
+                    // Calculate the total for all series
+                    double totalPerPoint = 0;
+                    double positiveTotalPerPoint = 0;
+                    foreach (Series ser in seriesArray)
+                    {
+                        if (supportNegative)
+                        {
+                            totalPerPoint += Math.Abs(ser.Points[pointIndex].YValues[0]);
+                        }
+                        else
+                        {
+                            totalPerPoint += ser.Points[pointIndex].YValues[0];
+                        }
+
+                        if (ser.Points[pointIndex].YValues[0] > 0 || supportNegative == false)
+                        {
+                            positiveTotalPerPoint += ser.Points[pointIndex].YValues[0];
+                        }
+                    }
+                    totalPerPoint = Math.Abs(totalPerPoint);
+
+                    // Calculate percentage of total
+                    if (totalPerPoint != 0)
+                    {
+                        returnValue = Math.Max(returnValue,
+                            (positiveTotalPerPoint / totalPerPoint) * 100.0);
+                    }
+                }
+            }
+            catch (System.Exception)
+            {
+                throw (new InvalidOperationException(SR.ExceptionDataManager100StackedSeriesPointsNumeberMismatch));
+            }
+
+            return returnValue;
         }
 
         /// <summary>
-        /// Gets max number of data points in specified series.
+        /// Gets maximum stacked X value from many series
         /// </summary>
         /// <param name="series">Series IDs</param>
-        /// <returns>Maximum number of data points</returns>
-        public int GetNumberOfPoints(params string[] series)
+        /// <returns>Maximum stacked X value</returns>
+        public double GetMaxStackedXValue(params string[] series)
         {
-            int numberOfPoints = 0;
+            double returnValue = 0;
+            double numberOfPoints = GetNumberOfPoints(series);
+            for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
+            {
+                double doubleIndexValue = 0;
+                foreach (string seriesName in series)
+                {
+                    if (_series[seriesName].Points.Count > pointIndex)
+                    {
+                        if (_series[seriesName].Points[pointIndex].XValue > 0)
+                        {
+                            doubleIndexValue += _series[seriesName].Points[pointIndex].XValue;
+                        }
+                    }
+                }
+                returnValue = Math.Max(returnValue, doubleIndexValue);
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Gets maximum stacked Y value from many series
+        /// </summary>
+        /// <param name="valueIndex">Index of Y value to use</param>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Maximum stacked Y value</returns>
+        public double GetMaxStackedYValue(int valueIndex, params string[] series)
+        {
+            double returnValue = 0;
+            double numberOfPoints = GetNumberOfPoints(series);
+            for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
+            {
+                double stackedMax = 0;
+                double noStackedMax = 0;
+                foreach (string seriesName in series)
+                {
+                    if (_series[seriesName].Points.Count > pointIndex)
+                    {
+                        // Take chart type from the series
+                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
+                        IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
+
+                        // If stacked area
+                        if (!chartType.StackSign)
+                            continue;
+
+                        if (chartType.Stacked)
+                        {
+                            if (_series[seriesName].Points[pointIndex].YValues[valueIndex] > 0)
+                            {
+                                stackedMax += _series[seriesName].Points[pointIndex].YValues[valueIndex];
+                            }
+                        }
+                        else
+                        {
+                            noStackedMax = Math.Max(noStackedMax, _series[seriesName].Points[pointIndex].YValues[valueIndex]);
+                        }
+                    }
+                }
+                stackedMax = Math.Max(stackedMax, noStackedMax);
+                returnValue = Math.Max(returnValue, stackedMax);
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Gets maximum Unsigned stacked Y value from many series ( Stacked Area chart )
+        /// </summary>
+        /// <param name="valueIndex">Index of Y value to use</param>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Maximum stacked Y value</returns>
+        public double GetMaxUnsignedStackedYValue(int valueIndex, params string[] series)
+        {
+            double returnValue = 0;
+            double maxValue = Double.MinValue;
+            double numberOfPoints = GetNumberOfPoints(series);
+            for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
+            {
+                double stackedMax = 0;
+                double noStackedMax = 0;
+                foreach (string seriesName in series)
+                {
+                    if (_series[seriesName].Points.Count > pointIndex)
+                    {
+                        // Take chart type from the series
+                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
+                        IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
+
+                        // If stacked column and bar
+                        if (chartType.StackSign || double.IsNaN(_series[seriesName].Points[pointIndex].YValues[valueIndex]))
+                        {
+                            continue;
+                        }
+
+                        if (chartType.Stacked)
+                        {
+                            maxValue = Double.MinValue;
+                            stackedMax += _series[seriesName].Points[pointIndex].YValues[valueIndex];
+                            if (stackedMax > maxValue)
+                                maxValue = stackedMax;
+                        }
+                        else
+                        {
+                            noStackedMax = Math.Max(noStackedMax, _series[seriesName].Points[pointIndex].YValues[valueIndex]);
+                        }
+                    }
+                }
+                maxValue = Math.Max(maxValue, noStackedMax);
+                returnValue = Math.Max(returnValue, maxValue);
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Gets maximum X value from many series
+        /// </summary>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Maximum X value</returns>
+        public double GetMaxXValue(params string[] series)
+        {
+            double returnValue = Double.MinValue;
             foreach (string seriesName in series)
             {
-                numberOfPoints = Math.Max(numberOfPoints, _series[seriesName].Points.Count);
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
+                {
+                    returnValue = Math.Max(returnValue, seriesPoint.XValue);
+                }
             }
-            return numberOfPoints;
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Get Maximum value for X and Radius (Y2) ( used for bubble chart )
+        /// </summary>
+        /// <param name="area">Chart Area</param>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Maximum X value</returns>
+        public double GetMaxXWithRadiusValue(ChartArea area, params string[] series)
+        {
+            double returnValue = Double.MinValue;
+            foreach (string seriesName in series)
+            {
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
+                {
+                    // The empty point
+                    if (IsPointSkipped(seriesPoint))
+                    {
+                        continue;
+                    }
+
+                    if (!double.IsNaN(seriesPoint.XValue))
+                    {
+                        if (seriesPoint.YValues.Length > 1)
+                        {
+                            returnValue = Math.Max(returnValue, seriesPoint.XValue + BubbleChart.AxisScaleBubbleSize(area.Common, area, seriesPoint.XValue, false));
+                        }
+                        else
+                        {
+                            returnValue = Math.Max(returnValue, seriesPoint.XValue);
+                        }
+                    }
+                }
+            }
+            return returnValue;
         }
 
         /// <summary>
@@ -318,6 +517,36 @@ namespace WebCharts.Services
                     if (!double.IsNaN(seriesPoint.YValues[valueIndex]))
                     {
                         returnValue = Math.Max(returnValue, seriesPoint.YValues[valueIndex]);
+                    }
+                }
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Gets maximum Y value from many series
+        /// </summary>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Maximum Y value</returns>
+        public double GetMaxYValue(params string[] series)
+        {
+            double returnValue = Double.MinValue;
+            foreach (string seriesName in series)
+            {
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
+                {
+                    // The empty point
+                    if (IsPointSkipped(seriesPoint))
+                    {
+                        continue;
+                    }
+
+                    foreach (double y in seriesPoint.YValues)
+                    {
+                        if (!double.IsNaN(y))
+                        {
+                            returnValue = Math.Max(returnValue, y);
+                        }
                     }
                 }
             }
@@ -360,120 +589,63 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Get Maximum value for X and Radius (Y2) ( used for bubble chart )
+        /// Gets minimum hundred percent stacked Y value
         /// </summary>
-        /// <param name="area">Chart Area</param>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Maximum X value</returns>
-        public double GetMaxXWithRadiusValue(ChartArea area, params string[] series)
+        /// <param name="supportNegative">Indicates that negative values are shown on the other side of the axis.</param>
+        /// <param name="series">Series names</param>
+        /// <returns>Minimum 100% stacked Y value</returns>
+        public double GetMinHundredPercentStackedYValue(bool supportNegative, params string[] series)
         {
-            double returnValue = Double.MinValue;
+            double returnValue = 0.0;
+
+            // Convert array of series names into array of series
+            Series[] seriesArray = new Series[series.Length];
+            int seriesIndex = 0;
             foreach (string seriesName in series)
             {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    // The empty point
-                    if (IsPointSkipped(seriesPoint))
-                    {
-                        continue;
-                    }
+                seriesArray[seriesIndex++] = _series[seriesName];
+            }
 
-                    if (!double.IsNaN(seriesPoint.XValue))
+            // Loop through all dat points
+            try
+            {
+                for (int pointIndex = 0; pointIndex < _series[series[0]].Points.Count; pointIndex++)
+                {
+                    // Calculate the total for all series
+                    double totalPerPoint = 0;
+                    double negativeTotalPerPoint = 0;
+                    foreach (Series ser in seriesArray)
                     {
-                        if (seriesPoint.YValues.Length > 1)
+                        if (supportNegative)
                         {
-                            returnValue = Math.Max(returnValue, seriesPoint.XValue + BubbleChart.AxisScaleBubbleSize(area.Common, area, seriesPoint.XValue, false));
+                            totalPerPoint += Math.Abs(ser.Points[pointIndex].YValues[0]);
                         }
                         else
                         {
-                            returnValue = Math.Max(returnValue, seriesPoint.XValue);
+                            totalPerPoint += ser.Points[pointIndex].YValues[0];
                         }
-                    }
-                }
-            }
-            return returnValue;
-        }
 
-        /// <summary>
-        /// Get Minimum value for X and Radius Y2 ( used for bubble chart )
-        /// </summary>
-        /// <param name="area">Chart Area</param>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Minimum X value</returns>
-        public double GetMinXWithRadiusValue(ChartArea area, params string[] series)
-        {
-            double returnValue = Double.MaxValue;
-            foreach (string seriesName in series)
-            {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    // The empty point
-                    if (IsPointSkipped(seriesPoint))
-                    {
-                        continue;
-                    }
-
-                    if (!double.IsNaN(seriesPoint.XValue))
-                    {
-                        if (seriesPoint.YValues.Length > 1)
+                        if (ser.Points[pointIndex].YValues[0] < 0 || supportNegative == false)
                         {
-                            returnValue = Math.Min(returnValue, seriesPoint.XValue - BubbleChart.AxisScaleBubbleSize(area.Common, area, seriesPoint.YValues[1], false));
-                        }
-                        else
-                        {
-                            returnValue = Math.Min(returnValue, seriesPoint.XValue);
+                            negativeTotalPerPoint += ser.Points[pointIndex].YValues[0];
                         }
                     }
-                }
-            }
-            return returnValue;
-        }
 
-        /// <summary>
-        /// Gets maximum Y value from many series
-        /// </summary>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Maximum Y value</returns>
-        public double GetMaxYValue(params string[] series)
-        {
-            double returnValue = Double.MinValue;
-            foreach (string seriesName in series)
-            {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    // The empty point
-                    if (IsPointSkipped(seriesPoint))
+                    totalPerPoint = Math.Abs(totalPerPoint);
+
+                    // Calculate percentage of total
+                    if (totalPerPoint != 0)
                     {
-                        continue;
-                    }
-
-                    foreach (double y in seriesPoint.YValues)
-                    {
-                        if (!double.IsNaN(y))
-                        {
-                            returnValue = Math.Max(returnValue, y);
-                        }
+                        returnValue = Math.Min(returnValue,
+                            (negativeTotalPerPoint / totalPerPoint) * 100.0);
                     }
                 }
             }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Gets maximum X value from many series
-        /// </summary>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Maximum X value</returns>
-        public double GetMaxXValue(params string[] series)
-        {
-            double returnValue = Double.MinValue;
-            foreach (string seriesName in series)
+            catch (System.Exception)
             {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    returnValue = Math.Max(returnValue, seriesPoint.XValue);
-                }
+                throw (new InvalidOperationException(SR.ExceptionDataManager100StackedSeriesPointsNumeberMismatch));
             }
+
             return returnValue;
         }
 
@@ -595,104 +767,11 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Gets maximum stacked Y value from many series
-        /// </summary>
-        /// <param name="valueIndex">Index of Y value to use</param>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Maximum stacked Y value</returns>
-        public double GetMaxStackedYValue(int valueIndex, params string[] series)
-        {
-            double returnValue = 0;
-            double numberOfPoints = GetNumberOfPoints(series);
-            for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
-            {
-                double stackedMax = 0;
-                double noStackedMax = 0;
-                foreach (string seriesName in series)
-                {
-                    if (_series[seriesName].Points.Count > pointIndex)
-                    {
-                        // Take chart type from the series
-                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
-                        IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
-
-                        // If stacked area
-                        if (!chartType.StackSign)
-                            continue;
-
-                        if (chartType.Stacked)
-                        {
-                            if (_series[seriesName].Points[pointIndex].YValues[valueIndex] > 0)
-                            {
-                                stackedMax += _series[seriesName].Points[pointIndex].YValues[valueIndex];
-                            }
-                        }
-                        else
-                        {
-                            noStackedMax = Math.Max(noStackedMax, _series[seriesName].Points[pointIndex].YValues[valueIndex]);
-                        }
-                    }
-                }
-                stackedMax = Math.Max(stackedMax, noStackedMax);
-                returnValue = Math.Max(returnValue, stackedMax);
-            }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Gets maximum Unsigned stacked Y value from many series ( Stacked Area chart )
-        /// </summary>
-        /// <param name="valueIndex">Index of Y value to use</param>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Maximum stacked Y value</returns>
-        public double GetMaxUnsignedStackedYValue(int valueIndex, params string[] series)
-        {
-            double returnValue = 0;
-            double maxValue = Double.MinValue;
-            double numberOfPoints = GetNumberOfPoints(series);
-            for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
-            {
-                double stackedMax = 0;
-                double noStackedMax = 0;
-                foreach (string seriesName in series)
-                {
-                    if (_series[seriesName].Points.Count > pointIndex)
-                    {
-                        // Take chart type from the series
-                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
-                        IChartType chartType = chartTypeRegistry.GetChartType(_series[seriesName].ChartTypeName);
-
-                        // If stacked column and bar
-                        if (chartType.StackSign || double.IsNaN(_series[seriesName].Points[pointIndex].YValues[valueIndex]))
-                        {
-                            continue;
-                        }
-
-                        if (chartType.Stacked)
-                        {
-                            maxValue = Double.MinValue;
-                            stackedMax += _series[seriesName].Points[pointIndex].YValues[valueIndex];
-                            if (stackedMax > maxValue)
-                                maxValue = stackedMax;
-                        }
-                        else
-                        {
-                            noStackedMax = Math.Max(noStackedMax, _series[seriesName].Points[pointIndex].YValues[valueIndex]);
-                        }
-                    }
-                }
-                maxValue = Math.Max(maxValue, noStackedMax);
-                returnValue = Math.Max(returnValue, maxValue);
-            }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Gets maximum stacked X value from many series
+        /// Gets minimum stacked X value from many series
         /// </summary>
         /// <param name="series">Series IDs</param>
-        /// <returns>Maximum stacked X value</returns>
-        public double GetMaxStackedXValue(params string[] series)
+        /// <returns>Minimum stacked X value</returns>
+        public double GetMinStackedXValue(params string[] series)
         {
             double returnValue = 0;
             double numberOfPoints = GetNumberOfPoints(series);
@@ -701,126 +780,12 @@ namespace WebCharts.Services
                 double doubleIndexValue = 0;
                 foreach (string seriesName in series)
                 {
-                    if (_series[seriesName].Points.Count > pointIndex)
+                    if (_series[seriesName].Points[pointIndex].XValue < 0)
                     {
-                        if (_series[seriesName].Points[pointIndex].XValue > 0)
-                        {
-                            doubleIndexValue += _series[seriesName].Points[pointIndex].XValue;
-                        }
+                        doubleIndexValue += _series[seriesName].Points[pointIndex].XValue;
                     }
                 }
-                returnValue = Math.Max(returnValue, doubleIndexValue);
-            }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Gets minimum Y value from many series
-        /// </summary>
-        /// <param name="valueIndex">Index of Y value to use</param>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Minimum Y value</returns>
-        public double GetMinYValue(int valueIndex, params string[] series)
-        {
-            double returnValue = Double.MaxValue;
-            foreach (string seriesName in series)
-            {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    // The empty point
-                    if (IsPointSkipped(seriesPoint))
-                    {
-                        continue;
-                    }
-
-                    if (!double.IsNaN(seriesPoint.YValues[valueIndex]))
-                    {
-                        returnValue = Math.Min(returnValue, seriesPoint.YValues[valueIndex]);
-                    }
-                }
-            }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Get Minimum value for Y and and Radius (Y2) ( used for bubble chart )
-        /// </summary>
-        /// <param name="area">Chart Area</param>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Minimum Y value</returns>
-        public double GetMinYWithRadiusValue(ChartArea area, params string[] series)
-        {
-            double returnValue = Double.MaxValue;
-            foreach (string seriesName in series)
-            {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    // The empty point
-                    if (IsPointSkipped(seriesPoint))
-                    {
-                        continue;
-                    }
-
-                    if (!double.IsNaN(seriesPoint.YValues[0]))
-                    {
-                        if (seriesPoint.YValues.Length > 1)
-                        {
-                            returnValue = Math.Min(returnValue, seriesPoint.YValues[0] - BubbleChart.AxisScaleBubbleSize(area.Common, area, seriesPoint.YValues[1], true));
-                        }
-                        else
-                        {
-                            returnValue = Math.Min(returnValue, seriesPoint.YValues[0]);
-                        }
-                    }
-                }
-            }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Gets minimum Y value from many series
-        /// </summary>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Minimum Y value</returns>
-        public double GetMinYValue(params string[] series)
-        {
-            double returnValue = Double.MaxValue;
-            foreach (string seriesName in series)
-            {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    // The empty point
-                    if (IsPointSkipped(seriesPoint))
-                    {
-                        continue;
-                    }
-
-                    foreach (double y in seriesPoint.YValues)
-                    {
-                        if (!double.IsNaN(y))
-                        {
-                            returnValue = Math.Min(returnValue, y);
-                        }
-                    }
-                }
-            }
-            return returnValue;
-        }
-
-        /// <summary>
-        /// Gets minimum X value from many series
-        /// </summary>
-        /// <param name="series">Series IDs</param>
-        /// <returns>Minimum X value</returns>
-        public double GetMinXValue(params string[] series)
-        {
-            double returnValue = Double.MaxValue;
-            foreach (string seriesName in series)
-            {
-                foreach (DataPoint seriesPoint in _series[seriesName].Points)
-                {
-                    returnValue = Math.Min(returnValue, seriesPoint.XValue);
-                }
+                returnValue = Math.Min(returnValue, doubleIndexValue);
             }
             return returnValue;
         }
@@ -867,7 +832,7 @@ namespace WebCharts.Services
                 stackedMin = Math.Min(stackedMin, noStackedMin);
                 if (stackedMin == 0)
                 {
-                    stackedMin = _series[series[0]].Points[_series[series[0]].Points.Count - 1].YValues[valueIndex];
+                    stackedMin = _series[series[0]].Points[^1].YValues[valueIndex];
                 }
                 returnValue = Math.Min(returnValue, stackedMin);
             }
@@ -925,153 +890,207 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Gets minimum stacked X value from many series
+        /// Gets minimum X value from many series
         /// </summary>
         /// <param name="series">Series IDs</param>
-        /// <returns>Minimum stacked X value</returns>
-        public double GetMinStackedXValue(params string[] series)
+        /// <returns>Minimum X value</returns>
+        public double GetMinXValue(params string[] series)
         {
-            double returnValue = 0;
-            double numberOfPoints = GetNumberOfPoints(series);
-            for (int pointIndex = 0; pointIndex < numberOfPoints; pointIndex++)
+            double returnValue = Double.MaxValue;
+            foreach (string seriesName in series)
             {
-                double doubleIndexValue = 0;
-                foreach (string seriesName in series)
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
                 {
-                    if (_series[seriesName].Points[pointIndex].XValue < 0)
-                    {
-                        doubleIndexValue += _series[seriesName].Points[pointIndex].XValue;
-                    }
+                    returnValue = Math.Min(returnValue, seriesPoint.XValue);
                 }
-                returnValue = Math.Min(returnValue, doubleIndexValue);
             }
             return returnValue;
         }
 
         /// <summary>
-        /// Gets maximum hundred percent stacked Y value
+        /// Get Minimum value for X and Radius Y2 ( used for bubble chart )
         /// </summary>
-        /// <param name="supportNegative">Indicates that negative values are shown on the other side of the axis.</param>
-        /// <param name="series">Series names</param>
-        /// <returns>Maximum 100% stacked Y value</returns>
-        public double GetMaxHundredPercentStackedYValue(bool supportNegative, params string[] series)
+        /// <param name="area">Chart Area</param>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Minimum X value</returns>
+        public double GetMinXWithRadiusValue(ChartArea area, params string[] series)
         {
-            double returnValue = 0;
-
-            // Convert array of series names into array of series
-            Series[] seriesArray = new Series[series.Length];
-            int seriesIndex = 0;
+            double returnValue = Double.MaxValue;
             foreach (string seriesName in series)
             {
-                seriesArray[seriesIndex++] = _series[seriesName];
-            }
-
-            // Loop through all dat points
-            try
-            {
-                for (int pointIndex = 0; pointIndex < _series[series[0]].Points.Count; pointIndex++)
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
                 {
-                    // Calculate the total for all series
-                    double totalPerPoint = 0;
-                    double positiveTotalPerPoint = 0;
-                    foreach (Series ser in seriesArray)
+                    // The empty point
+                    if (IsPointSkipped(seriesPoint))
                     {
-                        if (supportNegative)
+                        continue;
+                    }
+
+                    if (!double.IsNaN(seriesPoint.XValue))
+                    {
+                        if (seriesPoint.YValues.Length > 1)
                         {
-                            totalPerPoint += Math.Abs(ser.Points[pointIndex].YValues[0]);
+                            returnValue = Math.Min(returnValue, seriesPoint.XValue - BubbleChart.AxisScaleBubbleSize(area.Common, area, seriesPoint.YValues[1], false));
                         }
                         else
                         {
-                            totalPerPoint += ser.Points[pointIndex].YValues[0];
+                            returnValue = Math.Min(returnValue, seriesPoint.XValue);
                         }
-
-                        if (ser.Points[pointIndex].YValues[0] > 0 || supportNegative == false)
-                        {
-                            positiveTotalPerPoint += ser.Points[pointIndex].YValues[0];
-                        }
-                    }
-                    totalPerPoint = Math.Abs(totalPerPoint);
-
-                    // Calculate percentage of total
-                    if (totalPerPoint != 0)
-                    {
-                        returnValue = Math.Max(returnValue,
-                            (positiveTotalPerPoint / totalPerPoint) * 100.0);
                     }
                 }
             }
-            catch (System.Exception)
-            {
-                throw (new InvalidOperationException(SR.ExceptionDataManager100StackedSeriesPointsNumeberMismatch));
-            }
-
             return returnValue;
         }
 
         /// <summary>
-        /// Gets minimum hundred percent stacked Y value
+        /// Gets minimum Y value from many series
         /// </summary>
-        /// <param name="supportNegative">Indicates that negative values are shown on the other side of the axis.</param>
-        /// <param name="series">Series names</param>
-        /// <returns>Minimum 100% stacked Y value</returns>
-        public double GetMinHundredPercentStackedYValue(bool supportNegative, params string[] series)
+        /// <param name="valueIndex">Index of Y value to use</param>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Minimum Y value</returns>
+        public double GetMinYValue(int valueIndex, params string[] series)
         {
-            double returnValue = 0.0;
-
-            // Convert array of series names into array of series
-            Series[] seriesArray = new Series[series.Length];
-            int seriesIndex = 0;
+            double returnValue = Double.MaxValue;
             foreach (string seriesName in series)
             {
-                seriesArray[seriesIndex++] = _series[seriesName];
-            }
-
-            // Loop through all dat points
-            try
-            {
-                for (int pointIndex = 0; pointIndex < _series[series[0]].Points.Count; pointIndex++)
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
                 {
-                    // Calculate the total for all series
-                    double totalPerPoint = 0;
-                    double negativeTotalPerPoint = 0;
-                    foreach (Series ser in seriesArray)
+                    // The empty point
+                    if (IsPointSkipped(seriesPoint))
                     {
-                        if (supportNegative)
-                        {
-                            totalPerPoint += Math.Abs(ser.Points[pointIndex].YValues[0]);
-                        }
-                        else
-                        {
-                            totalPerPoint += ser.Points[pointIndex].YValues[0];
-                        }
-
-                        if (ser.Points[pointIndex].YValues[0] < 0 || supportNegative == false)
-                        {
-                            negativeTotalPerPoint += ser.Points[pointIndex].YValues[0];
-                        }
+                        continue;
                     }
 
-                    totalPerPoint = Math.Abs(totalPerPoint);
-
-                    // Calculate percentage of total
-                    if (totalPerPoint != 0)
+                    if (!double.IsNaN(seriesPoint.YValues[valueIndex]))
                     {
-                        returnValue = Math.Min(returnValue,
-                            (negativeTotalPerPoint / totalPerPoint) * 100.0);
+                        returnValue = Math.Min(returnValue, seriesPoint.YValues[valueIndex]);
                     }
                 }
             }
-            catch (System.Exception)
-            {
-                throw (new InvalidOperationException(SR.ExceptionDataManager100StackedSeriesPointsNumeberMismatch));
-            }
-
             return returnValue;
         }
 
+        /// <summary>
+        /// Gets minimum Y value from many series
+        /// </summary>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Minimum Y value</returns>
+        public double GetMinYValue(params string[] series)
+        {
+            double returnValue = Double.MaxValue;
+            foreach (string seriesName in series)
+            {
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
+                {
+                    // The empty point
+                    if (IsPointSkipped(seriesPoint))
+                    {
+                        continue;
+                    }
+
+                    foreach (double y in seriesPoint.YValues)
+                    {
+                        if (!double.IsNaN(y))
+                        {
+                            returnValue = Math.Min(returnValue, y);
+                        }
+                    }
+                }
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Get Minimum value for Y and and Radius (Y2) ( used for bubble chart )
+        /// </summary>
+        /// <param name="area">Chart Area</param>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Minimum Y value</returns>
+        public double GetMinYWithRadiusValue(ChartArea area, params string[] series)
+        {
+            double returnValue = Double.MaxValue;
+            foreach (string seriesName in series)
+            {
+                foreach (DataPoint seriesPoint in _series[seriesName].Points)
+                {
+                    // The empty point
+                    if (IsPointSkipped(seriesPoint))
+                    {
+                        continue;
+                    }
+
+                    if (!double.IsNaN(seriesPoint.YValues[0]))
+                    {
+                        if (seriesPoint.YValues.Length > 1)
+                        {
+                            returnValue = Math.Min(returnValue, seriesPoint.YValues[0] - BubbleChart.AxisScaleBubbleSize(area.Common, area, seriesPoint.YValues[1], true));
+                        }
+                        else
+                        {
+                            returnValue = Math.Min(returnValue, seriesPoint.YValues[0]);
+                        }
+                    }
+                }
+            }
+            return returnValue;
+        }
+
+        /// <summary>
+        /// Gets max number of data points in specified series.
+        /// </summary>
+        /// <param name="series">Series IDs</param>
+        /// <returns>Maximum number of data points</returns>
+        public int GetNumberOfPoints(params string[] series)
+        {
+            int numberOfPoints = 0;
+            foreach (string seriesName in series)
+            {
+                numberOfPoints = Math.Max(numberOfPoints, _series[seriesName].Points.Count);
+            }
+            return numberOfPoints;
+        }
+
+        /// <summary>
+        /// This method checks if data point should be skipped. This
+        /// method will return true if data point is empty.
+        /// </summary>
+        /// <param name="point">Data point</param>
+        /// <returns>This method returns true if data point is empty.</returns>
+        private static bool IsPointSkipped(DataPoint point)
+        {
+            if (point.IsEmpty)
+            {
+                return true;
+            }
+
+            return false;
+        }
         #endregion Series Min/Max values methods
 
         #region DataManager Properties
+
+        // Array of custom palette colors.
+
+        /// <summary>
+        /// Color palette to use
+        /// </summary>
+        [
+        SRCategory("CategoryAttributeAppearance"),
+        SRDescription("DescriptionAttributePalette"),
+        ]
+        public ChartColorPalette Palette { get; set; } = ChartColorPalette.BrightPastel;
+
+        /// <summary>
+        /// Array of custom palette colors.
+        /// </summary>
+        /// <remarks>
+        /// When this custom colors array is non-empty the <b>Palette</b> property is ignored.
+        /// </remarks>
+        [
+        SRCategory("CategoryAttributeAppearance"),
+        SRDescription("DescriptionAttributeDataManager_PaletteCustomColors"),
+        ]
+        public SKColor[] PaletteCustomColors { set; get; } = Array.Empty<SKColor>();
 
         /// <summary>
         /// Chart series collection.
@@ -1086,51 +1105,6 @@ namespace WebCharts.Services
                 return _series;
             }
         }
-
-        /// <summary>
-        /// Color palette to use
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeAppearance"),
-        SRDescription("DescriptionAttributePalette"),
-        ]
-        public ChartColorPalette Palette
-        {
-            get
-            {
-                return _colorPalette;
-            }
-            set
-            {
-                _colorPalette = value;
-            }
-        }
-
-        // Array of custom palette colors.
-        private SKColor[] _paletteCustomColors = Array.Empty<SKColor>();
-
-        /// <summary>
-        /// Array of custom palette colors.
-        /// </summary>
-        /// <remarks>
-        /// When this custom colors array is non-empty the <b>Palette</b> property is ignored.
-        /// </remarks>
-        [
-        SRCategory("CategoryAttributeAppearance"),
-        SRDescription("DescriptionAttributeDataManager_PaletteCustomColors"),
-        ]
-        public SKColor[] PaletteCustomColors
-        {
-            set
-            {
-                _paletteCustomColors = value;
-            }
-            get
-            {
-                return _paletteCustomColors;
-            }
-        }
-
         #endregion DataManager Properties
 
         #region IDisposable Members

@@ -549,10 +549,7 @@ namespace WebCharts.Services
         override internal void Paint(ChartService chart, ChartGraphics graphics)
         {
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out SKPoint anchorPoint);
             SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
@@ -1092,25 +1089,22 @@ namespace WebCharts.Services
                 ShadowColor);
 
             // Draw cloud outline (Do not draw in SVG or Flash Animation)
-            {
-                using (SKPath pathCloudOutline = GetCloudOutlinePath(rectanglePositionAbs))
-                {
-                    graphics.DrawPathAbs(
-                        pathCloudOutline,
-                        BackColor,
-                        BackHatchStyle,
-                        String.Empty,
-                        ChartImageWrapMode.Scaled,
-                        SKColor.Empty,
-                        ChartImageAlignmentStyle.Center,
-                        BackGradientStyle,
-                        BackSecondaryColor,
-                        LineColor,
-                        1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
-                        LineDashStyle,
-                        PenAlignment.Center);
-                }
-            }
+
+            using SKPath pathCloudOutline = GetCloudOutlinePath(rectanglePositionAbs);
+            graphics.DrawPathAbs(
+                pathCloudOutline,
+                BackColor,
+                BackHatchStyle,
+                string.Empty,
+                ChartImageWrapMode.Scaled,
+                SKColor.Empty,
+                ChartImageAlignmentStyle.Center,
+                BackGradientStyle,
+                BackSecondaryColor,
+                LineColor,
+                1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
+                LineDashStyle,
+                PenAlignment.Center);
 
             // Draw text
             DrawText(graphics, rectanglePosition, true, false);
@@ -1156,120 +1150,116 @@ namespace WebCharts.Services
             DrawText(graphics, rectanglePosition, false, false);
 
             // Draw perspective polygons from anchoring point
-            if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y))
+            if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y) && !rectanglePosition.Contains(anchorPoint.X, anchorPoint.Y))
             {
-                // Check if point is inside annotation position
-                if (!rectanglePosition.Contains(anchorPoint.X, anchorPoint.Y))
+                SKColor[] perspectivePathColors = new SKColor[2];
+                SKColor color = BackColor;
+                perspectivePathColors[0] = ChartGraphics.GetBrightGradientColor(color, 0.6);
+                perspectivePathColors[1] = ChartGraphics.GetBrightGradientColor(color, 0.8);
+                SKPath[] perspectivePaths = new SKPath[2];
+                using (perspectivePaths[0] = new SKPath())
                 {
-                    SKColor[] perspectivePathColors = new SKColor[2];
-                    SKColor color = BackColor;
-                    perspectivePathColors[0] = ChartGraphics.GetBrightGradientColor(color, 0.6);
-                    perspectivePathColors[1] = ChartGraphics.GetBrightGradientColor(color, 0.8);
-                    SKPath[] perspectivePaths = new SKPath[2];
-                    using (perspectivePaths[0] = new SKPath())
+                    using (perspectivePaths[1] = new SKPath())
                     {
-                        using (perspectivePaths[1] = new SKPath())
+                        // Convert coordinates to absolute
+                        SKRect rectanglePositionAbs = graphics.GetAbsoluteRectangle(rectanglePosition);
+                        SKPoint anchorPointAbs = graphics.GetAbsolutePoint(anchorPoint);
+
+                        // Create paths of perspective
+                        if (anchorPoint.Y < rectanglePosition.Top)
                         {
-                            // Convert coordinates to absolute
-                            SKRect rectanglePositionAbs = graphics.GetAbsoluteRectangle(rectanglePosition);
-                            SKPoint anchorPointAbs = graphics.GetAbsolutePoint(anchorPoint);
+                            SKPoint[] points1 = new SKPoint[3];
+                            points1[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
+                            points1[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
+                            points1[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                            perspectivePaths[0].AddPoly(points1);
+                            if (anchorPoint.X < rectanglePosition.Left)
+                            {
+                                SKPoint[] points2 = new SKPoint[3];
+                                points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
+                                points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
+                                points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                                perspectivePaths[1].AddPoly(points2);
+                            }
+                            else if (anchorPoint.X > rectanglePosition.Right)
+                            {
+                                SKPoint[] points2 = new SKPoint[3];
+                                points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
+                                points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
+                                points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                                perspectivePaths[1].AddPoly(points2);
+                            }
+                        }
+                        else if (anchorPoint.Y > rectanglePosition.Bottom)
+                        {
+                            SKPoint[] points1 = new SKPoint[3];
+                            points1[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
+                            points1[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
+                            points1[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                            perspectivePaths[0].AddPoly(points1);
+                            if (anchorPoint.X < rectanglePosition.Left)
+                            {
+                                SKPoint[] points2 = new SKPoint[3];
+                                points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
+                                points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
+                                points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                                perspectivePaths[1].AddPoly(points2);
+                            }
+                            else if (anchorPoint.X > rectanglePosition.Right)
+                            {
+                                SKPoint[] points2 = new SKPoint[3];
+                                points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
+                                points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
+                                points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                                perspectivePaths[1].AddPoly(points2);
+                            }
+                        }
+                        else
+                        {
+                            if (anchorPoint.X < rectanglePosition.Left)
+                            {
+                                SKPoint[] points2 = new SKPoint[3];
+                                points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
+                                points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
+                                points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                                perspectivePaths[1].AddPoly(points2);
+                            }
+                            else if (anchorPoint.X > rectanglePosition.Right)
+                            {
+                                SKPoint[] points2 = new SKPoint[3];
+                                points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
+                                points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
+                                points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
+                                perspectivePaths[1].AddPoly(points2);
+                            }
+                        }
 
-                            // Create paths of perspective
-                            if (anchorPoint.Y < rectanglePosition.Top)
+                        // Draw paths if non-empty
+                        int index = 0;
+                        foreach (SKPath path in perspectivePaths)
+                        {
+                            if (path.PointCount > 0)
                             {
-                                SKPoint[] points1 = new SKPoint[3];
-                                points1[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
-                                points1[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
-                                points1[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                perspectivePaths[0].AddPoly(points1);
-                                if (anchorPoint.X < rectanglePosition.Left)
-                                {
-                                    SKPoint[] points2 = new SKPoint[3];
-                                    points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
-                                    points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                    perspectivePaths[1].AddPoly(points2);
-                                }
-                                else if (anchorPoint.X > rectanglePosition.Right)
-                                {
-                                    SKPoint[] points2 = new SKPoint[3];
-                                    points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
-                                    points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                    perspectivePaths[1].AddPoly(points2);
-                                }
-                            }
-                            else if (anchorPoint.Y > rectanglePosition.Bottom)
-                            {
-                                SKPoint[] points1 = new SKPoint[3];
-                                points1[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
-                                points1[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                points1[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                perspectivePaths[0].AddPoly(points1);
-                                if (anchorPoint.X < rectanglePosition.Left)
-                                {
-                                    SKPoint[] points2 = new SKPoint[3];
-                                    points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
-                                    points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                    perspectivePaths[1].AddPoly(points2);
-                                }
-                                else if (anchorPoint.X > rectanglePosition.Right)
-                                {
-                                    SKPoint[] points2 = new SKPoint[3];
-                                    points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
-                                    points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                    perspectivePaths[1].AddPoly(points2);
-                                }
-                            }
-                            else
-                            {
-                                if (anchorPoint.X < rectanglePosition.Left)
-                                {
-                                    SKPoint[] points2 = new SKPoint[3];
-                                    points2[0] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Left, rectanglePositionAbs.Top);
-                                    points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                    perspectivePaths[1].AddPoly(points2);
-                                }
-                                else if (anchorPoint.X > rectanglePosition.Right)
-                                {
-                                    SKPoint[] points2 = new SKPoint[3];
-                                    points2[0] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Bottom);
-                                    points2[1] = new SKPoint(rectanglePositionAbs.Right, rectanglePositionAbs.Top);
-                                    points2[2] = new SKPoint(anchorPointAbs.X, anchorPointAbs.Y);
-                                    perspectivePaths[1].AddPoly(points2);
-                                }
-                            }
+                                path.Close();
+                                graphics.DrawPathAbs(
+                                    path,
+                                    perspectivePathColors[index],
+                                    BackHatchStyle,
+                                    String.Empty,
+                                    ChartImageWrapMode.Scaled,
+                                    SKColor.Empty,
+                                    ChartImageAlignmentStyle.Center,
+                                    BackGradientStyle,
+                                    BackSecondaryColor,
+                                    LineColor,
+                                    LineWidth,
+                                    LineDashStyle,
+                                    PenAlignment.Center);
 
-                            // Draw paths if non-empty
-                            int index = 0;
-                            foreach (SKPath path in perspectivePaths)
-                            {
-                                if (path.PointCount > 0)
-                                {
-                                    path.Close();
-                                    graphics.DrawPathAbs(
-                                        path,
-                                        perspectivePathColors[index],
-                                        BackHatchStyle,
-                                        String.Empty,
-                                        ChartImageWrapMode.Scaled,
-                                        SKColor.Empty,
-                                        ChartImageAlignmentStyle.Center,
-                                        BackGradientStyle,
-                                        BackSecondaryColor,
-                                        LineColor,
-                                        LineWidth,
-                                        LineDashStyle,
-                                        PenAlignment.Center);
-
-                                    // Add area to hot region path
-                                    hotRegion.AddPath(path);
-                                }
-                                ++index;
+                                // Add area to hot region path
+                                hotRegion.AddPath(path);
                             }
+                            ++index;
                         }
                     }
                 }

@@ -106,6 +106,7 @@ namespace WebCharts.Services
                 }
                 catch (ArgumentException)
                 {
+                    // Ignore
                 }
 
                 float[] coord = new float[path.PointCount * 2];
@@ -142,6 +143,7 @@ namespace WebCharts.Services
                 }
                 catch (ArgumentException)
                 {
+                    // Ignore
                 }
 
                 // Allocate array of floats

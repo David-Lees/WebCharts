@@ -48,72 +48,17 @@ namespace WebCharts.Services
     {
         #region Fields
 
-        // Current rendering type
-        private RenderingType _activeRenderingType = RenderingType.Gdi;
-
-        // GDI+ rendering engine
-        private GdiGraphics _gdiGraphics = new();
-
         // True if text should be clipped
         internal bool IsTextClipped = false;
 
+        // Current rendering type
+        private readonly RenderingType _activeRenderingType = RenderingType.Gdi;
+
+        // GDI+ rendering engine
+        private readonly GdiGraphics _gdiGraphics = new();
         #endregion Fields
 
         #region Drawing Methods
-
-        /// <summary>
-        /// Draws a line connecting two SKPoint structures.
-        /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the line.</param>
-        /// <param name="pt1">SKPoint structure that represents the first point to connect.</param>
-        /// <param name="pt2">SKPoint structure that represents the second point to connect.</param>
-        internal void DrawLine(
-            SKPaint pen,
-            SKPoint pt1,
-            SKPoint pt2
-            )
-        {
-            RenderingObject.DrawLine(pen, pt1, pt2);
-        }
-
-        /// <summary>
-        /// Draws a line connecting the two points specified by coordinate pairs.
-        /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the line.</param>
-        /// <param name="x1">x-coordinate of the first point.</param>
-        /// <param name="y1">y-coordinate of the first point.</param>
-        /// <param name="x2">x-coordinate of the second point.</param>
-        /// <param name="y2">y-coordinate of the second point.</param>
-        internal void DrawLine(
-            SKPaint pen,
-            float x1,
-            float y1,
-            float x2,
-            float y2
-            )
-        {
-            RenderingObject.DrawLine(pen, x1, y1, x2, y2);
-        }
-
-        /// <summary>
-        /// Draws an ellipse defined by a bounding rectangle specified by
-        /// a pair of coordinates, a height, and a width.
-        /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
-        /// <param name="x">x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
-        /// <param name="y">y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
-        /// <param name="width">Width of the bounding rectangle that defines the ellipse.</param>
-        /// <param name="height">Height of the bounding rectangle that defines the ellipse.</param>
-        internal void DrawEllipse(
-            SKPaint pen,
-            float x,
-            float y,
-            float width,
-            float height
-            )
-        {
-            RenderingObject.DrawEllipse(pen, x, y, width, height);
-        }
 
         /// <summary>
         /// Draws a cardinal spline through a specified array of SKPoint structures
@@ -189,70 +134,36 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Draws a rectangle specified by a coordinate pair, a width, and a height.
+        /// Draws an ellipse defined by a bounding rectangle specified by
+        /// a pair of coordinates, a height, and a width.
         /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the rectangle.</param>
-        /// <param name="x">x-coordinate of the upper-left corner of the rectangle to draw.</param>
-        /// <param name="y">y-coordinate of the upper-left corner of the rectangle to draw.</param>
-        /// <param name="width">Width of the rectangle to draw.</param>
-        /// <param name="height">Height of the rectangle to draw.</param>
-        internal void DrawRectangle(
+        /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
+        /// <param name="x">x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
+        /// <param name="y">y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.</param>
+        /// <param name="width">Width of the bounding rectangle that defines the ellipse.</param>
+        /// <param name="height">Height of the bounding rectangle that defines the ellipse.</param>
+        internal void DrawEllipse(
             SKPaint pen,
-            int x,
-            int y,
-            int width,
-            int height
+            float x,
+            float y,
+            float width,
+            float height
             )
         {
-            RenderingObject.DrawRectangle(pen, x, y, width, height);
+            RenderingObject.DrawEllipse(pen, x, y, width, height);
         }
 
         /// <summary>
-        /// Draws a polygon defined by an array of SKPoint structures.
+        /// Draws an ellipse defined by a bounding SKRect.
         /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the polygon.</param>
-        /// <param name="points">Array of SKPoint structures that represent the vertices of the polygon.</param>
-        internal void DrawPolygon(
+        /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
+        /// <param name="rect">SKRect structure that defines the boundaries of the ellipse.</param>
+        internal void DrawEllipse(
             SKPaint pen,
-            SKPoint[] points
+            SKRect rect
             )
         {
-            RenderingObject.DrawPolygon(pen, points);
-        }
-
-        /// <summary>
-        /// Draws the specified text string in the specified rectangle with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
-        /// </summary>
-        /// <param name="s">String to draw.</param>
-        /// <param name="font">Font object that defines the text format of the string.</param>
-        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
-        /// <param name="layoutRectangle">SKRect structure that specifies the location of the drawn text.</param>
-        internal void DrawString(
-            string s,
-            SKFont font,
-            SKPaint brush,
-            SKRect layoutRectangle
-            )
-        {
-            RenderingObject.DrawString(s, font, brush, layoutRectangle);
-        }
-
-        /// <summary>
-        /// Draws the specified text string at the specified location with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
-        /// </summary>
-        /// <param name="s">String to draw.</param>
-        /// <param name="font">Font object that defines the text format of the string.</param>
-        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
-        /// <param name="point">SKPoint structure that specifies the upper-left corner of the drawn text.</param>
-        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
-        internal void DrawString(
-            string s,
-            SKFont font,
-            SKPaint brush,
-            SKPoint point
-            )
-        {
-            RenderingObject.DrawString(s, font, brush, point);
+            RenderingObject.DrawEllipse(pen, rect);
         }
 
         /// <summary>
@@ -293,22 +204,49 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Draws a rectangle specified by a coordinate pair, a width, and a height.
+        /// Draws a line connecting two SKPoint structures.
         /// </summary>
-        /// <param name="pen">A Pen object that determines the color, width, and style of the rectangle.</param>
-        /// <param name="x">The x-coordinate of the upper-left corner of the rectangle to draw.</param>
-        /// <param name="y">The y-coordinate of the upper-left corner of the rectangle to draw.</param>
-        /// <param name="width">The width of the rectangle to draw.</param>
-        /// <param name="height">The height of the rectangle to draw.</param>
-        internal void DrawRectangle(
+        /// <param name="pen">Pen object that determines the color, width, and style of the line.</param>
+        /// <param name="pt1">SKPoint structure that represents the first point to connect.</param>
+        /// <param name="pt2">SKPoint structure that represents the second point to connect.</param>
+        internal void DrawLine(
             SKPaint pen,
-            float x,
-            float y,
-            float width,
-            float height
+            SKPoint pt1,
+            SKPoint pt2
             )
         {
-            RenderingObject.DrawRectangle(pen, x, y, width, height);
+            RenderingObject.DrawLine(pen, pt1, pt2);
+        }
+
+        /// <summary>
+        /// Draws a line connecting the two points specified by coordinate pairs.
+        /// </summary>
+        /// <param name="pen">Pen object that determines the color, width, and style of the line.</param>
+        /// <param name="x1">x-coordinate of the first point.</param>
+        /// <param name="y1">y-coordinate of the first point.</param>
+        /// <param name="x2">x-coordinate of the second point.</param>
+        /// <param name="y2">y-coordinate of the second point.</param>
+        internal void DrawLine(
+            SKPaint pen,
+            float x1,
+            float y1,
+            float x2,
+            float y2
+            )
+        {
+            RenderingObject.DrawLine(pen, x1, y1, x2, y2);
+        }
+        /// <summary>
+        /// Draws a series of line segments that connect an array of SKPoint structures.
+        /// </summary>
+        /// <param name="pen">Pen object that determines the color, width, and style of the line segments.</param>
+        /// <param name="points">Array of SKPoint structures that represent the points to connect.</param>
+        internal void DrawLines(
+            SKPaint pen,
+            SKPoint[] points
+            )
+        {
+            RenderingObject.DrawLines(pen, points);
         }
 
         /// <summary>
@@ -355,31 +293,89 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Draws an ellipse defined by a bounding SKRect.
+        /// Draws a polygon defined by an array of SKPoint structures.
         /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the ellipse.</param>
-        /// <param name="rect">SKRect structure that defines the boundaries of the ellipse.</param>
-        internal void DrawEllipse(
-            SKPaint pen,
-            SKRect rect
-            )
-        {
-            RenderingObject.DrawEllipse(pen, rect);
-        }
-
-        /// <summary>
-        /// Draws a series of line segments that connect an array of SKPoint structures.
-        /// </summary>
-        /// <param name="pen">Pen object that determines the color, width, and style of the line segments.</param>
-        /// <param name="points">Array of SKPoint structures that represent the points to connect.</param>
-        internal void DrawLines(
+        /// <param name="pen">Pen object that determines the color, width, and style of the polygon.</param>
+        /// <param name="points">Array of SKPoint structures that represent the vertices of the polygon.</param>
+        internal void DrawPolygon(
             SKPaint pen,
             SKPoint[] points
             )
         {
-            RenderingObject.DrawLines(pen, points);
+            RenderingObject.DrawPolygon(pen, points);
         }
 
+        /// <summary>
+        /// Draws a rectangle specified by a coordinate pair, a width, and a height.
+        /// </summary>
+        /// <param name="pen">Pen object that determines the color, width, and style of the rectangle.</param>
+        /// <param name="x">x-coordinate of the upper-left corner of the rectangle to draw.</param>
+        /// <param name="y">y-coordinate of the upper-left corner of the rectangle to draw.</param>
+        /// <param name="width">Width of the rectangle to draw.</param>
+        /// <param name="height">Height of the rectangle to draw.</param>
+        internal void DrawRectangle(
+            SKPaint pen,
+            int x,
+            int y,
+            int width,
+            int height
+            )
+        {
+            RenderingObject.DrawRectangle(pen, x, y, width, height);
+        }
+        /// <summary>
+        /// Draws a rectangle specified by a coordinate pair, a width, and a height.
+        /// </summary>
+        /// <param name="pen">A Pen object that determines the color, width, and style of the rectangle.</param>
+        /// <param name="x">The x-coordinate of the upper-left corner of the rectangle to draw.</param>
+        /// <param name="y">The y-coordinate of the upper-left corner of the rectangle to draw.</param>
+        /// <param name="width">The width of the rectangle to draw.</param>
+        /// <param name="height">The height of the rectangle to draw.</param>
+        internal void DrawRectangle(
+            SKPaint pen,
+            float x,
+            float y,
+            float width,
+            float height
+            )
+        {
+            RenderingObject.DrawRectangle(pen, x, y, width, height);
+        }
+
+        /// <summary>
+        /// Draws the specified text string in the specified rectangle with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
+        /// </summary>
+        /// <param name="s">String to draw.</param>
+        /// <param name="font">Font object that defines the text format of the string.</param>
+        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
+        /// <param name="layoutRectangle">SKRect structure that specifies the location of the drawn text.</param>
+        internal void DrawString(
+            string s,
+            SKFont font,
+            SKPaint brush,
+            SKRect layoutRectangle
+            )
+        {
+            RenderingObject.DrawString(s, font, brush, layoutRectangle);
+        }
+
+        /// <summary>
+        /// Draws the specified text string at the specified location with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
+        /// </summary>
+        /// <param name="s">String to draw.</param>
+        /// <param name="font">Font object that defines the text format of the string.</param>
+        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
+        /// <param name="point">SKPoint structure that specifies the upper-left corner of the drawn text.</param>
+        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
+        internal void DrawString(
+            string s,
+            SKFont font,
+            SKPaint brush,
+            SKPoint point
+            )
+        {
+            RenderingObject.DrawString(s, font, brush, point);
+        }
         #endregion Drawing Methods
 
         #region Filling Methods
@@ -419,16 +415,41 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fills the interior of a Region object.
+        /// Fills the interior of a pie section defined by an ellipse
+        /// specified by a pair of coordinates, a width, and a height
+        /// and two radial lines.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
-        /// <param name="region">Region object that represents the area to fill.</param>
-        internal void FillRegion(
+        /// <param name="x">x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
+        /// <param name="y">y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
+        /// <param name="width">Width of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
+        /// <param name="height">Height of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
+        /// <param name="startAngle">Angle in degrees measured clockwise from the x-axis to the first side of the pie section.</param>
+        /// <param name="sweepAngle">Angle in degrees measured clockwise from the startAngle parameter to the second side of the pie section.</param>
+        internal void FillPie(
             SKPaint brush,
-            SKRegion region
+            float x,
+            float y,
+            float width,
+            float height,
+            float startAngle,
+            float sweepAngle
             )
         {
-            RenderingObject.FillRegion(brush, region);
+            RenderingObject.FillPie(brush, x, y, width, height, startAngle, sweepAngle);
+        }
+
+        /// <summary>
+        /// Fills the interior of a polygon defined by an array of points specified by SKPoint structures .
+        /// </summary>
+        /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
+        /// <param name="points">Array of SKPoint structures that represent the vertices of the polygon to fill.</param>
+        internal void FillPolygon(
+            SKPaint brush,
+            SKPoint[] points
+            )
+        {
+            RenderingObject.FillPolygon(brush, points);
         }
 
         /// <summary>
@@ -464,43 +485,17 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Fills the interior of a polygon defined by an array of points specified by SKPoint structures .
+        /// Fills the interior of a Region object.
         /// </summary>
         /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
-        /// <param name="points">Array of SKPoint structures that represent the vertices of the polygon to fill.</param>
-        internal void FillPolygon(
+        /// <param name="region">Region object that represents the area to fill.</param>
+        internal void FillRegion(
             SKPaint brush,
-            SKPoint[] points
+            SKRegion region
             )
         {
-            RenderingObject.FillPolygon(brush, points);
+            RenderingObject.FillRegion(brush, region);
         }
-
-        /// <summary>
-        /// Fills the interior of a pie section defined by an ellipse
-        /// specified by a pair of coordinates, a width, and a height
-        /// and two radial lines.
-        /// </summary>
-        /// <param name="brush">Brush object that determines the characteristics of the fill.</param>
-        /// <param name="x">x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
-        /// <param name="y">y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
-        /// <param name="width">Width of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
-        /// <param name="height">Height of the bounding rectangle that defines the ellipse from which the pie section comes.</param>
-        /// <param name="startAngle">Angle in degrees measured clockwise from the x-axis to the first side of the pie section.</param>
-        /// <param name="sweepAngle">Angle in degrees measured clockwise from the startAngle parameter to the second side of the pie section.</param>
-        internal void FillPie(
-            SKPaint brush,
-            float x,
-            float y,
-            float width,
-            float height,
-            float startAngle,
-            float sweepAngle
-            )
-        {
-            RenderingObject.FillPie(brush, x, y, width, height, startAngle, sweepAngle);
-        }
-
         #endregion Filling Methods
 
         #region Other Methods
@@ -592,13 +587,17 @@ namespace WebCharts.Services
         #region Properties
 
         /// <summary>
-        /// Gets current rendering object.
+        /// Gets or sets the reference to the Graphics object.
         /// </summary>
-        internal IChartRenderingEngine RenderingObject
+        public SKCanvas Graphics
         {
             get
             {
-                return _gdiGraphics;
+                return RenderingObject.Graphics;
+            }
+            set
+            {
+                RenderingObject.Graphics = value;
             }
         }
 
@@ -613,6 +612,56 @@ namespace WebCharts.Services
             }
         }
 
+        /// <summary>
+        /// Gets or sets a Region object that limits the drawing region of this Graphics object.
+        /// </summary>
+        internal SKRegion Clip
+        {
+            get
+            {
+                return RenderingObject.Clip;
+            }
+            set
+            {
+                RenderingObject.Clip = value;
+            }
+        }
+
+        ///// <summary>
+        ///// Gets or sets the rendering quality for this Graphics object.
+        ///// </summary>
+        //internal SmoothingMode SmoothingMode
+        //{
+        //	get
+        //	{
+        //		return RenderingObject.SmoothingMode;
+        //	}
+        //	set
+        //	{
+        //		RenderingObject.SmoothingMode = value;
+        //	}
+        //}
+        /// <summary>
+        /// Gets a value indicating whether the clipping region of this Graphics object is empty.
+        /// </summary>
+        internal bool IsClipEmpty
+        {
+            get
+            {
+                return RenderingObject.IsClipEmpty;
+            }
+        }
+
+        /// <summary>
+        /// Gets current rendering object.
+        /// </summary>
+        internal IChartRenderingEngine RenderingObject
+        {
+            get
+            {
+                return _gdiGraphics;
+            }
+        }
         ///// <summary>
         ///// Gets or sets the rendering mode for text associated with this Graphics object.
         ///// </summary>
@@ -642,63 +691,6 @@ namespace WebCharts.Services
                 RenderingObject.Transform = value;
             }
         }
-
-        ///// <summary>
-        ///// Gets or sets the rendering quality for this Graphics object.
-        ///// </summary>
-        //internal SmoothingMode SmoothingMode
-        //{
-        //	get
-        //	{
-        //		return RenderingObject.SmoothingMode;
-        //	}
-        //	set
-        //	{
-        //		RenderingObject.SmoothingMode = value;
-        //	}
-        //}
-
-        /// <summary>
-        /// Gets or sets a Region object that limits the drawing region of this Graphics object.
-        /// </summary>
-        internal SKRegion Clip
-        {
-            get
-            {
-                return RenderingObject.Clip;
-            }
-            set
-            {
-                RenderingObject.Clip = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the clipping region of this Graphics object is empty.
-        /// </summary>
-        internal bool IsClipEmpty
-        {
-            get
-            {
-                return RenderingObject.IsClipEmpty;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the reference to the Graphics object.
-        /// </summary>
-        public SKCanvas Graphics
-        {
-            get
-            {
-                return RenderingObject.Graphics;
-            }
-            set
-            {
-                RenderingObject.Graphics = value;
-            }
-        }
-
         #endregion Properties
     }
 }

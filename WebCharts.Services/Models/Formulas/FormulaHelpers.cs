@@ -143,39 +143,24 @@ namespace WebCharts.Services
         /// <returns>Data fields</returns>
         internal static IList<DataField> GetDataFields(SeriesChartType chartType)
         {
-            switch (chartType)
+            return chartType switch
             {
-                case SeriesChartType.BoxPlot:
-                    return new DataField[] {
+                SeriesChartType.BoxPlot => new DataField[] {
                         DataField.LowerWisker, DataField.UpperWisker,
                         DataField.LowerBox, DataField.UpperBox,
-                        DataField.Average, DataField.Median };
-
-                case SeriesChartType.Bubble:
-                    return new DataField[] {
-                        DataField.Bubble, DataField.BubbleSize };
-
-                case SeriesChartType.Candlestick:
-                case SeriesChartType.Stock:
-                    return new DataField[] {
+                        DataField.Average, DataField.Median },
+                SeriesChartType.Bubble => new DataField[] {
+                        DataField.Bubble, DataField.BubbleSize },
+                SeriesChartType.Candlestick or SeriesChartType.Stock => new DataField[] {
                         DataField.High, DataField.Low,
-                        DataField.Open, DataField.Close };
-
-                case SeriesChartType.ErrorBar:
-                    return new DataField[] {
+                        DataField.Open, DataField.Close },
+                SeriesChartType.ErrorBar => new DataField[] {
                         DataField.Center,
-                        DataField.LowerError, DataField.UpperError};
-
-                case SeriesChartType.RangeBar:
-                case SeriesChartType.Range:
-                case SeriesChartType.RangeColumn:
-                case SeriesChartType.SplineRange:
-                    return new DataField[] {
-                        DataField.Top, DataField.Bottom };
-
-                default:
-                    return new DataField[] { DataField.Y };
-            }
+                        DataField.LowerError, DataField.UpperError},
+                SeriesChartType.RangeBar or SeriesChartType.Range or SeriesChartType.RangeColumn or SeriesChartType.SplineRange => new DataField[] {
+                        DataField.Top, DataField.Bottom },
+                _ => new DataField[] { DataField.Y },
+            };
         }
 
         /// <summary>
@@ -185,39 +170,15 @@ namespace WebCharts.Services
         /// <returns></returns>
         internal static SeriesChartType GetDefaultChartType(DataField field)
         {
-            switch (field)
+            return field switch
             {
-                default:
-                case DataField.Y:
-                    return SeriesChartType.Line;
-
-                case DataField.LowerWisker:
-                case DataField.UpperWisker:
-                case DataField.LowerBox:
-                case DataField.UpperBox:
-                case DataField.Average:
-                case DataField.Median:
-                    return SeriesChartType.BoxPlot;
-
-                case DataField.Bubble:
-                case DataField.BubbleSize:
-                    return SeriesChartType.Bubble;
-
-                case DataField.High:
-                case DataField.Low:
-                case DataField.Open:
-                case DataField.Close:
-                    return SeriesChartType.Stock;
-
-                case DataField.Center:
-                case DataField.LowerError:
-                case DataField.UpperError:
-                    return SeriesChartType.ErrorBar;
-
-                case DataField.Top:
-                case DataField.Bottom:
-                    return SeriesChartType.Range;
-            }
+                DataField.LowerWisker or DataField.UpperWisker or DataField.LowerBox or DataField.UpperBox or DataField.Average or DataField.Median => SeriesChartType.BoxPlot,
+                DataField.Bubble or DataField.BubbleSize => SeriesChartType.Bubble,
+                DataField.High or DataField.Low or DataField.Open or DataField.Close => SeriesChartType.Stock,
+                DataField.Center or DataField.LowerError or DataField.UpperError => SeriesChartType.ErrorBar,
+                DataField.Top or DataField.Bottom => SeriesChartType.Range,
+                _ => SeriesChartType.Line,
+            };
         }
 
         /// <summary>
@@ -229,70 +190,43 @@ namespace WebCharts.Services
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         internal static DataField? MapFormulaDataField(SeriesChartType chartType, DataField formulaField)
         {
-            switch (formulaField)
+            return formulaField switch
             {
-                case DataField.Top:
-                case DataField.High:
-                    switch (chartType)
-                    {
-                        default: return null;
-                        case SeriesChartType.BoxPlot: return DataField.UpperBox;
-                        case SeriesChartType.Candlestick:
-                        case SeriesChartType.Stock: return DataField.High;
-                        case SeriesChartType.ErrorBar: return DataField.UpperError;
-                        case SeriesChartType.RangeBar:
-                        case SeriesChartType.Range:
-                        case SeriesChartType.RangeColumn:
-                        case SeriesChartType.SplineRange: return DataField.Top;
-                    }
-
-                case DataField.Bottom:
-                case DataField.Low:
-                    switch (chartType)
-                    {
-                        default: return null;
-                        case SeriesChartType.BoxPlot: return DataField.LowerBox;
-                        case SeriesChartType.Candlestick:
-                        case SeriesChartType.Stock: return DataField.Low;
-                        case SeriesChartType.ErrorBar: return DataField.LowerError;
-                        case SeriesChartType.RangeBar:
-                        case SeriesChartType.Range:
-                        case SeriesChartType.RangeColumn:
-                        case SeriesChartType.SplineRange: return DataField.Bottom;
-                    }
-
-                case DataField.Open:
-                    switch (chartType)
-                    {
-                        default: return null;
-                        case SeriesChartType.BoxPlot: return DataField.Average;
-                        case SeriesChartType.Candlestick:
-                        case SeriesChartType.Stock: return DataField.Open;
-                        case SeriesChartType.ErrorBar: return DataField.Center;
-                        case SeriesChartType.RangeBar:
-                        case SeriesChartType.Range:
-                        case SeriesChartType.RangeColumn:
-                        case SeriesChartType.SplineRange: return DataField.Bottom;
-                    }
-
-                case DataField.Close:
-                case DataField.Y:
-                    switch (chartType)
-                    {
-                        default: return DataField.Y;
-                        case SeriesChartType.BoxPlot: return DataField.Average;
-                        case SeriesChartType.Bubble: return DataField.Bubble;
-                        case SeriesChartType.Candlestick:
-                        case SeriesChartType.Stock: return DataField.Close;
-                        case SeriesChartType.ErrorBar: return DataField.Center;
-                        case SeriesChartType.RangeBar:
-                        case SeriesChartType.Range:
-                        case SeriesChartType.RangeColumn:
-                        case SeriesChartType.SplineRange: return DataField.Top;
-                    }
-                default:
-                    return null;
-            }
+                DataField.Top or DataField.High => chartType switch
+                {
+                    SeriesChartType.BoxPlot => DataField.UpperBox,
+                    SeriesChartType.Candlestick or SeriesChartType.Stock => DataField.High,
+                    SeriesChartType.ErrorBar => DataField.UpperError,
+                    SeriesChartType.RangeBar or SeriesChartType.Range or SeriesChartType.RangeColumn or SeriesChartType.SplineRange => DataField.Top,
+                    _ => null,
+                },
+                DataField.Bottom or DataField.Low => chartType switch
+                {
+                    SeriesChartType.BoxPlot => DataField.LowerBox,
+                    SeriesChartType.Candlestick or SeriesChartType.Stock => DataField.Low,
+                    SeriesChartType.ErrorBar => DataField.LowerError,
+                    SeriesChartType.RangeBar or SeriesChartType.Range or SeriesChartType.RangeColumn or SeriesChartType.SplineRange => DataField.Bottom,
+                    _ => null,
+                },
+                DataField.Open => chartType switch
+                {
+                    SeriesChartType.BoxPlot => DataField.Average,
+                    SeriesChartType.Candlestick or SeriesChartType.Stock => DataField.Open,
+                    SeriesChartType.ErrorBar => DataField.Center,
+                    SeriesChartType.RangeBar or SeriesChartType.Range or SeriesChartType.RangeColumn or SeriesChartType.SplineRange => DataField.Bottom,
+                    _ => null,
+                },
+                DataField.Close or DataField.Y => chartType switch
+                {
+                    SeriesChartType.BoxPlot => DataField.Average,
+                    SeriesChartType.Bubble => DataField.Bubble,
+                    SeriesChartType.Candlestick or SeriesChartType.Stock => DataField.Close,
+                    SeriesChartType.ErrorBar => DataField.Center,
+                    SeriesChartType.RangeBar or SeriesChartType.Range or SeriesChartType.RangeColumn or SeriesChartType.SplineRange => DataField.Top,
+                    _ => DataField.Y,
+                },
+                _ => null,
+            };
         }
 
         #endregion Static
@@ -309,9 +243,9 @@ namespace WebCharts.Services
     {
         #region Fields
 
-        private DataField[] _inputFields;
-        private DataField[] _outputFields;
-        private object[] _parameters;
+        private readonly DataField[] _inputFields;
+        private readonly DataField[] _outputFields;
+        private readonly object[] _parameters;
 
         #endregion Fields
 
@@ -354,7 +288,7 @@ namespace WebCharts.Services
         /// <param name="inputFields">The input data fields.</param>
         /// <param name="outputFields">The output data fields.</param>
         /// <param name="defaultParams">The default formula params.</param>
-        public FormulaInfo(DataField[] inputFields, DataField[] outputFields, params object[] defaultParams)
+        protected FormulaInfo(DataField[] inputFields, DataField[] outputFields, params object[] defaultParams)
         {
             _inputFields = inputFields;
             _outputFields = outputFields;
@@ -371,7 +305,7 @@ namespace WebCharts.Services
         /// <returns>Csv string with parameters</returns>
         internal virtual string SaveParametersToString()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = 0; i < _parameters.Length; i++)
             {
                 if (i > 0) sb.Append(',');
@@ -1357,9 +1291,9 @@ namespace WebCharts.Services
     {
         #region Fields
 
-        private Series _series;
-        private string _seriesName;
-        private DataField _dataField;
+        private readonly Series _series;
+        private readonly string _seriesName;
+        private readonly DataField _dataField;
 
         #endregion Fields
 
@@ -1438,7 +1372,7 @@ namespace WebCharts.Services
         /// </returns>
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = 0; i < Count; i++)
             {
                 SeriesFieldInfo info = this[i];
@@ -1471,13 +1405,13 @@ namespace WebCharts.Services
         /// <returns></returns>
         public static SeriesFieldList FromString(ChartService chart, string seriesFields, IList<DataField> formulaFields)
         {
-            SeriesFieldList result = new SeriesFieldList();
+            SeriesFieldList result = new();
             if (String.IsNullOrEmpty(seriesFields))
             {
                 return result;
             }
 
-            List<DataField> unmappedFormulaFields = new List<DataField>(formulaFields);
+            List<DataField> unmappedFormulaFields = new(formulaFields);
 
             //Loop through the series/field pairs
             foreach (string seriesField in seriesFields.Split(','))
@@ -1534,7 +1468,7 @@ namespace WebCharts.Services
         /// <param name="unmappedFormulaFields">The unmapped formula fields.</param>
         private static void AddSeriesFieldInfo(SeriesFieldList result, Series series, IList<DataField> unmappedFormulaFields)
         {
-            List<DataField> seriesFields = new List<DataField>(FormulaHelper.GetDataFields(series.ChartType));
+            List<DataField> seriesFields = new(FormulaHelper.GetDataFields(series.ChartType));
 
             for (int i = 0; i < unmappedFormulaFields.Count && seriesFields.Count > 0;)
             {
@@ -1625,7 +1559,7 @@ namespace WebCharts.Services
         private static void AddSeriesFieldInfo(SeriesFieldList result, string seriesName, IList<DataField> unmappedFormulaFields)
         {
             SeriesChartType chartType = FormulaHelper.GetDefaultChartType(unmappedFormulaFields[0]);
-            List<DataField> seriesFields = new List<DataField>(FormulaHelper.GetDataFields(chartType));
+            List<DataField> seriesFields = new(FormulaHelper.GetDataFields(chartType));
 
             for (int i = 0; i < unmappedFormulaFields.Count && seriesFields.Count > 0;)
             {

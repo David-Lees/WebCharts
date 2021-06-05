@@ -245,9 +245,11 @@ namespace WebCharts.Services
                     }
                     catch (TargetException)
                     {
+                        // Ignore
                     }
                     catch (TargetInvocationException)
                     {
+                        // Ignore
                     }
                 }
                 // END ADDED
@@ -427,12 +429,15 @@ namespace WebCharts.Services
                     // Some enumerators may not support Resetting
                     catch (InvalidOperationException)
                     {
+                        // Ignore
                     }
                     catch (NotImplementedException)
                     {
+                        // Ignore
                     }
                     catch (NotSupportedException)
                     {
+                        // Ignore
                     }
                 }
 
@@ -501,7 +506,7 @@ namespace WebCharts.Services
                                 }
 
                                 // Create new point
-                                DataPoint newDataPoint = new DataPoint(series);
+                                DataPoint newDataPoint = new(series);
                                 bool emptyValues = false;
                                 bool xValueIsNull = false;
 
@@ -605,23 +610,20 @@ namespace WebCharts.Services
 
                 {
                     // Create series list for primary and secondary X axis
-                    ArrayList chartAreaSeriesPrimary = new ArrayList();
-                    ArrayList chartAreaSeriesSecondary = new ArrayList();
+                    ArrayList chartAreaSeriesPrimary = new();
+                    ArrayList chartAreaSeriesSecondary = new();
                     foreach (Series series in Common.Chart.Series)
                     {
                         // Check if series belongs to the chart area
-                        if (series.ChartArea == chartArea.Name)
+                        if (series.ChartArea == chartArea.Name && series.XSubAxisName.Length == 0)
                         {
-                            if (series.XSubAxisName.Length == 0)
+                            if (series.XAxisType == AxisType.Primary)
                             {
-                                if (series.XAxisType == AxisType.Primary)
-                                {
-                                    chartAreaSeriesPrimary.Add(series);
-                                }
-                                else
-                                {
-                                    chartAreaSeriesSecondary.Add(series);
-                                }
+                                chartAreaSeriesPrimary.Add(series);
+                            }
+                            else
+                            {
+                                chartAreaSeriesSecondary.Add(series);
                             }
                         }
                     }
@@ -639,7 +641,7 @@ namespace WebCharts.Services
         /// <param name="seriesList">List of series to align.</param>
         /// <param name="sortAxisLabels">Indicates if points should be sorted by axis labels.</param>
         /// <param name="sortingOrder">Sorting order.</param>
-        internal void AlignDataPointsByAxisLabel(
+        internal static void AlignDataPointsByAxisLabel(
             ArrayList seriesList,
             bool sortAxisLabels,
             PointSortOrder sortingOrder)
@@ -653,10 +655,10 @@ namespace WebCharts.Services
             // Collect information about all points in all series
             bool indexedX = true;
             bool uniqueAxisLabels = true;
-            ArrayList axisLabels = new ArrayList();
+            ArrayList axisLabels = new();
             foreach (Series series in seriesList)
             {
-                ArrayList seriesAxisLabels = new ArrayList();
+                ArrayList seriesAxisLabels = new();
                 foreach (DataPoint point in series.Points)
                 {
                     // Check if series has indexed X values
@@ -667,12 +669,7 @@ namespace WebCharts.Services
                     }
 
                     // Add axis label to the list and make sure it's non-empty and unique
-                    if (point.AxisLabel.Length == 0)
-                    {
-                        uniqueAxisLabels = false;
-                        break;
-                    }
-                    else if (seriesAxisLabels.Contains(point.AxisLabel))
+                    if (point.AxisLabel.Length == 0 || seriesAxisLabels.Contains(point.AxisLabel))
                     {
                         uniqueAxisLabels = false;
                         break;
@@ -731,7 +728,7 @@ namespace WebCharts.Services
                         if (index >= series.Points.Count ||
                             series.Points[index].XValue != index + 1)
                         {
-                            DataPoint newPoint = new DataPoint(series);
+                            DataPoint newPoint = new(series);
                             newPoint.AxisLabel = (string)axisLabels[index];
                             newPoint.XValue = index + 1;
                             newPoint.YValues[0] = 0.0;
@@ -778,8 +775,8 @@ namespace WebCharts.Services
                 throw new ArgumentException(SR.ExceptionDataBindSeriesGroupByParameterIsEmpty, nameof(seriesGroupByField));
 
             // List of series and group by field values
-            ArrayList seriesList = new ArrayList();
-            ArrayList groupByValueList = new ArrayList();
+            ArrayList seriesList = new();
+            ArrayList groupByValueList = new();
 
             // Convert comma separated Y values field names string to array of names
             string[] yFieldNames = null;
@@ -813,12 +810,15 @@ namespace WebCharts.Services
                 // Some enumerators may not support Resetting
                 catch (NotSupportedException)
                 {
+                    // Ignore
                 }
                 catch (NotImplementedException)
                 {
+                    // Ignore
                 }
                 catch (InvalidOperationException)
                 {
+                    // Ignore
                 }
             }
 
@@ -843,10 +843,10 @@ namespace WebCharts.Services
                     object groupObj = DataPointCollection.ConvertEnumerationItem(
                         enumerator.Current,
                         seriesGroupByField);
+                    int seriesIndex = groupByValueList.IndexOf(groupObj);
 
                     // Check series group by field and create new series if required
-                    Series series = null;
-                    int seriesIndex = groupByValueList.IndexOf(groupObj);
+                    Series series;
                     if (seriesIndex >= 0)
                     {
                         // Select existing series from the list
@@ -855,8 +855,10 @@ namespace WebCharts.Services
                     else
                     {
                         // Create new series
-                        series = new Series();
-                        series.YValuesPerPoint = yFieldNames.GetLength(0);
+                        series = new Series
+                        {
+                            YValuesPerPoint = yFieldNames.GetLength(0)
+                        };
 
                         // If not the first series in the list copy some properties
                         if (seriesList.Count > 0)
@@ -890,7 +892,7 @@ namespace WebCharts.Services
                     }
 
                     // Create new data point
-                    DataPoint newDataPoint = new DataPoint(series);
+                    DataPoint newDataPoint = new(series);
                     bool emptyValues = false;
 
                     // Set X to the value provided
@@ -1055,11 +1057,11 @@ namespace WebCharts.Services
             if (seriesNumber > 0)
             {
                 // Create as many series as fields in the data source
-                ArrayList seriesList = new ArrayList();
+                ArrayList seriesList = new();
                 int index = 0;
                 foreach (string fieldName in dataSourceFields)
                 {
-                    Series series = new Series(fieldName);
+                    Series series = new(fieldName);
 
                     // Set binding properties
                     series.YValueMembers = fieldName;

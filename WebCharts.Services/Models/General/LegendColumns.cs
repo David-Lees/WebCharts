@@ -602,7 +602,7 @@ namespace WebCharts.Services
         private SKColor _backColor = SKColor.Empty;
 
         // Font cache
-        private FontCache _fontCache = new FontCache();
+        private FontCache _fontCache = new();
 
         // Legend cell text font
         private SKFont _font = null;
@@ -625,11 +625,8 @@ namespace WebCharts.Services
         // Numer of cells this cell uses to show it's content
         private int _cellSpan = 1;
 
-        // Legend cell tooltip
-        private string _toolTip = string.Empty;
-
         // Legend cell margins
-        private Margins _margins = new Margins(0, 0, 15, 15);
+        private Margins _margins = new(0, 0, 15, 15);
 
         // Cell row index
         private int _rowIndex = -1;
@@ -1047,17 +1044,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeMapArea"),
         SRDescription("DescriptionAttributeToolTip"),
         ]
-        public virtual string ToolTip
-        {
-            set
-            {
-                _toolTip = value;
-            }
-            get
-            {
-                return _toolTip;
-            }
-        }
+        public virtual string ToolTip { get; set; }
 
         #endregion Properties
 
@@ -1148,7 +1135,7 @@ namespace WebCharts.Services
             {
                 if (ImageSize.IsEmpty && Image.Length > 0)
                 {
-                    SKSize imageSize = new SKSize();
+                    SKSize imageSize = new();
 
                     // Use original image size
                     if (Common.ImageLoader.GetAdjustedImageSize(Image, graph.Graphics, ref imageSize))
@@ -1441,7 +1428,7 @@ namespace WebCharts.Services
                             // Insert new line character in the string
                             lineLength = 0;
                             resultString = resultString.Substring(0, charIndex) + "\n" +
-                                resultString.Substring(charIndex + 1).TrimStart();
+                                resultString[(charIndex + 1)..].TrimStart();
                         }
                     }
                 }
@@ -1601,58 +1588,56 @@ namespace WebCharts.Services
             using (SKPaint fontBrush = new() { Color = GetCellForeColor(), Style = SKPaintStyle.Fill })
             {
                 // Create cell text format
-                using (StringFormat format = new StringFormat(StringFormat.GenericDefault))
+                using StringFormat format = new(StringFormat.GenericDefault);
+                format.FormatFlags = StringFormatFlags.LineLimit;
+                format.Trimming = StringTrimming.EllipsisCharacter;
+                format.Alignment = StringAlignment.Center;
+                if (Alignment == ContentAlignment.BottomLeft ||
+                    Alignment == ContentAlignment.MiddleLeft ||
+                    Alignment == ContentAlignment.TopLeft)
                 {
-                    format.FormatFlags = StringFormatFlags.LineLimit;
-                    format.Trimming = StringTrimming.EllipsisCharacter;
-                    format.Alignment = StringAlignment.Center;
-                    if (Alignment == ContentAlignment.BottomLeft ||
-                        Alignment == ContentAlignment.MiddleLeft ||
-                        Alignment == ContentAlignment.TopLeft)
-                    {
-                        format.Alignment = StringAlignment.Near;
-                    }
-                    else if (Alignment == ContentAlignment.BottomRight ||
-                        Alignment == ContentAlignment.MiddleRight ||
-                        Alignment == ContentAlignment.TopRight)
-                    {
-                        format.Alignment = StringAlignment.Far;
-                    }
-                    format.LineAlignment = StringAlignment.Center;
-                    if (Alignment == ContentAlignment.BottomCenter ||
-                        Alignment == ContentAlignment.BottomLeft ||
-                        Alignment == ContentAlignment.BottomRight)
-                    {
-                        format.LineAlignment = StringAlignment.Far;
-                    }
-                    else if (Alignment == ContentAlignment.TopCenter ||
-                        Alignment == ContentAlignment.TopLeft ||
-                        Alignment == ContentAlignment.TopRight)
-                    {
-                        format.LineAlignment = StringAlignment.Near;
-                    }
-
-                    // Measure string height out of one character
-                    SKSize charSize = chartGraph.MeasureStringAbs(GetCellText(), cellFont, new SKSize(10000f, 10000f), format);
-
-                    // If height of one characte is more than rectangle heigjt - remove LineLimit flag
-                    if (charSize.Height > cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) != 0)
-                    {
-                        format.FormatFlags ^= StringFormatFlags.LineLimit;
-                    }
-                    else if (charSize.Height < cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) == 0)
-                    {
-                        format.FormatFlags |= StringFormatFlags.LineLimit;
-                    }
-
-                    // Draw text
-                    chartGraph.DrawStringRel(
-                        GetCellText(),
-                        cellFont,
-                        fontBrush,
-                        chartGraph.GetRelativeRectangle(cellPosition),
-                        format);
+                    format.Alignment = StringAlignment.Near;
                 }
+                else if (Alignment == ContentAlignment.BottomRight ||
+                    Alignment == ContentAlignment.MiddleRight ||
+                    Alignment == ContentAlignment.TopRight)
+                {
+                    format.Alignment = StringAlignment.Far;
+                }
+                format.LineAlignment = StringAlignment.Center;
+                if (Alignment == ContentAlignment.BottomCenter ||
+                    Alignment == ContentAlignment.BottomLeft ||
+                    Alignment == ContentAlignment.BottomRight)
+                {
+                    format.LineAlignment = StringAlignment.Far;
+                }
+                else if (Alignment == ContentAlignment.TopCenter ||
+                    Alignment == ContentAlignment.TopLeft ||
+                    Alignment == ContentAlignment.TopRight)
+                {
+                    format.LineAlignment = StringAlignment.Near;
+                }
+
+                // Measure string height out of one character
+                SKSize charSize = chartGraph.MeasureStringAbs(GetCellText(), cellFont, new SKSize(10000f, 10000f), format);
+
+                // If height of one characte is more than rectangle heigjt - remove LineLimit flag
+                if (charSize.Height > cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) != 0)
+                {
+                    format.FormatFlags ^= StringFormatFlags.LineLimit;
+                }
+                else if (charSize.Height < cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) == 0)
+                {
+                    format.FormatFlags |= StringFormatFlags.LineLimit;
+                }
+
+                // Draw text
+                chartGraph.DrawStringRel(
+                    GetCellText(),
+                    cellFont,
+                    fontBrush,
+                    chartGraph.GetRelativeRectangle(cellPosition),
+                    format);
             }
 
             // Dispose created cell font object
@@ -1677,7 +1662,7 @@ namespace WebCharts.Services
                 SKRect imagePosition = SKRect.Empty;
                 SKImage image = Common.ImageLoader.LoadImage(Image);
 
-                SKSize imageSize = new SKSize();
+                SKSize imageSize = new();
 
                 ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
 
@@ -2208,7 +2193,6 @@ namespace WebCharts.Services
         /// Convert margins object to string.
         /// </summary>
         /// <returns>A string that represents the margins object.</returns>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override string ToString()
         {
             return string.Format(
@@ -2229,7 +2213,6 @@ namespace WebCharts.Services
         /// <returns>
         /// True if the specified Object is equal to the current Object; otherwise, false.
         /// </returns>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public override bool Equals(object obj)
         {
             if (obj is Margins margins)
@@ -2249,8 +2232,7 @@ namespace WebCharts.Services
         /// Gets object hash code.
         /// </summary>
         /// <returns>Margins object hash value.</returns>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
-        public override int GetHashCode()
+         public override int GetHashCode()
         {
             return Top.GetHashCode() + Bottom.GetHashCode() + Left.GetHashCode() + Right.GetHashCode();
         }
@@ -2282,7 +2264,7 @@ namespace WebCharts.Services
         {
             if (Common != null && Common.Chart != null)
             {
-                Common.Chart.Invalidate();
+                ChartService.Invalidate();
             }
         }
 

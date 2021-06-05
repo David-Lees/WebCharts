@@ -27,20 +27,6 @@ namespace WebCharts.Services
         #region Fields
 
         /// <summary>
-        /// Labels and markers have to be shifted if there
-        /// is more than one series for column chart.
-        /// </summary>
-        private double _shiftedX = 0;
-
-        /// <summary>
-        /// Labels and markers have to be shifted if there
-        /// is more than one series for column chart. This property
-        /// will give a name of the series, which is used, for
-        /// labels and markers. Point chart
-        /// </summary>
-        private string _shiftedSerName = "";
-
-        /// <summary>
         /// Indicates that two Y values are used to calculate column position
         /// </summary>
         protected bool useTwoValues = false;
@@ -157,17 +143,7 @@ namespace WebCharts.Services
         /// Labels and markers have to be shifted if there
         /// is more than one series for column chart.
         /// </summary>
-        override public double ShiftedX
-        {
-            get
-            {
-                return _shiftedX;
-            }
-            set
-            {
-                _shiftedX = value;
-            }
-        }
+        public override double ShiftedX { get; set; }
 
         /// <summary>
         /// Labels and markers have to be shifted if there
@@ -175,17 +151,7 @@ namespace WebCharts.Services
         /// will give a name of the series, which is used, for
         /// labels and markers.
         /// </summary>
-        override public string ShiftedSerName
-        {
-            get
-            {
-                return _shiftedSerName;
-            }
-            set
-            {
-                _shiftedSerName = value;
-            }
-        }
+        public override string ShiftedSerName { get; set; }
 
         #endregion Properties
 
@@ -625,7 +591,7 @@ namespace WebCharts.Services
             SKSize pixelRelSize = graph.GetRelativeSize(new SKSize(1.1f, 1.1f));
 
             // Get list of series to draw
-            List<string> typeSeries = null;
+            List<string> typeSeries;
             bool currentDrawSeriesSideBySide = drawSeriesSideBySide;
             if ((area.Area3DStyle.IsClustered && SideBySideSeries) ||
                 Stacked)
@@ -661,8 +627,10 @@ namespace WebCharts.Services
             else
             {
                 // Draw just one chart series
-                typeSeries = new List<string>();
-                typeSeries.Add(seriesToDraw.Name);
+                typeSeries = new List<string>
+                {
+                    seriesToDraw.Name
+                };
             }
 
             //************************************************************
@@ -1205,25 +1173,23 @@ namespace WebCharts.Services
                     true);
 
                 // Draw label text
-                using (SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill })
-                {
-                    graph.DrawPointLabelStringRel(
-                        common,
-                        text,
-                        point.Font,
-                        brush,
-                        labelPosition,
-                        format,
-                        point.LabelAngle,
-                        labelBackPosition,
-                        point.LabelBackColor,
-                        point.LabelBorderColor,
-                        point.LabelBorderWidth,
-                        point.LabelBorderDashStyle,
-                        series,
-                        point,
-                        pointIndex - 1);
-                }
+                using SKPaint brush = new() { Color = point.LabelForeColor, Style = SKPaintStyle.Fill };
+                graph.DrawPointLabelStringRel(
+                    common,
+                    text,
+                    point.Font,
+                    brush,
+                    labelPosition,
+                    format,
+                    point.LabelAngle,
+                    labelBackPosition,
+                    point.LabelBackColor,
+                    point.LabelBorderColor,
+                    point.LabelBorderWidth,
+                    point.LabelBorderDashStyle,
+                    series,
+                    point,
+                    pointIndex - 1);
             }
 
             // Restore old clip region

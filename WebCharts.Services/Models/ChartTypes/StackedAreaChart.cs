@@ -207,8 +207,8 @@ namespace WebCharts.Services
             foreach (Series ser in common.DataManager.Series)
             {
                 // Check series of the current chart type & area
-                if (String.Compare(series.ChartArea, ser.ChartArea, true, System.Globalization.CultureInfo.CurrentCulture) == 0 &&
-                    String.Compare(series.ChartTypeName, ser.ChartTypeName, true, System.Globalization.CultureInfo.CurrentCulture) == 0 &&
+                if (string.Compare(series.ChartArea, ser.ChartArea, true, System.Globalization.CultureInfo.CurrentCulture) == 0 &&
+                    string.Compare(series.ChartTypeName, ser.ChartTypeName, true, System.Globalization.CultureInfo.CurrentCulture) == 0 &&
                     series.IsVisible())
                 {
                     yValue = (ser.Points[pointIndex].YValues[0] / _totalPerPoint[pointIndex]) * 100.0;
@@ -219,25 +219,24 @@ namespace WebCharts.Services
                         yValue = 100.0 / GetSeriesCount(common, area);
                     }
 
-                    if (!double.IsNaN(yValue))
-                        if (area.Area3DStyle.Enable3D && yValue < 0.0)
-                        {
-                            // No negative values support in 3D stacked area chart
-                            yValue = -yValue;
-                        }
+                    if (!double.IsNaN(yValue) && area.Area3DStyle.Enable3D && yValue < 0.0)
                     {
-                        if (yValue >= 0.0 && !double.IsNaN(prevPosY))
-                        {
-                            yValue += prevPosY;
-                        }
-                        if (yValue < 0.0 && !double.IsNaN(prevNegY))
-                        {
-                            yValue += prevNegY;
-                        }
+                        // No negative values support in 3D stacked area chart
+                        yValue = -yValue;
                     }
 
+                    if (yValue >= 0.0 && !double.IsNaN(prevPosY))
+                    {
+                        yValue += prevPosY;
+                    }
+                    if (yValue < 0.0 && !double.IsNaN(prevNegY))
+                    {
+                        yValue += prevNegY;
+                    }
+
+
                     // Exit loop when current series was found
-                    if (String.Compare(series.Name, ser.Name, StringComparison.Ordinal) == 0)
+                    if (string.Compare(series.Name, ser.Name, StringComparison.Ordinal) == 0)
                     {
                         break;
                     }

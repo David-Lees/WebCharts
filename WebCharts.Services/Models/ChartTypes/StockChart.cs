@@ -730,9 +730,11 @@ namespace WebCharts.Services
                     }
                     catch (ArgumentException)
                     {
+                        // Ignore
                     }
                     catch (NotSupportedException)
                     {
+                        // Ignore
                     }
                 }
 
@@ -1484,9 +1486,11 @@ namespace WebCharts.Services
                     }
                     catch (NotSupportedException)
                     {
+                        // Ignore
                     }
                     catch (ArgumentException)
                     {
+                        // Ignore
                     }
                 }
 
@@ -1499,17 +1503,19 @@ namespace WebCharts.Services
                     }
                     catch (ArgumentException)
                     {
+                        // Ignore
                     }
                     catch (NotSupportedException)
                     {
+                        // Ignore
                     }
                 }
 
                 // Calculate bar rectangle
                 SKRect rect = SKRect.Empty;
-                rect.Top = (float)Math.Min(open, close);
+                rect.Top = Math.Min(open, close);
                 rect.Left = xPosition - width / 2f;
-                rect.Size = new(width, (float)Math.Max(open, close) - rect.Top);
+                rect.Size = new(width, Math.Max(open, close) - rect.Top);
 
                 // Bar and border color
                 SKColor barColor = (open > close) ? priceUpColor : priceDownColor;
@@ -1521,7 +1527,7 @@ namespace WebCharts.Services
                 points[1] = new Point3D(rect.Right, rect.Bottom, zPosition + depth / 2f);
                 area.matrix3D.TransformPoints(points);
                 rect.Location = points[0].SKPoint;
-                rect.Size = new((float)Math.Abs(points[1].X - points[0].X), (float)Math.Abs(points[1].Y - points[0].Y));
+                rect.Size = new(Math.Abs(points[1].X - points[0].X), Math.Abs(points[1].Y - points[0].Y));
 
                 // Draw open-close bar
                 if (rect.Height > 1)

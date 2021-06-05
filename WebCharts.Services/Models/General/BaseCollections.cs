@@ -90,7 +90,7 @@ namespace WebCharts.Services
         /// Initializes a new instance of the <see cref="ChartElementCollection&lt;T&gt;"/> class.
         /// </summary>
         /// <param name="parent">The parent chart element.</param>
-        internal ChartElementCollection(IChartElement parent)
+        protected ChartElementCollection(IChartElement parent)
         {
             _parent = parent;
         }
@@ -131,7 +131,6 @@ namespace WebCharts.Services
         /// <summary>
         /// Removes all elements from the <see cref="T:System.Collections.ObjectModel.Collection`1"/>.
         /// </summary>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void ClearItems()
         {
             SuspendUpdates();
@@ -162,7 +161,6 @@ namespace WebCharts.Services
         /// Removes the element at the specified index of the <see cref="T:System.Collections.ObjectModel.Collection`1"/>.
         /// </summary>
         /// <param name="index">The zero-based index of the element to remove.</param>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void RemoveItem(int index)
         {
             Deinitialize(this[index]);
@@ -176,7 +174,6 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
         /// <param name="item">The object to insert. The value can be null for reference types.</param>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void InsertItem(int index, T item)
         {
             Initialize(item);
@@ -190,7 +187,6 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="index">The zero-based index of the element to replace.</param>
         /// <param name="item">The new value for the element at the specified index. The value can be null for reference types.</param>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         protected override void SetItem(int index, T item)
         {
             Initialize(item);
@@ -242,7 +238,6 @@ namespace WebCharts.Services
         /// <summary>
         /// Performs freeing, releasing, or resetting managed resources.
         /// </summary>
-        [SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase")]
         public void Dispose()
         {
             Dispose(true);
@@ -318,7 +313,7 @@ namespace WebCharts.Services
         /// Initializes a new instance of the <see cref="ChartNamedElementCollection&lt;T&gt;"/> class.
         /// </summary>
         /// <param name="parent">The parent chart element.</param>
-        internal ChartNamedElementCollection(IChartElement parent)
+        protected ChartNamedElementCollection(IChartElement parent)
             : base(parent)
         {
         }
@@ -438,7 +433,7 @@ namespace WebCharts.Services
 
             base.InsertItem(index, item);
 
-            if (Count == 1 && item != null)
+            if (Count == 1)
             {
                 // First element is added to the list -> fire the NameReferenceChanged event to update all the dependent elements
                 ((INameController)this).OnNameReferenceChanged(new NameReferenceChangedEventArgs(null, item));
@@ -541,8 +536,7 @@ namespace WebCharts.Services
         {
             if (!IsSuspended)
             {
-                if (NameReferenceChanging != null)
-                    NameReferenceChanging(this, e);
+                NameReferenceChanging?.Invoke(this, e);
             }
         }
 
@@ -554,8 +548,7 @@ namespace WebCharts.Services
         {
             if (!IsSuspended)
             {
-                if (NameReferenceChanged != null)
-                    NameReferenceChanged(this, e);
+                NameReferenceChanged?.Invoke(this, e);
             }
         }
 

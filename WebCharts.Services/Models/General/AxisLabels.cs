@@ -165,7 +165,7 @@ namespace WebCharts.Services
             return ChartArea.GetAxis(
                     axisType,
                     GetAxisType() == AxisType.Primary ? AxisType.Secondary : AxisType.Primary,
-                    String.Empty
+                    string.Empty
                 );
         }
 
@@ -230,15 +230,12 @@ namespace WebCharts.Services
             }
 
             // For circular chart area fill only Y axis labels
-            if (ChartArea != null && ChartArea.chartAreaIsCurcular)
+            if (ChartArea != null && ChartArea.chartAreaIsCurcular && axisType != AxisName.Y)
             {
-                if (axisType != AxisName.Y)
+                ICircularChartType type = ChartArea.GetCircularChartType();
+                if (type == null || !type.XAxisLabelsSupported())
                 {
-                    ICircularChartType type = ChartArea.GetCircularChartType();
-                    if (type == null || !type.XAxisLabelsSupported())
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
 
@@ -256,7 +253,7 @@ namespace WebCharts.Services
             // Remove the first row of labels if custom labels not exist
             if (removeFirstRow)
             {
-                if (customLabelsFlag == false)
+                if (!customLabelsFlag)
                 {
                     for (int index = 0; index < CustomLabels.Count; index++)
                     {
@@ -363,14 +360,12 @@ namespace WebCharts.Services
             }
 
             if (labelStyle.GetIntervalType() != DateTimeIntervalType.Auto &&
-                labelStyle.GetIntervalType() != DateTimeIntervalType.Number)
-            {
-                if (valueType != ChartValueType.Time &&
+                labelStyle.GetIntervalType() != DateTimeIntervalType.Number &&
+                valueType != ChartValueType.Time &&
                     valueType != ChartValueType.Date &&
                     valueType != ChartValueType.DateTimeOffset)
-                {
-                    valueType = ChartValueType.DateTime;
-                }
+            {
+                valueType = ChartValueType.DateTime;
             }
 
             // ***********************************
@@ -405,7 +400,7 @@ namespace WebCharts.Services
                 // Labels from point position
                 for (int point = 0; point < numOfPoints; point++)
                 {
-                    CustomLabels.Add(((double)point) + 0.5, ((double)point) + 1.5,
+                    CustomLabels.Add(point + 0.5, point + 1.5,
                         ValueConverter.FormatValue(
                             Common.Chart,
                             this,
@@ -421,7 +416,7 @@ namespace WebCharts.Services
                 if (endLabels == 1)
                 {
                     // max position
-                    CustomLabels.Add(((double)numOfPoints) + 0.5, ((double)numOfPoints) + 1.5,
+                    CustomLabels.Add(numOfPoints + 0.5, numOfPoints + 1.5,
                         ValueConverter.FormatValue(
                             Common.Chart,
                             this,
@@ -452,12 +447,9 @@ namespace WebCharts.Services
                         }
 
                         // Add X labels
-                        if (axisType == AxisName.X || axisType == AxisName.X2)
+                        if ((axisType == AxisName.X || axisType == AxisName.X2) && dataPoint.AxisLabel.Length > 0)
                         {
-                            if (dataPoint.AxisLabel.Length > 0)
-                            {
-                                CustomLabels[pointIndx].Text = dataPoint.AxisLabel;
-                            }
+                            CustomLabels[pointIndx].Text = dataPoint.AxisLabel;
                         }
 
                         pointIndx++;

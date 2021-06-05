@@ -6,11 +6,9 @@
 //  Purpose:	Main windows forms chart control class.
 //
 
-using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
 using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -152,7 +150,6 @@ namespace WebCharts.Services
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Series.ChartAreaNameReferenceChanged);
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Legends.ChartAreaNameReferenceChanged);
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Titles.ChartAreaNameReferenceChanged);
-            //ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Annotations.ChartAreaNameReferenceChanged);
             ChartAreas.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(ChartAreas.ChartAreaNameReferenceChanged);
             Legends.NameReferenceChanged += new EventHandler<NameReferenceChangedEventArgs>(Series.LegendNameReferenceChanged);
         }
@@ -175,7 +172,7 @@ namespace WebCharts.Services
                 throw new ArgumentNullException(nameof(imageFileName));
 
             // Create file stream for the specified file name
-            FileStream fileStream = new FileStream(imageFileName, FileMode.Create);
+            FileStream fileStream = new(imageFileName, FileMode.Create);
 
             // Save into stream
             try
@@ -252,8 +249,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeAppearance"),
         SRDescription("DescriptionAttributeChart_PaletteCustomColors"),
         ]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
-        public SKColor[] PaletteCustomColors
+       public SKColor[] PaletteCustomColors
         {
             set
             {
@@ -560,6 +556,7 @@ namespace WebCharts.Services
             }
             set
             {
+                // Ignore
             }
         }
 
@@ -632,7 +629,7 @@ namespace WebCharts.Services
             }
         }
 
-        public void Invalidate()
+        public static void Invalidate()
         {
             // Nothing to do
         }
@@ -968,7 +965,7 @@ namespace WebCharts.Services
                     int versionIndex = buildNumber.IndexOf("VERSION=", StringComparison.Ordinal);
                     if (versionIndex >= 0)
                     {
-                        buildNumber = buildNumber.Substring(versionIndex + 8);
+                        buildNumber = buildNumber[(versionIndex + 8)..];
                     }
                     versionIndex = buildNumber.IndexOf(",", StringComparison.Ordinal);
                     if (versionIndex >= 0)
@@ -1018,7 +1015,7 @@ namespace WebCharts.Services
             foreach (Series series in Series)
             {
                 // Check if palette colors should be aplied to the points
-                bool applyToPoints = false;
+                bool applyToPoints;
                 if (series.Palette != ChartColorPalette.None)
                 {
                     applyToPoints = true;
@@ -1107,10 +1104,7 @@ namespace WebCharts.Services
         /// <param name="arguments">Axis scaleView event arguments.</param>
         internal void OnAxisViewChanging(ViewEventArgs arguments)
         {
-            if (AxisViewChanging != null)
-            {
-                AxisViewChanging(this, arguments);
-            }
+            AxisViewChanging?.Invoke(this, arguments);
         }
 
         /// <summary>
@@ -1119,10 +1113,7 @@ namespace WebCharts.Services
         /// <param name="arguments">Axis scaleView event arguments.</param>
         internal void OnAxisViewChanged(ViewEventArgs arguments)
         {
-            if (AxisViewChanged != null)
-            {
-                AxisViewChanged(this, arguments);
-            }
+            AxisViewChanged?.Invoke(this, arguments);
         }
 
         #endregion Axis data scaleView position/size changing events
@@ -1142,10 +1133,7 @@ namespace WebCharts.Services
         /// <param name="arguments">Axis scroll bar event arguments.</param>
         internal void OnAxisScrollBarClicked(ScrollBarEventArgs arguments)
         {
-            if (AxisScrollBarClicked != null)
-            {
-                AxisScrollBarClicked(this, arguments);
-            }
+            AxisScrollBarClicked?.Invoke(this, arguments);
         }
 
         #endregion Axis scroll bar events
@@ -1173,10 +1161,7 @@ namespace WebCharts.Services
         /// <param name="e">Event arguments.</param>
         protected virtual void OnPrePaint(ChartPaintEventArgs e)
         {
-            if (PrePaint != null)
-            {
-                PrePaint(this, e);
-            }
+            PrePaint?.Invoke(this, e);
         }
 
         /// <summary>
@@ -1196,10 +1181,7 @@ namespace WebCharts.Services
         /// <param name="e">Event arguments.</param>
         protected virtual void OnPostPaint(ChartPaintEventArgs e)
         {
-            if (PostPaint != null)
-            {
-                PostPaint(this, e);
-            }
+            PostPaint?.Invoke(this, e);
         }
 
         /// <summary>
@@ -1232,10 +1214,7 @@ namespace WebCharts.Services
         ]
         protected virtual void OnCustomize()
         {
-            if (Customize != null)
-            {
-                Customize(this, EventArgs.Empty);
-            }
+            Customize?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -1412,7 +1391,7 @@ namespace WebCharts.Services
             }
 
             // Align series
-            chartPicture.AlignDataPointsByAxisLabel(seriesList, false, PointSortOrder.Ascending);
+            ChartImage.AlignDataPointsByAxisLabel(seriesList, false, PointSortOrder.Ascending);
         }
 
         /// <summary>
@@ -1435,7 +1414,7 @@ namespace WebCharts.Services
             }
 
             // Align series
-            chartPicture.AlignDataPointsByAxisLabel(seriesList, true, sortingOrder);
+            ChartImage.AlignDataPointsByAxisLabel(seriesList, true, sortingOrder);
         }
 
         /// <summary>
@@ -1454,8 +1433,6 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="dataSource">Data source.</param>
         /// <param name="xField">Name of the field for series X values.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X is a cartesian coordinate and well understood")]
         public void DataBindTable(
             IEnumerable dataSource,
             string xField)
@@ -1487,9 +1464,7 @@ namespace WebCharts.Services
         /// <param name="xField">Name of the field for X values.</param>
         /// <param name="yFields">Comma separated name(s) of the field(s) for Y value(s).</param>
         /// <param name="otherFields">Other point properties binding rule in format: PointProperty=Field[{Format}] [,PointProperty=Field[{Format}]]. For example: "Tooltip=Price{C1},Url=WebSiteName".</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]
-        public void DataBindCrossTable(
+       public void DataBindCrossTable(
             IEnumerable dataSource,
             string seriesGroupByField,
             string xField,
@@ -1517,8 +1492,6 @@ namespace WebCharts.Services
         /// <param name="yFields">Comma separated name(s) of the field(s) for Y value(s).</param>
         /// <param name="otherFields">Other point properties binding rule in format: PointProperty=Field[{Format}] [,PointProperty=Field[{Format}]]. For example: "Tooltip=Price{C1},Url=WebSiteName".</param>
         /// <param name="sortingOrder">Series will be sorted by group field values in specified order.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]
         public void DataBindCrossTable(
             IEnumerable dataSource,
             string seriesGroupByField,

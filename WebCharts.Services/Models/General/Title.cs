@@ -185,9 +185,6 @@ namespace WebCharts.Services
         private bool _isDockedInsideChartArea = true;
         private int _dockingOffset = 0;
 
-        // Interactive properties
-        private string _toolTip = String.Empty;
-
         // Default text orientation
         private TextOrientation _textOrientation = TextOrientation.Auto;
 
@@ -859,17 +856,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeToolTip"),
         SRDescription("DescriptionAttributeToolTip"),
         ]
-        public string ToolTip
-        {
-            set
-            {
-                _toolTip = value;
-            }
-            get
-            {
-                return _toolTip;
-            }
-        }
+        public string ToolTip { set; get; } = string.Empty;
 
         /// <summary>
 		/// True if title background or border is visible
@@ -991,7 +978,7 @@ namespace WebCharts.Services
                     }
 
                     // Invalidate title rectangle only
-                    Chart.Invalidate(/*invalRect*/);
+                    ChartService.Invalidate(/*invalRect*/);
                 }
                 else
                 {
@@ -1026,80 +1013,77 @@ namespace WebCharts.Services
             SKRect titlePosition = Position.ToSKRect();
 
             // Auto set the title position if width or height is not set for custom position
-            if (!Position.Auto && Common != null && Common.ChartPicture != null)
+            if (!Position.Auto && Common != null && Common.ChartPicture != null && (titlePosition.Width == 0 || titlePosition.Height == 0))
             {
-                if (titlePosition.Width == 0 || titlePosition.Height == 0)
+                // Calculate text layout area
+                SKSize layoutArea = new(
+                    (titlePosition.Width == 0) ? Common.ChartPicture.Width : titlePosition.Width,
+                    (titlePosition.Height == 0) ? Common.ChartPicture.Height : titlePosition.Height);
+                if (IsTextVertical)
                 {
-                    // Calculate text layout area
-                    SKSize layoutArea = new(
-                        (titlePosition.Width == 0) ? Common.ChartPicture.Width : titlePosition.Width,
-                        (titlePosition.Height == 0) ? Common.ChartPicture.Height : titlePosition.Height);
-                    if (IsTextVertical)
+                    float tempValue = layoutArea.Width;
+                    layoutArea.Width = layoutArea.Height;
+                    layoutArea.Height = tempValue;
+                }
+
+                // Measure text size
+                layoutArea = chartGraph.GetAbsoluteSize(layoutArea);
+                SKSize titleSize = ChartGraphics.MeasureString(
+                    "W" + titleText.Replace("\\n", "\n"),
+                    Font,
+                    layoutArea,
+                    StringFormat.GenericDefault,
+                    GetTextOrientation());
+
+                // Increase text size by 4 pixels
+                if (BackGroundIsVisible)
+                {
+                    titleSize.Width += titleBorderSpacing;
+                    titleSize.Height += titleBorderSpacing;
+                }
+
+                // Switch width and height for vertical text
+                if (IsTextVertical)
+                {
+                    float tempValue = titleSize.Width;
+                    titleSize.Width = titleSize.Height;
+                    titleSize.Height = tempValue;
+                }
+
+                // Convert text size to relative coordinates
+                titleSize = chartGraph.GetRelativeSize(titleSize);
+
+                // Update custom position
+                if (titlePosition.Width == 0)
+                {
+                    titlePosition.Size = new(titleSize.Width, titlePosition.Height);
+                    if (Alignment == ContentAlignment.BottomRight ||
+                        Alignment == ContentAlignment.MiddleRight ||
+                        Alignment == ContentAlignment.TopRight)
                     {
-                        float tempValue = layoutArea.Width;
-                        layoutArea.Width = layoutArea.Height;
-                        layoutArea.Height = tempValue;
+                        titlePosition.Left -= titlePosition.Width;
                     }
-
-                    // Measure text size
-                    layoutArea = chartGraph.GetAbsoluteSize(layoutArea);
-                    SKSize titleSize = chartGraph.MeasureString(
-                        "W" + titleText.Replace("\\n", "\n"),
-                        Font,
-                        layoutArea,
-                        StringFormat.GenericDefault,
-                        GetTextOrientation());
-
-                    // Increase text size by 4 pixels
-                    if (BackGroundIsVisible)
+                    else if (Alignment == ContentAlignment.BottomCenter ||
+                        Alignment == ContentAlignment.MiddleCenter ||
+                        Alignment == ContentAlignment.TopCenter)
                     {
-                        titleSize.Width += titleBorderSpacing;
-                        titleSize.Height += titleBorderSpacing;
+                        titlePosition.Left -= titlePosition.Width / 2f;
                     }
-
-                    // Switch width and height for vertical text
-                    if (IsTextVertical)
+                }
+                if (titlePosition.Height == 0)
+                {
+                    titlePosition.Bottom = titlePosition.Top + titleSize.Height;
+                    if (Alignment == ContentAlignment.BottomRight ||
+                        Alignment == ContentAlignment.BottomCenter ||
+                        Alignment == ContentAlignment.BottomLeft)
                     {
-                        float tempValue = titleSize.Width;
-                        titleSize.Width = titleSize.Height;
-                        titleSize.Height = tempValue;
+                        titlePosition.Top -= titlePosition.Height;
                     }
-
-                    // Convert text size to relative coordinates
-                    titleSize = chartGraph.GetRelativeSize(titleSize);
-
-                    // Update custom position
-                    if (titlePosition.Width == 0)
+                    else if (Alignment == ContentAlignment.MiddleCenter ||
+                        Alignment == ContentAlignment.MiddleLeft ||
+                        Alignment == ContentAlignment.MiddleRight)
                     {
-                        titlePosition.Size = new(titleSize.Width, titlePosition.Height);
-                        if (Alignment == ContentAlignment.BottomRight ||
-                            Alignment == ContentAlignment.MiddleRight ||
-                            Alignment == ContentAlignment.TopRight)
-                        {
-                            titlePosition.Left -= titlePosition.Width;
-                        }
-                        else if (Alignment == ContentAlignment.BottomCenter ||
-                            Alignment == ContentAlignment.MiddleCenter ||
-                            Alignment == ContentAlignment.TopCenter)
-                        {
-                            titlePosition.Left -= titlePosition.Width / 2f;
-                        }
-                    }
-                    if (titlePosition.Height == 0)
-                    {
-                        titlePosition.Bottom = titlePosition.Top + titleSize.Height;
-                        if (Alignment == ContentAlignment.BottomRight ||
-                            Alignment == ContentAlignment.BottomCenter ||
-                            Alignment == ContentAlignment.BottomLeft)
-                        {
-                            titlePosition.Top -= titlePosition.Height;
-                        }
-                        else if (Alignment == ContentAlignment.MiddleCenter ||
-                            Alignment == ContentAlignment.MiddleLeft ||
-                            Alignment == ContentAlignment.MiddleRight)
-                        {
-                            titlePosition.Top -= titlePosition.Height / 2f;
-                        }
+                        titlePosition.Top -= titlePosition.Height / 2f;
                     }
                 }
             }
@@ -1135,7 +1119,7 @@ namespace WebCharts.Services
             {
                 // Adjust text position to be only around the text itself
                 SKSize titleArea = chartGraph.GetAbsoluteSize(titlePosition.Size);
-                SKSize titleSize = chartGraph.MeasureString(
+                SKSize titleSize = ChartGraphics.MeasureString(
                     "W" + titleText.Replace("\\n", "\n"),
                     Font,
                     titleArea,
@@ -1504,7 +1488,7 @@ namespace WebCharts.Services
             layoutArea.Width -= 2f * elementSpacing;
             layoutArea.Height -= 2f * elementSpacing;
             layoutArea = chartGraph.GetAbsoluteSize(layoutArea);
-            SKSize titleSize = chartGraph.MeasureString(
+            SKSize titleSize = ChartGraphics.MeasureString(
                 "W" + Text.Replace("\\n", "\n"),
                 Font,
                 layoutArea,
@@ -1631,12 +1615,7 @@ namespace WebCharts.Services
                     _position = null;
                 }
             }
-        }
-
-        public override void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            base.Dispose(disposing);
         }
 
         #endregion

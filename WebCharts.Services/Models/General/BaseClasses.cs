@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace WebCharts.Services
 {
@@ -141,7 +140,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Performs freeing, releasing, or resetting managed resources.
         /// </summary>
-        public virtual void Dispose()
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -201,15 +200,9 @@ namespace WebCharts.Services
             return EqualsInternal(obj);
         }
 
-        /// <summary>
-        /// Serves as a hash function for a particular type.
-        /// </summary>
-        /// <returns>
-        /// A hash code for the current <see cref="T:System.Object"/>.
-        /// </returns>
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return HashCode.Combine(Tag, Chart);
         }
 
         #endregion Methods

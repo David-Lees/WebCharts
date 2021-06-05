@@ -598,7 +598,7 @@ namespace WebCharts.Services
             if (GetGraphics() != null && Text.Trim().Length > 0)
             {
                 // Measure text using current font and slightly increase it
-                contentSize = GetGraphics().MeasureString(
+                contentSize = ChartGraphics.MeasureString(
                      "W" + ReplaceKeywords(Text.Replace("\\n", "\n")),
                      Font,
                      new SKSize(2000, 2000),

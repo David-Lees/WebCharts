@@ -501,7 +501,7 @@ namespace WebCharts.Services
             base.Invalidate();
 
             if (Chart != null)
-                Chart.Invalidate();
+                ChartService.Invalidate();
         }
 
         #endregion Painting and selection methods

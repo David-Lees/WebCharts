@@ -200,13 +200,12 @@ namespace WebCharts.Services
     /// Data point label alignment.
     /// </summary>
     [Flags]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue")]
-    internal enum LabelAlignments
+     internal enum LabelAlignments
     {
         /// <summary>
         /// Automatic position.
         /// </summary>
-        Auto = 0,
+        None = 0,
 
         /// <summary>
         /// Label aligned on the top of the marker.
@@ -366,13 +365,13 @@ namespace WebCharts.Services
         #region Fields
 
         // List of registered properties
-        internal ArrayList registeredCustomProperties = new ArrayList();
+        internal ArrayList registeredCustomProperties = new();
 
         // Defines maximum value which can be set to the attribute which uses pixels
-        internal static int MaxValueOfPixelAttribute = 10000;
+        internal readonly static int MaxValueOfPixelAttribute = 10000;
 
-        internal static System.Collections.Generic.List<SeriesChartType> IsXAxisQuantitativeChartTypes =
-              new System.Collections.Generic.List<SeriesChartType>(
+        internal readonly static System.Collections.Generic.List<SeriesChartType> IsXAxisQuantitativeChartTypes =
+              new(
                   new SeriesChartType[] {
                                         SeriesChartType.Line,
                                         SeriesChartType.FastLine,

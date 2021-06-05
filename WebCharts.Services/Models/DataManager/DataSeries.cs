@@ -190,7 +190,7 @@ namespace WebCharts.Services
         internal ChartValueType indexedXValueType = ChartValueType.Auto;
 
         // Default properties
-        static internal DataPointCustomProperties defaultCustomProperties = InitializeDefaultCustomProperties();
+        static readonly internal DataPointCustomProperties defaultCustomProperties = InitializeDefaultCustomProperties();
 
         // Indicates that a temp. marker style was set for drawing
         internal bool tempMarkerStyleIsSet = false;
@@ -303,7 +303,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Font cache for the fonts used in the Series and DataPoint
         /// </summary>
-        private FontCache _fontCache = new FontCache();
+        private FontCache _fontCache = new();
 
         /// <summary>
         /// Data point font
@@ -439,8 +439,6 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="name">Name of the data series.</param>
         /// <param name="yValues">Number of y values per data point.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "Y is a cartesian coordinate and well understood")]
         public Series(string name, int yValues)
             : base(null, false)
         {
@@ -802,7 +800,7 @@ namespace WebCharts.Services
         /// Throws exception if specified value type is not supported.
         /// </summary>
         /// <param name="type">Value type to check.</param>
-        internal void CheckSupportedTypes(Type type)
+        internal static void CheckSupportedTypes(Type type)
         {
             // Check parameters type
             if (type == typeof(Double) ||
@@ -890,7 +888,7 @@ namespace WebCharts.Services
                 for (int index = 0; index < Name.Length; index++)
                     seed += (int)Name[index];
 
-                Random random2 = new Random(seed);
+                Random random2 = new(seed);
 
                 //#endif
                 _dummyDoubleValues = new double[6];
@@ -1116,7 +1114,7 @@ namespace WebCharts.Services
                         throw (new InvalidOperationException(SR.ExceptionDataSeriesKeywordFormatInvalid(result)));
                     }
 
-                    format = result.Substring(keyEndIndex, formatEnd - keyEndIndex).Trim('{', '}');
+                    format = result[keyEndIndex..formatEnd].Trim('{', '}');
                     keyEndIndex = formatEnd + 1;
                 }
 
@@ -1148,7 +1146,7 @@ namespace WebCharts.Services
                         {
                             if (Points.Count > 0)
                             {
-                                keywordValue = Points[Points.Count - 1].YValues[yValueIndex];
+                                keywordValue = Points[^1].YValues[yValueIndex];
                             }
                             break;
                         }
@@ -1222,7 +1220,7 @@ namespace WebCharts.Services
                         throw (new InvalidOperationException(SR.ExceptionDataSeriesKeywordFormatInvalid(result)));
                     }
 
-                    format = result.Substring(keyEndIndex, formatEnd - keyEndIndex).Trim('{', '}');
+                    format = result[keyEndIndex..formatEnd].Trim('{', '}');
                     keyEndIndex = formatEnd + 1;
                 }
 
@@ -1299,16 +1297,11 @@ namespace WebCharts.Services
         {
             foreach (DataPoint dp in fromSeries.Points)
             {
-                if (dp.IsCustomPropertySet("OriginalPointIndex"))
+                if (dp.IsCustomPropertySet("OriginalPointIndex") 
+                    && int.TryParse(dp["OriginalPointIndex"], NumberStyles.Integer, CultureInfo.InvariantCulture, out int index)
+                    && index > -1 && index < toSeries.Points.Count)
                 {
-                    int index = -1;
-                    if (Int32.TryParse(dp["OriginalPointIndex"], NumberStyles.Integer, CultureInfo.InvariantCulture, out index))
-                    {
-                        if (index > -1 && index < toSeries.Points.Count)
-                        {
-                            toSeries.Points[index].positionRel = dp.positionRel;
-                        }
-                    }
+                    toSeries.Points[index].positionRel = dp.positionRel;
                 }
             }
         }
@@ -1318,7 +1311,6 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="controlSite">Site interface of the control.</param>
         /// <returns>True if series was removed from collection.</returns>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", Justification = "This parameter is used when compiling for the WinForms version of Chart")]
         internal bool UnPrepareData()
         {
             bool result = false;
@@ -2044,7 +2036,6 @@ namespace WebCharts.Services
         [
         SRCategory("CategoryAttributeAxes"),
         SRDescription("DescriptionAttributeSeries_XSubAxisName"),
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "value")
         ]
         internal string XSubAxisName
         {
@@ -2148,6 +2139,7 @@ namespace WebCharts.Services
                     }
                     catch (ArgumentException)
                     {
+                        // Ignore
                     }
                 }
 
@@ -2323,8 +2315,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="invalidateAreaOnly">Invalidate chart area only.</param>
         /// <param name="invalidateLegend">Invalidate legend area only.</param>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", Justification = "This parameter is used when compiling for the WinForms version of Chart")]
-        internal void Invalidate(bool invalidateAreaOnly, bool invalidateLegend)
+         internal void Invalidate(bool invalidateAreaOnly, bool invalidateLegend)
         {
             if (Chart != null)
             {

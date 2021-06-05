@@ -12,8 +12,6 @@
 
 using System;
 using System.Globalization;
-using WebCharts.Services;
-using WebCharts.Services;
 
 namespace WebCharts.Services
 {

@@ -218,7 +218,7 @@ namespace WebCharts.Services
             )
         {
             // Create a graphics path
-            SKPath path = new();
+            SKPath path;
 
             // Significant Points for Side polygons
             SKPoint topCenter = points[(int)PiePoints.TopCenter];
@@ -445,95 +445,93 @@ namespace WebCharts.Services
             CommonElements common = area.Common;
 
             // Create a graphics path
-            using (SKPath path = new SKPath())
+            using SKPath path = new();
+            // It is enough to transform only two points from
+            // rectangle. This code will create SKRect from
+            // top left and bottom right points.
+            SKRect pieTopRectangle = new(topFirstRectPoint.X, topFirstRectPoint.Y, topSecondRectPoint.X, topSecondRectPoint.Y);
+            SKRect pieBottomRectangle = new(bottomFirstRectPoint.X, bottomFirstRectPoint.Y, bottomSecondRectPoint.X, bottomSecondRectPoint.Y);
+
+            // Angle correction algorithm. After rotation AddArc method should used
+            // different transformed angles. This method transforms angles.
+            double angleCorrection = pieTopRectangle.Height / pieTopRectangle.Width;
+
+            float endAngle;
+            endAngle = AngleCorrection(startAngle + sweepAngle, angleCorrection);
+            startAngle = AngleCorrection(startAngle, angleCorrection);
+
+            sweepAngle = endAngle - startAngle;
+
+            // Add Line between first points
+            path.MoveTo(topFirstPoint);
+            path.LineTo(bottomFirstPoint);
+
+            if (pieBottomRectangle.Height <= 0)
             {
-                // It is enough to transform only two points from
-                // rectangle. This code will create SKRect from
-                // top left and bottom right points.
-                SKRect pieTopRectangle = new(topFirstRectPoint.X, topFirstRectPoint.Y, topSecondRectPoint.X, topSecondRectPoint.Y);
-                SKRect pieBottomRectangle = new(bottomFirstRectPoint.X, bottomFirstRectPoint.Y, bottomSecondRectPoint.X, bottomSecondRectPoint.Y);
+                // If x angle is 0 this arc will be line in projection.
+                path.MoveTo(bottomFirstPoint.X, bottomFirstPoint.Y);
+                path.LineTo(bottomSecondPoint.X, bottomSecondPoint.Y);
+            }
+            else
+            {
+                // Add Arc
+                path.AddArc(new SKRect(pieBottomRectangle.Left, pieBottomRectangle.Top, pieBottomRectangle.Right, pieBottomRectangle.Bottom), startAngle, sweepAngle);
+            }
 
-                // Angle correction algorithm. After rotation AddArc method should used
-                // different transformed angles. This method transforms angles.
-                double angleCorrection = pieTopRectangle.Height / pieTopRectangle.Width;
+            // Add Line between second points
+            path.MoveTo(bottomSecondPoint);
+            path.LineTo(topSecondPoint);
 
-                float endAngle;
-                endAngle = AngleCorrection(startAngle + sweepAngle, angleCorrection);
-                startAngle = AngleCorrection(startAngle, angleCorrection);
+            if (pieTopRectangle.Height <= 0)
+            {
+                // If x angle is 0 this arc will be line in projection.
+                path.MoveTo(topFirstPoint.X, topFirstPoint.Y);
+                path.LineTo(topSecondPoint.X, topSecondPoint.Y);
+            }
+            else
+            {
+                path.AddArc(new SKRect(pieTopRectangle.Left, pieTopRectangle.Top, pieTopRectangle.Right, pieTopRectangle.Bottom), startAngle + sweepAngle, -sweepAngle);
+            }
 
-                sweepAngle = endAngle - startAngle;
+            if (common.ProcessModePaint)
+            {
+                // Drawing Mode
+                FillPath(brush, path);
 
-                // Add Line between first points
-                path.MoveTo(topFirstPoint);
-                path.LineTo(bottomFirstPoint);
-
-                if (pieBottomRectangle.Height <= 0)
+                if (point.BorderColor != SKColor.Empty &&
+                    point.BorderWidth > 0 &&
+                    point.BorderDashStyle != ChartDashStyle.NotSet)
                 {
-                    // If x angle is 0 this arc will be line in projection.
-                    path.MoveTo(bottomFirstPoint.X, bottomFirstPoint.Y);
-                    path.LineTo(bottomSecondPoint.X, bottomSecondPoint.Y);
+                    DrawSKPath(pen, path);
                 }
-                else
+            }
+            if (common.ProcessModeRegions)
+            {
+                // Check if processing collected data point
+                if (point.IsCustomPropertySet("_COLLECTED_DATA_POINT"))
                 {
-                    // Add Arc
-                    path.AddArc(new SKRect(pieBottomRectangle.Left, pieBottomRectangle.Top, pieBottomRectangle.Right, pieBottomRectangle.Bottom), startAngle, sweepAngle);
-                }
-
-                // Add Line between second points
-                path.MoveTo(bottomSecondPoint);
-                path.LineTo(topSecondPoint);
-
-                if (pieTopRectangle.Height <= 0)
-                {
-                    // If x angle is 0 this arc will be line in projection.
-                    path.MoveTo(topFirstPoint.X, topFirstPoint.Y);
-                    path.LineTo(topSecondPoint.X, topSecondPoint.Y);
-                }
-                else
-                {
-                    path.AddArc(new SKRect(pieTopRectangle.Left, pieTopRectangle.Top, pieTopRectangle.Right, pieTopRectangle.Bottom), startAngle + sweepAngle, -sweepAngle);
-                }
-
-                if (common.ProcessModePaint)
-                {
-                    // Drawing Mode
-                    FillPath(brush, path);
-
-                    if (point.BorderColor != SKColor.Empty &&
-                        point.BorderWidth > 0 &&
-                        point.BorderDashStyle != ChartDashStyle.NotSet)
-                    {
-                        DrawSKPath(pen, path);
-                    }
-                }
-                if (common.ProcessModeRegions)
-                {
-                    // Check if processing collected data point
-                    if (point.IsCustomPropertySet("_COLLECTED_DATA_POINT"))
-                    {
-                        // Add point to the map area
-                        common.HotRegionsList.AddHotRegion(
-                            this,
-                            path,
-                            false,
-                            point.ReplaceKeywords(point.ToolTip),
-                            string.Empty,
-                            string.Empty,
-                            string.Empty,
-                            point,
-                            ChartElementType.DataPoint);
-
-                        return;
-                    }
-
+                    // Add point to the map area
                     common.HotRegionsList.AddHotRegion(
+                        this,
                         path,
                         false,
-                        this,
+                        point.ReplaceKeywords(point.ToolTip),
+                        string.Empty,
+                        string.Empty,
+                        string.Empty,
                         point,
-                        point.series.Name,
-                        pointIndex);
+                        ChartElementType.DataPoint);
+
+                    return;
                 }
+
+                common.HotRegionsList.AddHotRegion(
+                    path,
+                    false,
+                    this,
+                    point,
+                    point.series.Name,
+                    pointIndex);
             }
         }
 
@@ -681,7 +679,7 @@ namespace WebCharts.Services
             pieRectangle.Bottom = secondRectPoint.Y;
             pieRectangle.Right = secondRectPoint.X;
 
-            SKRect pieDoughnutRectangle = new SKRect();
+            SKRect pieDoughnutRectangle = new();
             pieDoughnutRectangle.Left = pieRectangle.Left + pieRectangle.Width * (1F - doughnutRadius) / 2F;
             pieDoughnutRectangle.Top = pieRectangle.Top + pieRectangle.Height * (1F - doughnutRadius) / 2F;
             pieDoughnutRectangle.Size = new(pieRectangle.Width * doughnutRadius, pieRectangle.Height * doughnutRadius);
@@ -826,27 +824,27 @@ namespace WebCharts.Services
             }
             else if (angle > -270 && angle < -90)
             {
-                angle = angle + 180;
-                angle = (float)(Math.Atan(Math.Tan((angle) * Math.PI / 180) * correction) * 180 / Math.PI);
-                angle = angle - 180;
+                angle += 180;
+                angle = (float)(Math.Atan(Math.Tan(angle * Math.PI / 180) * correction) * 180 / Math.PI);
+                angle -= 180;
             }
             else if (angle > 90 && angle < 270)
             {
-                angle = angle - 180;
-                angle = (float)(Math.Atan(Math.Tan((angle) * Math.PI / 180) * correction) * 180 / Math.PI);
-                angle = angle + 180;
+                angle -= 180;
+                angle = (float)(Math.Atan(Math.Tan(angle * Math.PI / 180) * correction) * 180 / Math.PI);
+                angle += 180;
             }
             else if (angle > 270 && angle < 450)
             {
-                angle = angle - 360;
+                angle -= 360;
                 angle = (float)(Math.Atan(Math.Tan((angle) * Math.PI / 180) * correction) * 180 / Math.PI);
-                angle = angle + 360;
+                angle += 360;
             }
             else if (angle > 450)
             {
-                angle = angle - 540;
+                angle -= 540;
                 angle = (float)(Math.Atan(Math.Tan((angle) * Math.PI / 180) * correction) * 180 / Math.PI);
-                angle = angle + 540;
+                angle += 540;
             }
             return angle;
         }
@@ -1602,7 +1600,7 @@ namespace WebCharts.Services
                     }
 
                     // Get intersection point
-                    DataPoint3D intersectionPoint = new DataPoint3D();
+                    DataPoint3D intersectionPoint = new();
                     intersectionPoint.yPosition = (double)plotAreaPositionY;
                     if ((decimal)firstPoint.yPosition > plotAreaPositionBottom ||
                         (decimal)secondPoint.yPosition > plotAreaPositionBottom)
@@ -1640,7 +1638,7 @@ namespace WebCharts.Services
                         // Switch intersection points
                         if ((decimal)firstPoint.yPosition > plotAreaPositionBottom)
                         {
-                            DataPoint3D tempPoint = new DataPoint3D();
+                            DataPoint3D tempPoint = new();
                             tempPoint.xPosition = intersectionPoint.xPosition;
                             tempPoint.yPosition = intersectionPoint.yPosition;
                             intersectionPoint.xPosition = intersectionPoint2.xPosition;
@@ -1893,7 +1891,7 @@ namespace WebCharts.Services
                 float minY = Math.Min(points3D[0].Y, points3D[1].Y);
                 float maxX = Math.Max(points3D[0].X, points3D[1].X);
                 float maxY = Math.Max(points3D[0].Y, points3D[1].Y);
-                SKRect position = new SKRect(minX, minY, maxX - minX, maxY - minY);
+                SKRect position = new(minX, minY, maxX - minX, maxY - minY);
                 SurfaceNames visibleSurfaces = GetVisibleSurfaces(position, positionZ, depth, matrix);
 
                 // Check left line visibility
@@ -2139,12 +2137,12 @@ namespace WebCharts.Services
                 DataPoint3D leftPointAttr;
                 if (!reversedSeriesOrder)
                 {
-                    leftPoint = ChartGraphics.FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index) - 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
-                    leftPointAttr = ChartGraphics.FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index), (multiSeries) ? secondPoint : null, ref pointArrayIndex);
+                    leftPoint = FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index) - 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
+                    leftPointAttr = FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index), (multiSeries) ? secondPoint : null, ref pointArrayIndex);
                 }
                 else
                 {
-                    leftPoint = ChartGraphics.FindPointByIndex(points, Math.Max(firstPoint.index, secondPoint.index) + 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
+                    leftPoint = FindPointByIndex(points, Math.Max(firstPoint.index, secondPoint.index) + 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
                     leftPointAttr = leftPoint;
                 }
                 if (leftPoint != null)
@@ -2170,7 +2168,7 @@ namespace WebCharts.Services
                     double xValue = (leftPoint.indexedSeries) ? leftPoint.index : leftPoint.dataPoint.XValue;
                     if (xValue > hAxisMax || xValue < hAxisMin)
                     {
-                        DataPoint3D currentPoint = null;
+                        DataPoint3D currentPoint;
                         if (reversedSeriesOrder)
                         {
                             currentPoint = (firstPoint.index > secondPoint.index) ? firstPoint : secondPoint;
@@ -2891,7 +2889,7 @@ namespace WebCharts.Services
                 }
 
                 // Create and draw top path
-                using (SKPath path = new SKPath())
+                using (SKPath path = new())
                 {
                     path.AddPoly(gradientPointsAbs);
                     SKRect bounds = path.GetBounds();
@@ -3657,14 +3655,14 @@ namespace WebCharts.Services
             sidePoints[1] = cubePoints[1].SKPoint;
             sidePoints[2] = cubePoints[5].SKPoint;
             sidePoints[3] = cubePoints[2].SKPoint;
-            SKPath bottomLeftSide = new SKPath();
+            SKPath bottomLeftSide = new();
             bottomLeftSide.AddPath(SkiaSharpExtensions.CreateSpline(sidePoints));
             bottomLeftSide.Close();
             sidePoints[0] = cubePoints[7].SKPoint;
             sidePoints[1] = cubePoints[0].SKPoint;
             sidePoints[2] = cubePoints[4].SKPoint;
             sidePoints[3] = cubePoints[3].SKPoint;
-            SKPath topRigthSide = new SKPath();
+            SKPath topRigthSide = new();
             topRigthSide.AddPath(SkiaSharpExtensions.CreateSpline(sidePoints));
             topRigthSide.Close();
 
@@ -3730,16 +3728,14 @@ namespace WebCharts.Services
                                     pathToDraw.Reverse();
 
                                     // Add ellipse segment of the cylinder on bottom/left
-                                    SKPoint leftOppSideLinePoint = SKPoint.Empty;
-                                    SKPoint rightOppSideLinePoint = SKPoint.Empty;
                                     AddEllipseSegment(
                                         pathToDraw,
                                         bottomLeftSide,
                                         topRigthSide,
                                         (matrix.Perspective == 0) && veticalOrientation,
                                         cylinderAngle,
-                                        out leftOppSideLinePoint,
-                                        out rightOppSideLinePoint);
+                                        out SKPoint leftOppSideLinePoint,
+                                        out SKPoint rightOppSideLinePoint);
                                     pathToDraw.Close();
 
                                     // Reset indexes of opposite side points
@@ -3817,7 +3813,7 @@ namespace WebCharts.Services
 
                                     break;
                                 }
-                            case (SurfaceNames.Top):
+                            case SurfaceNames.Top:
                                 if (veticalOrientation)
                                 {
                                     surfaceColor = topLightColor;
@@ -3825,7 +3821,7 @@ namespace WebCharts.Services
                                 }
                                 break;
 
-                            case (SurfaceNames.Bottom):
+                            case SurfaceNames.Bottom:
                                 if (veticalOrientation)
                                 {
                                     surfaceColor = bottomLightColor;
@@ -3861,7 +3857,7 @@ namespace WebCharts.Services
                                 if ((visibleSurfaces & currentSurface) != 0)
                                 {
                                     using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = surfaceColor };
-                                    FillPath((frontSurfaceBrush == null) ? brush : frontSurfaceBrush, pathToDraw);
+                                    FillPath(frontSurfaceBrush ?? brush, pathToDraw);
                                 }
 
                                 // Draw surface border
@@ -4148,7 +4144,7 @@ namespace WebCharts.Services
             {
                 if (pointIndex > ellipsePoints.Length - 1)
                 {
-                    resultPath.AddLine(ellipsePoints[ellipsePoints.Length - 1], ellipsePoints[0]);
+                    resultPath.AddLine(ellipsePoints[^1], ellipsePoints[0]);
                     pointIndex = 0;
                     continue;
                 }

@@ -9904,7 +9904,7 @@ namespace WebCharts.Services
         public class Keys
         {
 
-            static ResourceManager resourceManager = new(typeof(SR).FullName, typeof(SR).Module.Assembly);
+            static readonly ResourceManager resourceManager = new(typeof(SR).FullName, typeof(SR).Module.Assembly);
 
             static CultureInfo _culture = null;
 

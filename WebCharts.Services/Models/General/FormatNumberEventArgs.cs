@@ -11,12 +11,11 @@ namespace WebCharts.Services
         #region Fields
 
         // Private fields
-        private double _value;
-        private string _format;
-        private string _localizedValue;
-        private ChartValueType _valueType = ChartValueType.Auto;
-        private object _senderTag;
-        private ChartElementType _elementType = ChartElementType.Nothing;
+        private readonly double _value;
+        private readonly string _format;
+        private readonly ChartValueType _valueType = ChartValueType.Auto;
+        private readonly object _senderTag;
+        private readonly ChartElementType _elementType = ChartElementType.Nothing;
 
         #endregion
 
@@ -33,11 +32,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Localized text.
         /// </summary>
-        public string LocalizedValue
-        {
-            get { return _localizedValue; }
-            set { _localizedValue = value; }
-        }
+        public string LocalizedValue { get; set; }
 
         /// <summary>
         /// Format string.
@@ -96,7 +91,7 @@ namespace WebCharts.Services
             _value = value;
             _format = format;
             _valueType = valueType;
-            _localizedValue = localizedValue;
+            LocalizedValue = localizedValue;
             _senderTag = senderTag;
             _elementType = elementType;
         }

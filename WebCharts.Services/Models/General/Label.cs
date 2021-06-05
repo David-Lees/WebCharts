@@ -755,7 +755,7 @@ namespace WebCharts.Services
         internal DateTimeIntervalType intervalType = DateTimeIntervalType.NotSet;
         internal DateTimeIntervalType intervalOffsetType = DateTimeIntervalType.NotSet;
 
-        private FontCache _fontCache = new FontCache();
+        private FontCache _fontCache = new();
         private SKFont _font;
         private SKColor _foreColor = SKColors.Black;
         internal int angle = 0;
@@ -837,7 +837,7 @@ namespace WebCharts.Services
                     //******************************************************************
                     //** Calculate label position corner position
                     //******************************************************************
-                    SKPoint labelRelativePosition = new SKPoint(
+                    SKPoint labelRelativePosition = new(
                         _axis.ChartArea.circularCenter.X,
                         _axis.ChartArea.PlotAreaPosition.Y);
 
@@ -954,7 +954,7 @@ namespace WebCharts.Services
                                 new SKPoint(labelRect.Left, labelRect.Bottom)
                         };
 
-                        using SKPath path = new SKPath();
+                        using SKPath path = new();
                         path.AddPoly(points);
                         path.Close();
                         path.Transform(graph.Transform);

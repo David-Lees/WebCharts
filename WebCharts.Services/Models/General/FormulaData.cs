@@ -188,7 +188,6 @@ namespace WebCharts.Services
         /// The Volatility Chaikins indicator measures the difference between High and Low prices,
         /// and is used to indicate tops or bottoms of the market.
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Chaikins")]
         VolatilityChaikins,
 
         /// <summary>
@@ -238,7 +237,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Utility class for Statistical formulas
         /// </summary>
-        private StatisticFormula _statistics;
+        private readonly StatisticFormula _statistics;
 
         /// <summary>
         /// Reference to the Common elements
@@ -686,16 +685,19 @@ namespace WebCharts.Services
             output[0] = new double[maxNumOfPoints];
 
             // Data Points loop
-            foreach (DataPoint point in seriesWidthMaxPoints.Points)
+            if (seriesWidthMaxPoints != null)
             {
-                // Set X value
-                if (_zeroXValues)
-                    output[0][indexPoint] = (double)indexPoint + 1.0;
-                else
-                    output[0][indexPoint] = point.XValue;
+                foreach (DataPoint point in seriesWidthMaxPoints.Points)
+                {
+                    // Set X value
+                    if (_zeroXValues)
+                        output[0][indexPoint] = (double)indexPoint + 1.0;
+                    else
+                        output[0][indexPoint] = point.XValue;
 
-                // Increase data point index.
-                indexPoint++;
+                    // Increase data point index.
+                    indexPoint++;
+                }
             }
 
             // *********************************************************

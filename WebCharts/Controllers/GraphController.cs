@@ -301,13 +301,9 @@ namespace WebCharts.Controllers
             chart.ChartAreas[0].AxisY.Interval = yAxisSettings.Interval;
             chart.ChartAreas[0].AxisY.LabelStyle.Format = yAxisSettings.LabelFormat;
             chart.ChartAreas[0].AxisY.MinorGrid.Enabled = yAxisSettings.MinorTickInterval.HasValue;
-            chart.ChartAreas[0].AxisY.MinorGrid.Interval = yAxisSettings.MinorTickInterval.HasValue
-                ? yAxisSettings.MinorTickInterval.Value
-                : 0;
+            chart.ChartAreas[0].AxisY.MinorGrid.Interval = yAxisSettings.MinorTickInterval ?? 0;
             chart.ChartAreas[0].AxisY.MinorTickMark.Enabled = yAxisSettings.MinorTickInterval.HasValue;
-            chart.ChartAreas[0].AxisY.MinorTickMark.Interval = yAxisSettings.MinorTickInterval.HasValue
-                ? yAxisSettings.MinorTickInterval.Value
-                : 0;
+            chart.ChartAreas[0].AxisY.MinorTickMark.Interval = yAxisSettings.MinorTickInterval ?? 0;
 
             // If any missing data, add series and create points
             if (missingData.Any())
@@ -325,15 +321,10 @@ namespace WebCharts.Controllers
                 chart.Series.Add(seriesMissing);
             }
 
-            var xMin = chart.Series.SelectMany(x => x.Points).Min(x => x.XValue);
-            var xMax = chart.Series.SelectMany(x => x.Points).Max(x => x.XValue);
-
             // Create stream to represent chart as PNG image
-            using (var stream = new MemoryStream())
-            {
-                chart.SaveImage(stream, ChartImageFormat.Png);
-                return new FileContentResult(stream.ToArray(), "image/png");
-            }
+            using var stream = new MemoryStream();
+            chart.SaveImage(stream, ChartImageFormat.Png);
+            return new FileContentResult(stream.ToArray(), "image/png");
         }
     }
 }

@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace WebCharts.Services
 {
@@ -1278,7 +1279,7 @@ namespace WebCharts.Services
                 axisInterval = axis.CalcInterval((axis.ViewMaximum - axis.ViewMinimum) / 5);
             }
 
-            ChartArea area = (ChartArea)this;
+            ChartArea area = this;
             if (area.Area3DStyle.Enable3D && !double.IsNaN(axis.interval3DCorrection))
             {
                 axisInterval = Math.Ceiling(axisInterval / axis.interval3DCorrection);
@@ -1419,10 +1420,10 @@ namespace WebCharts.Services
                     if (seriesArray.Count > 0)
                     {
                         bool indexed = false;
-                        string seriesNamesStr = "";
+                        StringBuilder seriesNamesStr = new();
                         foreach (string seriesName in seriesArray)
                         {
-                            seriesNamesStr = seriesNamesStr + seriesName.Replace(",", "\\,") + ",";
+                            seriesNamesStr.Append(seriesName.Replace(",", "\\,") + ",");
                             if (Common.DataManager.Series[seriesName].IsXValueIndexed)
                             {
                                 indexed = true;
@@ -1434,7 +1435,7 @@ namespace WebCharts.Services
                             try
                             {
                                 DataFormula.CheckXValuesAlignment(
-                                    Common.ChartPicture.DataManipulator.ConvertToSeriesArray(seriesNamesStr.TrimEnd(','), false));
+                                    Common.ChartPicture.DataManipulator.ConvertToSeriesArray(seriesNamesStr.ToString().TrimEnd(','), false));
                             }
                             catch (Exception e)
                             {
@@ -1506,12 +1507,9 @@ namespace WebCharts.Services
                 return list;
             }
             // Ignore sub axis in 3D
-            if (!IsSubAxesSupported)
+            if (!IsSubAxesSupported && subAxisName.Length > 0)
             {
-                if (subAxisName.Length > 0)
-                {
-                    return list;
-                }
+                return list;
             }
 
             // Find series which have same axis type
@@ -1679,21 +1677,21 @@ namespace WebCharts.Services
             series = null;
 
             // Create comma separate string of series names
-            string seriesNames = "";
+            StringBuilder seriesNames = new();
             if (seriesList != null)
             {
                 foreach (string serName in seriesList)
                 {
-                    seriesNames += serName + ",";
+                    seriesNames.Append(serName + ",");
                 }
             }
 
-            // Do not calculate interval every time;
-            if (checkSameInterval == false || diffIntervalAlignmentChecked == true)
+            // Do not calculate interval every time
+            if (!checkSameInterval || diffIntervalAlignmentChecked)
             {
                 if (!isLogarithmic)
                 {
-                    if (!double.IsNaN(intervalData) && _intervalSeriesList == seriesNames)
+                    if (!double.IsNaN(intervalData) && _intervalSeriesList == seriesNames.ToString())
                     {
                         sameInterval = intervalSameSize;
                         series = _intervalSeries;
@@ -1702,7 +1700,7 @@ namespace WebCharts.Services
                 }
                 else
                 {
-                    if (!double.IsNaN(intervalLogData) && _intervalSeriesList == seriesNames)
+                    if (!double.IsNaN(intervalLogData) && _intervalSeriesList == seriesNames.ToString())
                     {
                         sameInterval = intervalSameSize;
                         series = _intervalSeries;
@@ -1714,150 +1712,153 @@ namespace WebCharts.Services
             // Data series loop
             int seriesIndex = 0;
             Series currentSmallestSeries = null;
-            ArrayList[] seriesXValues = new ArrayList[seriesList.Count];
-            foreach (string ser in seriesList)
+            if (seriesList != null)
             {
-                Series dataSeries = Common.DataManager.Series[ser];
-                bool isXValueDateTime = dataSeries.IsXValueDateTime();
-
-                // Copy X values to array and prepare for sorting Sort X values.
-                seriesXValues[seriesIndex] = new ArrayList();
-                bool sortPoints = false;
-                double prevXValue = double.MinValue;
-                double curentXValue = 0.0;
-                if (dataSeries.Points.Count > 0)
+                ArrayList[] seriesXValues = new ArrayList[seriesList.Count];
+                foreach (string ser in seriesList)
                 {
-                    if (isLogarithmic)
-                    {
-                        prevXValue = Math.Log(dataSeries.Points[0].XValue, logarithmicBase);
-                    }
-                    else
-                    {
-                        prevXValue = dataSeries.Points[0].XValue;
-                    }
-                }
-                foreach (DataPoint point in dataSeries.Points)
-                {
-                    if (isLogarithmic)
-                    {
-                        curentXValue = Math.Log(point.XValue, logarithmicBase);
-                    }
-                    else
-                    {
-                        curentXValue = point.XValue;
-                    }
+                    Series dataSeries = Common.DataManager.Series[ser];
+                    bool isXValueDateTime = dataSeries.IsXValueDateTime();
 
-                    if (prevXValue > curentXValue)
+                    // Copy X values to array and prepare for sorting Sort X values.
+                    seriesXValues[seriesIndex] = new ArrayList();
+                    bool sortPoints = false;
+                    double prevXValue = double.MinValue;
+                    double curentXValue = 0.0;
+                    if (dataSeries.Points.Count > 0)
                     {
-                        sortPoints = true;
-                    }
-
-                    seriesXValues[seriesIndex].Add(curentXValue);
-                    prevXValue = curentXValue;
-                }
-
-                //  Sort X values
-                if (sortPoints)
-                {
-                    seriesXValues[seriesIndex].Sort();
-                }
-
-                // Data point loop
-                for (int point = 1; point < seriesXValues[seriesIndex].Count; point++)
-                {
-                    // Interval between two sorted data points.
-                    double interval = Math.Abs((double)seriesXValues[seriesIndex][point - 1] - (double)seriesXValues[seriesIndex][point]);
-
-                    // Check if all intervals are same
-                    if (sameInterval)
-                    {
-                        if (isXValueDateTime)
+                        if (isLogarithmic)
                         {
-                            if (ticksInterval == long.MaxValue)
+                            prevXValue = Math.Log(dataSeries.Points[0].XValue, logarithmicBase);
+                        }
+                        else
+                        {
+                            prevXValue = dataSeries.Points[0].XValue;
+                        }
+                    }
+                    foreach (DataPoint point in dataSeries.Points)
+                    {
+                        if (isLogarithmic)
+                        {
+                            curentXValue = Math.Log(point.XValue, logarithmicBase);
+                        }
+                        else
+                        {
+                            curentXValue = point.XValue;
+                        }
+
+                        if (prevXValue > curentXValue)
+                        {
+                            sortPoints = true;
+                        }
+
+                        seriesXValues[seriesIndex].Add(curentXValue);
+                        prevXValue = curentXValue;
+                    }
+
+                    //  Sort X values
+                    if (sortPoints)
+                    {
+                        seriesXValues[seriesIndex].Sort();
+                    }
+
+                    // Data point loop
+                    for (int point = 1; point < seriesXValues[seriesIndex].Count; point++)
+                    {
+                        // Interval between two sorted data points.
+                        double interval = Math.Abs((double)seriesXValues[seriesIndex][point - 1] - (double)seriesXValues[seriesIndex][point]);
+
+                        // Check if all intervals are same
+                        if (sameInterval)
+                        {
+                            if (isXValueDateTime)
                             {
-                                // Calculate first interval
-                                GetDateInterval(
-                                    (double)seriesXValues[seriesIndex][point - 1],
-                                    (double)seriesXValues[seriesIndex][point],
-                                    out monthsInteval,
-                                    out ticksInterval);
+                                if (ticksInterval == long.MaxValue)
+                                {
+                                    // Calculate first interval
+                                    GetDateInterval(
+                                        (double)seriesXValues[seriesIndex][point - 1],
+                                        (double)seriesXValues[seriesIndex][point],
+                                        out monthsInteval,
+                                        out ticksInterval);
+                                }
+                                else
+                                {
+                                    // Calculate current interval
+                                    long curentTicksInterval = long.MaxValue;
+                                    GetDateInterval(
+                                        (double)seriesXValues[seriesIndex][point - 1],
+                                        (double)seriesXValues[seriesIndex][point],
+                                        out int curentMonthsInteval,
+                                        out curentTicksInterval);
+
+                                    // Compare current interval with previous
+                                    if (curentMonthsInteval != monthsInteval || curentTicksInterval != ticksInterval)
+                                    {
+                                        sameInterval = false;
+                                    }
+                                }
                             }
                             else
                             {
-                                // Calculate current interval
-                                long curentTicksInterval = long.MaxValue;
-                                GetDateInterval(
-                                    (double)seriesXValues[seriesIndex][point - 1],
-                                    (double)seriesXValues[seriesIndex][point],
-                                    out int curentMonthsInteval,
-                                    out curentTicksInterval);
-
-                                // Compare current interval with previous
-                                if (curentMonthsInteval != monthsInteval || curentTicksInterval != ticksInterval)
+                                if (previousInterval != interval && previousInterval != double.MinValue)
                                 {
                                     sameInterval = false;
                                 }
                             }
                         }
-                        else
+
+                        previousInterval = interval;
+
+                        // If not minimum interval keep the old one
+                        if (oldInterval > interval && interval != 0)
                         {
-                            if (previousInterval != interval && previousInterval != double.MinValue)
-                            {
-                                sameInterval = false;
-                            }
+                            oldInterval = interval;
+                            currentSmallestSeries = dataSeries;
                         }
                     }
 
-                    previousInterval = interval;
-
-                    // If not minimum interval keep the old one
-                    if (oldInterval > interval && interval != 0)
-                    {
-                        oldInterval = interval;
-                        currentSmallestSeries = dataSeries;
-                    }
+                    ++seriesIndex;
                 }
 
-                ++seriesIndex;
-            }
 
-            // If interval is not the same check if points from all series are aligned
-            diffIntervalAlignmentChecked = false;
-            if (checkSameInterval && !sameInterval && seriesXValues.Length > 1)
-            {
-                bool sameXValue = false;
-                diffIntervalAlignmentChecked = true;
-
-                // All X values must be same
-                int listIndex = 0;
-                foreach (ArrayList xList in seriesXValues)
+                // If interval is not the same check if points from all series are aligned
+                diffIntervalAlignmentChecked = false;
+                if (checkSameInterval && !sameInterval && seriesXValues.Length > 1)
                 {
-                    for (int pointIndex = 0; pointIndex < xList.Count && !sameXValue; pointIndex++)
-                    {
-                        double xValue = (double)xList[pointIndex];
+                    bool sameXValue = false;
+                    diffIntervalAlignmentChecked = true;
 
-                        // Loop through all other lists and see if point is there
-                        for (int index = listIndex + 1; index < seriesXValues.Length && !sameXValue; index++)
+                    // All X values must be same
+                    int listIndex = 0;
+                    foreach (ArrayList xList in seriesXValues)
+                    {
+                        for (int pointIndex = 0; pointIndex < xList.Count && !sameXValue; pointIndex++)
                         {
-                            if ((pointIndex < seriesXValues[index].Count && (double)seriesXValues[index][pointIndex] == xValue) ||
-                                seriesXValues[index].Contains(xValue))
+                            double xValue = (double)xList[pointIndex];
+
+                            // Loop through all other lists and see if point is there
+                            for (int index = listIndex + 1; index < seriesXValues.Length && !sameXValue; index++)
                             {
-                                sameXValue = true;
-                                break;
+                                if ((pointIndex < seriesXValues[index].Count && (double)seriesXValues[index][pointIndex] == xValue) ||
+                                    seriesXValues[index].Contains(xValue))
+                                {
+                                    sameXValue = true;
+                                    break;
+                                }
                             }
                         }
+
+                        ++listIndex;
                     }
 
-                    ++listIndex;
-                }
-
-                // Use side-by-side if at least one xommon X value between eries found
-                if (sameXValue)
-                {
-                    sameInterval = true;
+                    // Use side-by-side if at least one xommon X value between eries found
+                    if (sameXValue)
+                    {
+                        sameInterval = true;
+                    }
                 }
             }
-
             // Interval not found. Interval is 1.
             if (oldInterval == Double.MaxValue)
             {
@@ -1870,7 +1871,7 @@ namespace WebCharts.Services
                 intervalData = oldInterval;
                 _intervalSeries = currentSmallestSeries;
                 series = _intervalSeries;
-                _intervalSeriesList = seriesNames;
+                _intervalSeriesList = seriesNames.ToString();
                 return intervalData;
             }
             else
@@ -1878,7 +1879,7 @@ namespace WebCharts.Services
                 intervalLogData = oldInterval;
                 _intervalSeries = currentSmallestSeries;
                 series = _intervalSeries;
-                _intervalSeriesList = seriesNames;
+                _intervalSeriesList = seriesNames.ToString();
                 return intervalLogData;
             }
         }

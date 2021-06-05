@@ -30,10 +30,10 @@ namespace WebCharts.Services
         #region Fields
 
         // Storage for all registered formula modules
-        internal Hashtable registeredModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
+        internal Hashtable registeredModules = new(StringComparer.OrdinalIgnoreCase);
 
-        private Hashtable _createdModules = new Hashtable(StringComparer.OrdinalIgnoreCase);
-        private ArrayList _modulesNames = new ArrayList();
+        private readonly Hashtable _createdModules = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ArrayList _modulesNames = new();
 
         #endregion Fields
 

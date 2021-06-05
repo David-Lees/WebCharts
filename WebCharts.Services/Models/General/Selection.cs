@@ -186,16 +186,8 @@ namespace WebCharts.Services
         #region Fields
 
         // Private data members, which store properties values
-        private SKPath _path = null;
 
-        private bool _relativeCoordinates = true;
         private SKRect _boundingRectangle = SKRect.Empty;
-        private object _selectedObject = null;
-        private int _pointIndex = -1;
-        private string _seriesName = "";
-        private ChartElementType _type = ChartElementType.Nothing;
-
-        private object _selectedSubObject = null;
 
         #endregion Fields
 
@@ -204,33 +196,13 @@ namespace WebCharts.Services
         /// <summary>
         /// Region is Graphics path
         /// </summary>
-        internal SKPath Path
-        {
-            get
-            {
-                return _path;
-            }
-            set
-            {
-                _path = value;
-            }
-        }
+        internal SKPath Path { get; set; } = null;
 
         /// <summary>
         /// Relative coordinates are used
         /// to define region
         /// </summary>
-        internal bool RelativeCoordinates
-        {
-            get
-            {
-                return _relativeCoordinates;
-            }
-            set
-            {
-                _relativeCoordinates = value;
-            }
-        }
+        internal bool RelativeCoordinates { get; set; } = true;
 
         /// <summary>
         /// Bounding Rectangle of an shape
@@ -250,77 +222,27 @@ namespace WebCharts.Services
         /// <summary>
         /// Object which is presented with this region
         /// </summary>
-        internal object SelectedObject
-        {
-            get
-            {
-                return _selectedObject;
-            }
-            set
-            {
-                _selectedObject = value;
-            }
-        }
+        internal object SelectedObject { get; set; } = null;
 
         /// <summary>
         /// Sub-Object which is presented with this region
         /// </summary>
-        internal object SelectedSubObject
-        {
-            get
-            {
-                return _selectedSubObject;
-            }
-            set
-            {
-                _selectedSubObject = value;
-            }
-        }
+        internal object SelectedSubObject { get; set; } = null;
 
         /// <summary>
         /// Index of the data point which is presented with this region
         /// </summary>
-        internal int PointIndex
-        {
-            get
-            {
-                return _pointIndex;
-            }
-            set
-            {
-                _pointIndex = value;
-            }
-        }
+        internal int PointIndex { get; set; } = -1;
 
         /// <summary>
         /// Name of the series which is presented with the region
         /// </summary>
-        internal string SeriesName
-        {
-            get
-            {
-                return _seriesName;
-            }
-            set
-            {
-                _seriesName = value;
-            }
-        }
+        internal string SeriesName { get; set; } = "";
 
         /// <summary>
         /// Chart Element AxisName
         /// </summary>
-        internal ChartElementType Type
-        {
-            get
-            {
-                return _type;
-            }
-            set
-            {
-                _type = value;
-            }
-        }
+        internal ChartElementType Type { get; set; } = ChartElementType.Nothing;
 
         #endregion Properties
 
@@ -334,10 +256,10 @@ namespace WebCharts.Services
         {
             if (disposing)
             {
-                if (_path != null)
+                if (Path != null)
                 {
-                    _path.Dispose();
-                    _path = null;
+                    Path.Dispose();
+                    Path = null;
                 }
             }
         }
@@ -992,11 +914,9 @@ namespace WebCharts.Services
         #region Private fields
 
         // Private fields for properties values storage
-        private int x = 0;
-
-        private int y = 0;
-        private string text = "";
-        private HitTestResult result = new HitTestResult();
+        private readonly int x = 0;
+        private readonly int y = 0;
+        private readonly HitTestResult result = new();
 
         #endregion Private fields
 
@@ -1009,13 +929,11 @@ namespace WebCharts.Services
         /// <param name="y">Y-coordinate of mouse.</param>
         /// <param name="text">Tooltip text.</param>
         /// <param name="result">Hit test result object.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly",
-            Justification = "X and Y are cartesian coordinates and well understood")]
         public ToolTipEventArgs(int x, int y, string text, HitTestResult result)
         {
             this.x = x;
             this.y = y;
-            this.text = text;
+            this.Text = text;
             this.result = result;
         }
 
@@ -1057,7 +975,6 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeToolTipEventArgs_Y"),
         ]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Y")]
         public int Y
         {
             get
@@ -1072,17 +989,7 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeToolTipEventArgs_Text"),
         ]
-        public string Text
-        {
-            get
-            {
-                return text;
-            }
-            set
-            {
-                text = value;
-            }
-        }
+        public string Text { get; set; }
 
         #endregion Properties
     }

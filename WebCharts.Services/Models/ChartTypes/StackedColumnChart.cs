@@ -674,7 +674,7 @@ namespace WebCharts.Services
                         double width = ser.GetPointWidth(graph, hAxis, interval, 0.8);
 
                         // Adjust width by number of stacked groups
-                        width = width / (double)stackGroupNames.Count;
+                        width /= stackGroupNames.Count;
 
                         // Call Back Paint event
                         if (!selection)
@@ -688,11 +688,11 @@ namespace WebCharts.Services
                         {
                             if (yValue >= 0)
                             {
-                                yValue = yValue + PreviousPosY;
+                                yValue += PreviousPosY;
                             }
                             else
                             {
-                                yValue = yValue + PreviousNegY;
+                                yValue += PreviousNegY;
                             }
                         }
 
@@ -931,7 +931,7 @@ namespace WebCharts.Services
                     int index = stackGroupName.IndexOf("__", StringComparison.Ordinal);
                     if (index >= 0)
                     {
-                        stackGroupName = stackGroupName.Substring(index + 2);
+                        stackGroupName = stackGroupName[(index + 2)..];
                     }
                     if (stackGroupName.Length > 0)
                     {
@@ -1084,7 +1084,7 @@ namespace WebCharts.Services
                     if (series.SmartLabelStyle.Enabled)
                     {
                         SKSizeont = graph.GetRelativeSize(
-                            graph.MeasureString(
+                            ChartGraphics.MeasureString(
                             text,
                             point.Font,
                             new SKSize(1000f, 1000f),
@@ -1132,7 +1132,7 @@ namespace WebCharts.Services
                         if (SKSizeont.IsEmpty)
                         {
                             SKSizeont = graph.GetRelativeSize(
-                                graph.MeasureString(
+                                ChartGraphics.MeasureString(
                                 text,
                                 point.Font,
                                 new SKSize(1000f, 1000f),
@@ -1571,7 +1571,7 @@ namespace WebCharts.Services
                 }
 
                 // Draw the Column rectangle
-                using (SKPath rectPath = graph.Fill3DRectangle(
+                using SKPath rectPath = graph.Fill3DRectangle(
                     rectSize,
                     pointEx.zPosition,
                     pointEx.depth,
@@ -1585,24 +1585,22 @@ namespace WebCharts.Services
                     point.BorderDashStyle,
                     barDrawingStyle,
                     true,
-                    drawingOperationType))
+                    drawingOperationType);
+                // Reset Clip Region
+                if (clipRegionSet)
                 {
-                    // Reset Clip Region
-                    if (clipRegionSet)
-                    {
-                        graph.ResetClip();
-                    }
+                    graph.ResetClip();
+                }
 
-                    if (common.ProcessModeRegions && !labels)
-                    {
-                        common.HotRegionsList.AddHotRegion(rectPath, false, graph, point, ser.Name, pointEx.index - 1);
-                    }
+                if (common.ProcessModeRegions && !labels)
+                {
+                    common.HotRegionsList.AddHotRegion(rectPath, false, graph, point, ser.Name, pointEx.index - 1);
+                }
 
-                    // Check if labels should be drawn
-                    if (point.IsValueShownAsLabel || point.Label.Length > 0)
-                    {
-                        drawLabels = true;
-                    }
+                // Check if labels should be drawn
+                if (point.IsValueShownAsLabel || point.Label.Length > 0)
+                {
+                    drawLabels = true;
                 }
             }
 
@@ -1872,6 +1870,7 @@ namespace WebCharts.Services
         /// <param name="list">List to add to.</param>
         public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
         {
+            // TODO: Is this needed?
         }
 
         #endregion SmartLabelStyle methods

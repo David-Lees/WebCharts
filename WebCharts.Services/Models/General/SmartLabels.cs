@@ -707,7 +707,7 @@ namespace WebCharts.Services
                 labelPosition = SKPoint.Empty;
             }
 
-            return (labelMovedAway && positionFound) ? true : false;
+            return labelMovedAway && positionFound;
         }
 
         /// <summary>
@@ -859,30 +859,13 @@ namespace WebCharts.Services
             {
                 if (area.chartAreaIsCurcular)
                 {
-                    using (SKPath areaPath = new SKPath())
-                    {
-                        // Add circular shape of the area into the graphics path
-                        areaPath.AddOval(area.PlotAreaPosition.ToSKRect());
+                    using SKPath areaPath = new();
+                    // Add circular shape of the area into the graphics path
+                    areaPath.AddOval(area.PlotAreaPosition.ToSKRect());
 
-                        if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.Partial)
-                        {
-                            if (!areaPath.Bounds.Contains(labelPosition.MidX, labelPosition.MidY))
-                            {
-                                // DEBUG: Mark collided labels
-#if DEBUG
-                                if (graph != null && common.Chart.ShowDebugMarkings)
-                                {
-                                    graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
-                                }
-#endif
-                                collisionDetected = true;
-                            }
-                        }
-                        else if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.No &&
-                            (!areaPath.Bounds.Contains(labelPosition.Location) ||
-                                !areaPath.Bounds.Contains(new SKPoint(labelPosition.Right, labelPosition.Top)) ||
-                                !areaPath.Bounds.Contains(new SKPoint(labelPosition.Right, labelPosition.Bottom)) ||
-                                !areaPath.Bounds.Contains(new SKPoint(labelPosition.Left, labelPosition.Bottom))))
+                    if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.Partial)
+                    {
+                        if (!areaPath.Bounds.Contains(labelPosition.MidX, labelPosition.MidY))
                         {
                             // DEBUG: Mark collided labels
 #if DEBUG
@@ -893,6 +876,21 @@ namespace WebCharts.Services
 #endif
                             collisionDetected = true;
                         }
+                    }
+                    else if (smartLabelStyle.AllowOutsidePlotArea == LabelOutsidePlotAreaStyle.No &&
+                        (!areaPath.Bounds.Contains(labelPosition.Location) ||
+                            !areaPath.Bounds.Contains(new SKPoint(labelPosition.Right, labelPosition.Top)) ||
+                            !areaPath.Bounds.Contains(new SKPoint(labelPosition.Right, labelPosition.Bottom)) ||
+                            !areaPath.Bounds.Contains(new SKPoint(labelPosition.Left, labelPosition.Bottom))))
+                    {
+                        // DEBUG: Mark collided labels
+#if DEBUG
+                        if (graph != null && common.Chart.ShowDebugMarkings)
+                        {
+                            graph.Graphics.DrawRect(graph.GetAbsoluteRectangle(labelPosition).Round(), Pens.Cyan);
+                        }
+#endif
+                        collisionDetected = true;
                     }
                 }
                 else
@@ -955,7 +953,7 @@ namespace WebCharts.Services
                         checkCalloutLineOverlapping &&
                         index >= markersCount)
                     {
-                        SKPoint labelCenter = new SKPoint(
+                        SKPoint labelCenter = new(
                             labelPosition.Left + labelPosition.Width / 2f,
                             labelPosition.Top + labelPosition.Height / 2f);
                         if (LineIntersectRectangle(pos, markerPosition, labelCenter))
@@ -1181,7 +1179,7 @@ namespace WebCharts.Services
         /// <param name="format">Label string format.</param>
         /// <param name="adjustForDrawing">Result position is adjusted for drawing.</param>
         /// <returns>Label rectangle position.</returns>
-        internal SKRect GetLabelPosition(
+        internal static SKRect GetLabelPosition(
             ChartGraphics graph,
             SKPoint position,
             SKSize size,
@@ -1251,7 +1249,7 @@ namespace WebCharts.Services
         /// <param name="SKSizeont">Label size.</param>
         /// <param name="format">String format.</param>
         /// <returns>Label point position.</returns>
-        private SKPoint CalculatePosition(
+        private static SKPoint CalculatePosition(
             LabelAlignmentStyles labelAlignment,
             SKPoint markerPosition,
             SKSize sizeMarker,
@@ -1262,7 +1260,7 @@ namespace WebCharts.Services
             format.LineAlignment = StringAlignment.Center;
 
             // Calculate label position
-            SKPoint position = new SKPoint(markerPosition.X, markerPosition.Y);
+            SKPoint position = new(markerPosition.X, markerPosition.Y);
             switch (labelAlignment)
             {
                 case LabelAlignmentStyles.Center:
@@ -1405,7 +1403,7 @@ namespace WebCharts.Services
 
             // Check if 1 collisuion is aceptable in case of cennter alignment
             bool allowOneCollision =
-                (labelAlignment == LabelAlignmentStyles.Center && !smartLabelStyle.IsMarkerOverlappingAllowed) ? true : false;
+                labelAlignment == LabelAlignmentStyles.Center && !smartLabelStyle.IsMarkerOverlappingAllowed;
             if (checkAllCollisions)
             {
                 allowOneCollision = false;

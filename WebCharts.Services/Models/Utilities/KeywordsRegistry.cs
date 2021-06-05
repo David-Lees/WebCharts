@@ -83,7 +83,7 @@ namespace WebCharts.Services
         #region Fields
 
         // List of registered keywords
-        internal ArrayList registeredKeywords = new ArrayList();
+        internal ArrayList registeredKeywords = new();
 
         #endregion Fields
 
@@ -318,7 +318,7 @@ namespace WebCharts.Services
             bool supportsValueIndex)
         {
             // Create new keyword information object
-            KeywordInfo keywordInfo = new KeywordInfo(
+            KeywordInfo keywordInfo = new(
                 name,
                 keyword,
                 keywordAliases,

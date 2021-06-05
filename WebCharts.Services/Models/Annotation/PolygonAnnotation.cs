@@ -18,7 +18,6 @@ namespace WebCharts.Services
     [
         SRDescription("DescriptionAttributePolylineAnnotation_PolylineAnnotation"),
     ]
-    [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Polyline")]
     public class PolylineAnnotation : Annotation
     {
         #region Fields
@@ -36,9 +35,6 @@ namespace WebCharts.Services
 
         // Indicate that filled polygon must be drawn
         internal bool isPolygon = false;
-
-        // Indicates that annotation will be placed using free-draw style
-        internal bool isFreeDrawPlacement = false;
 
         // Line start/end caps
         private LineAnchorCapStyle _startCap = LineAnchorCapStyle.None;
@@ -340,18 +336,8 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeMisc"),
         SRDescription("DescriptionAttributeFreeDrawPlacement"),
         ]
-        virtual public bool IsFreeDrawPlacement
-        {
-            get
-            {
-                return isFreeDrawPlacement;
-            }
-            set
-            {
-                isFreeDrawPlacement = value;
-            }
-        }
-
+        public virtual bool IsFreeDrawPlacement { get; set; }
+       
         /// <summary>
         /// Gets or sets the path points of a polyline at run-time.
         /// </summary>
@@ -409,10 +395,7 @@ namespace WebCharts.Services
             }
 
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out SKPoint anchorPoint);
             SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
@@ -559,10 +542,7 @@ namespace WebCharts.Services
             if (_SKPath.PointCount > 0)
             {
                 // Get current annotation position in relative coordinates
-                SKPoint firstPoint = SKPoint.Empty;
-                SKPoint anchorPoint = SKPoint.Empty;
-                SKSize size = SKSize.Empty;
-                GetRelativePosition(out firstPoint, out size, out anchorPoint);
+                GetRelativePosition(out SKPoint firstPoint, out SKSize size, out SKPoint anchorPoint);
 
                 // Get path boundary and convert it to relative coordinates
                 _SKPath.GetBounds(out SKRect pathBoundary);
@@ -607,13 +587,10 @@ namespace WebCharts.Services
             }
 
             // Get annotation position in relative coordinates
-            SKPoint firstPoint = SKPoint.Empty;
-            SKPoint anchorPoint = SKPoint.Empty;
-            SKSize size = SKSize.Empty;
-            GetRelativePosition(out firstPoint, out size, out anchorPoint);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out SKPoint anchorPoint);
 
             // Remember path before moving operation
-            if (userInput == true && startMovePathRel == null)
+            if (userInput && startMovePathRel == null)
             {
                 startMovePathRel = new SKPath(_SKPath);
                 startMovePositionRel = new SKRect(firstPoint.X, firstPoint.Y, firstPoint.X + size.Width, firstPoint.Y + size.Height);
@@ -1137,13 +1114,10 @@ namespace WebCharts.Services
         #region Fields
 
         // Point X value
-        private float _x = 0f;
 
         // Point Y value
-        private float _y = 0f;
 
         // Point type
-        private byte _pointType = 1;
 
         #endregion Fields
 
@@ -1163,8 +1137,8 @@ namespace WebCharts.Services
         /// <param name="y">Point's Y value.</param>
         public AnnotationPathPoint(float x, float y)
         {
-            _x = x;
-            _y = y;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -1175,9 +1149,9 @@ namespace WebCharts.Services
         /// <param name="type">Point type.</param>
         public AnnotationPathPoint(float x, float y, byte type)
         {
-            _x = x;
-            _y = y;
-            _pointType = type;
+            X = x;
+            Y = y;
+            PointType = type;
         }
 
         #endregion Constructors
@@ -1194,18 +1168,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributePosition"),
         SRDescription("DescriptionAttributeAnnotationPathPoint_X"),
         ]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "X")]
-        public float X
-        {
-            get
-            {
-                return _x;
-            }
-            set
-            {
-                _x = value;
-            }
-        }
+        public float X { get; set; } = 0f;
 
         /// <summary>
         /// Gets or sets an annotation path point's Y coordinate.
@@ -1217,18 +1180,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributePosition"),
         SRDescription("DescriptionAttributeAnnotationPathPoint_Y"),
         ]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Y")]
-        public float Y
-        {
-            get
-            {
-                return _y;
-            }
-            set
-            {
-                _y = value;
-            }
-        }
+        public float Y { get; set; } = 0f;
 
         /// <summary>
         /// Gets or sets an annotation path point's type.
@@ -1243,17 +1195,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributePosition"),
         SRDescription("DescriptionAttributeAnnotationPathPoint_Name"),
         ]
-        public byte PointType
-        {
-            get
-            {
-                return _pointType;
-            }
-            set
-            {
-                _pointType = value;
-            }
-        }
+        public byte PointType { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets an annotation path point's name.

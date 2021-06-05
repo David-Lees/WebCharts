@@ -68,15 +68,6 @@ namespace WebCharts.Services
         // Defines which axis the cursor attached to X or Y
         private AxisName _attachedToXAxis = AxisName.X;
 
-        // Enables/Disables chart area cursor.
-        private bool _isUserEnabled = false;
-
-        // Enables/Disables chart area selection.
-        private bool _isUserSelectionEnabled = false;
-
-        // Indicates that cursor will automatically scroll the area scaleView if necessary.
-        private bool _autoScroll = true;
-
         // Cursor line color
         private SKColor _lineColor = SKColors.Red;
 
@@ -100,9 +91,6 @@ namespace WebCharts.Services
 
         // Range selection end position.
         private double _selectionEnd = Double.NaN;
-
-        // Cursor movement interval current & original values
-        private double _interval = 1;
 
         // Cursor movement interval type
         private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
@@ -247,17 +235,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeBehavior"),
         SRDescription("DescriptionAttributeCursor_UserEnabled"),
         ]
-        public bool IsUserEnabled
-        {
-            get
-            {
-                return _isUserEnabled;
-            }
-            set
-            {
-                _isUserEnabled = value;
-            }
-        }
+        public bool IsUserEnabled { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a property that enables or disables the range selection interface.
@@ -266,17 +244,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeBehavior"),
         SRDescription("DescriptionAttributeCursor_UserSelection"),
         ]
-        public bool IsUserSelectionEnabled
-        {
-            get
-            {
-                return _isUserSelectionEnabled;
-            }
-            set
-            {
-                _isUserSelectionEnabled = value;
-            }
-        }
+        public bool IsUserSelectionEnabled { get; set; } = false;
 
         /// <summary>
         /// Determines if scrolling will occur if a range selection operation
@@ -286,17 +254,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeBehavior"),
         SRDescription("DescriptionAttributeCursor_AutoScroll"),
         ]
-        public bool AutoScroll
-        {
-            get
-            {
-                return _autoScroll;
-            }
-            set
-            {
-                _autoScroll = value;
-            }
-        }
+        public bool AutoScroll { get; set; } = true;
 
         /// <summary>
         ///  Gets or sets the type of axis that the cursor is attached to.
@@ -329,17 +287,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeBehavior"),
         SRDescription("DescriptionAttributeCursor_Interval"),
         ]
-        public double Interval
-        {
-            get
-            {
-                return _interval;
-            }
-            set
-            {
-                _interval = value;
-            }
-        }
+        public double Interval { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets the unit of measurement of the Interval property.
@@ -891,7 +839,6 @@ namespace WebCharts.Services
 
                     // Invalidate and update the chart
                     _chartArea.Invalidate();
-                    //this.GetChartObject().Update();
 
                     // Clear flag to redraw cursor/selection only
                     GetChartObject().paintTopLevelElementOnly = false;
@@ -955,9 +902,6 @@ namespace WebCharts.Services
         private readonly ChartArea _chartArea = null;
 
         private readonly Axis _axis = null;
-        private double _newPosition = double.NaN;
-        private double _newSelectionStart = double.NaN;
-        private double _newSelectionEnd = double.NaN;
 
         #endregion Private fields
 
@@ -973,9 +917,9 @@ namespace WebCharts.Services
         {
             _chartArea = chartArea;
             _axis = axis;
-            _newPosition = newPosition;
-            _newSelectionStart = double.NaN;
-            _newSelectionEnd = double.NaN;
+            NewPosition = newPosition;
+            NewSelectionStart = double.NaN;
+            NewSelectionEnd = double.NaN;
         }
 
         /// <summary>
@@ -989,9 +933,9 @@ namespace WebCharts.Services
         {
             _chartArea = chartArea;
             _axis = axis;
-            _newPosition = double.NaN;
-            _newSelectionStart = newSelectionStart;
-            _newSelectionEnd = newSelectionEnd;
+            NewPosition = double.NaN;
+            NewSelectionStart = newSelectionStart;
+            NewSelectionEnd = newSelectionEnd;
         }
 
         #endregion Constructors
@@ -1032,17 +976,7 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeCursorEventArgs_NewPosition"),
         ]
-        public double NewPosition
-        {
-            get
-            {
-                return _newPosition;
-            }
-            set
-            {
-                _newPosition = value;
-            }
-        }
+        public double NewPosition { get; set; }
 
         /// <summary>
         /// New range selection starting position.
@@ -1050,17 +984,7 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeCursorEventArgs_NewSelectionStart"),
         ]
-        public double NewSelectionStart
-        {
-            get
-            {
-                return _newSelectionStart;
-            }
-            set
-            {
-                _newSelectionStart = value;
-            }
-        }
+        public double NewSelectionStart { get; set; }
 
         /// <summary>
         /// New range selection ending position.
@@ -1068,17 +992,7 @@ namespace WebCharts.Services
         [
         SRDescription("DescriptionAttributeCursorEventArgs_NewSelectionEnd"),
         ]
-        public double NewSelectionEnd
-        {
-            get
-            {
-                return _newSelectionEnd;
-            }
-            set
-            {
-                _newSelectionEnd = value;
-            }
-        }
+        public double NewSelectionEnd { get; set; }
 
         #endregion Properties
     }

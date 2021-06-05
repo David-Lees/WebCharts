@@ -552,7 +552,7 @@ namespace WebCharts.Services
 
                             if (series.Points.Count > 0)
                             {
-                                series.Points[series.Points.Count - 1].YValues[0] -= numberOfBricks * boxSize;
+                                series.Points[^1].YValues[0] -= numberOfBricks * boxSize;
                             }
                             prevLow -= numberOfBricks * boxSize;
                         }
@@ -581,7 +581,7 @@ namespace WebCharts.Services
 
                             if (series.Points.Count > 0)
                             {
-                                series.Points[series.Points.Count - 1].YValues[1] += numberOfBricks * boxSize;
+                                series.Points[^1].YValues[1] += numberOfBricks * boxSize;
                             }
                             prevHigh += numberOfBricks * boxSize;
                         }
@@ -595,15 +595,15 @@ namespace WebCharts.Services
                         {
                             if (direction == 1)
                             {
-                                series.Points[series.Points.Count - 1].YValues[1] += numberOfBricks * boxSize;
+                                series.Points[^1].YValues[1] += numberOfBricks * boxSize;
                                 prevHigh += numberOfBricks * boxSize;
-                                series.Points[series.Points.Count - 1]["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
+                                series.Points[^1]["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
                             }
                             else
                             {
-                                series.Points[series.Points.Count - 1].YValues[0] -= numberOfBricks * boxSize;
+                                series.Points[^1].YValues[0] -= numberOfBricks * boxSize;
                                 prevLow -= numberOfBricks * boxSize;
-                                series.Points[series.Points.Count - 1]["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
+                                series.Points[^1]["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
                             }
                         }
                         else
@@ -658,7 +658,7 @@ namespace WebCharts.Services
                 if (series.Name.StartsWith("POINTANDFIGURE_ORIGINAL_DATA_", StringComparison.Ordinal))
                 {
                     // Get original series
-                    Series pointAndFigureSeries = chart.Series[series.Name.Substring(29)];
+                    Series pointAndFigureSeries = chart.Series[series.Name[29..]];
 
                     // Check if proportional symbol custom attribute is set
                     bool proportionalSymbols = true;

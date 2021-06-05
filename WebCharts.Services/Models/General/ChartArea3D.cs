@@ -878,7 +878,7 @@ namespace WebCharts.Services
                 {
                     // Calculate how many stack groups exsist
                     seriesNumber = 0;
-                    ArrayList stackGroupNames = new ArrayList();
+                    ArrayList stackGroupNames = new();
                     foreach (string seriesName in _series)
                     {
                         // Get series object from name
@@ -1379,7 +1379,7 @@ namespace WebCharts.Services
                     {
                         result = true;
                     }
-                    resultCoordinates = resultCoordinates | COPCoordinates.X;
+                    resultCoordinates |= COPCoordinates.X;
                 }
                 if ((coord & COPCoordinates.Y) == COPCoordinates.Y)
                 {
@@ -1389,7 +1389,7 @@ namespace WebCharts.Services
                     {
                         result = true;
                     }
-                    resultCoordinates = resultCoordinates | COPCoordinates.Y;
+                    resultCoordinates |= COPCoordinates.Y;
                 }
                 if ((coord & COPCoordinates.Z) == COPCoordinates.Z)
                 {
@@ -1399,7 +1399,7 @@ namespace WebCharts.Services
                     {
                         result = true;
                     }
-                    resultCoordinates = resultCoordinates | COPCoordinates.Z;
+                    resultCoordinates |= COPCoordinates.Z;
                 }
             }
 
@@ -1953,7 +1953,7 @@ namespace WebCharts.Services
             while (!doneFlag)
             {
                 // Find middle point
-                Point3D middlePoint = new Point3D(
+                Point3D middlePoint = new(
                     (points[0].X + points[1].X) / 2f,
                     (points[0].Y + points[1].Y) / 2f,
                     (points[0].Z + points[1].Z) / 2f);

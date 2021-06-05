@@ -30,32 +30,140 @@ namespace WebCharts.Services
 
         #region Fields
 
+        // True if rendering into the metafile
+        internal bool IsMetafile = false;
+
+        // Indicates that smoothing is applied while drawing shadows
+        internal bool softShadows = true;
+
         // Common Elements
         private readonly CommonElements _common;
+
+        // Anti aliasing flags
+        private AntiAliasingStyles _antiAliasing = AntiAliasingStyles.All;
+
+        private int _height;
+
+        private SKMatrix _myMatrix;
 
         // Reusable objects
         private SKPaint _pen;
 
         private SKPaint _solidBrush;
-        private SKMatrix _myMatrix;
-
         // Private fields which represents picture size
         private int _width;
-
-        private int _height;
-
-        // Indicates that smoothing is applied while drawing shadows
-        internal bool softShadows = true;
-
-        // Anti aliasing flags
-        private AntiAliasingStyles _antiAliasing = AntiAliasingStyles.All;
-
-        // True if rendering into the metafile
-        internal bool IsMetafile = false;
-
         #endregion Fields
 
         #region Lines Methods
+
+        /// <summary>
+        /// Draws a line connecting the two specified points using absolute coordinates.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="width">Line width.</param>
+        /// <param name="style">Line style.</param>
+        /// <param name="firstPoint">A Point that represents the first point to connect.</param>
+        /// <param name="secondPoint">A Point that represents the second point to connect.</param>
+        internal void DrawLineAbs(
+            SKColor color,
+            int width,
+            ChartDashStyle style,
+            SKPoint firstPoint,
+            SKPoint secondPoint
+            )
+        {
+            // Do not draw line if width is 0 or style not set
+            if (width == 0 || style == ChartDashStyle.NotSet)
+            {
+                return;
+            }
+
+            // Set a line color
+            if (_pen.Color != color)
+            {
+                _pen.Color = color;
+            }
+
+            // Set a line width
+            if (_pen.StrokeWidth != width)
+            {
+                _pen.StrokeWidth = width;
+            }
+
+            // Set a line style
+            if (_pen.PathEffect != GetPenStyle(style, width))
+            {
+                _pen.PathEffect = GetPenStyle(style, width);
+            }
+
+            // Remember SmoothingMode and turn off anti aliasing for
+            // vertical or horizontal lines usinig 1 pixel dashed pen.
+            // This prevents anialiasing from completly smoothing the
+            // dashed line.
+            SmoothingMode oldSmoothingMode = this.SmoothingMode;
+            if (width <= 1 && style != ChartDashStyle.Solid)
+            {
+                if (firstPoint.X == secondPoint.X ||
+                    firstPoint.Y == secondPoint.Y)
+                {
+                    this.SmoothingMode = SmoothingMode.None;
+                }
+            }
+
+            // Draw a line
+            DrawLine(_pen,
+                (float)Math.Round(firstPoint.X),
+                (float)Math.Round(firstPoint.Y),
+                (float)Math.Round(secondPoint.X),
+                (float)Math.Round(secondPoint.Y));
+
+            // Return old smoothing mode
+            this.SmoothingMode = oldSmoothingMode;
+        }
+
+        /// <summary>
+        /// Draws a line with shadow connecting the two specified points.
+        /// </summary>
+        /// <param name="color">Line color.</param>
+        /// <param name="width">Line width.</param>
+        /// <param name="style">Line style.</param>
+        /// <param name="firstPoint">A Point that represents the first point to connect.</param>
+        /// <param name="secondPoint">A Point that represents the second point to connect.</param>
+        /// <param name="shadowColor">Shadow Color.</param>
+        /// <param name="shadowOffset">Shadow Offset.</param>
+        internal void DrawLineAbs(
+            SKColor color,
+            int width,
+            ChartDashStyle style,
+            SKPoint firstPoint,
+            SKPoint secondPoint,
+            SKColor shadowColor,
+            int shadowOffset
+            )
+        {
+            if (shadowOffset != 0)
+            {
+                // Shadow color
+                SKColor shColor;
+
+                // Make shadow semi transparent
+                // if alpha value not used
+                if (shadowColor.Alpha != 255)
+                    shColor = shadowColor;
+                else
+                    shColor = new SKColor(shadowColor.Red, shadowColor.Green, shadowColor.Blue, (byte)(color.Alpha / 2));
+
+                // Set shadow line position
+                var firstShadow = new SKPoint(firstPoint.X + shadowOffset, firstPoint.Y + shadowOffset);
+                var secondShadow = new SKPoint(secondPoint.X + shadowOffset, secondPoint.Y + shadowOffset);
+
+                // Draw Shadow of Line
+                DrawLineAbs(shColor, width, style, firstShadow, secondShadow);
+            }
+
+            // Draw Line
+            DrawLineAbs(color, width, style, firstPoint, secondPoint);
+        }
 
         /// <summary>
         /// Draws a line connecting the two specified points.
@@ -110,180 +218,9 @@ namespace WebCharts.Services
                 shadowColor,
                 shadowOffset);
         }
-
-        /// <summary>
-        /// Draws a line connecting the two specified points using absolute coordinates.
-        /// </summary>
-        /// <param name="color">Line color.</param>
-        /// <param name="width">Line width.</param>
-        /// <param name="style">Line style.</param>
-        /// <param name="firstPoint">A Point that represents the first point to connect.</param>
-        /// <param name="secondPoint">A Point that represents the second point to connect.</param>
-        internal void DrawLineAbs(
-            SKColor color,
-            int width,
-            ChartDashStyle style,
-            SKPoint firstPoint,
-            SKPoint secondPoint
-            )
-        {
-            // Do not draw line if width is 0 or style not set
-            if (width == 0 || style == ChartDashStyle.NotSet)
-            {
-                return;
-            }
-
-            // Set a line color
-            if (_pen.Color != color)
-            {
-                _pen.Color = color;
-            }
-
-            // Set a line width
-            if (_pen.StrokeWidth != width)
-            {
-                _pen.StrokeWidth = width;
-            }
-
-            // Set a line style
-            //if (_pen.Style != GetPenStyle(style))
-            //{
-            //    _pen.Style = GetPenStyle(style);
-            //}
-
-            // Remember SmoothingMode and turn off anti aliasing for
-            // vertical or horizontal lines usinig 1 pixel dashed pen.
-            // This prevents anialiasing from completly smoothing the
-            // dashed line.
-            //SmoothingMode oldSmoothingMode = this.SmoothingMode;
-            //if (width <= 1 && style != ChartDashStyle.Solid)
-            //{
-            //    if (firstPoint.X == secondPoint.X ||
-            //        firstPoint.Y == secondPoint.Y)
-            //    {
-            //        this.SmoothingMode = SmoothingMode.Default;
-            //    }
-            //}
-
-            // Draw a line
-            DrawLine(_pen,
-                (float)Math.Round(firstPoint.X),
-                (float)Math.Round(firstPoint.Y),
-                (float)Math.Round(secondPoint.X),
-                (float)Math.Round(secondPoint.Y));
-
-            // Return old smoothing mode
-            //this.SmoothingMode = oldSmoothingMode;
-        }
-
-        /// <summary>
-        /// Draws a line with shadow connecting the two specified points.
-        /// </summary>
-        /// <param name="color">Line color.</param>
-        /// <param name="width">Line width.</param>
-        /// <param name="style">Line style.</param>
-        /// <param name="firstPoint">A Point that represents the first point to connect.</param>
-        /// <param name="secondPoint">A Point that represents the second point to connect.</param>
-        /// <param name="shadowColor">Shadow Color.</param>
-        /// <param name="shadowOffset">Shadow Offset.</param>
-        internal void DrawLineAbs(
-            SKColor color,
-            int width,
-            ChartDashStyle style,
-            SKPoint firstPoint,
-            SKPoint secondPoint,
-            SKColor shadowColor,
-            int shadowOffset
-            )
-        {
-            if (shadowOffset != 0)
-            {
-                // Shadow color
-                SKColor shColor;
-
-                // Make shadow semi transparent
-                // if alpha value not used
-                if (shadowColor.Alpha != 255)
-                    shColor = shadowColor;
-                else
-                    shColor = new SKColor(shadowColor.Red, shadowColor.Green, shadowColor.Blue, (byte)(color.Alpha / 2));
-
-                // Set shadow line position
-                var firstShadow = new SKPoint(firstPoint.X + shadowOffset, firstPoint.Y + shadowOffset);
-                var secondShadow = new SKPoint(secondPoint.X + shadowOffset, secondPoint.Y + shadowOffset);
-
-                // Draw Shadow of Line
-                DrawLineAbs(shColor, width, style, firstShadow, secondShadow);
-            }
-
-            // Draw Line
-            DrawLineAbs(color, width, style, firstPoint, secondPoint);
-        }
-
         #endregion Lines Methods
 
         #region Pen and Brush Methods
-
-        /// <summary>
-        /// Creates a Hatch Brush.
-        /// </summary>
-        /// <param name="hatchStyle">Chart Hatch style.</param>
-        /// <param name="backColor">Back Color.</param>
-        /// <param name="foreColor">Fore Color.</param>
-        /// <returns>Brush</returns>
-        internal static SKPaint GetHatchBrush(
-            ChartHatchStyle hatchStyle,
-            SKColor backColor,
-            SKColor foreColor
-            )
-        {
-            const float hatchWidth = 20;
-
-            // create the path (diagonal hatch) with the center at 0,0
-            var hatchPath = new SKPath();
-            hatchPath.MoveTo(0, hatchWidth);
-            hatchPath.LineTo(hatchWidth, 0);
-            hatchPath.LineTo(0, -hatchWidth);
-            hatchPath.LineTo(-hatchWidth, 0);
-            hatchPath.LineTo(0, hatchWidth);
-
-            // the size of the pattern
-            var hatchMatrix = SKMatrix.CreateScale(hatchWidth * 2, hatchWidth * 2);
-            // create the paint
-            var hatchPaint = new SKPaint
-            {
-                PathEffect = SKPathEffect.Create2DPath(hatchMatrix, hatchPath),
-                Color = foreColor,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 1
-            };
-            return hatchPaint;
-        }
-
-        /// <summary>
-        /// Creates a textured brush.
-        /// </summary>
-        /// <param name="name">Image file name or URL.</param>
-        /// <param name="backImageTransparentColor">Image transparent color.</param>
-        /// <param name="mode">Wrap mode.</param>
-        /// <param name="backColor">Image background color.</param>
-        /// <returns>Textured brush.</returns>
-        internal SKPaint GetTextureBrush(
-            string name,
-            SKColor backImageTransparentColor,
-            ChartImageWrapMode mode,
-            SKColor backColor
-            )
-        {
-            // Load a image
-            var image = _common.ImageLoader.LoadImage(name);
-
-            return new SKPaint()
-            {
-                Shader = SKShader.CreateImage(image),
-                Style = SKPaintStyle.Fill,
-            };
-        }
 
         /// <summary>
         /// This method creates a gradient brush.
@@ -358,6 +295,55 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// Creates a Hatch Brush.
+        /// </summary>
+        /// <param name="hatchStyle">Chart Hatch style.</param>
+        /// <param name="backColor">Back Color.</param>
+        /// <param name="foreColor">Fore Color.</param>
+        /// <returns>Brush</returns>
+        internal static SKPaint GetHatchBrush(
+            ChartHatchStyle hatchStyle,
+            SKColor backColor,
+            SKColor foreColor
+            )
+        {
+            const float hatchWidth = 20;
+
+            // create the path (diagonal hatch) with the center at 0,0
+            var hatchPath = new SKPath();
+            hatchPath.MoveTo(0, hatchWidth);
+            hatchPath.LineTo(hatchWidth, 0);
+            hatchPath.LineTo(0, -hatchWidth);
+            hatchPath.LineTo(-hatchWidth, 0);
+            hatchPath.LineTo(0, hatchWidth);
+
+            // the size of the pattern
+            var hatchMatrix = SKMatrix.CreateScale(hatchWidth * 2, hatchWidth * 2);
+            // create the paint
+            var hatchPaint = new SKPaint
+            {
+                PathEffect = SKPathEffect.Create2DPath(hatchMatrix, hatchPath),
+                Color = foreColor,
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = 1
+            };
+            return hatchPaint;
+        }
+
+        internal static SKPathEffect GetPenStyle(ChartDashStyle style, float width)
+        {
+            // Convert to chart line styles. The custom style doesn’t exist.
+            return style switch
+            {
+                ChartDashStyle.Dash => SKPathEffect.CreateDash(new[] { width * 5.0f, width * 5.0f }, 10),
+                ChartDashStyle.DashDot => SKPathEffect.CreateDash(new[] { width * 5.0f, width * 5.0f, width, width }, width * 12),
+                ChartDashStyle.DashDotDot => SKPathEffect.CreateDash(new[] { width * 5.0f, width * 5.0f, width, width, width, width }, width * 14),
+                ChartDashStyle.Dot => SKPathEffect.CreateDash(new[] { width, width }, width * 2),
+                _ => SKPathEffect.CreateDash(new[] { 1.0f, 0 }, 1),
+            };
+        }
+
+        /// <summary>
         /// This method creates a gradient brush for pie. This gradient is one
         /// of the types used only with pie and doughnut.
         /// </summary>
@@ -383,19 +369,30 @@ namespace WebCharts.Services
             return brush;
         }
 
-        internal static SKPathEffect GetPenStyle(ChartDashStyle style, float width)
+        /// <summary>
+        /// Creates a textured brush.
+        /// </summary>
+        /// <param name="name">Image file name or URL.</param>
+        /// <param name="backImageTransparentColor">Image transparent color.</param>
+        /// <param name="mode">Wrap mode.</param>
+        /// <param name="backColor">Image background color.</param>
+        /// <returns>Textured brush.</returns>
+        internal SKPaint GetTextureBrush(
+            string name,
+            SKColor backImageTransparentColor,
+            ChartImageWrapMode mode,
+            SKColor backColor
+            )
         {
-            // Convert to chart line styles. The custom style doesn’t exist.
-            return style switch
+            // Load a image
+            var image = _common.ImageLoader.LoadImage(name);
+
+            return new SKPaint()
             {
-                ChartDashStyle.Dash => SKPathEffect.CreateDash(new[] { width * 5.0f, width * 5.0f }, 10),
-                ChartDashStyle.DashDot => SKPathEffect.CreateDash(new[] { width * 5.0f, width * 5.0f, width, width }, width * 12),
-                ChartDashStyle.DashDotDot => SKPathEffect.CreateDash(new[] { width * 5.0f, width * 5.0f, width, width, width, width }, width * 14),
-                ChartDashStyle.Dot => SKPathEffect.CreateDash(new[] { width, width }, width * 2),
-                _ => SKPathEffect.CreateDash(new[] { 1.0f, 0 }, 1),
+                Shader = SKShader.CreateImage(image),
+                Style = SKPaintStyle.Fill,
             };
         }
-
         #endregion Pen and Brush Methods
 
         #region Markers
@@ -428,37 +425,6 @@ namespace WebCharts.Services
             }
 
             return points;
-        }
-
-        /// <summary>
-        /// Draw marker using relative coordinates of the center.
-        /// </summary>
-        /// <param name="point">Coordinates of the center.</param>
-        /// <param name="markerStyle">Marker style.</param>
-        /// <param name="markerSize">Marker size.</param>
-        /// <param name="markerColor">Marker color.</param>
-        /// <param name="markerBorderColor">Marker border color.</param>
-        /// <param name="markerBorderSize">Marker border size.</param>
-        /// <param name="markerImage">Marker image name.</param>
-        /// <param name="markerImageTransparentColor">Marker image transparent color.</param>
-        /// <param name="shadowSize">Marker shadow size.</param>
-        /// <param name="shadowColor">Marker shadow color.</param>
-        /// <param name="imageScaleRect">Rectangle to which marker image should be scaled.</param>
-        internal void DrawMarkerRel(
-            SKPoint point,
-            MarkerStyle markerStyle,
-            int markerSize,
-            SKColor markerColor,
-            SKColor markerBorderColor,
-            int markerBorderSize,
-            string markerImage,
-            SKColor markerImageTransparentColor,
-            int shadowSize,
-            SKColor shadowColor,
-            SKRect imageScaleRect
-            )
-        {
-            DrawMarkerAbs(GetAbsolutePoint(point), markerStyle, markerSize, markerColor, markerBorderColor, markerBorderSize, markerImage, markerImageTransparentColor, shadowSize, shadowColor, imageScaleRect, false);
         }
 
         /// <summary>
@@ -843,61 +809,39 @@ namespace WebCharts.Services
             }
         }
 
+        /// <summary>
+        /// Draw marker using relative coordinates of the center.
+        /// </summary>
+        /// <param name="point">Coordinates of the center.</param>
+        /// <param name="markerStyle">Marker style.</param>
+        /// <param name="markerSize">Marker size.</param>
+        /// <param name="markerColor">Marker color.</param>
+        /// <param name="markerBorderColor">Marker border color.</param>
+        /// <param name="markerBorderSize">Marker border size.</param>
+        /// <param name="markerImage">Marker image name.</param>
+        /// <param name="markerImageTransparentColor">Marker image transparent color.</param>
+        /// <param name="shadowSize">Marker shadow size.</param>
+        /// <param name="shadowColor">Marker shadow color.</param>
+        /// <param name="imageScaleRect">Rectangle to which marker image should be scaled.</param>
+        internal void DrawMarkerRel(
+            SKPoint point,
+            MarkerStyle markerStyle,
+            int markerSize,
+            SKColor markerColor,
+            SKColor markerBorderColor,
+            int markerBorderSize,
+            string markerImage,
+            SKColor markerImageTransparentColor,
+            int shadowSize,
+            SKColor shadowColor,
+            SKRect imageScaleRect
+            )
+        {
+            DrawMarkerAbs(GetAbsolutePoint(point), markerStyle, markerSize, markerColor, markerBorderColor, markerBorderSize, markerImage, markerImageTransparentColor, shadowSize, shadowColor, imageScaleRect, false);
+        }
         #endregion Markers
 
         #region String Methods
-
-        /// <summary>
-        /// Measures the specified string when drawn with the specified
-        /// Font object and formatted with the specified StringFormat object.
-        /// </summary>
-        /// <param name="text">String to measure.</param>
-        /// <param name="font">Font object defines the text format of the string.</param>
-        /// <param name="layoutArea">SKSize structure that specifies the maximum layout area for the text.</param>
-        /// <param name="stringFormat">StringFormat object that represents formatting information, such as line spacing, for the string.</param>
-        /// <param name="textOrientation">Text orientation.</param>
-        /// <returns>This method returns a SKSize structure that represents the size, in pixels, of the string specified in the text parameter as drawn with the font parameter and the stringFormat parameter.</returns>
-        internal SKSize MeasureString(
-            string text,
-            SKFont font,
-            SKSize layoutArea,
-            StringFormat stringFormat
-            )
-        {
-            return MeasureString(text, font, layoutArea, stringFormat, TextOrientation.Auto);
-        }
-
-        /// <summary>
-        /// Measures the specified string when drawn with the specified
-        /// Font object and formatted with the specified StringFormat object.
-        /// </summary>
-        /// <param name="text">String to measure.</param>
-        /// <param name="font">Font object defines the text format of the string.</param>
-        /// <param name="layoutArea">SKSize structure that specifies the maximum layout area for the text.</param>
-        /// <param name="stringFormat">StringFormat object that represents formatting information, such as line spacing, for the string.</param>
-        /// <param name="textOrientation">Text orientation.</param>
-        /// <returns>This method returns a SKSize structure that represents the size, in pixels, of the string specified in the text parameter as drawn with the font parameter and the stringFormat parameter.</returns>
-        internal SKSize MeasureString(
-        string text,
-        SKFont font,
-        SKSize layoutArea,
-        StringFormat stringFormat,
-        TextOrientation textOrientation
-        )
-        {
-            // Current implementation of the stacked text will simply insert a new
-            // line character between all characters in the original string. This
-            // apporach will not allow to show multiple lines of stacked text or
-            // correctly handle text wrapping.
-            if (textOrientation == TextOrientation.Stacked)
-            {
-                text = GetStackedText(text);
-            }
-            var p = new SKPaint() { Typeface = font.Typeface, TextSize = font.Size };
-            var width = Math.Clamp(p.MeasureText(text), 0, layoutArea.Width);
-            var height = Math.Clamp(p.TextSize, 0, layoutArea.Height);
-            return new SKSize(width, height);
-        }
 
         /// <summary>
         /// Measures the specified text string when drawn with
@@ -929,97 +873,6 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Draws the specified text string at the specified location with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
-        /// </summary>
-        /// <param name="text">String to draw.</param>
-        /// <param name="font">Font object that defines the text format of the string.</param>
-        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
-        /// <param name="rect">Position of the drawn text in pixels.</param>
-        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
-        /// <param name="textOrientation">Text orientation.</param>
-        internal void DrawString(
-            string text,
-            SKFont font,
-            SKPaint paint,
-            SKRect rect,
-            StringFormat format,
-            TextOrientation textOrientation
-            )
-        {
-            // Current implementation of the stacked text will simply insert a new
-            // line character between all characters in the original string. This
-            // apporach will not allow to show multiple lines of stacked text or
-            // correctly handle text wrapping.
-            if (textOrientation == TextOrientation.Stacked)
-            {
-                text = GetStackedText(text);
-            }
-            RenderingObject.DrawString(text, font, paint, rect/*, format, TextOrientation.Auto1*/);
-        }
-
-        /// <summary>
-        /// Draw a string.
-        /// </summary>
-        /// <param name="text">Text.</param>
-        /// <param name="font">Text Font.</param>
-        /// <param name="brush">Text Brush.</param>
-        /// <param name="position">Text Position.</param>
-        /// <param name="format">Format and text alignment.</param>
-        /// <param name="angle">Text angle.</param>
-        /// <param name="textOrientation">Text orientation.</param>
-        internal void DrawStringRel(
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKPoint position,
-            StringFormat format,
-            int angle,
-            TextOrientation textOrientation
-            )
-        {
-            // Current implementation of the stacked text will simply insert a new
-            // line character between all characters in the original string. This
-            // apporach will not allow to show multiple lines of stacked text or
-            // correctly handle text wrapping.
-            if (textOrientation == TextOrientation.Stacked)
-            {
-                text = GetStackedText(text);
-            }
-
-            DrawStringRel(text, font, brush, position, format, angle);
-        }
-
-        /// <summary>
-        /// Draw a string.
-        /// </summary>
-        /// <param name="text">Text.</param>
-        /// <param name="font">Text Font.</param>
-        /// <param name="brush">Text Brush.</param>
-        /// <param name="position">Text Position.</param>
-        /// <param name="format">Format and text alignment.</param>
-        /// <param name="textOrientation">Text orientation.</param>
-        internal void DrawStringRel(
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKRect position,
-            StringFormat format,
-            TextOrientation textOrientation
-            )
-        {
-            // Current implementation of the stacked text will simply insert a new
-            // line character between all characters in the original string. This
-            // apporach will not allow to show multiple lines of stacked text or
-            // correctly handle text wrapping.
-            if (textOrientation == TextOrientation.Stacked)
-            {
-                text = GetStackedText(text);
-            }
-
-            DrawStringRel(text, font, brush, position, format);
-        }
-
-        /// <summary>
         /// Function returned stacked text by inserting new line characters between
         /// all characters in the original string.
         /// </summary>
@@ -1037,333 +890,6 @@ namespace WebCharts.Services
                 }
             }
             return result.ToString();
-        }
-
-        /// <summary>
-        /// Draw a string and fills it's background
-        /// </summary>
-        /// <param name="common">The Common elements object.</param>
-        /// <param name="text">Text.</param>
-        /// <param name="font">Text Font.</param>
-        /// <param name="brush">Text Brush.</param>
-        /// <param name="position">Text Position.</param>
-        /// <param name="format">Format and text alignment.</param>
-        /// <param name="angle">Text angle.</param>
-        /// <param name="backPosition">Text background position.</param>
-        /// <param name="backColor">Back Color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        /// <param name="series">Series</param>
-        /// <param name="point">Point</param>
-        /// <param name="pointIndex">Point index in series</param>
-        internal void DrawPointLabelStringRel(
-            CommonElements common,
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKRect position,
-            StringFormat format,
-            int angle,
-            SKRect backPosition,
-            SKColor backColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle,
-            Series series,
-            DataPoint point,
-            int pointIndex)
-        {
-            // Draw background
-            DrawPointLabelBackground(
-                common,
-                angle,
-                SKPoint.Empty,
-                backPosition,
-                backColor,
-                borderColor,
-                borderWidth,
-                borderDashStyle,
-                series,
-                point,
-                pointIndex);
-
-            point._lastLabelText = text;
-            // Draw text
-            DrawStringRel(text, font, brush, position, format, angle);
-        }
-
-        /// <summary>
-        /// Draw a string and fills it's background
-        /// </summary>
-        /// <param name="common">The Common elements object.</param>
-        /// <param name="text">Text.</param>
-        /// <param name="font">Text Font.</param>
-        /// <param name="brush">Text Brush.</param>
-        /// <param name="position">Text Position.</param>
-        /// <param name="format">Format and text alignment.</param>
-        /// <param name="angle">Text angle.</param>
-        /// <param name="backPosition">Text background position.</param>
-        /// <param name="backColor">Back Color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        /// <param name="series">Series</param>
-        /// <param name="point">Point</param>
-        /// <param name="pointIndex">Point index in series</param>
-        internal void DrawPointLabelStringRel(
-            CommonElements common,
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKPoint position,
-            StringFormat format,
-            int angle,
-            SKRect backPosition,
-            SKColor backColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle,
-            Series series,
-            DataPoint point,
-            int pointIndex)
-        {
-            // Draw background
-            DrawPointLabelBackground(
-                common,
-                angle,
-                position,
-                backPosition,
-                backColor,
-                borderColor,
-                borderWidth,
-                borderDashStyle,
-                series,
-                point,
-                pointIndex);
-
-            point._lastLabelText = text;
-            // Draw text
-            DrawStringRel(text, font, brush, position, format, angle);
-        }
-
-        /// <summary>
-        /// Draw a string and fills it's background
-        /// </summary>
-        /// <param name="common">The Common elements object.</param>
-        /// <param name="angle">Text angle.</param>
-        /// <param name="textPosition">Text position.</param>
-        /// <param name="backPosition">Text background position.</param>
-        /// <param name="backColor">Back Color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        /// <param name="series">Series</param>
-        /// <param name="point">Point</param>
-        /// <param name="pointIndex">Point index in series</param>
-        private void DrawPointLabelBackground(
-            CommonElements common,
-            int angle,
-            SKPoint textPosition,
-            SKRect backPosition,
-            SKColor backColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle,
-            Series series,
-            DataPoint point,
-            int pointIndex)
-        {
-            // Draw background
-            if (!backPosition.IsEmpty)
-            {
-                SKRect backPositionAbs = Round(GetAbsoluteRectangle(backPosition));
-
-                // Get rotation point
-                SKPoint rotationPoint;
-                if (textPosition.IsEmpty)
-                {
-                    rotationPoint = new SKPoint(backPositionAbs.Left + backPositionAbs.Width / 2f, backPositionAbs.Top + backPositionAbs.Height / 2f);
-                }
-                else
-                {
-                    rotationPoint = GetAbsolutePoint(textPosition);
-                }
-
-                // Create a matrix and rotate it.
-                _myMatrix = SKMatrix.CreateRotationDegrees(angle, rotationPoint.X, rotationPoint.Y);
-
-                // Set transformatino
-                Transform = _myMatrix;
-
-                // Check for empty colors
-                if (backColor != SKColor.Empty ||
-                    borderColor != SKColor.Empty)
-                {
-                    // Fill box around the label
-                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = backColor })
-                    {
-                        this.FillRectangle(brush, backPositionAbs);
-                    }
-
-                    // deliant: Fix VSTS #156433	(2)	Data Label Border in core always shows when the style is set to NotSet
-                    // Draw box border
-                    if (borderWidth > 0 &&
-                        borderColor != SKColor.Empty && borderDashStyle != ChartDashStyle.NotSet)
-                    {
-                        AntiAliasingStyles saveAntiAliasing = AntiAliasing;
-                        try
-                        {
-                            AntiAliasing = AntiAliasingStyles.None;
-                            using SKPaint pen = new() { Color = borderColor, StrokeWidth = borderWidth, Style = SKPaintStyle.Stroke };
-                            pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
-                            this.DrawRectangle(
-                                pen,
-                                backPositionAbs.Left,
-                                backPositionAbs.Top,
-                                backPositionAbs.Width,
-                                backPositionAbs.Height);
-                        }
-                        finally
-                        {
-                            AntiAliasing = saveAntiAliasing;
-                        }
-                    }
-                }
-                else
-                {
-                    // Draw invisible rectangle to handle tooltips
-                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = SKColors.Transparent };
-                    FillRectangle(brush, backPositionAbs);
-                }
-
-                // Add point label hot region
-                if (common != null &&
-                    common.ProcessModeRegions)
-                {
-                    // Insert area
-                    if (angle == 0)
-                    {
-                        common.HotRegionsList.AddHotRegion(
-                            backPosition,
-                            point,
-                            series.Name,
-                            pointIndex);
-                    }
-                    else
-                    {
-                        // Convert rectangle to the graphics path and apply rotation transformation
-                        using SKPath path = new();
-                        path.AddRect(backPositionAbs);
-                        path.Transform(_myMatrix);
-
-                        // Add hot region
-                        common.HotRegionsList.AddHotRegion(
-                            path,
-                            false,
-                            this,
-                            point,
-                            series.Name,
-                            pointIndex);
-                    }
-
-                    // Set new hot region element type
-                    if (common.HotRegionsList.List != null && common.HotRegionsList.List.Count > 0)
-                    {
-                        ((HotRegion)common.HotRegionsList.List[common.HotRegionsList.List.Count - 1]).Type =
-                            ChartElementType.DataPointLabel;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Draw a string.
-        /// </summary>
-        /// <param name="text">Text.</param>
-        /// <param name="font">Text Font.</param>
-        /// <param name="brush">Text Brush.</param>
-        /// <param name="position">Text Position.</param>
-        /// <param name="format">Format and text alignment.</param>
-        /// <param name="angle">Text angle.</param>
-        internal void DrawStringRel(
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKPoint position,
-            StringFormat format,
-            int angle
-            )
-        {
-            DrawStringAbs(
-                text,
-                font,
-                brush,
-                GetAbsolutePoint(position),
-                format,
-                angle);
-        }
-
-        /// <summary>
-        /// Draw a string.
-        /// </summary>
-        /// <param name="text">Text.</param>
-        /// <param name="font">Text Font.</param>
-        /// <param name="brush">Text Brush.</param>
-        /// <param name="absPosition">Text Position.</param>
-        /// <param name="format">Format and text alignment.</param>
-        /// <param name="angle">Text angle.</param>
-        internal void DrawStringAbs(
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKPoint absPosition,
-            StringFormat format,
-            int angle
-            )
-        {
-            // Create a matrix and rotate it.
-            _myMatrix = SKMatrix.CreateRotationDegrees(angle, absPosition.X, absPosition.Y);
-
-            // Set Angle
-            Transform = _myMatrix;
-
-            // Draw a string
-            this.DrawString(text, font, brush, absPosition);
-        }
-
-        /// <summary>
-        /// This method is used by the axis title hot region generation code.
-        /// It transforms the centered rectangle the same way as the Axis title text.
-        /// </summary>
-        /// <param name="center">Title center</param>
-        /// <param name="size">Title text size</param>
-        /// <param name="angle">Title rotation angle</param>
-        /// <returns></returns>
-        internal SKPath GetTranformedTextRectPath(SKPoint center, SKSize size, int angle)
-        {
-            // Text hot area is 10px greater than the size of text
-            size.Width += 10;
-            size.Height += 10;
-
-            // Get the absolute center and create the centered rectangle points
-            SKPoint absCenter = GetAbsolutePoint(center);
-            SKPoint[] points = new SKPoint[] {
-                new SKPoint(absCenter.X - size.Width / 2f, absCenter.Y - size.Height / 2f),
-                new SKPoint(absCenter.X + size.Width / 2f, absCenter.Y - size.Height / 2f),
-                new SKPoint(absCenter.X + size.Width / 2f, absCenter.Y + size.Height / 2f),
-                new SKPoint(absCenter.X - size.Width / 2f, absCenter.Y + size.Height / 2f)};
-
-            //Prepare the same tranformation matrix as used for the axis title
-            SKMatrix matrix = SKMatrix.CreateRotationDegrees(angle, absCenter.X, absCenter.Y);
-            //Tranform the rectangle points
-            matrix.TransformPoints(points);
-
-            //Return the path consisting of the rect points
-            SKPath path = new SKPath();
-            path.AddLines(points);
-            path.Close();
-            return path;
         }
 
         /// <summary>
@@ -1879,7 +1405,7 @@ namespace WebCharts.Services
                     }
 
                     // Calculate image rectangle
-                    SKRect imageRect = new SKRect(
+                    SKRect imageRect = new(
                         absPosition.Left + (absPosition.Width - imageAbsSize.Width - labelSize.Width) / 2,
                         absPosition.Top + (absPosition.Height - imageAbsSize.Height) / 2,
                         imageAbsSize.Width,
@@ -1948,6 +1474,647 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// Draw a string and fills it's background
+        /// </summary>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="text">Text.</param>
+        /// <param name="font">Text Font.</param>
+        /// <param name="brush">Text Brush.</param>
+        /// <param name="position">Text Position.</param>
+        /// <param name="format">Format and text alignment.</param>
+        /// <param name="angle">Text angle.</param>
+        /// <param name="backPosition">Text background position.</param>
+        /// <param name="backColor">Back Color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        /// <param name="series">Series</param>
+        /// <param name="point">Point</param>
+        /// <param name="pointIndex">Point index in series</param>
+        internal void DrawPointLabelStringRel(
+            CommonElements common,
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKRect position,
+            StringFormat format,
+            int angle,
+            SKRect backPosition,
+            SKColor backColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle,
+            Series series,
+            DataPoint point,
+            int pointIndex)
+        {
+            // Draw background
+            DrawPointLabelBackground(
+                common,
+                angle,
+                SKPoint.Empty,
+                backPosition,
+                backColor,
+                borderColor,
+                borderWidth,
+                borderDashStyle,
+                series,
+                point,
+                pointIndex);
+
+            point._lastLabelText = text;
+            // Draw text
+            DrawStringRel(text, font, brush, position, format, angle);
+        }
+
+        /// <summary>
+        /// Draw a string and fills it's background
+        /// </summary>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="text">Text.</param>
+        /// <param name="font">Text Font.</param>
+        /// <param name="brush">Text Brush.</param>
+        /// <param name="position">Text Position.</param>
+        /// <param name="format">Format and text alignment.</param>
+        /// <param name="angle">Text angle.</param>
+        /// <param name="backPosition">Text background position.</param>
+        /// <param name="backColor">Back Color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        /// <param name="series">Series</param>
+        /// <param name="point">Point</param>
+        /// <param name="pointIndex">Point index in series</param>
+        internal void DrawPointLabelStringRel(
+            CommonElements common,
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKPoint position,
+            StringFormat format,
+            int angle,
+            SKRect backPosition,
+            SKColor backColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle,
+            Series series,
+            DataPoint point,
+            int pointIndex)
+        {
+            // Draw background
+            DrawPointLabelBackground(
+                common,
+                angle,
+                position,
+                backPosition,
+                backColor,
+                borderColor,
+                borderWidth,
+                borderDashStyle,
+                series,
+                point,
+                pointIndex);
+
+            point._lastLabelText = text;
+            // Draw text
+            DrawStringRel(text, font, brush, position, format, angle);
+        }
+
+        /// <summary>
+        /// Draws the specified text string at the specified location with the specified Brush and Font objects using the formatting properties of the specified StringFormat object.
+        /// </summary>
+        /// <param name="text">String to draw.</param>
+        /// <param name="font">Font object that defines the text format of the string.</param>
+        /// <param name="brush">Brush object that determines the color and texture of the drawn text.</param>
+        /// <param name="rect">Position of the drawn text in pixels.</param>
+        /// <param name="format">StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
+        /// <param name="textOrientation">Text orientation.</param>
+        internal void DrawString(
+            string text,
+            SKFont font,
+            SKPaint paint,
+            SKRect rect,
+            StringFormat format,
+            TextOrientation textOrientation
+            )
+        {
+            // Current implementation of the stacked text will simply insert a new
+            // line character between all characters in the original string. This
+            // apporach will not allow to show multiple lines of stacked text or
+            // correctly handle text wrapping.
+            if (textOrientation == TextOrientation.Stacked)
+            {
+                text = GetStackedText(text);
+            }
+            RenderingObject.DrawString(text, font, paint, rect/*, format, TextOrientation.Auto1*/);
+        }
+
+        /// <summary>
+        /// Draw a string.
+        /// </summary>
+        /// <param name="text">Text.</param>
+        /// <param name="font">Text Font.</param>
+        /// <param name="brush">Text Brush.</param>
+        /// <param name="absPosition">Text Position.</param>
+        /// <param name="format">Format and text alignment.</param>
+        /// <param name="angle">Text angle.</param>
+        internal void DrawStringAbs(
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKPoint absPosition,
+            StringFormat format,
+            int angle
+            )
+        {
+            // Create a matrix and rotate it.
+            _myMatrix = SKMatrix.CreateRotationDegrees(angle, absPosition.X, absPosition.Y);
+
+            // Set Angle
+            Transform = _myMatrix;
+
+            // Draw a string
+            this.DrawString(text, font, brush, absPosition);
+        }
+
+        /// <summary>
+        /// Draw a string.
+        /// </summary>
+        /// <param name="text">Text.</param>
+        /// <param name="font">Text Font.</param>
+        /// <param name="brush">Text Brush.</param>
+        /// <param name="position">Text Position.</param>
+        /// <param name="format">Format and text alignment.</param>
+        /// <param name="angle">Text angle.</param>
+        /// <param name="textOrientation">Text orientation.</param>
+        internal void DrawStringRel(
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKPoint position,
+            StringFormat format,
+            int angle,
+            TextOrientation textOrientation
+            )
+        {
+            // Current implementation of the stacked text will simply insert a new
+            // line character between all characters in the original string. This
+            // apporach will not allow to show multiple lines of stacked text or
+            // correctly handle text wrapping.
+            if (textOrientation == TextOrientation.Stacked)
+            {
+                text = GetStackedText(text);
+            }
+
+            DrawStringRel(text, font, brush, position, format, angle);
+        }
+
+        /// <summary>
+        /// Draw a string.
+        /// </summary>
+        /// <param name="text">Text.</param>
+        /// <param name="font">Text Font.</param>
+        /// <param name="brush">Text Brush.</param>
+        /// <param name="position">Text Position.</param>
+        /// <param name="format">Format and text alignment.</param>
+        /// <param name="textOrientation">Text orientation.</param>
+        internal void DrawStringRel(
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKRect position,
+            StringFormat format,
+            TextOrientation textOrientation
+            )
+        {
+            // Current implementation of the stacked text will simply insert a new
+            // line character between all characters in the original string. This
+            // apporach will not allow to show multiple lines of stacked text or
+            // correctly handle text wrapping.
+            if (textOrientation == TextOrientation.Stacked)
+            {
+                text = GetStackedText(text);
+            }
+
+            DrawStringRel(text, font, brush, position, format);
+        }
+
+        /// <summary>
+        /// Draw a string.
+        /// </summary>
+        /// <param name="text">Text.</param>
+        /// <param name="font">Text Font.</param>
+        /// <param name="brush">Text Brush.</param>
+        /// <param name="position">Text Position.</param>
+        /// <param name="format">Format and text alignment.</param>
+        /// <param name="angle">Text angle.</param>
+        internal void DrawStringRel(
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKPoint position,
+            StringFormat format,
+            int angle
+            )
+        {
+            DrawStringAbs(
+                text,
+                font,
+                brush,
+                GetAbsolutePoint(position),
+                format,
+                angle);
+        }
+
+        /// <summary>
+        /// Draws the specified text string at the specified location
+        /// with the specified Brush object and font. The formatting
+        /// properties in the specified StringFormat object are applied
+        /// to the text.
+        /// </summary>
+        /// <param name="text">A string object that specifies the text to draw.</param>
+        /// <param name="font">A Font object that specifies the font face and size with which to draw the text.</param>
+        /// <param name="brush">A Brush object that determines the color and/or texture of the drawn text.</param>
+        /// <param name="layoutRectangle">A SKRect structure that specifies the location of the drawn text.</param>
+        /// <param name="format">A StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
+        internal void DrawStringRel(string text, SKFont font, SKPaint brush, SKRect layoutRectangle, StringFormat format)
+        {
+            SKRect rect;
+
+            // Check that rectangle is not empty
+            if (layoutRectangle.Width == 0 || layoutRectangle.Height == 0)
+            {
+                return;
+            }
+
+            // Get absolute coordinates
+            rect = GetAbsoluteRectangle(layoutRectangle);
+
+            var sm = SmoothingMode;
+
+            // Draw text with anti-aliasing
+
+            if ((AntiAliasing & AntiAliasingStyles.Text) == AntiAliasingStyles.Text)
+            {
+                SmoothingMode = SmoothingMode.AntiAlias;
+            }
+            else
+            {
+                SmoothingMode = SmoothingMode.HighSpeed;
+            }
+            
+            this.DrawString(text, font, brush, rect, format, TextOrientation.Auto);
+            SmoothingMode = sm;
+        }
+
+        /// <summary>
+        /// Draws the specified text string at the specified location
+        /// with the specified angle and with the specified Brush object and font. The
+        /// formatting properties in the specified StringFormat object are applied
+        /// to the text.
+        /// </summary>
+        /// <param name="text">A string object that specifies the text to draw.</param>
+        /// <param name="font">A Font object that specifies the font face and size with which to draw the text.</param>
+        /// <param name="brush">A Brush object that determines the color and/or texture of the drawn text.</param>
+        /// <param name="layoutRectangle">A SKRect structure that specifies the location of the drawn text.</param>
+        /// <param name="format">A StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
+        /// <param name="angle">A angle of the text</param>
+        internal void DrawStringRel(
+            string text,
+            SKFont font,
+            SKPaint brush,
+            SKRect layoutRectangle,
+            StringFormat format,
+            int angle
+            )
+        {
+            SKRect rect;
+            SKSize size;
+            SKPoint rotationCenter = SKPoint.Empty;
+
+            // Check that rectangle is not empty
+            if (layoutRectangle.Width == 0 || layoutRectangle.Height == 0)
+            {
+                return;
+            }
+
+            // Get absolute coordinates
+            rect = GetAbsoluteRectangle(layoutRectangle);
+
+            size = this.MeasureString(text, font, rect.Size, format);
+
+            // Find the center of rotation
+            if (format.Alignment == StringAlignment.Near)
+            { // Near
+                rotationCenter.X = rect.Left + size.Width / 2;
+                rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
+            }
+            else if (format.Alignment == StringAlignment.Far)
+            { // Far
+                rotationCenter.X = rect.Right - size.Width / 2;
+                rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
+            }
+            else
+            { // Center
+                rotationCenter.X = (rect.Left + rect.Right) / 2;
+                rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
+            }
+
+            RenderingObject.Graphics.Save();
+            RenderingObject.Graphics.RotateDegrees(angle);
+            RenderingObject.Graphics.DrawText(text, rotationCenter.X, rotationCenter.Y, font, brush);
+            RenderingObject.Graphics.Restore();
+        }
+
+        /// <summary>
+        /// This method is used by the axis title hot region generation code.
+        /// It transforms the centered rectangle the same way as the Axis title text.
+        /// </summary>
+        /// <param name="center">Title center</param>
+        /// <param name="size">Title text size</param>
+        /// <param name="angle">Title rotation angle</param>
+        /// <returns></returns>
+        internal SKPath GetTranformedTextRectPath(SKPoint center, SKSize size, int angle)
+        {
+            // Text hot area is 10px greater than the size of text
+            size.Width += 10;
+            size.Height += 10;
+
+            // Get the absolute center and create the centered rectangle points
+            SKPoint absCenter = GetAbsolutePoint(center);
+            SKPoint[] points = new SKPoint[] {
+                new SKPoint(absCenter.X - size.Width / 2f, absCenter.Y - size.Height / 2f),
+                new SKPoint(absCenter.X + size.Width / 2f, absCenter.Y - size.Height / 2f),
+                new SKPoint(absCenter.X + size.Width / 2f, absCenter.Y + size.Height / 2f),
+                new SKPoint(absCenter.X - size.Width / 2f, absCenter.Y + size.Height / 2f)};
+
+            //Prepare the same tranformation matrix as used for the axis title
+            SKMatrix matrix = SKMatrix.CreateRotationDegrees(angle, absCenter.X, absCenter.Y);
+            //Tranform the rectangle points
+            matrix.TransformPoints(points);
+
+            //Return the path consisting of the rect points
+            SKPath path = new();
+            path.AddLines(points);
+            path.Close();
+            return path;
+        }
+
+        /// <summary>
+        /// Measures the specified string when drawn with the specified
+        /// Font object and formatted with the specified StringFormat object.
+        /// </summary>
+        /// <param name="text">String to measure.</param>
+        /// <param name="font">Font object defines the text format of the string.</param>
+        /// <param name="layoutArea">SKSize structure that specifies the maximum layout area for the text.</param>
+        /// <param name="stringFormat">StringFormat object that represents formatting information, such as line spacing, for the string.</param>
+        /// <param name="textOrientation">Text orientation.</param>
+        /// <returns>This method returns a SKSize structure that represents the size, in pixels, of the string specified in the text parameter as drawn with the font parameter and the stringFormat parameter.</returns>
+        internal SKSize MeasureString(
+            string text,
+            SKFont font,
+            SKSize layoutArea,
+            StringFormat stringFormat
+            )
+        {
+            return MeasureString(text, font, layoutArea, stringFormat, TextOrientation.Auto);
+        }
+
+        /// <summary>
+        /// Measures the specified string when drawn with the specified
+        /// Font object and formatted with the specified StringFormat object.
+        /// </summary>
+        /// <param name="text">String to measure.</param>
+        /// <param name="font">Font object defines the text format of the string.</param>
+        /// <param name="layoutArea">SKSize structure that specifies the maximum layout area for the text.</param>
+        /// <param name="stringFormat">StringFormat object that represents formatting information, such as line spacing, for the string.</param>
+        /// <param name="textOrientation">Text orientation.</param>
+        /// <returns>This method returns a SKSize structure that represents the size, in pixels, of the string specified in the text parameter as drawn with the font parameter and the stringFormat parameter.</returns>
+        internal static SKSize MeasureString(
+        string text,
+        SKFont font,
+        SKSize layoutArea,
+        StringFormat stringFormat,
+        TextOrientation textOrientation
+        )
+        {
+            // Current implementation of the stacked text will simply insert a new
+            // line character between all characters in the original string. This
+            // apporach will not allow to show multiple lines of stacked text or
+            // correctly handle text wrapping.
+            if (textOrientation == TextOrientation.Stacked)
+            {
+                text = GetStackedText(text);
+            }
+            var p = new SKPaint() { Typeface = font.Typeface, TextSize = font.Size };
+            var width = Math.Clamp(p.MeasureText(text), 0, layoutArea.Width);
+            var height = Math.Clamp(p.TextSize, 0, layoutArea.Height);
+            return new SKSize(width, height);
+        }
+        /// <summary>
+        /// Measures the specified text string when drawn with
+        /// the specified Font object and formatted with the
+        /// specified StringFormat object.
+        /// </summary>
+        /// <param name="text">The string to measure</param>
+        /// <param name="font">The Font object used to determine the size of the text string. </param>
+        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
+        internal SKSize MeasureStringAbs(string text, SKFont font)
+        {
+            // Measure string
+            SKSize size = MeasureString(text, font);
+            return new SKSize((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
+        }
+
+        /// <summary>
+        /// Measures the specified text string when drawn with
+        /// the specified Font object and formatted with the
+        /// specified StringFormat object.
+        /// </summary>
+        /// <param name="text">The string to measure</param>
+        /// <param name="font">The Font object used to determine the size of the text string. </param>
+        /// <param name="layoutArea">A SKSize structure that specifies the layout rectangle for the text. </param>
+        /// <param name="stringFormat">A StringFormat object that represents formatting information, such as line spacing, for the text string. </param>
+        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
+        internal SKSize MeasureStringAbs(string text, SKFont font, SKSize layoutArea, StringFormat stringFormat)
+        {
+            SKSize size = this.MeasureString(text, font, layoutArea, stringFormat);
+            return new SKSize((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
+        }
+
+        /// <summary>
+        /// Measures the specified text string when drawn with
+        /// the specified Font object and formatted with the
+        /// specified StringFormat object.
+        /// </summary>
+        /// <param name="text">The string to measure</param>
+        /// <param name="font">The Font object used to determine the size of the text string. </param>
+        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
+        internal SKSize MeasureStringRel(string text, SKFont font)
+        {
+            SKSize newSize;
+
+            // Measure string
+            newSize = MeasureString(text, font);
+
+            // Convert to relative Coordinates
+            return GetRelativeSize(newSize);
+        }
+
+        /// <summary>
+        /// Measures the specified text string when drawn with
+        /// the specified Font object and formatted with the
+        /// specified StringFormat object.
+        /// </summary>
+        /// <param name="text">The string to measure</param>
+        /// <param name="font">The Font object used to determine the size of the text string. </param>
+        /// <param name="layoutArea">A SKSize structure that specifies the layout rectangle for the text. </param>
+        /// <param name="stringFormat">A StringFormat object that represents formatting information, such as line spacing, for the text string. </param>
+        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
+        internal SKSize MeasureStringRel(string text, SKFont font, SKSize layoutArea, StringFormat stringFormat)
+        {
+            SKSize size, newSize;
+
+            // Get absolute coordinates
+            size = GetAbsoluteSize(layoutArea);
+
+            newSize = this.MeasureString(text, font, size, stringFormat);
+
+            // Convert to relative Coordinates
+            return GetRelativeSize(newSize);
+        }
+
+        /// <summary>
+        /// Draw a string and fills it's background
+        /// </summary>
+        /// <param name="common">The Common elements object.</param>
+        /// <param name="angle">Text angle.</param>
+        /// <param name="textPosition">Text position.</param>
+        /// <param name="backPosition">Text background position.</param>
+        /// <param name="backColor">Back Color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        /// <param name="series">Series</param>
+        /// <param name="point">Point</param>
+        /// <param name="pointIndex">Point index in series</param>
+        private void DrawPointLabelBackground(
+            CommonElements common,
+            int angle,
+            SKPoint textPosition,
+            SKRect backPosition,
+            SKColor backColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle,
+            Series series,
+            DataPoint point,
+            int pointIndex)
+        {
+            // Draw background
+            if (!backPosition.IsEmpty)
+            {
+                SKRect backPositionAbs = Round(GetAbsoluteRectangle(backPosition));
+
+                // Get rotation point
+                SKPoint rotationPoint;
+                if (textPosition.IsEmpty)
+                {
+                    rotationPoint = new SKPoint(backPositionAbs.Left + backPositionAbs.Width / 2f, backPositionAbs.Top + backPositionAbs.Height / 2f);
+                }
+                else
+                {
+                    rotationPoint = GetAbsolutePoint(textPosition);
+                }
+
+                // Create a matrix and rotate it.
+                _myMatrix = SKMatrix.CreateRotationDegrees(angle, rotationPoint.X, rotationPoint.Y);
+
+                // Set transformatino
+                Transform = _myMatrix;
+
+                // Check for empty colors
+                if (backColor != SKColor.Empty ||
+                    borderColor != SKColor.Empty)
+                {
+                    // Fill box around the label
+                    using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = backColor })
+                    {
+                        this.FillRectangle(brush, backPositionAbs);
+                    }
+
+                    // deliant: Fix VSTS #156433	(2)	Data Label Border in core always shows when the style is set to NotSet
+                    // Draw box border
+                    if (borderWidth > 0 &&
+                        borderColor != SKColor.Empty && borderDashStyle != ChartDashStyle.NotSet)
+                    {
+                        AntiAliasingStyles saveAntiAliasing = AntiAliasing;
+                        try
+                        {
+                            AntiAliasing = AntiAliasingStyles.None;
+                            using SKPaint pen = new() { Color = borderColor, StrokeWidth = borderWidth, Style = SKPaintStyle.Stroke };
+                            pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
+                            this.DrawRectangle(
+                                pen,
+                                backPositionAbs.Left,
+                                backPositionAbs.Top,
+                                backPositionAbs.Width,
+                                backPositionAbs.Height);
+                        }
+                        finally
+                        {
+                            AntiAliasing = saveAntiAliasing;
+                        }
+                    }
+                }
+                else
+                {
+                    // Draw invisible rectangle to handle tooltips
+                    using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = SKColors.Transparent };
+                    FillRectangle(brush, backPositionAbs);
+                }
+
+                // Add point label hot region
+                if (common != null &&
+                    common.ProcessModeRegions)
+                {
+                    // Insert area
+                    if (angle == 0)
+                    {
+                        common.HotRegionsList.AddHotRegion(
+                            backPosition,
+                            point,
+                            series.Name,
+                            pointIndex);
+                    }
+                    else
+                    {
+                        // Convert rectangle to the graphics path and apply rotation transformation
+                        using SKPath path = new();
+                        path.AddRect(backPositionAbs);
+                        path.Transform(_myMatrix);
+
+                        // Add hot region
+                        common.HotRegionsList.AddHotRegion(
+                            path,
+                            false,
+                            this,
+                            point,
+                            series.Name,
+                            pointIndex);
+                    }
+
+                    // Set new hot region element type
+                    if (common.HotRegionsList.List != null && common.HotRegionsList.List.Count > 0)
+                    {
+                        ((HotRegion)common.HotRegionsList.List[^1]).Type =
+                            ChartElementType.DataPointLabel;
+                    }
+                }
+            }
+        }
+        /// <summary>
         /// Draw box marks for the labels in second row
         /// </summary>
         /// <param name="axis">Axis object.</param>
@@ -1987,7 +2154,7 @@ namespace WebCharts.Services
 
             // Get axis position
             float axisPosRelative = (float)axis.GetAxisPosition(true);
-            SKPoint axisPositionAbs = new SKPoint(axisPosRelative, axisPosRelative);
+            SKPoint axisPositionAbs = new(axisPosRelative, axisPosRelative);
             axisPositionAbs = GetAbsolutePoint(axisPositionAbs);
 
             // Round position to achieve crisp lines with antialiasing
@@ -2127,7 +2294,7 @@ namespace WebCharts.Services
 
             {
                 // Calculate center of the text rectangle
-                SKPoint center = new SKPoint(
+                SKPoint center = new(
                     MathF.Round(absPosition.Left + absPosition.Width / 2F),
                     MathF.Round(absPosition.Top + absPosition.Height / 2F));
 
@@ -2204,202 +2371,481 @@ namespace WebCharts.Services
             // Restore previous SmoothingMode
             SmoothingMode = oldSmoothingMode;
         }
-
-        /// <summary>
-        /// Measures the specified text string when drawn with
-        /// the specified Font object and formatted with the
-        /// specified StringFormat object.
-        /// </summary>
-        /// <param name="text">The string to measure</param>
-        /// <param name="font">The Font object used to determine the size of the text string. </param>
-        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
-        internal SKSize MeasureStringRel(string text, SKFont font)
-        {
-            SKSize newSize;
-
-            // Measure string
-            newSize = MeasureString(text, font);
-
-            // Convert to relative Coordinates
-            return GetRelativeSize(newSize);
-        }
-
-        /// <summary>
-        /// Measures the specified text string when drawn with
-        /// the specified Font object and formatted with the
-        /// specified StringFormat object.
-        /// </summary>
-        /// <param name="text">The string to measure</param>
-        /// <param name="font">The Font object used to determine the size of the text string. </param>
-        /// <param name="layoutArea">A SKSize structure that specifies the layout rectangle for the text. </param>
-        /// <param name="stringFormat">A StringFormat object that represents formatting information, such as line spacing, for the text string. </param>
-        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
-        internal SKSize MeasureStringRel(string text, SKFont font, SKSize layoutArea, StringFormat stringFormat)
-        {
-            SKSize size, newSize;
-
-            // Get absolute coordinates
-            size = GetAbsoluteSize(layoutArea);
-
-            newSize = this.MeasureString(text, font, size, stringFormat);
-
-            // Convert to relative Coordinates
-            return GetRelativeSize(newSize);
-        }
-
-        /// <summary>
-        /// Measures the specified text string when drawn with
-        /// the specified Font object and formatted with the
-        /// specified StringFormat object.
-        /// </summary>
-        /// <param name="text">The string to measure</param>
-        /// <param name="font">The Font object used to determine the size of the text string. </param>
-        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
-        internal SKSize MeasureStringAbs(string text, SKFont font)
-        {
-            // Measure string
-            SKSize size = MeasureString(text, font);
-            return new SKSize((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
-        }
-
-        /// <summary>
-        /// Measures the specified text string when drawn with
-        /// the specified Font object and formatted with the
-        /// specified StringFormat object.
-        /// </summary>
-        /// <param name="text">The string to measure</param>
-        /// <param name="font">The Font object used to determine the size of the text string. </param>
-        /// <param name="layoutArea">A SKSize structure that specifies the layout rectangle for the text. </param>
-        /// <param name="stringFormat">A StringFormat object that represents formatting information, such as line spacing, for the text string. </param>
-        /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
-        internal SKSize MeasureStringAbs(string text, SKFont font, SKSize layoutArea, StringFormat stringFormat)
-        {
-            SKSize size = this.MeasureString(text, font, layoutArea, stringFormat);
-            return new SKSize((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
-        }
-
-        /// <summary>
-        /// Draws the specified text string at the specified location
-        /// with the specified Brush object and font. The formatting
-        /// properties in the specified StringFormat object are applied
-        /// to the text.
-        /// </summary>
-        /// <param name="text">A string object that specifies the text to draw.</param>
-        /// <param name="font">A Font object that specifies the font face and size with which to draw the text.</param>
-        /// <param name="brush">A Brush object that determines the color and/or texture of the drawn text.</param>
-        /// <param name="layoutRectangle">A SKRect structure that specifies the location of the drawn text.</param>
-        /// <param name="format">A StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
-        internal void DrawStringRel(string text, SKFont font, SKPaint brush, SKRect layoutRectangle, StringFormat format)
-        {
-            SKRect rect;
-
-            // Check that rectangle is not empty
-            if (layoutRectangle.Width == 0 || layoutRectangle.Height == 0)
-            {
-                return;
-            }
-
-            // Get absolute coordinates
-            rect = GetAbsoluteRectangle(layoutRectangle);
-
-            // Draw text with anti-aliasing
-            /*
-            if( (this.AntiAliasing & AntiAliasing.Text) == AntiAliasing.Text )
-            {
-                this.TextRenderingHint = TextRenderingHint.AntiAlias;
-            }
-            else
-            {
-                this.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
-            }
-            */
-
-            this.DrawString(text, font, brush, rect, format, TextOrientation.Auto);
-        }
-
-        /// <summary>
-        /// Draws the specified text string at the specified location
-        /// with the specified angle and with the specified Brush object and font. The
-        /// formatting properties in the specified StringFormat object are applied
-        /// to the text.
-        /// </summary>
-        /// <param name="text">A string object that specifies the text to draw.</param>
-        /// <param name="font">A Font object that specifies the font face and size with which to draw the text.</param>
-        /// <param name="brush">A Brush object that determines the color and/or texture of the drawn text.</param>
-        /// <param name="layoutRectangle">A SKRect structure that specifies the location of the drawn text.</param>
-        /// <param name="format">A StringFormat object that specifies formatting properties, such as line spacing and alignment, that are applied to the drawn text.</param>
-        /// <param name="angle">A angle of the text</param>
-        internal void DrawStringRel(
-            string text,
-            SKFont font,
-            SKPaint brush,
-            SKRect layoutRectangle,
-            StringFormat format,
-            int angle
-            )
-        {
-            SKRect rect;
-            SKSize size;
-            SKMatrix oldTransform;
-            SKPoint rotationCenter = SKPoint.Empty;
-
-            // Check that rectangle is not empty
-            if (layoutRectangle.Width == 0 || layoutRectangle.Height == 0)
-            {
-                return;
-            }
-
-            // Get absolute coordinates
-            rect = GetAbsoluteRectangle(layoutRectangle);
-
-            size = this.MeasureString(text, font, rect.Size, format);
-
-            // Find the center of rotation
-            if (format.Alignment == StringAlignment.Near)
-            { // Near
-                rotationCenter.X = rect.Left + size.Width / 2;
-                rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
-            }
-            else if (format.Alignment == StringAlignment.Far)
-            { // Far
-                rotationCenter.X = rect.Right - size.Width / 2;
-                rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
-            }
-            else
-            { // Center
-                rotationCenter.X = (rect.Left + rect.Right) / 2;
-                rotationCenter.Y = (rect.Bottom + rect.Top) / 2;
-            }
-            // Create a matrix and rotate it.
-            _myMatrix = SkiaSharpExtensions.CreateRotationDegrees(angle, rotationCenter);
-
-            // Old angle
-            oldTransform = Transform;
-
-            // Set Angle
-            Transform = _myMatrix;
-
-            // Draw text with anti-aliasing
-            /*
-            if( (AntiAliasing & AntiAliasing.Text) == AntiAliasing.Text )
-            {
-                this.TextRenderingHint = TextRenderingHint.AntiAlias;
-            }
-            else
-            {
-                this.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
-            }
-            */
-
-            this.DrawString(text, font, brush, rect, format, TextOrientation.Auto);
-
-            // Set Old Angle
-            Transform = oldTransform;
-        }
-
         #endregion String Methods
 
         #region Rectangle Methods
+
+        /// <summary>
+        /// This method creates gradient color with brightness
+        /// </summary>
+        /// <param name="beginColor">Start color for gradient.</param>
+        /// <param name="position">Position used between Start and end color.</param>
+        /// <returns>Calculated Gradient color from gradient position</returns>
+        internal static SKColor GetBrightGradientColor(SKColor beginColor, double position)
+        {
+            double brightness = 0.5;
+            if (position < brightness)
+            {
+                return GetGradientColor(new SKColor(255, 255, 255, beginColor.Alpha), beginColor, 1 - brightness + position);
+            }
+            else if (-brightness + position < 1)
+            {
+                return GetGradientColor(beginColor, SKColors.Black, -brightness + position);
+            }
+            else
+            {
+                return new(0, 0, 0, beginColor.Alpha);
+            }
+        }
+
+        /// <summary>
+        /// Creates brush with specified properties.
+        /// </summary>
+        /// <param name="rect">Gradient rectangle</param>
+        /// <param name="backColor">Color of rectangle</param>
+        /// <param name="backHatchStyle">Hatch style</param>
+        /// <param name="backImage">Back Image</param>
+        /// <param name="backImageWrapMode">Image mode</param>
+        /// <param name="backImageTransparentColor">Image transparent color.</param>
+        /// <param name="backGradientStyle">Gradient type </param>
+        /// <param name="backSecondaryColor">Gradient End Color</param>
+        /// <returns>New brush object.</returns>
+        internal SKPaint CreateBrush(
+            SKRect rect,
+            SKColor backColor,
+            ChartHatchStyle backHatchStyle,
+            string backImage,
+            ChartImageWrapMode backImageWrapMode,
+            SKColor backImageTransparentColor,
+            GradientStyle backGradientStyle,
+            SKColor backSecondaryColor
+            )
+        {
+            SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = backColor };
+
+            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
+            {
+                brush = GetTextureBrush(backImage, backImageTransparentColor, backImageWrapMode, backColor);
+            }
+            else if (backHatchStyle != ChartHatchStyle.None)
+            {
+                brush = GetHatchBrush(backHatchStyle, backColor, backSecondaryColor);
+            }
+            else if (backGradientStyle != GradientStyle.None)
+            {
+                // If a gradient type  is set create a brush with gradient
+                brush = GetGradientBrush(rect, backColor, backSecondaryColor, backGradientStyle);
+            }
+
+            return brush;
+        }
+
+        /// <summary>
+        /// Fills and/or draws border as circle or polygon.
+        /// </summary>
+        /// <param name="pen">Border pen.</param>
+        /// <param name="brush">Border brush.</param>
+        /// <param name="position">Circle position.</param>
+        /// <param name="polygonSectorsNumber">Number of sectors for the polygon.</param>
+        /// <param name="circle3D">Indicates that circle should be 3D..</param>
+        internal void DrawCircleAbs(SKPaint pen, SKPaint brush, SKRect position, int polygonSectorsNumber, bool circle3D)
+        {
+            bool fill3DCircle = (circle3D && brush != null);
+
+            // Draw 2D circle
+            if (polygonSectorsNumber <= 2 && !fill3DCircle)
+            {
+                if (brush != null)
+                {
+                    FillEllipse(brush, position);
+                }
+                if (pen != null)
+                {
+                    DrawEllipse(pen, position);
+                }
+            }
+
+            // Draw circle as polygon with specified number of sectors
+            else
+            {
+                SKPoint firstPoint = new(position.Left + position.Width / 2f, position.Top);
+                SKPoint centerPoint = new(position.Left + position.Width / 2f, position.Left + position.Height / 2f);
+                float sectorSize = 0f;
+                SKPoint prevPoint = SKPoint.Empty;
+                float curentSector = 0f;
+
+                using SKPath path = new();
+                // Remember current smoothing mode
+                SmoothingMode oldMode = SmoothingMode;
+                if (fill3DCircle)
+                {
+                    SmoothingMode = SmoothingMode.None;
+                }
+
+                // Get sector size
+                if (polygonSectorsNumber <= 2)
+                {
+                    // Circle sector size
+                    sectorSize = 1f;
+                }
+                else
+                {
+                    // Polygon sector size
+                    sectorSize = 360f / ((float)polygonSectorsNumber);
+                }
+
+                // Loop throug all sectors
+                for (curentSector = 0f; curentSector < 360f; curentSector += sectorSize)
+                {
+                    // Create matrix
+                    SKMatrix matrix = SkiaSharpExtensions.CreateRotationDegrees(curentSector, centerPoint);
+
+                    // Get point and rotate it
+                    SKPoint[] points = new SKPoint[] { firstPoint };
+                    matrix.TransformPoints(points);
+
+                    // Add point into the path
+                    if (!prevPoint.IsEmpty)
+                    {
+                        path.AddLine(prevPoint, points[0]);
+
+                        // Fill each segment separatly for the 3D look
+                        if (fill3DCircle)
+                        {
+                            path.AddLine(points[0], centerPoint);
+                            path.AddLine(centerPoint, prevPoint);
+                            using (SKPaint sectorBrush = GetSector3DBrush(brush, curentSector, sectorSize))
+                            {
+                                this.FillPath(sectorBrush, path);
+                            }
+                            path.Reset();
+                        }
+                    }
+
+                    // Remember last point
+                    prevPoint = points[0];
+                }
+
+                path.Close();
+
+                // Fill last segment for the 3D look
+                if (!prevPoint.IsEmpty && fill3DCircle)
+                {
+                    path.AddLine(prevPoint, firstPoint);
+                    path.AddLine(firstPoint, centerPoint);
+                    path.AddLine(centerPoint, prevPoint);
+                    using (var sectorBrush = GetSector3DBrush(brush, curentSector, sectorSize))
+                    {
+                        this.FillPath(sectorBrush, path);
+                    }
+                    path.Reset();
+                }
+
+                // Restore old mode
+                if (fill3DCircle)
+                {
+                    SmoothingMode = oldMode;
+                }
+
+                if (brush != null && !circle3D)
+                {
+                    FillPath(brush, path);
+                }
+                if (pen != null)
+                {
+                    DrawPath(pen, path);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fills graphics path with shadow using absolute coordinates.
+        /// </summary>
+        /// <param name="path">Graphics path to fill.</param>
+        /// <param name="backColor">Color of rectangle</param>
+        /// <param name="backHatchStyle">Hatch Style</param>
+        /// <param name="backImage">Image URL</param>
+        /// <param name="backImageWrapMode">Image Mode</param>
+        /// <param name="backImageTransparentColor">Image transparent color.</param>
+        /// <param name="backImageAlign">Image alignment.</param>
+        /// <param name="backGradientStyle">Gradient AxisName</param>
+        /// <param name="backSecondaryColor">End Gradient color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        /// <param name="penAlignment">Border is outside or inside rectangle</param>
+        /// <param name="shadowOffset">Shadow offset.</param>
+        /// <param name="shadowColor">Shadow color.</param>
+        internal void DrawPathAbs(
+            SKPath path,
+            SKColor backColor,
+            ChartHatchStyle backHatchStyle,
+            string backImage,
+            ChartImageWrapMode backImageWrapMode,
+            SKColor backImageTransparentColor,
+            ChartImageAlignmentStyle backImageAlign,
+            GradientStyle backGradientStyle,
+            SKColor backSecondaryColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle,
+            PenAlignment penAlignment,
+            int shadowOffset,
+            SKColor shadowColor)
+        {
+            // Draw patj shadow
+            if (shadowOffset != 0 && shadowColor != SKColors.Transparent)
+            {
+                // Save graphics state and apply translate transformation
+                TranslateTransform(shadowOffset, shadowOffset);
+
+                if (backColor == SKColors.Transparent &&
+                    backSecondaryColor == SKColor.Empty)
+                {
+                    this.DrawPathAbs(
+                        path,
+                        SKColors.Transparent,
+                        ChartHatchStyle.None,
+                        String.Empty,
+                        ChartImageWrapMode.Scaled,
+                        SKColor.Empty,
+                        ChartImageAlignmentStyle.Center,
+                        GradientStyle.None,
+                        SKColor.Empty,
+                        shadowColor,
+                        borderWidth,
+                        borderDashStyle,
+                        PenAlignment.Center);
+                }
+                else
+                {
+                    this.DrawPathAbs(
+                        path,
+                        shadowColor,
+                        ChartHatchStyle.None,
+                        String.Empty,
+                        ChartImageWrapMode.Scaled,
+                        SKColor.Empty,
+                        ChartImageAlignmentStyle.Center,
+                        GradientStyle.None,
+                        SKColor.Empty,
+                        SKColors.Transparent,
+                        0,
+                        ChartDashStyle.NotSet,
+                        PenAlignment.Center);
+                }
+            }
+
+            // Draw path
+            DrawPathAbs(
+                path,
+                backColor,
+                backHatchStyle,
+                backImage,
+                backImageWrapMode,
+                backImageTransparentColor,
+                backImageAlign,
+                backGradientStyle,
+                backSecondaryColor,
+                borderColor,
+                borderWidth,
+                borderDashStyle,
+                penAlignment);
+        }
+
+        /// <summary>
+        /// Fills graphics path using absolute coordinates.
+        /// </summary>
+        /// <param name="path">Graphics path to fill.</param>
+        /// <param name="backColor">Color of rectangle</param>
+        /// <param name="backHatchStyle">Hatch Style</param>
+        /// <param name="backImage">Image URL</param>
+        /// <param name="backImageWrapMode">Image Mode</param>
+        /// <param name="backImageTransparentColor">Image transparent color.</param>
+        /// <param name="backImageAlign">Image alignment.</param>
+        /// <param name="backGradientStyle">Gradient AxisName</param>
+        /// <param name="backSecondaryColor">End Gradient color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        /// <param name="penAlignment">Border is outside or inside rectangle</param>
+        internal void DrawPathAbs(SKPath path,
+            SKColor backColor,
+            ChartHatchStyle backHatchStyle,
+            string backImage,
+            ChartImageWrapMode backImageWrapMode,
+            SKColor backImageTransparentColor,
+            ChartImageAlignmentStyle backImageAlign,
+            GradientStyle backGradientStyle,
+            SKColor backSecondaryColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle,
+            PenAlignment penAlignment)
+        {
+            SKPaint backBrush = null;
+
+            // Color is empty
+            if (backColor == SKColor.Empty)
+                backColor = SKColors.White;
+
+            if (backSecondaryColor == SKColor.Empty)
+                backSecondaryColor = SKColors.White;
+
+            if (borderColor == SKColor.Empty)
+            {
+                borderColor = SKColors.White;
+                borderWidth = 0;
+            }
+
+            // Set pen properties
+            _pen.Color = borderColor;
+            _pen.StrokeWidth = borderWidth;
+            // _pen.Alignment = penAlignment;
+            _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
+
+            SKPaint brush;
+            if (backGradientStyle == GradientStyle.None)
+            {
+                // Set solid brush color.
+                _solidBrush.Color = backColor;
+                brush = _solidBrush;
+            }
+            else
+            {
+                // If a gradient type  is set create a brush with gradient
+                SKRect pathRect = path.GetBounds();
+                pathRect.Inflate(new SKSize(2, 2));
+                brush = GetGradientBrush(
+                    pathRect,
+                    backColor,
+                    backSecondaryColor,
+                    backGradientStyle);
+            }
+
+            if (backHatchStyle != ChartHatchStyle.None)
+            {
+                brush = GetHatchBrush(backHatchStyle, backColor, backSecondaryColor);
+            }
+
+            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
+            {
+                backBrush = brush;
+                brush = GetTextureBrush(backImage, backImageTransparentColor, backImageWrapMode, backColor);
+            }
+
+            // For inset alignment resize fill rectangle
+            SKRect fillRect = path.GetBounds();
+
+            // Draw rectangle image
+            if (backImage.Length > 0 && (backImageWrapMode == ChartImageWrapMode.Unscaled || backImageWrapMode == ChartImageWrapMode.Scaled))
+            {
+                // Load image
+                SKImage image = _common.ImageLoader.LoadImage(backImage);
+
+                // Prepare image properties (transparent color)
+                if (backImageTransparentColor != SKColor.Empty)
+                {
+                    using var bmp = SKBitmap.FromImage(image);
+                    // loop trough every pixel and set alpha if equal to transparent color
+                    int width = bmp.Width;
+                    int height = bmp.Height;
+                    for (int row = 0; row < height; row++)
+                    {
+                        for (int col = 0; col < width; col++)
+                        {
+                            var color = bmp.GetPixel(col, row);
+
+                            if (color.Red == backImageTransparentColor.Red && color.Green == backImageTransparentColor.Green && color.Blue == backImageTransparentColor.Blue)
+                            {
+                                bmp.SetPixel(col, row, color.WithAlpha(0x00));
+                            }
+                        }
+                    }
+                    using var bmp2 = new SKBitmap(bmp.Width, bmp.Height, bmp.ColorType, SKAlphaType.Premul);
+                    bmp.CopyTo(bmp2);
+                    image = SKImage.FromBitmap(bmp2);
+                }
+
+                // Draw scaled image
+                SKRect imageRect = new();
+                imageRect.Left = fillRect.Left;
+                imageRect.Top = fillRect.Top;
+                imageRect.Right = fillRect.Right;
+                imageRect.Bottom = fillRect.Bottom;
+
+                // Draw unscaled image using align property
+                if (backImageWrapMode == ChartImageWrapMode.Unscaled)
+                {
+                    SKSize imageSize = new();
+
+                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageSize);
+
+                    // Calculate image position
+                    imageRect.Size = new(imageSize.Width, imageSize.Height);
+
+                    // Adjust position with alignment property
+                    if (imageRect.Width < fillRect.Width)
+                    {
+                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
+                            backImageAlign == ChartImageAlignmentStyle.Right ||
+                            backImageAlign == ChartImageAlignmentStyle.TopRight)
+                        {
+                            imageRect.Left = fillRect.Right - imageRect.Width;
+                        }
+                        else if (backImageAlign == ChartImageAlignmentStyle.Bottom ||
+                            backImageAlign == ChartImageAlignmentStyle.Center ||
+                            backImageAlign == ChartImageAlignmentStyle.Top)
+                        {
+                            imageRect.Left = fillRect.Left + (fillRect.Width - imageRect.Width) / 2;
+                        }
+                    }
+                    if (imageRect.Height < fillRect.Height)
+                    {
+                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
+                            backImageAlign == ChartImageAlignmentStyle.Bottom ||
+                            backImageAlign == ChartImageAlignmentStyle.BottomLeft)
+                        {
+                            imageRect.Top = fillRect.Bottom - imageRect.Height;
+                        }
+                        else if (backImageAlign == ChartImageAlignmentStyle.Left ||
+                            backImageAlign == ChartImageAlignmentStyle.Center ||
+                            backImageAlign == ChartImageAlignmentStyle.Right)
+                        {
+                            imageRect.Top = fillRect.Top + (fillRect.Height - imageRect.Height) / 2;
+                        }
+                    }
+                }
+
+                // Fill background with brush
+                this.FillPath(brush, path);
+
+                // Draw image
+                SKRegion oldClipRegion = Clip;
+                Clip = new SKRegion(path);
+                this.DrawImage(image,
+                    new SKRect((int)Math.Round(imageRect.Left), (int)Math.Round(imageRect.Top), (int)Math.Round(imageRect.Width), (int)Math.Round(imageRect.Height)),
+                    0, 0, image.Width, image.Height, null);
+                Clip = oldClipRegion;
+            }
+
+            // Draw rectangle
+            else
+            {
+                if (backBrush != null && backImageTransparentColor != SKColor.Empty)
+                {
+                    // Fill background with brush
+                    this.FillPath(backBrush, path);
+                }
+                this.FillPath(brush, path);
+            }
+
+            // Draw border
+            if (borderColor != SKColor.Empty && borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet)
+            {
+                DrawPath(_pen, path);
+            }
+        }
 
         /// <summary>
         /// Draws different shadows to create bar styles.
@@ -2483,7 +2929,7 @@ namespace WebCharts.Services
                     }
 
                     // Create and draw left/top path
-                    using (SKPath path = new SKPath())
+                    using (SKPath path = new())
                     {
                         // Add shadow polygon to the path
                         SKPoint[] points = new SKPoint[] {
@@ -2502,7 +2948,7 @@ namespace WebCharts.Services
                     }
 
                     // Create and draw top/right path
-                    using (SKPath path = new SKPath())
+                    using (SKPath path = new())
                     {
                         // Add shadow polygon to the path
                         SKPoint[] points = new SKPoint[] {
@@ -2719,6 +3165,227 @@ namespace WebCharts.Services
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Draw Rectangle using absolute coordinates.
+        /// </summary>
+        /// <param name="rect">Size of rectangle</param>
+        /// <param name="backColor">Color of rectangle</param>
+        /// <param name="backHatchStyle">Hatch Style</param>
+        /// <param name="backImage">Image URL</param>
+        /// <param name="backImageWrapMode">Image Mode</param>
+        /// <param name="backImageTransparentColor">Image transparent color.</param>
+        /// <param name="backImageAlign">Image alignment.</param>
+        /// <param name="backGradientStyle">Gradient AxisName</param>
+        /// <param name="backSecondaryColor">End Gradient color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        /// <param name="penAlignment">Border is outside or inside rectangle</param>
+        internal void FillRectangleAbs(SKRect rect,
+            SKColor backColor,
+            ChartHatchStyle backHatchStyle,
+            string backImage,
+            ChartImageWrapMode backImageWrapMode,
+            SKColor backImageTransparentColor,
+            ChartImageAlignmentStyle backImageAlign,
+            GradientStyle backGradientStyle,
+            SKColor backSecondaryColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle,
+            PenAlignment penAlignment)
+        {
+            SKPaint brush = null;
+            SKPaint backBrush = null;
+
+            // Turn off Antialias
+            SmoothingMode oldMode = SmoothingMode;
+            SmoothingMode = SmoothingMode.None;
+
+            // Color is empty
+            if (backColor == SKColor.Empty)
+                backColor = SKColors.White;
+
+            if (backSecondaryColor == SKColor.Empty)
+                backSecondaryColor = SKColors.White;
+
+            if (borderColor == SKColor.Empty)
+            {
+                borderColor = SKColors.White;
+                borderWidth = 0;
+            }
+
+            // Set a border line color
+            _pen.Color = borderColor;
+
+            // Set a border line width
+            _pen.StrokeWidth = borderWidth;
+
+            // Set pen alignment
+            //_pen.Alignment = penAlignment;
+
+            // Set a border line style
+            _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
+
+            if (backGradientStyle == GradientStyle.None)
+            {
+                // Set a bar color.
+                _solidBrush.Color = backColor;
+                brush = _solidBrush;
+            }
+            else
+            {
+                // If a gradient type  is set create a brush with gradient
+                brush = GetGradientBrush(rect, backColor, backSecondaryColor, backGradientStyle);
+            }
+
+            if (backHatchStyle != ChartHatchStyle.None)
+            {
+                brush = GetHatchBrush(backHatchStyle, backColor, backSecondaryColor);
+            }
+
+            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
+            {
+                backBrush = brush;
+                brush = GetTextureBrush(backImage, backImageTransparentColor, backImageWrapMode, backColor);
+            }
+
+            // For inset alignment resize fill rectangle
+            SKRect fillRect;
+
+            // The fill rectangle is same
+            fillRect = new SKRect(rect.Left + borderWidth, rect.Top + borderWidth, rect.Width - borderWidth * 2, rect.Height - borderWidth * 2);
+
+            // FillRectangle and DrawRectangle works differently with SKRect.
+            fillRect.Right += 1;
+            fillRect.Bottom += 1;
+
+            // Draw rectangle image
+            if (backImage.Length > 0 && (backImageWrapMode == ChartImageWrapMode.Unscaled || backImageWrapMode == ChartImageWrapMode.Scaled))
+            {
+                // Load image
+                SKImage image = _common.ImageLoader.LoadImage(backImage);
+
+                // Prepare image properties (transparent color)
+                if (backImageTransparentColor != SKColor.Empty)
+                {
+                    using var bmp = SKBitmap.FromImage(image);
+                    // loop trough every pixel and set alpha if equal to transparent color
+                    int width = bmp.Width;
+                    int height = bmp.Height;
+                    for (int row = 0; row < height; row++)
+                    {
+                        for (int col = 0; col < width; col++)
+                        {
+                            var color = bmp.GetPixel(col, row);
+
+                            if (color.Red == backImageTransparentColor.Red && color.Green == backImageTransparentColor.Green && color.Blue == backImageTransparentColor.Blue)
+                            {
+                                bmp.SetPixel(col, row, color.WithAlpha(0x00));
+                            }
+                        }
+                    }
+                    using var bmp2 = new SKBitmap(bmp.Width, bmp.Height, bmp.ColorType, SKAlphaType.Premul);
+                    bmp.CopyTo(bmp2);
+                    image = SKImage.FromBitmap(bmp2);
+                }
+
+                // Draw scaled image
+                SKRect imageRect = new();
+                imageRect.Left = fillRect.Left;
+                imageRect.Top = fillRect.Top;
+                imageRect.Right = fillRect.Right;
+                imageRect.Bottom = fillRect.Bottom;
+
+                // Draw unscaled image using align property
+                if (backImageWrapMode == ChartImageWrapMode.Unscaled)
+                {
+                    SKSize imageAbsSize = new();
+
+                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageAbsSize);
+
+                    // Calculate image position
+                    imageRect.Size = new(imageAbsSize.Width, imageAbsSize.Height);
+
+                    // Adjust position with alignment property
+                    if (imageRect.Width < fillRect.Width)
+                    {
+                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
+                            backImageAlign == ChartImageAlignmentStyle.Right ||
+                            backImageAlign == ChartImageAlignmentStyle.TopRight)
+                        {
+                            imageRect.Left = fillRect.Right - imageRect.Width;
+                        }
+                        else if (backImageAlign == ChartImageAlignmentStyle.Bottom ||
+                            backImageAlign == ChartImageAlignmentStyle.Center ||
+                            backImageAlign == ChartImageAlignmentStyle.Top)
+                        {
+                            imageRect.Left = fillRect.Left + (fillRect.Width - imageRect.Width) / 2;
+                        }
+                    }
+                    if (imageRect.Height < fillRect.Height)
+                    {
+                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
+                            backImageAlign == ChartImageAlignmentStyle.Bottom ||
+                            backImageAlign == ChartImageAlignmentStyle.BottomLeft)
+                        {
+                            imageRect.Top = fillRect.Bottom - imageRect.Height;
+                        }
+                        else if (backImageAlign == ChartImageAlignmentStyle.Left ||
+                            backImageAlign == ChartImageAlignmentStyle.Center ||
+                            backImageAlign == ChartImageAlignmentStyle.Right)
+                        {
+                            imageRect.Top = fillRect.Top + (fillRect.Height - imageRect.Height) / 2;
+                        }
+                    }
+                }
+
+                // Fill background with brush
+                this.FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+
+                // Draw image
+                DrawImage(image,
+                    new SKRect((int)Math.Round(imageRect.Left), (int)Math.Round(imageRect.Top), (int)Math.Round(imageRect.Right), (int)Math.Round(imageRect.Bottom)),
+                    0, 0, image.Width, image.Height, null);
+            }
+            // Draw rectangle
+            else
+            {
+                if (backBrush != null && backImageTransparentColor != SKColor.Empty)
+                {
+                    // Fill background with brush
+                    this.FillRectangle(backBrush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+                }
+                this.FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+            }
+
+            // Set pen alignment
+            if (borderDashStyle != ChartDashStyle.NotSet)
+            {
+                if (borderWidth > 1)
+                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+                else if (borderWidth == 1)
+                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width, rect.Height);
+            }
+
+            // Dispose Image and Gradient
+            if (backGradientStyle != GradientStyle.None)
+            {
+                brush.Dispose();
+            }
+            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
+            {
+                brush.Dispose();
+            }
+            if (backHatchStyle != ChartHatchStyle.None)
+            {
+                brush.Dispose();
+            }
+
+            // Set Old Smoothing Mode
+            SmoothingMode = oldMode;
         }
 
         /// <summary>
@@ -3383,125 +4050,6 @@ namespace WebCharts.Services
 
             return path;
         }
-
-        /// <summary>
-        /// Fills and/or draws border as circle or polygon.
-        /// </summary>
-        /// <param name="pen">Border pen.</param>
-        /// <param name="brush">Border brush.</param>
-        /// <param name="position">Circle position.</param>
-        /// <param name="polygonSectorsNumber">Number of sectors for the polygon.</param>
-        /// <param name="circle3D">Indicates that circle should be 3D..</param>
-        internal void DrawCircleAbs(SKPaint pen, SKPaint brush, SKRect position, int polygonSectorsNumber, bool circle3D)
-        {
-            bool fill3DCircle = (circle3D && brush != null);
-
-            // Draw 2D circle
-            if (polygonSectorsNumber <= 2 && !fill3DCircle)
-            {
-                if (brush != null)
-                {
-                    FillEllipse(brush, position);
-                }
-                if (pen != null)
-                {
-                    DrawEllipse(pen, position);
-                }
-            }
-
-            // Draw circle as polygon with specified number of sectors
-            else
-            {
-                SKPoint firstPoint = new(position.Left + position.Width / 2f, position.Top);
-                SKPoint centerPoint = new(position.Left + position.Width / 2f, position.Left + position.Height / 2f);
-                float sectorSize = 0f;
-                SKPoint prevPoint = SKPoint.Empty;
-                float curentSector = 0f;
-
-                using SKPath path = new();
-                // Remember current smoothing mode
-                SmoothingMode oldMode = SmoothingMode;
-                if (fill3DCircle)
-                {
-                    SmoothingMode = SmoothingMode.None;
-                }
-
-                // Get sector size
-                if (polygonSectorsNumber <= 2)
-                {
-                    // Circle sector size
-                    sectorSize = 1f;
-                }
-                else
-                {
-                    // Polygon sector size
-                    sectorSize = 360f / ((float)polygonSectorsNumber);
-                }
-
-                // Loop throug all sectors
-                for (curentSector = 0f; curentSector < 360f; curentSector += sectorSize)
-                {
-                    // Create matrix
-                    SKMatrix matrix = SkiaSharpExtensions.CreateRotationDegrees(curentSector, centerPoint);
-
-                    // Get point and rotate it
-                    SKPoint[] points = new SKPoint[] { firstPoint };
-                    matrix.TransformPoints(points);
-
-                    // Add point into the path
-                    if (!prevPoint.IsEmpty)
-                    {
-                        path.AddLine(prevPoint, points[0]);
-
-                        // Fill each segment separatly for the 3D look
-                        if (fill3DCircle)
-                        {
-                            path.AddLine(points[0], centerPoint);
-                            path.AddLine(centerPoint, prevPoint);
-                            using (SKPaint sectorBrush = GetSector3DBrush(brush, curentSector, sectorSize))
-                            {
-                                this.FillPath(sectorBrush, path);
-                            }
-                            path.Reset();
-                        }
-                    }
-
-                    // Remember last point
-                    prevPoint = points[0];
-                }
-
-                path.Close();
-
-                // Fill last segment for the 3D look
-                if (!prevPoint.IsEmpty && fill3DCircle)
-                {
-                    path.AddLine(prevPoint, firstPoint);
-                    path.AddLine(firstPoint, centerPoint);
-                    path.AddLine(centerPoint, prevPoint);
-                    using (var sectorBrush = GetSector3DBrush(brush, curentSector, sectorSize))
-                    {
-                        this.FillPath(sectorBrush, path);
-                    }
-                    path.Reset();
-                }
-
-                // Restore old mode
-                if (fill3DCircle)
-                {
-                    SmoothingMode = oldMode;
-                }
-
-                if (brush != null && !circle3D)
-                {
-                    FillPath(brush, path);
-                }
-                if (pen != null)
-                {
-                    DrawPath(pen, path);
-                }
-            }
-        }
-
         /// <summary>
         /// Creates 3D sector brush.
         /// </summary>
@@ -3537,653 +4085,9 @@ namespace WebCharts.Services
             // Get brush
             return new SKPaint() { Style = SKPaintStyle.Fill, Color = brushColor };
         }
-
-        /// <summary>
-        /// This method creates gradient color with brightness
-        /// </summary>
-        /// <param name="beginColor">Start color for gradient.</param>
-        /// <param name="position">Position used between Start and end color.</param>
-        /// <returns>Calculated Gradient color from gradient position</returns>
-        internal static SKColor GetBrightGradientColor(SKColor beginColor, double position)
-        {
-            double brightness = 0.5;
-            if (position < brightness)
-            {
-                return GetGradientColor(new SKColor(255, 255, 255, beginColor.Alpha), beginColor, 1 - brightness + position);
-            }
-            else if (-brightness + position < 1)
-            {
-                return GetGradientColor(beginColor, SKColors.Black, -brightness + position);
-            }
-            else
-            {
-                return new(0, 0, 0, beginColor.Alpha);
-            }
-        }
-
-        /// <summary>
-        /// Draw Rectangle using absolute coordinates.
-        /// </summary>
-        /// <param name="rect">Size of rectangle</param>
-        /// <param name="backColor">Color of rectangle</param>
-        /// <param name="backHatchStyle">Hatch Style</param>
-        /// <param name="backImage">Image URL</param>
-        /// <param name="backImageWrapMode">Image Mode</param>
-        /// <param name="backImageTransparentColor">Image transparent color.</param>
-        /// <param name="backImageAlign">Image alignment.</param>
-        /// <param name="backGradientStyle">Gradient AxisName</param>
-        /// <param name="backSecondaryColor">End Gradient color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        /// <param name="penAlignment">Border is outside or inside rectangle</param>
-        internal void FillRectangleAbs(SKRect rect,
-            SKColor backColor,
-            ChartHatchStyle backHatchStyle,
-            string backImage,
-            ChartImageWrapMode backImageWrapMode,
-            SKColor backImageTransparentColor,
-            ChartImageAlignmentStyle backImageAlign,
-            GradientStyle backGradientStyle,
-            SKColor backSecondaryColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle,
-            PenAlignment penAlignment)
-        {
-            SKPaint brush = null;
-            SKPaint backBrush = null;
-
-            // Turn off Antialias
-            SmoothingMode oldMode = SmoothingMode;
-            SmoothingMode = SmoothingMode.None;
-
-            // Color is empty
-            if (backColor == SKColor.Empty)
-                backColor = SKColors.White;
-
-            if (backSecondaryColor == SKColor.Empty)
-                backSecondaryColor = SKColors.White;
-
-            if (borderColor == SKColor.Empty)
-            {
-                borderColor = SKColors.White;
-                borderWidth = 0;
-            }
-
-            // Set a border line color
-            _pen.Color = borderColor;
-
-            // Set a border line width
-            _pen.StrokeWidth = borderWidth;
-
-            // Set pen alignment
-            //_pen.Alignment = penAlignment;
-
-            // Set a border line style
-            _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
-
-            if (backGradientStyle == GradientStyle.None)
-            {
-                // Set a bar color.
-                _solidBrush.Color = backColor;
-                brush = _solidBrush;
-            }
-            else
-            {
-                // If a gradient type  is set create a brush with gradient
-                brush = GetGradientBrush(rect, backColor, backSecondaryColor, backGradientStyle);
-            }
-
-            if (backHatchStyle != ChartHatchStyle.None)
-            {
-                brush = GetHatchBrush(backHatchStyle, backColor, backSecondaryColor);
-            }
-
-            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
-            {
-                backBrush = brush;
-                brush = GetTextureBrush(backImage, backImageTransparentColor, backImageWrapMode, backColor);
-            }
-
-            // For inset alignment resize fill rectangle
-            SKRect fillRect;
-
-            // The fill rectangle is same
-            fillRect = new SKRect(rect.Left + borderWidth, rect.Top + borderWidth, rect.Width - borderWidth * 2, rect.Height - borderWidth * 2);
-
-            // FillRectangle and DrawRectangle works differently with SKRect.
-            fillRect.Right += 1;
-            fillRect.Bottom += 1;
-
-            // Draw rectangle image
-            if (backImage.Length > 0 && (backImageWrapMode == ChartImageWrapMode.Unscaled || backImageWrapMode == ChartImageWrapMode.Scaled))
-            {
-                // Load image
-                SKImage image = _common.ImageLoader.LoadImage(backImage);
-
-                // Prepare image properties (transparent color)
-                if (backImageTransparentColor != SKColor.Empty)
-                {
-                    using var bmp = SKBitmap.FromImage(image);
-                    // loop trough every pixel and set alpha if equal to transparent color
-                    int width = bmp.Width;
-                    int height = bmp.Height;
-                    for (int row = 0; row < height; row++)
-                    {
-                        for (int col = 0; col < width; col++)
-                        {
-                            var color = bmp.GetPixel(col, row);
-
-                            if (color.Red == backImageTransparentColor.Red && color.Green == backImageTransparentColor.Green && color.Blue == backImageTransparentColor.Blue)
-                            {
-                                bmp.SetPixel(col, row, color.WithAlpha(0x00));
-                            }
-                        }
-                    }
-                    using var bmp2 = new SKBitmap(bmp.Width, bmp.Height, bmp.ColorType, SKAlphaType.Premul);
-                    bmp.CopyTo(bmp2);
-                    image = SKImage.FromBitmap(bmp2);
-                }
-
-                // Draw scaled image
-                SKRect imageRect = new();
-                imageRect.Left = fillRect.Left;
-                imageRect.Top = fillRect.Top;
-                imageRect.Right = fillRect.Right;
-                imageRect.Bottom = fillRect.Bottom;
-
-                // Draw unscaled image using align property
-                if (backImageWrapMode == ChartImageWrapMode.Unscaled)
-                {
-                    SKSize imageAbsSize = new();
-
-                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageAbsSize);
-
-                    // Calculate image position
-                    imageRect.Size = new(imageAbsSize.Width, imageAbsSize.Height);
-
-                    // Adjust position with alignment property
-                    if (imageRect.Width < fillRect.Width)
-                    {
-                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
-                            backImageAlign == ChartImageAlignmentStyle.Right ||
-                            backImageAlign == ChartImageAlignmentStyle.TopRight)
-                        {
-                            imageRect.Left = fillRect.Right - imageRect.Width;
-                        }
-                        else if (backImageAlign == ChartImageAlignmentStyle.Bottom ||
-                            backImageAlign == ChartImageAlignmentStyle.Center ||
-                            backImageAlign == ChartImageAlignmentStyle.Top)
-                        {
-                            imageRect.Left = fillRect.Left + (fillRect.Width - imageRect.Width) / 2;
-                        }
-                    }
-                    if (imageRect.Height < fillRect.Height)
-                    {
-                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
-                            backImageAlign == ChartImageAlignmentStyle.Bottom ||
-                            backImageAlign == ChartImageAlignmentStyle.BottomLeft)
-                        {
-                            imageRect.Top = fillRect.Bottom - imageRect.Height;
-                        }
-                        else if (backImageAlign == ChartImageAlignmentStyle.Left ||
-                            backImageAlign == ChartImageAlignmentStyle.Center ||
-                            backImageAlign == ChartImageAlignmentStyle.Right)
-                        {
-                            imageRect.Top = fillRect.Top + (fillRect.Height - imageRect.Height) / 2;
-                        }
-                    }
-                }
-
-                // Fill background with brush
-                this.FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
-
-                // Draw image
-                DrawImage(image,
-                    new SKRect((int)Math.Round(imageRect.Left), (int)Math.Round(imageRect.Top), (int)Math.Round(imageRect.Right), (int)Math.Round(imageRect.Bottom)),
-                    0, 0, image.Width, image.Height, null);
-            }
-            // Draw rectangle
-            else
-            {
-                if (backBrush != null && backImageTransparentColor != SKColor.Empty)
-                {
-                    // Fill background with brush
-                    this.FillRectangle(backBrush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
-                }
-                this.FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
-            }
-
-            // Set pen alignment
-            if (borderDashStyle != ChartDashStyle.NotSet)
-            {
-                if (borderWidth > 1)
-                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
-                else if (borderWidth == 1)
-                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width, rect.Height);
-            }
-
-            // Dispose Image and Gradient
-            if (backGradientStyle != GradientStyle.None)
-            {
-                brush.Dispose();
-            }
-            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
-            {
-                brush.Dispose();
-            }
-            if (backHatchStyle != ChartHatchStyle.None)
-            {
-                brush.Dispose();
-            }
-
-            // Set Old Smoothing Mode
-            SmoothingMode = oldMode;
-        }
-
-        /// <summary>
-        /// Fills graphics path with shadow using absolute coordinates.
-        /// </summary>
-        /// <param name="path">Graphics path to fill.</param>
-        /// <param name="backColor">Color of rectangle</param>
-        /// <param name="backHatchStyle">Hatch Style</param>
-        /// <param name="backImage">Image URL</param>
-        /// <param name="backImageWrapMode">Image Mode</param>
-        /// <param name="backImageTransparentColor">Image transparent color.</param>
-        /// <param name="backImageAlign">Image alignment.</param>
-        /// <param name="backGradientStyle">Gradient AxisName</param>
-        /// <param name="backSecondaryColor">End Gradient color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        /// <param name="penAlignment">Border is outside or inside rectangle</param>
-        /// <param name="shadowOffset">Shadow offset.</param>
-        /// <param name="shadowColor">Shadow color.</param>
-        internal void DrawPathAbs(
-            SKPath path,
-            SKColor backColor,
-            ChartHatchStyle backHatchStyle,
-            string backImage,
-            ChartImageWrapMode backImageWrapMode,
-            SKColor backImageTransparentColor,
-            ChartImageAlignmentStyle backImageAlign,
-            GradientStyle backGradientStyle,
-            SKColor backSecondaryColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle,
-            PenAlignment penAlignment,
-            int shadowOffset,
-            SKColor shadowColor)
-        {
-            // Draw patj shadow
-            if (shadowOffset != 0 && shadowColor != SKColors.Transparent)
-            {
-                // Save graphics state and apply translate transformation
-                TranslateTransform(shadowOffset, shadowOffset);
-
-                if (backColor == SKColors.Transparent &&
-                    backSecondaryColor == SKColor.Empty)
-                {
-                    this.DrawPathAbs(
-                        path,
-                        SKColors.Transparent,
-                        ChartHatchStyle.None,
-                        String.Empty,
-                        ChartImageWrapMode.Scaled,
-                        SKColor.Empty,
-                        ChartImageAlignmentStyle.Center,
-                        GradientStyle.None,
-                        SKColor.Empty,
-                        shadowColor,
-                        borderWidth,
-                        borderDashStyle,
-                        PenAlignment.Center);
-                }
-                else
-                {
-                    this.DrawPathAbs(
-                        path,
-                        shadowColor,
-                        ChartHatchStyle.None,
-                        String.Empty,
-                        ChartImageWrapMode.Scaled,
-                        SKColor.Empty,
-                        ChartImageAlignmentStyle.Center,
-                        GradientStyle.None,
-                        SKColor.Empty,
-                        SKColors.Transparent,
-                        0,
-                        ChartDashStyle.NotSet,
-                        PenAlignment.Center);
-                }
-            }
-
-            // Draw path
-            DrawPathAbs(
-                path,
-                backColor,
-                backHatchStyle,
-                backImage,
-                backImageWrapMode,
-                backImageTransparentColor,
-                backImageAlign,
-                backGradientStyle,
-                backSecondaryColor,
-                borderColor,
-                borderWidth,
-                borderDashStyle,
-                penAlignment);
-        }
-
-        /// <summary>
-        /// Fills graphics path using absolute coordinates.
-        /// </summary>
-        /// <param name="path">Graphics path to fill.</param>
-        /// <param name="backColor">Color of rectangle</param>
-        /// <param name="backHatchStyle">Hatch Style</param>
-        /// <param name="backImage">Image URL</param>
-        /// <param name="backImageWrapMode">Image Mode</param>
-        /// <param name="backImageTransparentColor">Image transparent color.</param>
-        /// <param name="backImageAlign">Image alignment.</param>
-        /// <param name="backGradientStyle">Gradient AxisName</param>
-        /// <param name="backSecondaryColor">End Gradient color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        /// <param name="penAlignment">Border is outside or inside rectangle</param>
-        internal void DrawPathAbs(SKPath path,
-            SKColor backColor,
-            ChartHatchStyle backHatchStyle,
-            string backImage,
-            ChartImageWrapMode backImageWrapMode,
-            SKColor backImageTransparentColor,
-            ChartImageAlignmentStyle backImageAlign,
-            GradientStyle backGradientStyle,
-            SKColor backSecondaryColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle,
-            PenAlignment penAlignment)
-        {
-            SKPaint brush = null;
-            SKPaint backBrush = null;
-
-            // Color is empty
-            if (backColor == SKColor.Empty)
-                backColor = SKColors.White;
-
-            if (backSecondaryColor == SKColor.Empty)
-                backSecondaryColor = SKColors.White;
-
-            if (borderColor == SKColor.Empty)
-            {
-                borderColor = SKColors.White;
-                borderWidth = 0;
-            }
-
-            // Set pen properties
-            _pen.Color = borderColor;
-            _pen.StrokeWidth = borderWidth;
-            // _pen.Alignment = penAlignment;
-            _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
-
-            if (backGradientStyle == GradientStyle.None)
-            {
-                // Set solid brush color.
-                _solidBrush.Color = backColor;
-                brush = _solidBrush;
-            }
-            else
-            {
-                // If a gradient type  is set create a brush with gradient
-                SKRect pathRect = path.GetBounds();
-                pathRect.Inflate(new SKSize(2, 2));
-                brush = GetGradientBrush(
-                    pathRect,
-                    backColor,
-                    backSecondaryColor,
-                    backGradientStyle);
-            }
-
-            if (backHatchStyle != ChartHatchStyle.None)
-            {
-                brush = GetHatchBrush(backHatchStyle, backColor, backSecondaryColor);
-            }
-
-            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
-            {
-                backBrush = brush;
-                brush = GetTextureBrush(backImage, backImageTransparentColor, backImageWrapMode, backColor);
-            }
-
-            // For inset alignment resize fill rectangle
-            SKRect fillRect = path.GetBounds();
-
-            // Draw rectangle image
-            if (backImage.Length > 0 && (backImageWrapMode == ChartImageWrapMode.Unscaled || backImageWrapMode == ChartImageWrapMode.Scaled))
-            {
-                // Load image
-                SKImage image = _common.ImageLoader.LoadImage(backImage);
-
-                // Prepare image properties (transparent color)
-                if (backImageTransparentColor != SKColor.Empty)
-                {
-                    using var bmp = SKBitmap.FromImage(image);
-                    // loop trough every pixel and set alpha if equal to transparent color
-                    int width = bmp.Width;
-                    int height = bmp.Height;
-                    for (int row = 0; row < height; row++)
-                    {
-                        for (int col = 0; col < width; col++)
-                        {
-                            var color = bmp.GetPixel(col, row);
-
-                            if (color.Red == backImageTransparentColor.Red && color.Green == backImageTransparentColor.Green && color.Blue == backImageTransparentColor.Blue)
-                            {
-                                bmp.SetPixel(col, row, color.WithAlpha(0x00));
-                            }
-                        }
-                    }
-                    using var bmp2 = new SKBitmap(bmp.Width, bmp.Height, bmp.ColorType, SKAlphaType.Premul);
-                    bmp.CopyTo(bmp2);
-                    image = SKImage.FromBitmap(bmp2);
-                }
-
-                // Draw scaled image
-                SKRect imageRect = new();
-                imageRect.Left = fillRect.Left;
-                imageRect.Top = fillRect.Top;
-                imageRect.Right = fillRect.Right;
-                imageRect.Bottom = fillRect.Bottom;
-
-                // Draw unscaled image using align property
-                if (backImageWrapMode == ChartImageWrapMode.Unscaled)
-                {
-                    SKSize imageSize = new SKSize();
-
-                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageSize);
-
-                    // Calculate image position
-                    imageRect.Size = new(imageSize.Width, imageSize.Height);
-
-                    // Adjust position with alignment property
-                    if (imageRect.Width < fillRect.Width)
-                    {
-                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
-                            backImageAlign == ChartImageAlignmentStyle.Right ||
-                            backImageAlign == ChartImageAlignmentStyle.TopRight)
-                        {
-                            imageRect.Left = fillRect.Right - imageRect.Width;
-                        }
-                        else if (backImageAlign == ChartImageAlignmentStyle.Bottom ||
-                            backImageAlign == ChartImageAlignmentStyle.Center ||
-                            backImageAlign == ChartImageAlignmentStyle.Top)
-                        {
-                            imageRect.Left = fillRect.Left + (fillRect.Width - imageRect.Width) / 2;
-                        }
-                    }
-                    if (imageRect.Height < fillRect.Height)
-                    {
-                        if (backImageAlign == ChartImageAlignmentStyle.BottomRight ||
-                            backImageAlign == ChartImageAlignmentStyle.Bottom ||
-                            backImageAlign == ChartImageAlignmentStyle.BottomLeft)
-                        {
-                            imageRect.Top = fillRect.Bottom - imageRect.Height;
-                        }
-                        else if (backImageAlign == ChartImageAlignmentStyle.Left ||
-                            backImageAlign == ChartImageAlignmentStyle.Center ||
-                            backImageAlign == ChartImageAlignmentStyle.Right)
-                        {
-                            imageRect.Top = fillRect.Top + (fillRect.Height - imageRect.Height) / 2;
-                        }
-                    }
-                }
-
-                // Fill background with brush
-                this.FillPath(brush, path);
-
-                // Draw image
-                SKRegion oldClipRegion = Clip;
-                Clip = new SKRegion(path);
-                this.DrawImage(image,
-                    new SKRect((int)Math.Round(imageRect.Left), (int)Math.Round(imageRect.Top), (int)Math.Round(imageRect.Width), (int)Math.Round(imageRect.Height)),
-                    0, 0, image.Width, image.Height, null);
-                Clip = oldClipRegion;
-            }
-
-            // Draw rectangle
-            else
-            {
-                if (backBrush != null && backImageTransparentColor != SKColor.Empty)
-                {
-                    // Fill background with brush
-                    this.FillPath(backBrush, path);
-                }
-                this.FillPath(brush, path);
-            }
-
-            // Draw border
-            if (borderColor != SKColor.Empty && borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet)
-            {
-                DrawPath(_pen, path);
-            }
-        }
-
-        /// <summary>
-        /// Creates brush with specified properties.
-        /// </summary>
-        /// <param name="rect">Gradient rectangle</param>
-        /// <param name="backColor">Color of rectangle</param>
-        /// <param name="backHatchStyle">Hatch style</param>
-        /// <param name="backImage">Back Image</param>
-        /// <param name="backImageWrapMode">Image mode</param>
-        /// <param name="backImageTransparentColor">Image transparent color.</param>
-        /// <param name="backGradientStyle">Gradient type </param>
-        /// <param name="backSecondaryColor">Gradient End Color</param>
-        /// <returns>New brush object.</returns>
-        internal SKPaint CreateBrush(
-            SKRect rect,
-            SKColor backColor,
-            ChartHatchStyle backHatchStyle,
-            string backImage,
-            ChartImageWrapMode backImageWrapMode,
-            SKColor backImageTransparentColor,
-            GradientStyle backGradientStyle,
-            SKColor backSecondaryColor
-            )
-        {
-            SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = backColor };
-
-            if (backImage.Length > 0 && backImageWrapMode != ChartImageWrapMode.Unscaled && backImageWrapMode != ChartImageWrapMode.Scaled)
-            {
-                brush = GetTextureBrush(backImage, backImageTransparentColor, backImageWrapMode, backColor);
-            }
-            else if (backHatchStyle != ChartHatchStyle.None)
-            {
-                brush = GetHatchBrush(backHatchStyle, backColor, backSecondaryColor);
-            }
-            else if (backGradientStyle != GradientStyle.None)
-            {
-                // If a gradient type  is set create a brush with gradient
-                brush = GetGradientBrush(rect, backColor, backSecondaryColor, backGradientStyle);
-            }
-
-            return brush;
-        }
-
         #endregion Rectangle Methods
 
         #region Coordinates converter
-
-        /// <summary>
-        /// This method takes a SKRect structure that is using absolute coordinates
-        /// and returns a SKRect object that uses relative coordinates.
-        /// </summary>
-        /// <param name="rectangle">SKRect structure in absolute coordinates.</param>
-        /// <returns>SKRect structure in relative coordinates.</returns>
-        public SKRect GetRelativeRectangle(SKRect rectangle)
-        {
-            // Check arguments
-            if (rectangle == SKRect.Empty)
-                throw new ArgumentNullException(nameof(rectangle));
-
-            SKRect relative = SKRect.Empty;
-
-            // Convert absolute coordinates to relative coordinates
-            relative.Left = rectangle.Left * 100F / (_width - 1);
-            relative.Top = rectangle.Top * 100F / (_height - 1);
-            relative.Right = relative.Left + rectangle.Width * 100F / (_width - 1);
-            relative.Bottom = relative.Top + rectangle.Height * 100F / (_height - 1);
-
-            // Return Relative coordinates
-            return relative;
-        }
-
-        /// <summary>
-        /// This method takes a SKPoint object that is using absolute coordinates
-        /// and returns a SKPoint object that uses relative coordinates.
-        /// </summary>
-        /// <param name="point">SKPoint object in absolute coordinates.</param>
-        /// <returns>SKPoint object in relative coordinates.</returns>
-        public SKPoint GetRelativePoint(SKPoint point)
-        {
-            // Check arguments
-            if (point == SKPoint.Empty)
-                throw new ArgumentNullException(nameof(point));
-
-            SKPoint relative = SKPoint.Empty;
-
-            // Convert absolute coordinates to relative coordinates
-            relative.X = point.X * 100F / (_width - 1);
-            relative.Y = point.Y * 100F / (_height - 1);
-
-            // Return Relative coordinates
-            return relative;
-        }
-
-        /// <summary>
-        /// This method takes a SKSize object that uses absolute coordinates
-        /// and returns a SKSize object that uses relative coordinates.
-        /// </summary>
-        /// <param name="size">SKSize object in absolute coordinates.</param>
-        /// <returns>SKSize object in relative coordinates.</returns>
-        public SKSize GetRelativeSize(SKSize size)
-        {
-            // Check arguments
-            if (size == SKSize.Empty)
-                throw new ArgumentNullException(nameof(size));
-
-            SKSize relative = SKSize.Empty;
-
-            // Convert absolute coordinates to relative coordinates
-            relative.Width = size.Width * 100F / (_width - 1);
-            relative.Height = size.Height * 100F / (_height - 1);
-
-            // Return relative coordinates
-            return relative;
-        }
 
         /// <summary>
         /// This method takes a SKPoint object and converts its relative coordinates
@@ -4249,6 +4153,72 @@ namespace WebCharts.Services
             return absolute;
         }
 
+        /// <summary>
+        /// This method takes a SKPoint object that is using absolute coordinates
+        /// and returns a SKPoint object that uses relative coordinates.
+        /// </summary>
+        /// <param name="point">SKPoint object in absolute coordinates.</param>
+        /// <returns>SKPoint object in relative coordinates.</returns>
+        public SKPoint GetRelativePoint(SKPoint point)
+        {
+            // Check arguments
+            if (point == SKPoint.Empty)
+                throw new ArgumentNullException(nameof(point));
+
+            SKPoint relative = SKPoint.Empty;
+
+            // Convert absolute coordinates to relative coordinates
+            relative.X = point.X * 100F / (_width - 1);
+            relative.Y = point.Y * 100F / (_height - 1);
+
+            // Return Relative coordinates
+            return relative;
+        }
+
+        /// <summary>
+        /// This method takes a SKRect structure that is using absolute coordinates
+        /// and returns a SKRect object that uses relative coordinates.
+        /// </summary>
+        /// <param name="rectangle">SKRect structure in absolute coordinates.</param>
+        /// <returns>SKRect structure in relative coordinates.</returns>
+        public SKRect GetRelativeRectangle(SKRect rectangle)
+        {
+            // Check arguments
+            if (rectangle == SKRect.Empty)
+                throw new ArgumentNullException(nameof(rectangle));
+
+            SKRect relative = SKRect.Empty;
+
+            // Convert absolute coordinates to relative coordinates
+            relative.Left = rectangle.Left * 100F / (_width - 1);
+            relative.Top = rectangle.Top * 100F / (_height - 1);
+            relative.Right = relative.Left + rectangle.Width * 100F / (_width - 1);
+            relative.Bottom = relative.Top + rectangle.Height * 100F / (_height - 1);
+
+            // Return Relative coordinates
+            return relative;
+        }
+        /// <summary>
+        /// This method takes a SKSize object that uses absolute coordinates
+        /// and returns a SKSize object that uses relative coordinates.
+        /// </summary>
+        /// <param name="size">SKSize object in absolute coordinates.</param>
+        /// <returns>SKSize object in relative coordinates.</returns>
+        public SKSize GetRelativeSize(SKSize size)
+        {
+            // Check arguments
+            if (size == SKSize.Empty)
+                throw new ArgumentNullException(nameof(size));
+
+            SKSize relative = SKSize.Empty;
+
+            // Convert absolute coordinates to relative coordinates
+            relative.Width = size.Width * 100F / (_width - 1);
+            relative.Height = size.Height * 100F / (_height - 1);
+
+            // Return relative coordinates
+            return relative;
+        }
         #endregion Coordinates converter
 
         #region Border drawing helper methods
@@ -4273,72 +4243,6 @@ namespace WebCharts.Services
             path.AddArc(new SKRect(rect.Left, rect.Top, rect.Left + 2f * cornerRadius[0], rect.Left + 2f * cornerRadius[7]), 180, 90);
 
             return path;
-        }
-
-        /// <summary>
-        /// Helper function which draws a shadow of the rounded rect.
-        /// </summary>
-        /// <param name="rect">Rectangle coordinates.</param>
-        /// <param name="cornerRadius">Array of 4 corners radius.</param>
-        /// <param name="radius">Rounding radius.</param>
-        /// <param name="centerColor">Center color.</param>
-        /// <param name="surroundColor">Surrounding color.</param>
-        /// <param name="shadowScale">Shadow scale value.</param>
-        internal void DrawRoundedRectShadowAbs(SKRect rect, float[] cornerRadius, float radius, SKColor centerColor, SKColor surroundColor, float shadowScale)
-        {
-            // Create rounded rectangle path
-            SKPath path = CreateRoundedRectPath(rect, cornerRadius);
-
-            // Create gradient brush
-            SKPaint shadowBrush = new();
-            shadowBrush.ImageFilter = SKImageFilter.CreateDropShadowOnly(
-                rect.Left + rect.Width / 2f, rect.Top + rect.Height / 2f,
-                radius, radius,
-                centerColor);
-
-            // Draw rounded rectangle
-            FillPath(shadowBrush, path);
-
-            if (path != null)
-            {
-                path.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// Draws 3D border in absolute coordinates.
-        /// </summary>
-        /// <param name="borderSkin">Border skin object.</param>
-        /// <param name="rect">Rectangle of the border (pixel coordinates).</param>
-        /// <param name="backColor">Color of rectangle</param>
-        /// <param name="backHatchStyle">Hatch style</param>
-        /// <param name="backImage">Back Image</param>
-        /// <param name="backImageWrapMode">Image mode</param>
-        /// <param name="backImageTransparentColor">Image transparent color.</param>
-        /// <param name="backImageAlign">Image alignment</param>
-        /// <param name="backGradientStyle">Gradient type </param>
-        /// <param name="backSecondaryColor">Gradient End Color</param>
-        /// <param name="borderColor">Border Color</param>
-        /// <param name="borderWidth">Border Width</param>
-        /// <param name="borderDashStyle">Border Style</param>
-        internal void Draw3DBorderRel(
-            BorderSkin borderSkin,
-            SKRect rect,
-            SKColor backColor,
-            ChartHatchStyle backHatchStyle,
-            string backImage,
-            ChartImageWrapMode backImageWrapMode,
-            SKColor backImageTransparentColor,
-            ChartImageAlignmentStyle backImageAlign,
-            GradientStyle backGradientStyle,
-            SKColor backSecondaryColor,
-            SKColor borderColor,
-            int borderWidth,
-            ChartDashStyle borderDashStyle)
-        {
-            Draw3DBorderAbs(borderSkin, GetAbsoluteRectangle(rect), backColor, backHatchStyle,
-                backImage, backImageWrapMode, backImageTransparentColor, backImageAlign, backGradientStyle,
-                backSecondaryColor, borderColor, borderWidth, borderDashStyle);
         }
 
         /// <summary>
@@ -4390,6 +4294,71 @@ namespace WebCharts.Services
             }
         }
 
+        /// <summary>
+        /// Draws 3D border in absolute coordinates.
+        /// </summary>
+        /// <param name="borderSkin">Border skin object.</param>
+        /// <param name="rect">Rectangle of the border (pixel coordinates).</param>
+        /// <param name="backColor">Color of rectangle</param>
+        /// <param name="backHatchStyle">Hatch style</param>
+        /// <param name="backImage">Back Image</param>
+        /// <param name="backImageWrapMode">Image mode</param>
+        /// <param name="backImageTransparentColor">Image transparent color.</param>
+        /// <param name="backImageAlign">Image alignment</param>
+        /// <param name="backGradientStyle">Gradient type </param>
+        /// <param name="backSecondaryColor">Gradient End Color</param>
+        /// <param name="borderColor">Border Color</param>
+        /// <param name="borderWidth">Border Width</param>
+        /// <param name="borderDashStyle">Border Style</param>
+        internal void Draw3DBorderRel(
+            BorderSkin borderSkin,
+            SKRect rect,
+            SKColor backColor,
+            ChartHatchStyle backHatchStyle,
+            string backImage,
+            ChartImageWrapMode backImageWrapMode,
+            SKColor backImageTransparentColor,
+            ChartImageAlignmentStyle backImageAlign,
+            GradientStyle backGradientStyle,
+            SKColor backSecondaryColor,
+            SKColor borderColor,
+            int borderWidth,
+            ChartDashStyle borderDashStyle)
+        {
+            Draw3DBorderAbs(borderSkin, GetAbsoluteRectangle(rect), backColor, backHatchStyle,
+                backImage, backImageWrapMode, backImageTransparentColor, backImageAlign, backGradientStyle,
+                backSecondaryColor, borderColor, borderWidth, borderDashStyle);
+        }
+
+        /// <summary>
+        /// Helper function which draws a shadow of the rounded rect.
+        /// </summary>
+        /// <param name="rect">Rectangle coordinates.</param>
+        /// <param name="cornerRadius">Array of 4 corners radius.</param>
+        /// <param name="radius">Rounding radius.</param>
+        /// <param name="centerColor">Center color.</param>
+        /// <param name="surroundColor">Surrounding color.</param>
+        /// <param name="shadowScale">Shadow scale value.</param>
+        internal void DrawRoundedRectShadowAbs(SKRect rect, float[] cornerRadius, float radius, SKColor centerColor, SKColor surroundColor, float shadowScale)
+        {
+            // Create rounded rectangle path
+            SKPath path = CreateRoundedRectPath(rect, cornerRadius);
+
+            // Create gradient brush
+            SKPaint shadowBrush = new();
+            shadowBrush.ImageFilter = SKImageFilter.CreateDropShadowOnly(
+                rect.Left + rect.Width / 2f, rect.Top + rect.Height / 2f,
+                radius, radius,
+                centerColor);
+
+            // Draw rounded rectangle
+            FillPath(shadowBrush, path);
+
+            if (path != null)
+            {
+                path.Dispose();
+            }
+        }
         #endregion Border drawing helper methods
 
         #region Pie Method
@@ -4604,40 +4573,38 @@ namespace WebCharts.Services
                 // Create brush path
                 SKRect gradientPath = position;
                 gradientPath.Inflate(-shadowSize, -shadowSize);
-                using (SKPath brushPath = new())
+                using SKPath brushPath = new();
+                brushPath.AddOval(gradientPath);
+
+                // Create shadow path
+                using SKPath path = new();
+                if (doughnutRadius < 0f)
                 {
-                    brushPath.AddOval(gradientPath);
-
-                    // Create shadow path
-                    using SKPath path = new();
-                    if (doughnutRadius < 0f)
-                    {
-                        path.AddArc(gradientPath.Round(), startAngle, sweepAngle);
-                    }
-                    else
-                    {
-                        path.AddArc(new SKRect(
-                            gradientPath.Left + position.Width * doughnutRadius / 200 - 1 - shadowSize,
-                            gradientPath.Top + position.Height * doughnutRadius / 200 - 1 - shadowSize,
-                            gradientPath.Width - position.Width * doughnutRadius / 100 + 2 + 2f * shadowSize,
-                            gradientPath.Height - position.Height * doughnutRadius / 100 + 2 + 2f * shadowSize),
-                            startAngle,
-                            sweepAngle);
-                        path.AddArc(new SKRect(gradientPath.Left, gradientPath.Top, gradientPath.Width, gradientPath.Height), startAngle + sweepAngle, -sweepAngle);
-                    }
-
-                    // Create linear gradient brush
-                    gradientPath.Inflate(1f, 1f);
-                    using SKPaint brush = new() { Style = SKPaintStyle.Fill };
-                    brush.Shader = SKShader.CreateLinearGradient(
-                        gradientPath.Location, gradientPath.Location + gradientPath.Size,
-                        new SKColor[] { SKColors.Black, SKColors.Transparent, SKColors.White },
-                         SKShaderTileMode.Clamp
-                        );
-
-                    // Fill shadow
-                    this.FillPath(brush, path);
+                    path.AddArc(gradientPath.Round(), startAngle, sweepAngle);
                 }
+                else
+                {
+                    path.AddArc(new SKRect(
+                        gradientPath.Left + position.Width * doughnutRadius / 200 - 1 - shadowSize,
+                        gradientPath.Top + position.Height * doughnutRadius / 200 - 1 - shadowSize,
+                        gradientPath.Width - position.Width * doughnutRadius / 100 + 2 + 2f * shadowSize,
+                        gradientPath.Height - position.Height * doughnutRadius / 100 + 2 + 2f * shadowSize),
+                        startAngle,
+                        sweepAngle);
+                    path.AddArc(new SKRect(gradientPath.Left, gradientPath.Top, gradientPath.Width, gradientPath.Height), startAngle + sweepAngle, -sweepAngle);
+                }
+
+                // Create linear gradient brush
+                gradientPath.Inflate(1f, 1f);
+                using SKPaint brush = new() { Style = SKPaintStyle.Fill };
+                brush.Shader = SKShader.CreateLinearGradient(
+                    gradientPath.Location, gradientPath.Location + gradientPath.Size,
+                    new SKColor[] { SKColors.Black, SKColors.Transparent, SKColors.White },
+                     SKShaderTileMode.Clamp
+                    );
+
+                // Fill shadow
+                this.FillPath(brush, path);
             }
             else if (pieDrawingStyle == PieDrawingStyle.SoftEdge)
             {
@@ -4683,23 +4650,21 @@ namespace WebCharts.Services
                     brushInsidePath.AddOval(innerPosition);
 
                     // Create shadow path
-                    using (SKPath path = new())
-                    {
-                        path.AddArc(new SKRect(innerPosition.Left + shadowSize, innerPosition.Top + shadowSize, innerPosition.Width - 2f * shadowSize, innerPosition.Height - 2f * shadowSize), startAngle, sweepAngle);
-                        path.AddArc(new SKRect(innerPosition.Left, innerPosition.Top, innerPosition.Width, innerPosition.Height), startAngle + sweepAngle, -sweepAngle);
-                        path.Close();
+                    using SKPath path = new();
+                    path.AddArc(new SKRect(innerPosition.Left + shadowSize, innerPosition.Top + shadowSize, innerPosition.Width - 2f * shadowSize, innerPosition.Height - 2f * shadowSize), startAngle, sweepAngle);
+                    path.AddArc(new SKRect(innerPosition.Left, innerPosition.Top, innerPosition.Width, innerPosition.Height), startAngle + sweepAngle, -sweepAngle);
+                    path.Close();
 
-                        // Create shadow brush
-                        using SKPaint brushInner = new() { Style = SKPaintStyle.Fill };
-                        brushInner.Shader = SKShader.CreateLinearGradient(
-                             innerPosition.Location, innerPosition.Location + innerPosition.Size,
-                            new SKColor[] { Color.FromArgb(100, SKColors.Black), SKColors.Transparent, Color.FromArgb(100, SKColors.Black) },
-                            SKShaderTileMode.Clamp
-                            );
+                    // Create shadow brush
+                    using SKPaint brushInner = new() { Style = SKPaintStyle.Fill };
+                    brushInner.Shader = SKShader.CreateLinearGradient(
+                         innerPosition.Location, innerPosition.Location + innerPosition.Size,
+                        new SKColor[] { Color.FromArgb(100, SKColors.Black), SKColors.Transparent, Color.FromArgb(100, SKColors.Black) },
+                        SKShaderTileMode.Clamp
+                        );
 
-                        // Fill shadow
-                        FillPath(brushInner, path);
-                    }
+                    // Fill shadow
+                    FillPath(brushInner, path);
                 }
             }
         }
@@ -4933,96 +4898,6 @@ namespace WebCharts.Services
         #region Other methods and properties
 
         /// <summary>
-        /// Helper function that retrieves bar drawing style.
-        /// </summary>
-        /// <param name="point">Data point to get the drawing style for.</param>
-        /// <returns>Bar drawing style.</returns>
-        internal static BarDrawingStyle GetBarDrawingStyle(DataPoint point)
-        {
-            // Get column drawing style
-            BarDrawingStyle barDrawingStyle = BarDrawingStyle.Default;
-            string styleName = point[CustomPropertyName.DrawingStyle];
-            if (styleName != null)
-            {
-                if (string.Compare(styleName, "Default", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    barDrawingStyle = BarDrawingStyle.Default;
-                }
-                else if (string.Compare(styleName, "Cylinder", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    barDrawingStyle = BarDrawingStyle.Cylinder;
-                }
-                else if (string.Compare(styleName, "Emboss", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    barDrawingStyle = BarDrawingStyle.Emboss;
-                }
-                else if (string.Compare(styleName, "LightToDark", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    barDrawingStyle = BarDrawingStyle.LightToDark;
-                }
-                else if (string.Compare(styleName, "Wedge", StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    barDrawingStyle = BarDrawingStyle.Wedge;
-                }
-                else
-                {
-                    throw new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(styleName, "DrawingStyle"));
-                }
-            }
-            return barDrawingStyle;
-        }
-
-        /// <summary>
-        /// Find rounding coordinates for a rectangle
-        /// </summary>
-        /// <param name="rect">Rectangle which has to be rounded</param>
-        /// <returns>Rounded rectangle</returns>
-        internal static SKRect Round(SKRect rect)
-        {
-            float left = (float)Math.Round(rect.Left);
-            float right = (float)Math.Round(rect.Right);
-            float top = (float)Math.Round(rect.Top);
-            float bottom = (float)Math.Round(rect.Bottom);
-
-            return new SKRect(left, top, right - left, bottom - top);
-        }
-
-        /// <summary>
-        /// This method takes a given axis value for a specified axis and returns the relative pixel value.
-        /// </summary>
-        /// <param name="chartAreaName">Chart area name.</param>
-        /// <param name="axis">An AxisName enum value that identifies the relevant axis.</param>
-        /// <param name="axisValue">The axis value that needs to be converted to a relative pixel value.</param>
-        /// <returns>The converted axis value, in relative pixel coordinates.</returns>
-        public double GetPositionFromAxis(string chartAreaName, AxisName axis, double axisValue)
-        {
-            if (axis == AxisName.X)
-                return _common.ChartPicture.ChartAreas[chartAreaName].AxisX.GetLinearPosition(axisValue);
-
-            if (axis == AxisName.X2)
-                return _common.ChartPicture.ChartAreas[chartAreaName].AxisX2.GetLinearPosition(axisValue);
-
-            if (axis == AxisName.Y)
-                return _common.ChartPicture.ChartAreas[chartAreaName].AxisY.GetLinearPosition(axisValue);
-
-            if (axis == AxisName.Y2)
-                return _common.ChartPicture.ChartAreas[chartAreaName].AxisY2.GetLinearPosition(axisValue);
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Set picture size
-        /// </summary>
-        /// <param name="width">Width</param>
-        /// <param name="height">Height</param>
-        internal void SetPictureSize(int width, int height)
-        {
-            _width = width;
-            _height = height;
-        }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="common">Common elements class</param>
@@ -5076,6 +4951,84 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// This method takes a given axis value for a specified axis and returns the relative pixel value.
+        /// </summary>
+        /// <param name="chartAreaName">Chart area name.</param>
+        /// <param name="axis">An AxisName enum value that identifies the relevant axis.</param>
+        /// <param name="axisValue">The axis value that needs to be converted to a relative pixel value.</param>
+        /// <returns>The converted axis value, in relative pixel coordinates.</returns>
+        public double GetPositionFromAxis(string chartAreaName, AxisName axis, double axisValue)
+        {
+            if (axis == AxisName.X)
+                return _common.ChartPicture.ChartAreas[chartAreaName].AxisX.GetLinearPosition(axisValue);
+
+            if (axis == AxisName.X2)
+                return _common.ChartPicture.ChartAreas[chartAreaName].AxisX2.GetLinearPosition(axisValue);
+
+            if (axis == AxisName.Y)
+                return _common.ChartPicture.ChartAreas[chartAreaName].AxisY.GetLinearPosition(axisValue);
+
+            if (axis == AxisName.Y2)
+                return _common.ChartPicture.ChartAreas[chartAreaName].AxisY2.GetLinearPosition(axisValue);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Helper function that retrieves bar drawing style.
+        /// </summary>
+        /// <param name="point">Data point to get the drawing style for.</param>
+        /// <returns>Bar drawing style.</returns>
+        internal static BarDrawingStyle GetBarDrawingStyle(DataPoint point)
+        {
+            // Get column drawing style
+            BarDrawingStyle barDrawingStyle = BarDrawingStyle.Default;
+            string styleName = point[CustomPropertyName.DrawingStyle];
+            if (styleName != null)
+            {
+                if (string.Compare(styleName, "Default", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    barDrawingStyle = BarDrawingStyle.Default;
+                }
+                else if (string.Compare(styleName, "Cylinder", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    barDrawingStyle = BarDrawingStyle.Cylinder;
+                }
+                else if (string.Compare(styleName, "Emboss", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    barDrawingStyle = BarDrawingStyle.Emboss;
+                }
+                else if (string.Compare(styleName, "LightToDark", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    barDrawingStyle = BarDrawingStyle.LightToDark;
+                }
+                else if (string.Compare(styleName, "Wedge", StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    barDrawingStyle = BarDrawingStyle.Wedge;
+                }
+                else
+                {
+                    throw new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(styleName, "DrawingStyle"));
+                }
+            }
+            return barDrawingStyle;
+        }
+
+        /// <summary>
+        /// Find rounding coordinates for a rectangle
+        /// </summary>
+        /// <param name="rect">Rectangle which has to be rounded</param>
+        /// <returns>Rounded rectangle</returns>
+        internal static SKRect Round(SKRect rect)
+        {
+            float left = (float)Math.Round(rect.Left);
+            float right = (float)Math.Round(rect.Right);
+            float top = (float)Math.Round(rect.Top);
+            float bottom = (float)Math.Round(rect.Bottom);
+
+            return new SKRect(left, top, right - left, bottom - top);
+        }
+        /// <summary>
         /// Sets the clipping region of this Graphics object
         /// to the rectangle specified by a SKRect structure.
         /// </summary>
@@ -5085,6 +5038,16 @@ namespace WebCharts.Services
             SetClipAbs(GetAbsoluteRectangle(region));
         }
 
+        /// <summary>
+        /// Set picture size
+        /// </summary>
+        /// <param name="width">Width</param>
+        /// <param name="height">Height</param>
+        internal void SetPictureSize(int width, int height)
+        {
+            _width = width;
+            _height = height;
+        }
         #endregion Other methods and properties
 
         #region Color manipulation methods

@@ -160,8 +160,7 @@ namespace WebCharts.Services
                         series["OldAutomaticXAxisInterval"] = "true";
 
                         // Calculate and set axis date-time interval
-                        DateTimeIntervalType intervalType = DateTimeIntervalType.Auto;
-                        xAxis.interval = xAxis.CalcInterval(minX, maxX, true, out intervalType, series.XValueType);
+                        xAxis.interval = xAxis.CalcInterval(minX, maxX, true, out DateTimeIntervalType intervalType, series.XValueType);
                         xAxis.intervalType = intervalType;
                     }
                 }

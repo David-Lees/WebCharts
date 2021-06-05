@@ -11,11 +11,11 @@ namespace WebCharts.Services
         #region Fields
 
         // Private fields
-        private object _chartElement = null;
-        private ChartGraphics _chartGraph = null;
-        private CommonElements _common = null;
+        private readonly object _chartElement = null;
+        private readonly ChartGraphics _chartGraph = null;
+        private readonly CommonElements _common = null;
         private ChartService _chart = null;
-        private ElementPosition _position = null;
+        private readonly ElementPosition _position = null;
 
         #endregion
 
