@@ -2082,8 +2082,8 @@ namespace WebCharts.Services
             //*************************************************************************
             //** Measure legend font single character
             //*************************************************************************
-            singleWCharacterSize = graph.MeasureStringAbs("W", (autofitFont == null) ? Font : autofitFont);
-            SKSize doubleCharacterSize = graph.MeasureStringAbs("WW", (autofitFont == null) ? Font : autofitFont);
+            singleWCharacterSize = graph.MeasureStringAbs("W", autofitFont ?? Font);
+            SKSize doubleCharacterSize = graph.MeasureStringAbs("WW", autofitFont ?? Font);
             singleWCharacterSize.Width = doubleCharacterSize.Width - singleWCharacterSize.Width;
 
             //*************************************************************************
@@ -2129,7 +2129,7 @@ namespace WebCharts.Services
                     SKSize cellSize = legendCell.MeasureCell(
                         graph,
                         fontSizeReducedBy,
-                        (autofitFont == null) ? Font : autofitFont,
+                        autofitFont ?? Font,
                         singleWCharacterSize);
 
                     // Check for column maximum/minimum cell width restrictions
