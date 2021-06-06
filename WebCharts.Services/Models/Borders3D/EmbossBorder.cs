@@ -77,13 +77,13 @@ namespace WebCharts.Services
             if (borderSize.Width < 30f)
             {
                 areasRect.Top += borderSize.Width;
-                areasRect.Right -= (float)Math.Min(areasRect.Width, borderSize.Width * 2.5f);
+                areasRect.Right -= Math.Min(areasRect.Width, borderSize.Width * 2.5f);
             }
 
             if (borderSize.Height < 30f)
             {
                 areasRect.Top += borderSize.Height;
-                areasRect.Bottom -= (float)Math.Min(areasRect.Height, borderSize.Height * 2.5f);
+                areasRect.Bottom -= Math.Min(areasRect.Height, borderSize.Height * 2.5f);
             }
 
             if (areasRect.Left + areasRect.Width > 100f)
@@ -151,9 +151,9 @@ namespace WebCharts.Services
 
             // Calculate rounded rect radius
             float radius = defaultRadiusSize;
-            radius = (float)Math.Max(radius, 2f * resolution / 96.0f);
-            radius = (float)Math.Min(radius, rect.Width / 2f);
-            radius = (float)Math.Min(radius, rect.Height / 2f);
+            radius = Math.Max(radius, 2f * resolution / 96.0f);
+            radius = Math.Min(radius, rect.Width / 2f);
+            radius = Math.Min(radius, rect.Height / 2f);
             radius = (float)Math.Ceiling(radius);
 
             // Fill page background color

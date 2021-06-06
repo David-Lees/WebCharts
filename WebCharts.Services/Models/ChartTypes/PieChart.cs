@@ -524,7 +524,7 @@ namespace WebCharts.Services
                 _labelsOverlap = false;
 
                 //Set Clip Region
-                ((ChartGraphics)graph).SetClip(area.Position.ToSKRect());
+                graph.SetClip(area.Position.ToSKRect());
 
                 // Resize pie because of labels
                 SizeCorrection(graph, common, area);
@@ -556,7 +556,7 @@ namespace WebCharts.Services
                 ProcessChartType(false, graph, common, area, false, LabelsMode.Draw);
 
                 //Reset Clip Region
-                ((ChartGraphics)graph).ResetClip();
+                graph.ResetClip();
             }
         }
 
@@ -4734,7 +4734,7 @@ namespace WebCharts.Services
                 if (index < 0 || index > numOfItems - 1)
                     throw new InvalidOperationException(SR.Exception3DPieLabelsIndexInvalid);
 
-                return (float)_chartAreaPosition.Top + columnHeight * index + columnHeight / 2;
+                return _chartAreaPosition.Top + columnHeight * index + columnHeight / 2;
             }
 
             /// <summary>

@@ -374,7 +374,7 @@ namespace WebCharts.Services
             ProcessChartType(false, graph, common, area, seriesToDraw);
 
             // Reset Clip Region
-            ((ChartGraphics)graph).ResetClip();
+            graph.ResetClip();
         }
 
         /// <summary>

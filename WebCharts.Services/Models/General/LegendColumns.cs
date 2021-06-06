@@ -569,6 +569,7 @@ namespace WebCharts.Services
                 _fontCache.Dispose();
                 _fontCache = null;
             }
+            base.Dispose(disposing);
         }
 
         #endregion IDisposable Members

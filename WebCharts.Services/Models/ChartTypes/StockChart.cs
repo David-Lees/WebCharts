@@ -387,7 +387,7 @@ namespace WebCharts.Services
                     low = VAxis.GetLinearPosition(low);
 
                     // Remeber pre-calculated point position
-                    point.positionRel = new SKPoint((float)xPosition, (float)high);
+                    point.positionRel = new SKPoint(xPosition, (float)high);
 
                     if (common.ProcessModePaint)
                     {
@@ -740,9 +740,9 @@ namespace WebCharts.Services
 
                 // Calculate bar rectangle
                 SKRect rect = SKRect.Empty;
-                rect.Top = (float)Math.Min(open, close);
+                rect.Top = Math.Min(open, close);
                 rect.Left = xPosition - width / 2f;
-                rect.Size = new(width, (float)Math.Max(open, close) - rect.Top);
+                rect.Size = new(width, Math.Max(open, close) - rect.Top);
 
                 // Bar and border color
                 SKColor barColor = (open > close) ? priceUpColor : priceDownColor;
@@ -1158,7 +1158,7 @@ namespace WebCharts.Services
                     low = VAxis.GetLinearPosition(low);
 
                     // Remeber pre-calculated point position
-                    point.positionRel = new SKPoint((float)xPosition, (float)high);
+                    point.positionRel = new SKPoint(xPosition, (float)high);
 
                     // 3D Transform coordinates
                     Point3D[] points = new Point3D[2];
@@ -1781,7 +1781,7 @@ namespace WebCharts.Services
                     marker3DPosition[0] = new Point3D(
                         markerPosition.X,
                         markerPosition.Y,
-                        (float)(seriesZPosition + seriesDepth / 2f));
+                        seriesZPosition + seriesDepth / 2f);
 
                     // Transform coordinates
                     area.matrix3D.TransformPoints(marker3DPosition);

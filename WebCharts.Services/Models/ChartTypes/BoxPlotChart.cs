@@ -301,12 +301,12 @@ namespace WebCharts.Services
                     double xValue = point.XValue;
                     if (indexedSeries)
                     {
-                        xValue = (double)index;
-                        xPosition = (float)(hAxis.GetPosition((double)index) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width);
+                        xValue = index;
+                        xPosition = (float)(hAxis.GetPosition(index) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width);
                     }
                     else if (currentShowSideBySide)
                     {
-                        xPosition = (float)(hAxis.GetPosition(xValue) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width);
+                        xPosition = (float)(hAxis.GetPosition(xValue) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width);
                     }
                     else
                     {
@@ -353,7 +353,7 @@ namespace WebCharts.Services
                     low = vAxis.GetLinearPosition(low);
 
                     // Remeber pre-calculated point position
-                    point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
+                    point.positionRel = new SKPoint(xPosition, (float)Math.Min(high, low));
 
                     if (common.ProcessModePaint)
                     {
@@ -395,8 +395,8 @@ namespace WebCharts.Services
 
                         // Draw Box
                         SKRect rectSize = SKRect.Empty;
-                        rectSize.Left = (float)(xPosition - width / 2);
-                        rectSize.Right = rectSize.Left + (float)(width);
+                        rectSize.Left = xPosition - width / 2;
+                        rectSize.Right = rectSize.Left + width;
                         rectSize.Top = (float)vAxis.GetPosition(point.YValues[3]);
                         rectSize.Bottom = rectSize.Top + (float)Math.Abs(rectSize.Top - vAxis.GetPosition(point.YValues[2]));
                         graph.FillRectangleRel(rectSize,
@@ -510,7 +510,7 @@ namespace WebCharts.Services
                                     1,
                                     ChartDashStyle.Solid,
                                     new SKPoint(curPosition, medianValue),
-                                    new SKPoint((float)Math.Min(rectSize.Right, curPosition + dashWidth), medianValue),
+                                    new SKPoint(Math.Min(rectSize.Right, curPosition + dashWidth), medianValue),
                                     SKColor.Empty,
                                     0);
                             }
@@ -555,11 +555,11 @@ namespace WebCharts.Services
                         if (indexedSeries)
                         {
                             xValue = (double)index;
-                            xPosition = (float)(hAxis.GetPosition((double)index) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width);
+                            xPosition = (float)(hAxis.GetPosition(index) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width);
                         }
                         else if (currentShowSideBySide)
                         {
-                            xPosition = (float)(hAxis.GetPosition(xValue) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width);
+                            xPosition = (float)(hAxis.GetPosition(xValue) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width);
                         }
                         else
                         {
@@ -1056,12 +1056,12 @@ namespace WebCharts.Services
                     double xValue = point.XValue;
                     if (indexedSeries)
                     {
-                        xValue = (double)index;
-                        xPosition = (float)(hAxis.GetPosition((double)index) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width);
+                        xValue = index;
+                        xPosition = (float)(hAxis.GetPosition(index) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width);
                     }
                     else if (currentShowSideBySide)
                     {
-                        xPosition = (float)(hAxis.GetPosition(xValue) - width * ((double)numOfSeries) / 2.0 + width / 2 + seriesIndx * width);
+                        xPosition = (float)(hAxis.GetPosition(xValue) - width * numOfSeries / 2.0 + width / 2 + seriesIndx * width);
                     }
                     else
                     {
@@ -1107,7 +1107,7 @@ namespace WebCharts.Services
                     low = vAxis.GetLinearPosition(low);
 
                     // Remeber pre-calculated point position
-                    point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
+                    point.positionRel = new SKPoint(xPosition, (float)Math.Min(high, low));
 
                     // 3D Transform coordinates
                     Point3D[] points = new Point3D[6];
@@ -1253,7 +1253,7 @@ namespace WebCharts.Services
                         // Draw median line
                         if (!double.IsNaN(point.YValues[5]) && showMedian)
                         {
-                            float medianValue = (float)points[5].Y;
+                            float medianValue = points[5].Y;
                             float dashWidth = rectSize.Width / 9f;
 
                             // Dash width should not be less than 2 pixels
@@ -1267,7 +1267,7 @@ namespace WebCharts.Services
                                     1,
                                     ChartDashStyle.Solid,
                                     new SKPoint(curPosition, medianValue),
-                                    new SKPoint((float)Math.Min(rectSize.Right, curPosition + dashWidth), medianValue),
+                                    new SKPoint(Math.Min(rectSize.Right, curPosition + dashWidth), medianValue),
                                     SKColor.Empty,
                                     0);
                             }

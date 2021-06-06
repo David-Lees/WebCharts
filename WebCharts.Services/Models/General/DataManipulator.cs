@@ -2949,7 +2949,7 @@ namespace WebCharts.Services
             int numberOfYValues = 0;
             foreach (Series series in inputSeries)
             {
-                numberOfYValues = (int)Math.Max(numberOfYValues, series.YValuesPerPoint);
+                numberOfYValues = Math.Max(numberOfYValues, series.YValuesPerPoint);
             }
 
             // Allocate memory for the result array for X and each Y values

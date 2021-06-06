@@ -452,7 +452,7 @@ namespace WebCharts.Services
             ProcessChartType(false, graph, common, area, false, true, seriesToDraw);
 
             // Reset Clip Region
-            ((ChartGraphics)graph).ResetClip();
+            graph.ResetClip();
         }
 
         /// <summary>

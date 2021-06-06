@@ -513,7 +513,7 @@ namespace WebCharts.Services
                     low = vAxis.GetLinearPosition(low);
 
                     // Remeber pre-calculated point position
-                    point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
+                    point.positionRel = new SKPoint(xPosition, (float)Math.Min(high, low));
 
                     if (common.ProcessModePaint)
                     {
@@ -1039,7 +1039,7 @@ namespace WebCharts.Services
                 // Check that we have at least 4 Y values
                 if (ser.YValuesPerPoint < 3)
                 {
-                    throw (new ArgumentException(SR.ExceptionChartTypeRequiresYValues(ChartTypeNames.ErrorBar, ((int)(3)).ToString(CultureInfo.CurrentCulture))));
+                    throw (new ArgumentException(SR.ExceptionChartTypeRequiresYValues(ChartTypeNames.ErrorBar, 3.ToString(CultureInfo.CurrentCulture))));
                 }
 
                 // Set active horizontal/vertical axis
@@ -1239,7 +1239,7 @@ namespace WebCharts.Services
                     low = vAxis.GetLinearPosition(low);
 
                     // Remeber pre-calculated point position
-                    point.positionRel = new SKPoint((float)xPosition, (float)Math.Min(high, low));
+                    point.positionRel = new SKPoint(xPosition, (float)Math.Min(high, low));
 
                     // 3D Transform coordinates
                     Point3D[] points = new Point3D[2];

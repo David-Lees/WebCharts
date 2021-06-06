@@ -577,7 +577,7 @@ namespace WebCharts.Services
         /// <param name="order">The MatrixOrder enumeration that represents the order of the multiplication. If the specified order is MatrixOrder.Prepend, this Matrix object is multiplied by the specified matrix in a prepended order. If the specified order is MatrixOrder.Append, this Matrix object is multiplied by the specified matrix in an appended order.</param>
         /// <param name="setMainMatrix">Set main matrix to be result of multiplication</param>
         /// <returns>Matrix multiplication result.</returns>
-        private float[][] Multiply(float[][] mulMatrix, MatrixOrder order, bool setMainMatrix)
+        private void Multiply(float[][] mulMatrix, MatrixOrder order, bool setMainMatrix)
         {
             // A matrix which is result of matrix multiplication
             // of mulMatrix and mainMatrix
@@ -617,8 +617,6 @@ namespace WebCharts.Services
             {
                 _mainMatrix = resultMatrix;
             }
-
-            return resultMatrix;
         }
 
         /// <summary>
@@ -1142,7 +1140,7 @@ namespace WebCharts.Services
             double brightness = 0.5;
             if (position < brightness)
             {
-                return ChartGraphics.GetGradientColor(Color.FromArgb((byte)beginColor.Alpha, (byte)255, (byte)255, (byte)255), beginColor, 1 - brightness + position);
+                return ChartGraphics.GetGradientColor(Color.FromArgb(beginColor.Alpha, (byte)255, (byte)255, (byte)255), beginColor, 1 - brightness + position);
             }
             else if (-brightness + position < 1)
             {
@@ -1150,7 +1148,7 @@ namespace WebCharts.Services
             }
             else
             {
-                return Color.FromArgb((byte)beginColor.Alpha, (byte)0, (byte)0, (byte)0);
+                return Color.FromArgb(beginColor.Alpha, (byte)0, (byte)0, (byte)0);
             }
         }
 

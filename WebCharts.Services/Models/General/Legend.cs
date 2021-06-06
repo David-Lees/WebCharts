@@ -2029,6 +2029,7 @@ namespace WebCharts.Services
                     _position = null;
                 }
             }
+            base.Dispose(disposing);
         }
 
         /// <summary>

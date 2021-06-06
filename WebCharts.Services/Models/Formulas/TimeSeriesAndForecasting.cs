@@ -428,7 +428,7 @@ namespace WebCharts.Services
                     mainDeterminant[i][k] = 0;
                     for (int j = 0; j < inputValues[0].Length; j++)
                     {
-                        mainDeterminant[i][k] += (double)Math.Pow(inputValues[0][j], (i + k));
+                        mainDeterminant[i][k] += Math.Pow(inputValues[0][j], (i + k));
                     }
                 }
             }
@@ -443,7 +443,7 @@ namespace WebCharts.Services
                     coeffDeterminant[i][k] = 0;
                     for (int j = 0; j < inputValues[0].Length; j++)
                     {
-                        coeffDeterminant[i][k] += (double)inputValues[1][j] * (double)Math.Pow(inputValues[0][j], k);
+                        coeffDeterminant[i][k] += inputValues[1][j] * Math.Pow(inputValues[0][j], k);
                     }
                 }
                 coefficients[i] = Determinant(coeffDeterminant) / mainValue;
@@ -465,7 +465,7 @@ namespace WebCharts.Services
                     outputValues[1][i] = 0;
                     for (int j = 0; j < polynomialDegree; j++)
                     {
-                        outputValues[1][i] += (double)coefficients[j] * Math.Pow(outputValues[0][i], j);
+                        outputValues[1][i] += coefficients[j] * Math.Pow(outputValues[0][i], j);
                     }
                 }
             }

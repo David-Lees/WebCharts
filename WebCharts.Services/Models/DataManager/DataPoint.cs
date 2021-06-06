@@ -4641,7 +4641,7 @@ namespace WebCharts.Services
                 else
                 {
                     // Return default properties
-                    return (string)Series.defaultCustomProperties[name];
+                    return Series.defaultCustomProperties[name];
                 }
             }
 

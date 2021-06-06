@@ -262,7 +262,7 @@ namespace WebCharts.Services
             {
                 if (series.IsVisible() && series.ChartArea == area.Name)
                 {
-                    sectorNumber = (int)Math.Max(series.Points.Count, sectorNumber);
+                    sectorNumber = Math.Max(series.Points.Count, sectorNumber);
                 }
             }
             return sectorNumber;

@@ -2384,7 +2384,7 @@ namespace WebCharts.Services
                     }
 
                     // Point found
-                    return (DataPoint3D)point3D;
+                    return point3D;
                 }
 
                 ++neighborPointIndex;

@@ -414,7 +414,7 @@ namespace WebCharts.Services
                     if (direction != 0)
                     {
                         // Add point
-                        DataPoint newDataPoint = (DataPoint)dataPoint.Clone();
+                        DataPoint newDataPoint = dataPoint.Clone();
                         newDataPoint["OriginalPointIndex"] = pointIndex.ToString(CultureInfo.InvariantCulture);
                         newDataPoint.series = series;
                         newDataPoint.YValues = new double[2];

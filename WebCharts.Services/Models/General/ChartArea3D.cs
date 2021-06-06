@@ -1118,7 +1118,7 @@ namespace WebCharts.Services
         {
             float sceneDepth;
 
-            ChartArea area = (ChartArea)this;
+            ChartArea area = this;
 
             // Reset current list of clusters
             seriesClusters = null;
@@ -1148,7 +1148,7 @@ namespace WebCharts.Services
         internal void Estimate3DInterval(ChartGraphics graph)
         {
             // Reference to the chart area class
-            ChartArea area = (ChartArea)this;
+            ChartArea area = this;
 
             // Calculate relative size of the wall
             areaSceneWallWidth = graph.GetRelativeSize(new SKSize(Area3DStyle.WallWidth, Area3DStyle.WallWidth));

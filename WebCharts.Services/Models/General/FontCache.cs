@@ -107,14 +107,23 @@ namespace WebCharts.Services
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+        /// 
         public void Dispose()
         {
-            foreach (SKFont font in _fontCache.Values)
-            {
-                font.Dispose();
-            }
-            _fontCache.Clear();
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (SKFont font in _fontCache.Values)
+                {
+                    font.Dispose();
+                }
+                _fontCache.Clear();
+            }
         }
 
         #endregion
@@ -152,7 +161,7 @@ namespace WebCharts.Services
                 _size = size;
                 _style = style;
             }
-          
+
 
             #region IEquatable<FontKeyInfo> Members
             /// <summary>

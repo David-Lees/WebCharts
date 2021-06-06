@@ -1377,7 +1377,7 @@ namespace WebCharts.Services
 
                                 // NOTE: Code was removed to solve an issue with extra space when labels angle = 45
                                 //rectLabelSideSpacing.Height = (float)Math.Max(offset, rectLabelSideSpacing.Height);
-                                rectLabelSideSpacing.Top = (float)Math.Max(offset, rectLabelSideSpacing.Top);
+                                rectLabelSideSpacing.Top = Math.Max(offset, rectLabelSideSpacing.Top);
                             }
 
                             if (axis.labelFarOffset > Position.Bottom)
@@ -1553,7 +1553,7 @@ namespace WebCharts.Services
                     axis.labelNearOffset != 0 &&
                     axis.labelNearOffset < PlotAreaPosition.X)
                 {
-                    float overlap = (float)(leftAxis.labelFarOffset - labelsPosition) * 0.75f;
+                    float overlap = (leftAxis.labelFarOffset - labelsPosition) * 0.75f;
                     if (overlap > axis.markSize)
                     {
                         axis.markSize += overlap - axis.markSize;
@@ -1569,7 +1569,7 @@ namespace WebCharts.Services
                     axis.labelFarOffset != 0 &&
                     axis.labelFarOffset > PlotAreaPosition.Right)
                 {
-                    float overlap = (float)(rightAxis.labelFarOffset - labelsPosition) * 0.75f;
+                    float overlap = (rightAxis.labelFarOffset - labelsPosition) * 0.75f;
                     if (overlap > axis.markSize)
                     {
                         axis.markSize += overlap - axis.markSize;
@@ -1602,7 +1602,7 @@ namespace WebCharts.Services
                     axis.labelNearOffset != 0 &&
                     axis.labelNearOffset < PlotAreaPosition.X)
                 {
-                    float overlap = (float)(labelsPosition - leftAxis.labelNearOffset) * 0.75f;
+                    float overlap = (labelsPosition - leftAxis.labelNearOffset) * 0.75f;
                     if (overlap > axis.markSize)
                     {
                         axis.markSize += overlap - axis.markSize;
@@ -1618,7 +1618,7 @@ namespace WebCharts.Services
                     axis.labelFarOffset != 0 &&
                     axis.labelFarOffset > PlotAreaPosition.Right)
                 {
-                    float overlap = (float)(labelsPosition - rightAxis.labelNearOffset) * 0.75f;
+                    float overlap = (labelsPosition - rightAxis.labelNearOffset) * 0.75f;
                     if (overlap > axis.markSize)
                     {
                         axis.markSize += overlap - axis.markSize;
@@ -2293,7 +2293,7 @@ namespace WebCharts.Services
                     if (height < 0)
                         height = 0;
 
-                    labelsSize = (float)Math.Max(
+                    labelsSize = Math.Max(
                         labelsSize,
                         Math.Max(width, height));
                 }

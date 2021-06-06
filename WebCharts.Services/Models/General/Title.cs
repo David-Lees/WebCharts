@@ -131,7 +131,7 @@ namespace WebCharts.Services
     [
     SRDescription("DescriptionAttributeTitle5"),
     ]
-    public class Title : ChartNamedElement, IDisposable
+    public class Title : ChartNamedElement
     {
         #region Fields
 

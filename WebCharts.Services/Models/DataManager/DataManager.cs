@@ -1115,14 +1115,12 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _series != null)
             {
-                if (_series != null)
-                {
-                    _series.Dispose();
-                    _series = null;
-                }
+                _series.Dispose();
+                _series = null;
             }
+            base.Dispose(disposing);
         }
 
         #endregion IDisposable Members

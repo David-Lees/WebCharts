@@ -1028,8 +1028,8 @@ namespace WebCharts.Services
                 // Chart type with two y values used for scale ( bubble chart type )
                 else if (secondYScale)
                 {
-                    autoMaximum = Common.DataManager.GetMaxXWithRadiusValue((ChartArea)this, xAxesSeries);
-                    autoMinimum = Common.DataManager.GetMinXWithRadiusValue((ChartArea)this, xAxesSeries);
+                    autoMaximum = Common.DataManager.GetMaxXWithRadiusValue(this, xAxesSeries);
+                    autoMinimum = Common.DataManager.GetMinXWithRadiusValue(this, xAxesSeries);
                     ChartValueType valueTypes = Common.DataManager.Series[xAxesSeries[0]].XValueType;
                     if (valueTypes != ChartValueType.Date &&
                         valueTypes != ChartValueType.DateTime &&
@@ -1101,8 +1101,8 @@ namespace WebCharts.Services
                 // Chart type with two y values used for scale ( bubble chart type )
                 else if (secondYScale)
                 {
-                    autoMaximum = Common.DataManager.GetMaxYWithRadiusValue((ChartArea)this, yAxesSeries);
-                    autoMinimum = Common.DataManager.GetMinYWithRadiusValue((ChartArea)this, yAxesSeries);
+                    autoMaximum = Common.DataManager.GetMaxYWithRadiusValue(this, yAxesSeries);
+                    autoMinimum = Common.DataManager.GetMinYWithRadiusValue(this, yAxesSeries);
                 }
 
                 // *****************************
