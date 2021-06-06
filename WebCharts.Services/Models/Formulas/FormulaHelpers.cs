@@ -1627,7 +1627,9 @@ namespace WebCharts.Services
                     seriesField = (DataField)Enum.Parse(typeof(DataField), seriesFieldId, true);
                 }
                 catch (ArgumentException)
-                { }
+                { 
+                    // Ignore
+                }
             }
 
             if (seriesField != null)

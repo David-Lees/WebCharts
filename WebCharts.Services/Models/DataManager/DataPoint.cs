@@ -241,7 +241,7 @@ namespace WebCharts.Services
         private double _xValue;
 
         // Point Y values
-        private double[] _yValue = new double[1];
+        private double[] _yValue;
         #endregion Fields
 
         #region Constructors

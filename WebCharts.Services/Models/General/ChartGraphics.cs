@@ -963,22 +963,12 @@ namespace WebCharts.Services
                 {
                     drawingFormat.LineAlignment = StringAlignment.Center;
                     drawingFormat.Alignment = StringAlignment.Center;
-                    angle = 0;
-
-                    if (axis.AxisPosition == AxisPosition.Left)
+                    angle = axis.AxisPosition switch
                     {
-                        angle = -90;
-                    }
-                    else if (axis.AxisPosition == AxisPosition.Right)
-                    {
-                        angle = 90;
-                    }
-                    else if (axis.AxisPosition == AxisPosition.Top)
-                    {
-                    }
-                    else if (axis.AxisPosition == AxisPosition.Bottom)
-                    {
-                    }
+                        AxisPosition.Left => -90,
+                        AxisPosition.Right => 90,
+                        _ => 0
+                    };
                 }
 
                 //********************************************************************
@@ -1760,7 +1750,7 @@ namespace WebCharts.Services
             {
                 SmoothingMode = SmoothingMode.HighSpeed;
             }
-            
+
             this.DrawString(text, font, brush, rect, format, TextOrientation.Auto);
             SmoothingMode = sm;
         }
