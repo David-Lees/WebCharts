@@ -20,6 +20,129 @@ namespace WebCharts.Services
     #region Data manipulation enumerations
 
     /// <summary>
+    /// An enumeration of methods of comparison.
+    /// </summary>
+    public enum CompareMethod
+    {
+        /// <summary>
+        /// One value is more than the other value.
+        /// </summary>
+        MoreThan,
+
+        /// <summary>
+        /// One value is less than the other value.
+        /// </summary>
+        LessThan,
+
+        /// <summary>
+        /// One value is equal the other value.
+        /// </summary>
+        EqualTo,
+
+        /// <summary>
+        /// One value is more or equal to the other value.
+        /// </summary>
+        MoreThanOrEqualTo,
+
+        /// <summary>
+        /// One value is less or equal to the other value.
+        /// </summary>
+        LessThanOrEqualTo,
+
+        /// <summary>
+        /// One value is not equal to the other value.
+        /// </summary>
+        NotEqualTo
+    }
+
+    /// <summary>
+    /// An enumeration of units of measurement for date ranges.
+    /// </summary>
+    public enum DateRangeType
+    {
+        /// <summary>
+        /// Range defined in years.
+        /// </summary>
+        Year,
+
+        /// <summary>
+        /// Range defined in months.
+        /// </summary>
+        Month,
+
+        /// <summary>
+        /// Range defined in days of week.
+        /// </summary>
+        DayOfWeek,
+
+        /// <summary>
+        /// Range defined in days of month.
+        /// </summary>
+        DayOfMonth,
+
+        /// <summary>
+        /// Range defined in hours.
+        /// </summary>
+        Hour,
+
+        /// <summary>
+        /// Range defined in minutes.
+        /// </summary>
+        Minute
+    }
+
+    /// <summary>
+    /// An enumeration of units of measurement for intervals.
+    /// </summary>
+    public enum IntervalType
+    {
+        /// <summary>
+        /// Interval in numbers.
+        /// </summary>
+        Number,
+
+        /// <summary>
+        /// Interval in years.
+        /// </summary>
+        Years,
+
+        /// <summary>
+        /// Interval in months.
+        /// </summary>
+        Months,
+
+        /// <summary>
+        /// Interval in weeks.
+        /// </summary>
+        Weeks,
+
+        /// <summary>
+        /// Interval in days.
+        /// </summary>
+        Days,
+
+        /// <summary>
+        /// Interval in hours.
+        /// </summary>
+        Hours,
+
+        /// <summary>
+        /// Interval in minutes.
+        /// </summary>
+        Minutes,
+
+        /// <summary>
+        /// Interval in seconds.
+        /// </summary>
+        Seconds,
+
+        /// <summary>
+        /// Interval in milliseconds.
+        /// </summary>
+        Milliseconds
+    }
+
+    /// <summary>
     /// Grouping functions types
     /// </summary>
     internal enum GroupingFunction
@@ -94,130 +217,6 @@ namespace WebCharts.Services
         /// </summary>
         Deviation
     }
-
-    /// <summary>
-    /// An enumeration of units of measurement for intervals.
-    /// </summary>
-    public enum IntervalType
-    {
-        /// <summary>
-        /// Interval in numbers.
-        /// </summary>
-        Number,
-
-        /// <summary>
-        /// Interval in years.
-        /// </summary>
-        Years,
-
-        /// <summary>
-        /// Interval in months.
-        /// </summary>
-        Months,
-
-        /// <summary>
-        /// Interval in weeks.
-        /// </summary>
-        Weeks,
-
-        /// <summary>
-        /// Interval in days.
-        /// </summary>
-        Days,
-
-        /// <summary>
-        /// Interval in hours.
-        /// </summary>
-        Hours,
-
-        /// <summary>
-        /// Interval in minutes.
-        /// </summary>
-        Minutes,
-
-        /// <summary>
-        /// Interval in seconds.
-        /// </summary>
-        Seconds,
-
-        /// <summary>
-        /// Interval in milliseconds.
-        /// </summary>
-        Milliseconds
-    }
-
-    /// <summary>
-    /// An enumeration of units of measurement for date ranges.
-    /// </summary>
-    public enum DateRangeType
-    {
-        /// <summary>
-        /// Range defined in years.
-        /// </summary>
-        Year,
-
-        /// <summary>
-        /// Range defined in months.
-        /// </summary>
-        Month,
-
-        /// <summary>
-        /// Range defined in days of week.
-        /// </summary>
-        DayOfWeek,
-
-        /// <summary>
-        /// Range defined in days of month.
-        /// </summary>
-        DayOfMonth,
-
-        /// <summary>
-        /// Range defined in hours.
-        /// </summary>
-        Hour,
-
-        /// <summary>
-        /// Range defined in minutes.
-        /// </summary>
-        Minute
-    }
-
-    /// <summary>
-    /// An enumeration of methods of comparison.
-    /// </summary>
-    public enum CompareMethod
-    {
-        /// <summary>
-        /// One value is more than the other value.
-        /// </summary>
-        MoreThan,
-
-        /// <summary>
-        /// One value is less than the other value.
-        /// </summary>
-        LessThan,
-
-        /// <summary>
-        /// One value is equal the other value.
-        /// </summary>
-        EqualTo,
-
-        /// <summary>
-        /// One value is more or equal to the other value.
-        /// </summary>
-        MoreThanOrEqualTo,
-
-        /// <summary>
-        /// One value is less or equal to the other value.
-        /// </summary>
-        LessThanOrEqualTo,
-
-        /// <summary>
-        /// One value is not equal to the other value.
-        /// </summary>
-        NotEqualTo
-    }
-
     #endregion Data manipulation enumerations
 
     #region Data points filtering inteface
@@ -255,6 +254,13 @@ namespace WebCharts.Services
         #endregion Fields
 
         #region Data manipulator helper functions
+
+        /// <summary>
+        /// Public constructor
+        /// </summary>
+        public DataManipulator()
+        {
+        }
 
         /// <summary>
         /// Helper function that converts one series or a comma separated
@@ -343,14 +349,6 @@ namespace WebCharts.Services
 
             return array;
         }
-
-        /// <summary>
-        /// Public constructor
-        /// </summary>
-        public DataManipulator()
-        {
-        }
-
         #endregion Data manipulator helper functions
 
         #region Series points sorting methods
@@ -560,6 +558,29 @@ namespace WebCharts.Services
         #region Insert empty data points method
 
         /// <summary>
+        /// Helper function which converts IntervalType enumeration
+        /// into DateTimeIntervalType enumeration.
+        /// </summary>
+        /// <param name="type">Interval type value.</param>
+        /// <returns>Date time interval type value.</returns>
+        private static DateTimeIntervalType ConvertIntervalType(IntervalType type)
+        {
+            return type switch
+            {
+                IntervalType.Milliseconds => DateTimeIntervalType.Milliseconds,
+                IntervalType.Seconds => DateTimeIntervalType.Seconds,
+                IntervalType.Days => DateTimeIntervalType.Days,
+                IntervalType.Hours => DateTimeIntervalType.Hours,
+                IntervalType.Minutes => DateTimeIntervalType.Minutes,
+                IntervalType.Months => DateTimeIntervalType.Months,
+                IntervalType.Number => DateTimeIntervalType.Number,
+                IntervalType.Weeks => DateTimeIntervalType.Weeks,
+                IntervalType.Years => DateTimeIntervalType.Years,
+                _ => DateTimeIntervalType.Auto,
+            };
+        }
+
+        /// <summary>
         /// Insert empty data points using specified interval.
         /// </summary>
         /// <param name="interval">Interval size.</param>
@@ -727,30 +748,6 @@ namespace WebCharts.Services
                 }
             }
         }
-
-        /// <summary>
-        /// Helper function which converts IntervalType enumeration
-        /// into DateTimeIntervalType enumeration.
-        /// </summary>
-        /// <param name="type">Interval type value.</param>
-        /// <returns>Date time interval type value.</returns>
-        private static DateTimeIntervalType ConvertIntervalType(IntervalType type)
-        {
-            return type switch
-            {
-                IntervalType.Milliseconds => DateTimeIntervalType.Milliseconds,
-                IntervalType.Seconds => DateTimeIntervalType.Seconds,
-                IntervalType.Days => DateTimeIntervalType.Days,
-                IntervalType.Hours => DateTimeIntervalType.Hours,
-                IntervalType.Minutes => DateTimeIntervalType.Minutes,
-                IntervalType.Months => DateTimeIntervalType.Months,
-                IntervalType.Number => DateTimeIntervalType.Number,
-                IntervalType.Weeks => DateTimeIntervalType.Weeks,
-                IntervalType.Years => DateTimeIntervalType.Years,
-                _ => DateTimeIntervalType.Auto,
-            };
-        }
-
         #endregion Insert empty data points method
 
         #region Insert empty data points overloaded methods
@@ -1096,14 +1093,6 @@ namespace WebCharts.Services
         #region Filtering properties
 
         /// <summary>
-        /// Gets or sets a flag which indicates whether points filtered by
-        /// the Filter or FilterTopN methods are removed or marked as empty.
-        /// If set to true, filtered points are marked as empty; otherwise they are removed.
-        /// This property defaults to be false.
-        /// </summary>
-        public bool FilterSetEmptyPoints { get; set; } = false;
-
-        /// <summary>
         /// Gets or sets a value that determines if points are filtered
         /// if they match criteria that is specified in Filter method calls.
         /// If set to true, points that match specified criteria are filtered.
@@ -1112,112 +1101,148 @@ namespace WebCharts.Services
         /// </summary>
         public bool FilterMatchedPoints { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a flag which indicates whether points filtered by
+        /// the Filter or FilterTopN methods are removed or marked as empty.
+        /// If set to true, filtered points are marked as empty; otherwise they are removed.
+        /// This property defaults to be false.
+        /// </summary>
+        public bool FilterSetEmptyPoints { get; set; } = false;
         #endregion Filtering properties
 
         #region Filtering methods
 
         /// <summary>
-        /// Keeps only N top/bottom points of the series
+        /// Helper function, which checks if specified point matches the criteria
         /// </summary>
-        /// <param name="pointCount">Number of top/bottom points to return.</param>
-        /// <param name="inputSeries">Input series array.</param>
-        /// <param name="outputSeries">Output series array.</param>
-        /// <param name="usingValue">Defines which value of the point use in comparison (X, Y, Y2, ...).</param>
-        /// <param name="getTopValues">Indicate that N top values must be retrieved, otherwise N bottom values.</param>
-        private void FilterTopN(int pointCount,
-            Series[] inputSeries,
-            Series[] outputSeries,
-            string usingValue,
-            bool getTopValues)
+        /// <param name="dateRange">Element type.</param>
+        /// <param name="rangeElements">Array of element indexes ranges (pairs).</param>
+        /// <param name="point">Data point to check.</param>
+        /// <returns>True if point matches the criteria.</returns>
+        private static bool CheckFilterElementCriteria(
+            DateRangeType dateRange,
+            int[] rangeElements,
+            DataPoint point)
         {
-            // Check input/output series arrays
-            CheckSeriesArrays(inputSeries, outputSeries);
+            // Conver X value to DateTime
+            DateTime dateTimeValue = DateTime.FromOADate(point.XValue);
 
-            // Check input series alignment
-            CheckXValuesAlignment(inputSeries);
-
-            if (pointCount <= 0)
+            for (int index = 0; index < rangeElements.Length; index += 2)
             {
-                throw (new ArgumentOutOfRangeException(nameof(pointCount), SR.ExceptionDataManipulatorPointCountIsZero));
-            }
-
-            //**************************************************
-            //** Filter points in the first series and remove
-            //** in all
-            //**************************************************
-
-            // Define an output series array
-            Series[] output = new Series[inputSeries.Length];
-            for (int seriesIndex = 0; seriesIndex < inputSeries.Length; seriesIndex++)
-            {
-                output[seriesIndex] = inputSeries[seriesIndex];
-                if (outputSeries != null && outputSeries.Length > seriesIndex)
+                switch (dateRange)
                 {
-                    output[seriesIndex] = outputSeries[seriesIndex];
-                }
+                    case (DateRangeType.Year):
+                        if (dateTimeValue.Year >= rangeElements[index] &&
+                            dateTimeValue.Year <= rangeElements[index + 1])
+                            return true;
+                        break;
 
-                // Remove all points from the output series
-                if (output[seriesIndex] != inputSeries[seriesIndex])
-                {
-                    output[seriesIndex].Points.Clear();
+                    case (DateRangeType.Month):
+                        if (dateTimeValue.Month >= rangeElements[index] &&
+                            dateTimeValue.Month <= rangeElements[index + 1])
+                            return true;
+                        break;
 
-                    // Make sure there is enough Y values per point
-                    output[seriesIndex].YValuesPerPoint = inputSeries[seriesIndex].YValuesPerPoint;
+                    case (DateRangeType.DayOfWeek):
+                        if ((int)dateTimeValue.DayOfWeek >= rangeElements[index] &&
+                            (int)dateTimeValue.DayOfWeek <= rangeElements[index + 1])
+                            return true;
+                        break;
 
-                    // Copy X values type
-                    if (output[seriesIndex].XValueType == ChartValueType.Auto || output[seriesIndex].autoXValueType)
-                    {
-                        output[seriesIndex].XValueType = inputSeries[seriesIndex].XValueType;
-                        output[seriesIndex].autoXValueType = true;
-                    }
-                    // Copy Y values type
-                    if (output[seriesIndex].YValueType == ChartValueType.Auto || output[seriesIndex].autoYValueType)
-                    {
-                        output[seriesIndex].YValueType = inputSeries[seriesIndex].YValueType;
-                        output[seriesIndex].autoYValueType = true;
-                    }
+                    case (DateRangeType.DayOfMonth):
+                        if (dateTimeValue.Day >= rangeElements[index] &&
+                            dateTimeValue.Day <= rangeElements[index + 1])
+                            return true;
+                        break;
 
-                    // Copy input points into output
-                    foreach (DataPoint point in inputSeries[seriesIndex].Points)
-                    {
-                        output[seriesIndex].Points.Add(point.Clone());
-                    }
+                    case (DateRangeType.Hour):
+                        if (dateTimeValue.Hour >= rangeElements[index] &&
+                            dateTimeValue.Hour <= rangeElements[index + 1])
+                            return true;
+                        break;
+
+                    case (DateRangeType.Minute):
+                        if (dateTimeValue.Minute >= rangeElements[index] &&
+                            dateTimeValue.Minute <= rangeElements[index + 1])
+                            return true;
+                        break;
                 }
             }
 
-            // No points to filter
-            if (inputSeries[0].Points.Count == 0)
+            return false;
+        }
+
+        /// <summary>
+        /// Helper function to convert elements indexes from a string
+        /// into an array of integers
+        /// </summary>
+        /// <param name="rangeElements">Element indexes string. Ex:"3,5,6-9,15"</param>
+        /// <returns>Array of integer indexes.</returns>
+        private static int[] ConvertElementIndexesToArray(string rangeElements)
+        {
+            // Split input string by comma
+            string[] indexes = rangeElements.Split(',');
+
+            // Check if there are items in the array
+            if (indexes.Length == 0)
             {
-                return;
+                throw (new ArgumentException(SR.ExceptionDataManipulatorIndexUndefined, nameof(rangeElements)));
             }
 
-            //**************************************************
-            //** Sort input data
-            //**************************************************
-            this.Sort((getTopValues) ? PointSortOrder.Descending : PointSortOrder.Ascending,
-                usingValue,
-                output);
+            // Allocate memory for the result array
+            int[] result = new int[indexes.Length * 2];
 
-            //**************************************************
-            //** Get top/bottom points
-            //**************************************************
-            // Process all series
-            for (int seriesIndex = 0; seriesIndex < inputSeries.Length; seriesIndex++)
+            // Process each element index
+            int index = 0;
+            foreach (string str in indexes)
             {
-                // Only keep N first points
-                while (output[seriesIndex].Points.Count > pointCount)
+                // Check if it's a simple index or a range
+                if (str.IndexOf('-') != -1)
                 {
-                    if (FilterSetEmptyPoints)
+                    string[] rangeIndex = str.Split('-');
+                    if (rangeIndex.Length == 2)
                     {
-                        output[seriesIndex].Points[pointCount].IsEmpty = true;
-                        ++pointCount;
+                        // Convert to integer
+                        try
+                        {
+                            result[index] = int.Parse(rangeIndex[0], System.Globalization.CultureInfo.InvariantCulture);
+                            result[index + 1] = int.Parse(rangeIndex[1], System.Globalization.CultureInfo.InvariantCulture);
+
+                            if (result[index + 1] < result[index])
+                            {
+                                int temp = result[index];
+                                result[index] = result[index + 1];
+                                result[index + 1] = temp;
+                            }
+                        }
+                        catch (System.Exception)
+                        {
+                            throw new ArgumentException(SR.ExceptionDataManipulatorIndexFormatInvalid, nameof(rangeElements));
+                        }
                     }
                     else
                     {
-                        output[seriesIndex].Points.RemoveAt(pointCount);
+                        throw new ArgumentException(SR.ExceptionDataManipulatorIndexFormatInvalid, nameof(rangeElements));
                     }
                 }
+                else
+                {
+                    // Convert to integer
+                    try
+                    {
+                        result[index] = int.Parse(str, System.Globalization.CultureInfo.InvariantCulture);
+                        result[index + 1] = result[index];
+                    }
+                    catch (System.Exception)
+                    {
+                        throw new ArgumentException(SR.ExceptionDataManipulatorIndexFormatInvalid, nameof(rangeElements));
+                    }
+                }
+
+                index += 2;
             }
+
+            return result;
         }
 
         /// <summary>
@@ -1349,6 +1374,109 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// Keeps only N top/bottom points of the series
+        /// </summary>
+        /// <param name="pointCount">Number of top/bottom points to return.</param>
+        /// <param name="inputSeries">Input series array.</param>
+        /// <param name="outputSeries">Output series array.</param>
+        /// <param name="usingValue">Defines which value of the point use in comparison (X, Y, Y2, ...).</param>
+        /// <param name="getTopValues">Indicate that N top values must be retrieved, otherwise N bottom values.</param>
+        private void FilterTopN(int pointCount,
+            Series[] inputSeries,
+            Series[] outputSeries,
+            string usingValue,
+            bool getTopValues)
+        {
+            // Check input/output series arrays
+            CheckSeriesArrays(inputSeries, outputSeries);
+
+            // Check input series alignment
+            CheckXValuesAlignment(inputSeries);
+
+            if (pointCount <= 0)
+            {
+                throw (new ArgumentOutOfRangeException(nameof(pointCount), SR.ExceptionDataManipulatorPointCountIsZero));
+            }
+
+            //**************************************************
+            //** Filter points in the first series and remove
+            //** in all
+            //**************************************************
+
+            // Define an output series array
+            Series[] output = new Series[inputSeries.Length];
+            for (int seriesIndex = 0; seriesIndex < inputSeries.Length; seriesIndex++)
+            {
+                output[seriesIndex] = inputSeries[seriesIndex];
+                if (outputSeries != null && outputSeries.Length > seriesIndex)
+                {
+                    output[seriesIndex] = outputSeries[seriesIndex];
+                }
+
+                // Remove all points from the output series
+                if (output[seriesIndex] != inputSeries[seriesIndex])
+                {
+                    output[seriesIndex].Points.Clear();
+
+                    // Make sure there is enough Y values per point
+                    output[seriesIndex].YValuesPerPoint = inputSeries[seriesIndex].YValuesPerPoint;
+
+                    // Copy X values type
+                    if (output[seriesIndex].XValueType == ChartValueType.Auto || output[seriesIndex].autoXValueType)
+                    {
+                        output[seriesIndex].XValueType = inputSeries[seriesIndex].XValueType;
+                        output[seriesIndex].autoXValueType = true;
+                    }
+                    // Copy Y values type
+                    if (output[seriesIndex].YValueType == ChartValueType.Auto || output[seriesIndex].autoYValueType)
+                    {
+                        output[seriesIndex].YValueType = inputSeries[seriesIndex].YValueType;
+                        output[seriesIndex].autoYValueType = true;
+                    }
+
+                    // Copy input points into output
+                    foreach (DataPoint point in inputSeries[seriesIndex].Points)
+                    {
+                        output[seriesIndex].Points.Add(point.Clone());
+                    }
+                }
+            }
+
+            // No points to filter
+            if (inputSeries[0].Points.Count == 0)
+            {
+                return;
+            }
+
+            //**************************************************
+            //** Sort input data
+            //**************************************************
+            this.Sort((getTopValues) ? PointSortOrder.Descending : PointSortOrder.Ascending,
+                usingValue,
+                output);
+
+            //**************************************************
+            //** Get top/bottom points
+            //**************************************************
+            // Process all series
+            for (int seriesIndex = 0; seriesIndex < inputSeries.Length; seriesIndex++)
+            {
+                // Only keep N first points
+                while (output[seriesIndex].Points.Count > pointCount)
+                {
+                    if (FilterSetEmptyPoints)
+                    {
+                        output[seriesIndex].Points[pointCount].IsEmpty = true;
+                        ++pointCount;
+                    }
+                    else
+                    {
+                        output[seriesIndex].Points.RemoveAt(pointCount);
+                    }
+                }
+            }
+        }
+        /// <summary>
         /// Data point filter.
         /// Filters points using element type and index
         /// </summary>
@@ -1359,11 +1487,6 @@ namespace WebCharts.Services
 
             private readonly DateRangeType _dateRange;
             private readonly int[] _rangeElements = null;
-
-            // Default constructor is not accesiable
-            private PointElementFilter()
-            {
-            }
 
             /// <summary>
             /// Public constructor.
@@ -1378,6 +1501,10 @@ namespace WebCharts.Services
                 _rangeElements = ConvertElementIndexesToArray(rangeElements);
             }
 
+            // Default constructor is not accesiable
+            private PointElementFilter()
+            {
+            }
             /// <summary>
             /// Data points filtering method.
             /// </summary>
@@ -1403,16 +1530,8 @@ namespace WebCharts.Services
             // Private fields
             private readonly CompareMethod _compareMethod;
 
-            private readonly string _usingValue;
             private readonly double _compareValue;
-
-            /// <summary>
-            /// Default constructor is not accessible
-            /// </summary>
-			private PointValueFilter()
-            {
-            }
-
+            private readonly string _usingValue;
             /// <summary>
             /// Public constructor.
             /// </summary>
@@ -1428,6 +1547,12 @@ namespace WebCharts.Services
                 _compareValue = compareValue;
             }
 
+            /// <summary>
+            /// Default constructor is not accessible
+            /// </summary>
+			private PointValueFilter()
+            {
+            }
             /// <summary>
             /// IDataSKPointilter interface method implementation
             /// </summary>
@@ -1475,140 +1600,6 @@ namespace WebCharts.Services
                 return matchCriteria;
             }
         }
-
-        /// <summary>
-        /// Helper function to convert elements indexes from a string
-        /// into an array of integers
-        /// </summary>
-        /// <param name="rangeElements">Element indexes string. Ex:"3,5,6-9,15"</param>
-        /// <returns>Array of integer indexes.</returns>
-        private static int[] ConvertElementIndexesToArray(string rangeElements)
-        {
-            // Split input string by comma
-            string[] indexes = rangeElements.Split(',');
-
-            // Check if there are items in the array
-            if (indexes.Length == 0)
-            {
-                throw (new ArgumentException(SR.ExceptionDataManipulatorIndexUndefined, nameof(rangeElements)));
-            }
-
-            // Allocate memory for the result array
-            int[] result = new int[indexes.Length * 2];
-
-            // Process each element index
-            int index = 0;
-            foreach (string str in indexes)
-            {
-                // Check if it's a simple index or a range
-                if (str.IndexOf('-') != -1)
-                {
-                    string[] rangeIndex = str.Split('-');
-                    if (rangeIndex.Length == 2)
-                    {
-                        // Convert to integer
-                        try
-                        {
-                            result[index] = int.Parse(rangeIndex[0], System.Globalization.CultureInfo.InvariantCulture);
-                            result[index + 1] = int.Parse(rangeIndex[1], System.Globalization.CultureInfo.InvariantCulture);
-
-                            if (result[index + 1] < result[index])
-                            {
-                                int temp = result[index];
-                                result[index] = result[index + 1];
-                                result[index + 1] = temp;
-                            }
-                        }
-                        catch (System.Exception)
-                        {
-                            throw new ArgumentException(SR.ExceptionDataManipulatorIndexFormatInvalid, nameof(rangeElements));
-                        }
-                    }
-                    else
-                    {
-                        throw new ArgumentException(SR.ExceptionDataManipulatorIndexFormatInvalid, nameof(rangeElements));
-                    }
-                }
-                else
-                {
-                    // Convert to integer
-                    try
-                    {
-                        result[index] = int.Parse(str, System.Globalization.CultureInfo.InvariantCulture);
-                        result[index + 1] = result[index];
-                    }
-                    catch (System.Exception)
-                    {
-                        throw new ArgumentException(SR.ExceptionDataManipulatorIndexFormatInvalid, nameof(rangeElements));
-                    }
-                }
-
-                index += 2;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Helper function, which checks if specified point matches the criteria
-        /// </summary>
-        /// <param name="dateRange">Element type.</param>
-        /// <param name="rangeElements">Array of element indexes ranges (pairs).</param>
-        /// <param name="point">Data point to check.</param>
-        /// <returns>True if point matches the criteria.</returns>
-        private static bool CheckFilterElementCriteria(
-            DateRangeType dateRange,
-            int[] rangeElements,
-            DataPoint point)
-        {
-            // Conver X value to DateTime
-            DateTime dateTimeValue = DateTime.FromOADate(point.XValue);
-
-            for (int index = 0; index < rangeElements.Length; index += 2)
-            {
-                switch (dateRange)
-                {
-                    case (DateRangeType.Year):
-                        if (dateTimeValue.Year >= rangeElements[index] &&
-                            dateTimeValue.Year <= rangeElements[index + 1])
-                            return true;
-                        break;
-
-                    case (DateRangeType.Month):
-                        if (dateTimeValue.Month >= rangeElements[index] &&
-                            dateTimeValue.Month <= rangeElements[index + 1])
-                            return true;
-                        break;
-
-                    case (DateRangeType.DayOfWeek):
-                        if ((int)dateTimeValue.DayOfWeek >= rangeElements[index] &&
-                            (int)dateTimeValue.DayOfWeek <= rangeElements[index + 1])
-                            return true;
-                        break;
-
-                    case (DateRangeType.DayOfMonth):
-                        if (dateTimeValue.Day >= rangeElements[index] &&
-                            dateTimeValue.Day <= rangeElements[index + 1])
-                            return true;
-                        break;
-
-                    case (DateRangeType.Hour):
-                        if (dateTimeValue.Hour >= rangeElements[index] &&
-                            dateTimeValue.Hour <= rangeElements[index + 1])
-                            return true;
-                        break;
-
-                    case (DateRangeType.Minute):
-                        if (dateTimeValue.Minute >= rangeElements[index] &&
-                            dateTimeValue.Minute <= rangeElements[index + 1])
-                            return true;
-                        break;
-                }
-            }
-
-            return false;
-        }
-
         #endregion Filtering methods
 
         #region Filtering overloaded methods
@@ -1861,6 +1852,88 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// Performs custom filtering on a series' data points.
+        /// The Series object that is filtered is used to store the modified data.
+        /// </summary>
+        /// <param name="filterInterface">Filtering interface.</param>
+        /// <param name="inputSeries">Input series.</param>
+        public void Filter(IDataSKPointilter filterInterface,
+            Series inputSeries)
+        {
+            // Check arguments
+            if (filterInterface == null)
+                throw new ArgumentNullException(nameof(filterInterface));
+            if (inputSeries == null)
+                throw new ArgumentNullException(nameof(inputSeries));
+
+            Filter(filterInterface,
+                ConvertToSeriesArray(inputSeries, false),
+                null);
+        }
+
+        /// <summary>
+        /// Performs custom filtering on a series' data points.
+        /// </summary>
+        /// <param name="filterInterface">Filtering interface.</param>
+        /// <param name="inputSeries">Input series.</param>
+        /// <param name="outputSeries">Output series.</param>
+        public void Filter(IDataSKPointilter filterInterface,
+            Series inputSeries,
+            Series outputSeries)
+        {
+            // Check arguments
+            if (filterInterface == null)
+                throw new ArgumentNullException(nameof(filterInterface));
+            if (inputSeries == null)
+                throw new ArgumentNullException(nameof(inputSeries));
+
+            Filter(filterInterface,
+                ConvertToSeriesArray(inputSeries, false),
+                ConvertToSeriesArray(outputSeries, false));
+        }
+
+        /// <summary>
+        /// Performs custom filtering on one or more series' data points, based on the first series' points.
+        /// The filtered series are also used to store the modified data.
+        /// </summary>
+        /// <param name="filterInterface">Filtering interface.</param>
+        /// <param name="inputSeriesNames">Comma separated list of input series names.</param>
+        public void Filter(IDataSKPointilter filterInterface,
+            string inputSeriesNames)
+        {
+            // Check arguments
+            if (filterInterface == null)
+                throw new ArgumentNullException(nameof(filterInterface));
+            if (inputSeriesNames == null)
+                throw new ArgumentNullException(nameof(inputSeriesNames));
+
+            Filter(filterInterface,
+                ConvertToSeriesArray(inputSeriesNames, false),
+                null);
+        }
+
+        /// <summary>
+        /// Performs custom filtering on one or more series' data points, based on the first series' points.
+        /// </summary>
+        /// <param name="filterInterface">Filtering interface.</param>
+        /// <param name="inputSeriesNames">Comma separated list of input series names.</param>
+        /// <param name="outputSeriesNames">Comma separated list of output series names.</param>
+        public void Filter(IDataSKPointilter filterInterface,
+            string inputSeriesNames,
+            string outputSeriesNames)
+        {
+            // Check arguments
+            if (filterInterface == null)
+                throw new ArgumentNullException(nameof(filterInterface));
+            if (inputSeriesNames == null)
+                throw new ArgumentNullException(nameof(inputSeriesNames));
+
+            Filter(filterInterface,
+                ConvertToSeriesArray(inputSeriesNames, false),
+                ConvertToSeriesArray(outputSeriesNames, true));
+        }
+
+        /// <summary>
         /// Filters all data points in one or more series except for a specified number of points.
         /// The points that are not filtered correspond to points in the first input series that have the largest or smallest values.
         /// </summary>
@@ -2049,110 +2122,421 @@ namespace WebCharts.Services
                 usingValue,
                 true);
         }
-
-        /// <summary>
-        /// Performs custom filtering on a series' data points.
-        /// The Series object that is filtered is used to store the modified data.
-        /// </summary>
-        /// <param name="filterInterface">Filtering interface.</param>
-        /// <param name="inputSeries">Input series.</param>
-        public void Filter(IDataSKPointilter filterInterface,
-            Series inputSeries)
-        {
-            // Check arguments
-            if (filterInterface == null)
-                throw new ArgumentNullException(nameof(filterInterface));
-            if (inputSeries == null)
-                throw new ArgumentNullException(nameof(inputSeries));
-
-            Filter(filterInterface,
-                ConvertToSeriesArray(inputSeries, false),
-                null);
-        }
-
-        /// <summary>
-        /// Performs custom filtering on a series' data points.
-        /// </summary>
-        /// <param name="filterInterface">Filtering interface.</param>
-        /// <param name="inputSeries">Input series.</param>
-        /// <param name="outputSeries">Output series.</param>
-        public void Filter(IDataSKPointilter filterInterface,
-            Series inputSeries,
-            Series outputSeries)
-        {
-            // Check arguments
-            if (filterInterface == null)
-                throw new ArgumentNullException(nameof(filterInterface));
-            if (inputSeries == null)
-                throw new ArgumentNullException(nameof(inputSeries));
-
-            Filter(filterInterface,
-                ConvertToSeriesArray(inputSeries, false),
-                ConvertToSeriesArray(outputSeries, false));
-        }
-
-        /// <summary>
-        /// Performs custom filtering on one or more series' data points, based on the first series' points.
-        /// The filtered series are also used to store the modified data.
-        /// </summary>
-        /// <param name="filterInterface">Filtering interface.</param>
-        /// <param name="inputSeriesNames">Comma separated list of input series names.</param>
-        public void Filter(IDataSKPointilter filterInterface,
-            string inputSeriesNames)
-        {
-            // Check arguments
-            if (filterInterface == null)
-                throw new ArgumentNullException(nameof(filterInterface));
-            if (inputSeriesNames == null)
-                throw new ArgumentNullException(nameof(inputSeriesNames));
-
-            Filter(filterInterface,
-                ConvertToSeriesArray(inputSeriesNames, false),
-                null);
-        }
-
-        /// <summary>
-        /// Performs custom filtering on one or more series' data points, based on the first series' points.
-        /// </summary>
-        /// <param name="filterInterface">Filtering interface.</param>
-        /// <param name="inputSeriesNames">Comma separated list of input series names.</param>
-        /// <param name="outputSeriesNames">Comma separated list of output series names.</param>
-        public void Filter(IDataSKPointilter filterInterface,
-            string inputSeriesNames,
-            string outputSeriesNames)
-        {
-            // Check arguments
-            if (filterInterface == null)
-                throw new ArgumentNullException(nameof(filterInterface));
-            if (inputSeriesNames == null)
-                throw new ArgumentNullException(nameof(inputSeriesNames));
-
-            Filter(filterInterface,
-                ConvertToSeriesArray(inputSeriesNames, false),
-                ConvertToSeriesArray(outputSeriesNames, true));
-        }
-
         #endregion Filtering overloaded methods
 
         #region Grouping methods
 
         /// <summary>
-        /// Class stores information about the grouping function type and
-        /// index of output value.
+        /// Checks if input/output series parameters are correct.
+        /// If not - fires an exception
         /// </summary>
-        private class GroupingFunctionInfo
+        /// <param name="inputSeries">Input series array.</param>
+        /// <param name="outputSeries">Output series array.</param>
+		private static void CheckSeriesArrays(Series[] inputSeries, Series[] outputSeries)
         {
-            // AxisName of the grouping function
-            internal GroupingFunction function = GroupingFunction.None;
-
-            // Index of the Y value for storing results
-            internal int outputIndex = 0;
-
-            /// <summary>
-            /// Constructor.
-            /// </summary>
-            internal GroupingFunctionInfo()
+            // At least one series must be in the input series
+            if (inputSeries == null || inputSeries.Length == 0)
             {
+                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingInputSeriesUndefined));
+            }
+
+            // Output series must be empty or have the same number of items
+            if (outputSeries != null && outputSeries.Length != inputSeries.Length)
+            {
+                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingInputOutputSeriesNumberMismatch));
+            }
+        }
+
+        /// <summary>
+        /// Checks the formula format and returns an array of formula types
+        /// for each X and each Y value of the input series.
+        /// </summary>
+        /// <param name="inputSeries">Array of input series.</param>
+        /// <param name="formula">Formula string.</param>
+        /// <param name="outputValuesNumber">Number of values in output series.</param>
+        /// <returns>Array of functions for each Y value.</returns>
+        private GroupingFunctionInfo[] GetGroupingFunctions(Series[] inputSeries, string formula, out int outputValuesNumber)
+        {
+            // Get maximum number of Y values in all series
+            int numberOfYValues = 0;
+            foreach (Series series in inputSeries)
+            {
+                numberOfYValues = Math.Max(numberOfYValues, series.YValuesPerPoint);
+            }
+
+            // Allocate memory for the result array for X and each Y values
+            GroupingFunctionInfo[] result = new GroupingFunctionInfo[numberOfYValues + 1];
+            for (int index = 0; index < result.Length; index++)
+            {
+                result[index] = new GroupingFunctionInfo();
+            }
+
+            // Split formula by comma
+            string[] valueFormulas = formula.Split(',');
+
+            // At least one formula must be specified
+            if (valueFormulas.Length == 0)
+            {
+                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaUndefined));
+            }
+
+            // Check each formula in the array
+            GroupingFunctionInfo defaultFormula = new();
+            foreach (string s in valueFormulas)
+            {
+                // Trim white space and make upper case
+                string formulaString = s.Trim();
+                formulaString = formulaString.ToUpper(System.Globalization.CultureInfo.InvariantCulture);
+
+                // Get value index and formula type from the string
+                GroupingFunction formulaType = ParseFormulaAndValueType(formulaString, out int valueIndex);
+
+                // Save the default (first) formula
+                if (defaultFormula.function == GroupingFunction.None)
+                {
+                    defaultFormula.function = formulaType;
+                }
+
+                // Check that value index do not exceed the max values number
+                if (valueIndex >= result.Length)
+                {
+                    throw (new ArgumentException(SR.ExceptionDataManipulatorYValuesIndexExceeded(formulaString)));
+                }
+
+                // Check if formula for this value type was already set
+                if (result[valueIndex].function != GroupingFunction.None)
+                {
+                    throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaAlreadyDefined(formulaString)));
+                }
+
+                // Set formula type
+                result[valueIndex].function = formulaType;
+            }
+
+            // Apply default formula for non set X value
+            if (result[0].function == GroupingFunction.None)
+            {
+                result[0].function = GroupingFunction.First;
+            }
+
+            // Apply default formula for all non set Y values
+            for (int funcIndex = 1; funcIndex < result.Length; funcIndex++)
+            {
+                if (result[funcIndex].function == GroupingFunction.None)
+                {
+                    result[funcIndex].function = defaultFormula.function;
+                }
+            }
+
+            // Specify output value index
+            outputValuesNumber = 0;
+            for (int funcIndex = 0; funcIndex < result.Length; funcIndex++)
+            {
+                result[funcIndex].outputIndex = outputValuesNumber;
+
+                if (result[funcIndex].function == GroupingFunction.HiLoOpCl)
+                {
+                    outputValuesNumber += 3;
+                }
+                else if (result[funcIndex].function == GroupingFunction.HiLo)
+                {
+                    outputValuesNumber += 1;
+                }
+
+                ++outputValuesNumber;
+            }
+
+            // X value formula can be FIRST, LAST and AVE
+            if (result[0].function != GroupingFunction.First &&
+                result[0].function != GroupingFunction.Last &&
+                result[0].function != GroupingFunction.Center)
+            {
+                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaUnsupported));
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Groups series points in the interval with offset
+        /// </summary>
+        /// <param name="formula">Grouping formula.</param>
+        /// <param name="interval">Interval size.</param>
+        /// <param name="intervalType">Interval type.</param>
+        /// <param name="intervalOffset">Interval offset size.</param>
+        /// <param name="intervalOffsetType">Interval offset type.</param>
+        /// <param name="inputSeries">Array of input series.</param>
+        /// <param name="outputSeries">Array of output series.</param>
+		private void Group(string formula,
+            double interval,
+            IntervalType intervalType,
+            double intervalOffset,
+            IntervalType intervalOffsetType,
+            Series[] inputSeries,
+            Series[] outputSeries)
+        {
+            // Check arguments
+            if (formula == null)
+                throw new ArgumentNullException(nameof(formula));
+
+            //**************************************************
+            //** Check input/output series arrays
+            //**************************************************
+            CheckSeriesArrays(inputSeries, outputSeries);
+
+            //**************************************************
+            //** Check and parse formula
+            //**************************************************
+            GroupingFunctionInfo[] functions = GetGroupingFunctions(inputSeries, formula, out int outputValuesNumber);
+
+            //**************************************************
+            //** Loop through all input series
+            //**************************************************
+            for (int seriesIndex = 0; seriesIndex < inputSeries.Length; seriesIndex++)
+            {
+                // Define an input and output series
+                Series input = inputSeries[seriesIndex];
+                Series output = input;
+                if (outputSeries != null && seriesIndex < outputSeries.Length)
+                {
+                    output = outputSeries[seriesIndex];
+
+                    // Remove all points from the output series
+                    if (output.Name != input.Name)
+                    {
+                        output.Points.Clear();
+
+                        // Copy X values type
+                        if (output.XValueType == ChartValueType.Auto || output.autoXValueType)
+                        {
+                            output.XValueType = input.XValueType;
+                            output.autoXValueType = true;
+                        }
+                        // Copy Y values type
+                        if (output.YValueType == ChartValueType.Auto || output.autoYValueType)
+                        {
+                            output.YValueType = input.YValueType;
+                            output.autoYValueType = true;
+                        }
+                    }
+                }
+
+                // No points to group
+                if (input.Points.Count == 0)
+                {
+                    continue;
+                }
+
+                // Make sure there is enough Y values per point
+                output.YValuesPerPoint = outputValuesNumber - 1;
+
+                //**************************************************
+                //** Initialize interval & value tracking variables
+                //**************************************************
+                int intervalFirstIndex = 0;
+                int intervalLastIndex = 0;
+                double intervalFrom = 0;
+                double intervalTo = 0;
+
+                // Set interval start point
+                intervalFrom = input.Points[0].XValue;
+
+                // Adjust start point depending on the interval type
+                intervalFrom = ChartHelper.AlignIntervalStart(intervalFrom, interval, ConvertIntervalType(intervalType));
+
+                // Add offset to the start position
+                double offsetFrom = 0;
+                if (intervalOffset != 0)
+                {
+                    offsetFrom = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom,
+                        intervalOffset,
+                        ConvertIntervalType(intervalOffsetType));
+
+                    // Check if there are points left outside first group
+                    if (input.Points[0].XValue < offsetFrom)
+                    {
+                        if (intervalType == IntervalType.Number)
+                        {
+                            intervalFrom = offsetFrom + ChartHelper.GetIntervalSize(offsetFrom,
+                                -interval,
+                                ConvertIntervalType(intervalType));
+                        }
+                        else
+                        {
+                            intervalFrom = offsetFrom - ChartHelper.GetIntervalSize(offsetFrom,
+                                interval,
+                                ConvertIntervalType(intervalType));
+                        }
+                        intervalTo = offsetFrom;
+                    }
+                    else
+                    {
+                        intervalFrom = offsetFrom;
+                        intervalTo = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom, interval, ConvertIntervalType(intervalType));
+                    }
+                }
+                else
+                {
+                    intervalTo = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom, interval, ConvertIntervalType(intervalType));
+                }
+
+                //**************************************************
+                //** Allocate array for storing temp.
+                //** values of the point
+                //**************************************************
+                double[] pointTempValues = new double[outputValuesNumber];
+
+                //**************************************************
+                //** Loop through the series points
+                //**************************************************
+                bool lastPoint = false;
+                int emptyPointsSkipped = 0;
+                int pointsNumberInInterval = 0;
+                for (int pointIndex = 0; pointIndex <= input.Points.Count && !lastPoint; pointIndex++)
+                {
+                    bool endOfInterval = false;
+
+                    //**************************************************
+                    //** Check if series is sorted by X value
+                    //**************************************************
+                    if (pointIndex > 0 && pointIndex < input.Points.Count && input.Points[pointIndex].XValue < input.Points[pointIndex - 1].XValue)
+                    {
+                        throw (new InvalidOperationException(SR.ExceptionDataManipulatorGroupedSeriesNotSorted));
+                    }
+
+                    //**************************************************
+                    //** Check if it's the last point
+                    //**************************************************
+                    if (pointIndex == input.Points.Count)
+                    {
+                        // End of the group interval detected
+                        lastPoint = true;
+                        intervalLastIndex = pointIndex - 1;
+                        pointIndex = intervalLastIndex;
+                        endOfInterval = true;
+                    }
+
+                    //**************************************************
+                    //** Check if current point X value is inside current group
+                    //**************************************************
+                    if (!endOfInterval && input.Points[pointIndex].XValue >= intervalTo)
+                    {
+                        // End of the group interval detected
+                        if (pointIndex == 0)
+                        {
+                            continue;
+                        }
+                        intervalLastIndex = pointIndex - 1;
+                        endOfInterval = true;
+                    }
+
+                    //**************************************************
+                    //** Process data at end of the interval
+                    //**************************************************
+                    if (endOfInterval)
+                    {
+                        // Add grouped point only if there are non empty points in the interval
+                        if (pointsNumberInInterval > emptyPointsSkipped)
+                        {
+                            // Finalize the calculation
+                            ProcessPointValues(
+                                functions,
+                                pointTempValues,
+                                inputSeries[seriesIndex],
+                                input.Points[pointIndex],
+                                pointIndex,
+                                intervalFirstIndex,
+                                intervalLastIndex,
+                                true,
+                                ref emptyPointsSkipped);
+
+                            //**************************************************
+                            //** Calculate the X values
+                            //**************************************************
+                            if (functions[0].function == GroupingFunction.Center)
+                            {
+                                pointTempValues[0] = (intervalFrom + intervalTo) / 2.0;
+                            }
+                            else if (functions[0].function == GroupingFunction.First)
+                            {
+                                pointTempValues[0] = intervalFrom;
+                            }
+                            if (functions[0].function == GroupingFunction.Last)
+                            {
+                                pointTempValues[0] = intervalTo;
+                            }
+
+                            //**************************************************
+                            //** Create new point object
+                            //**************************************************
+                            DataPoint newPoint = new();
+                            newPoint.ResizeYValueArray(outputValuesNumber - 1);
+                            newPoint.XValue = pointTempValues[0];
+                            for (int i = 1; i < pointTempValues.Length; i++)
+                            {
+                                newPoint.YValues[i - 1] = pointTempValues[i];
+                            }
+
+                            //**************************************************
+                            //** Remove grouped points if output and input
+                            //** series are the same
+                            //**************************************************
+                            int newPointIndex = output.Points.Count;
+                            if (output == input)
+                            {
+                                newPointIndex = intervalFirstIndex;
+                                pointIndex = newPointIndex + 1;
+
+                                // Remove grouped points
+                                for (int removedPoint = intervalFirstIndex; removedPoint <= intervalLastIndex; removedPoint++)
+                                {
+                                    output.Points.RemoveAt(intervalFirstIndex);
+                                }
+                            }
+
+                            //**************************************************
+                            //** Add point to the output series
+                            //**************************************************
+                            output.Points.Insert(newPointIndex, newPoint);
+                        }
+
+                        // Set new From To values of the group interval
+                        intervalFrom = intervalTo;
+                        intervalTo = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom, interval, ConvertIntervalType(intervalType));
+
+                        // Set new group interval indexes
+                        intervalFirstIndex = pointIndex;
+                        intervalLastIndex = pointIndex;
+
+                        // Reset number of points in the interval
+                        pointsNumberInInterval = 0;
+
+                        // Reset number of skipped points
+                        emptyPointsSkipped = 0;
+
+                        // Process point once again
+                        --pointIndex;
+
+                        continue;
+                    }
+
+                    //**************************************************
+                    //** Use current point values in the formula
+                    //**************************************************
+                    ProcessPointValues(
+                        functions,
+                        pointTempValues,
+                        inputSeries[seriesIndex],
+                        input.Points[pointIndex],
+                        pointIndex,
+                        intervalFirstIndex,
+                        intervalLastIndex,
+                        false,
+                        ref emptyPointsSkipped);
+
+                    // Increase number of points in the group
+                    ++pointsNumberInInterval;
+                }
             }
         }
 
@@ -2393,289 +2777,79 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Groups series points in the interval with offset
+        /// Parse one formula with optional value prefix.
+        /// Example: "Y2:MAX"
         /// </summary>
-        /// <param name="formula">Grouping formula.</param>
-        /// <param name="interval">Interval size.</param>
-        /// <param name="intervalType">Interval type.</param>
-        /// <param name="intervalOffset">Interval offset size.</param>
-        /// <param name="intervalOffsetType">Interval offset type.</param>
-        /// <param name="inputSeries">Array of input series.</param>
-        /// <param name="outputSeries">Array of output series.</param>
-		private void Group(string formula,
-            double interval,
-            IntervalType intervalType,
-            double intervalOffset,
-            IntervalType intervalOffsetType,
-            Series[] inputSeries,
-            Series[] outputSeries)
+        /// <param name="formulaString">One formula name with optional value prefix.</param>
+        /// <param name="valueIndex">Return value index.</param>
+        /// <returns>Formula type.</returns>
+        private GroupingFunction ParseFormulaAndValueType(string formulaString, out int valueIndex)
         {
-            // Check arguments
-            if (formula == null)
-                throw new ArgumentNullException(nameof(formula));
+            // Initialize value index as first Y value (default)
+            valueIndex = 1;
 
-            //**************************************************
-            //** Check input/output series arrays
-            //**************************************************
-            CheckSeriesArrays(inputSeries, outputSeries);
+            // Split formula by optional ':' character
+            string[] formulaParts = formulaString.Split(':');
 
-            //**************************************************
-            //** Check and parse formula
-            //**************************************************
-            GroupingFunctionInfo[] functions = GetGroupingFunctions(inputSeries, formula, out int outputValuesNumber);
-
-            //**************************************************
-            //** Loop through all input series
-            //**************************************************
-            for (int seriesIndex = 0; seriesIndex < inputSeries.Length; seriesIndex++)
+            // There must be at least one and no more than two result strings
+            if (formulaParts.Length < 1 && formulaParts.Length > 2)
             {
-                // Define an input and output series
-                Series input = inputSeries[seriesIndex];
-                Series output = input;
-                if (outputSeries != null && seriesIndex < outputSeries.Length)
+                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaFormatInvalid(formulaString)));
+            }
+
+            // Check specified value type
+            if (formulaParts.Length == 2)
+            {
+                if (formulaParts[0] == "X")
                 {
-                    output = outputSeries[seriesIndex];
-
-                    // Remove all points from the output series
-                    if (output.Name != input.Name)
-                    {
-                        output.Points.Clear();
-
-                        // Copy X values type
-                        if (output.XValueType == ChartValueType.Auto || output.autoXValueType)
-                        {
-                            output.XValueType = input.XValueType;
-                            output.autoXValueType = true;
-                        }
-                        // Copy Y values type
-                        if (output.YValueType == ChartValueType.Auto || output.autoYValueType)
-                        {
-                            output.YValueType = input.YValueType;
-                            output.autoYValueType = true;
-                        }
-                    }
+                    valueIndex = 0;
                 }
-
-                // No points to group
-                if (input.Points.Count == 0)
+                else if (formulaParts[0].StartsWith("Y", StringComparison.Ordinal))
                 {
-                    continue;
-                }
+                    formulaParts[0] = formulaParts[0].TrimStart('Y');
 
-                // Make sure there is enough Y values per point
-                output.YValuesPerPoint = outputValuesNumber - 1;
-
-                //**************************************************
-                //** Initialize interval & value tracking variables
-                //**************************************************
-                int intervalFirstIndex = 0;
-                int intervalLastIndex = 0;
-                double intervalFrom = 0;
-                double intervalTo = 0;
-
-                // Set interval start point
-                intervalFrom = input.Points[0].XValue;
-
-                // Adjust start point depending on the interval type
-                intervalFrom = ChartHelper.AlignIntervalStart(intervalFrom, interval, ConvertIntervalType(intervalType));
-
-                // Add offset to the start position
-                double offsetFrom = 0;
-                if (intervalOffset != 0)
-                {
-                    offsetFrom = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom,
-                        intervalOffset,
-                        ConvertIntervalType(intervalOffsetType));
-
-                    // Check if there are points left outside first group
-                    if (input.Points[0].XValue < offsetFrom)
+                    if (formulaParts[0].Length == 0)
                     {
-                        if (intervalType == IntervalType.Number)
-                        {
-                            intervalFrom = offsetFrom + ChartHelper.GetIntervalSize(offsetFrom,
-                                -interval,
-                                ConvertIntervalType(intervalType));
-                        }
-                        else
-                        {
-                            intervalFrom = offsetFrom - ChartHelper.GetIntervalSize(offsetFrom,
-                                interval,
-                                ConvertIntervalType(intervalType));
-                        }
-                        intervalTo = offsetFrom;
+                        valueIndex = 1;
                     }
                     else
                     {
-                        intervalFrom = offsetFrom;
-                        intervalTo = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom, interval, ConvertIntervalType(intervalType));
+                        // Try to convert the rest of the string to integer
+                        try
+                        {
+                            valueIndex = Int32.Parse(formulaParts[0], System.Globalization.CultureInfo.InvariantCulture);
+                        }
+                        catch (System.Exception)
+                        {
+                            throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaFormatInvalid(formulaString)));
+                        }
                     }
                 }
                 else
                 {
-                    intervalTo = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom, interval, ConvertIntervalType(intervalType));
-                }
-
-                //**************************************************
-                //** Allocate array for storing temp.
-                //** values of the point
-                //**************************************************
-                double[] pointTempValues = new double[outputValuesNumber];
-
-                //**************************************************
-                //** Loop through the series points
-                //**************************************************
-                bool lastPoint = false;
-                int emptyPointsSkipped = 0;
-                int pointsNumberInInterval = 0;
-                for (int pointIndex = 0; pointIndex <= input.Points.Count && !lastPoint; pointIndex++)
-                {
-                    bool endOfInterval = false;
-
-                    //**************************************************
-                    //** Check if series is sorted by X value
-                    //**************************************************
-                    if (pointIndex > 0 && pointIndex < input.Points.Count)
-                    {
-                        if (input.Points[pointIndex].XValue < input.Points[pointIndex - 1].XValue)
-                        {
-                            throw (new InvalidOperationException(SR.ExceptionDataManipulatorGroupedSeriesNotSorted));
-                        }
-                    }
-
-                    //**************************************************
-                    //** Check if it's the last point
-                    //**************************************************
-                    if (pointIndex == input.Points.Count)
-                    {
-                        // End of the group interval detected
-                        lastPoint = true;
-                        intervalLastIndex = pointIndex - 1;
-                        pointIndex = intervalLastIndex;
-                        endOfInterval = true;
-                    }
-
-                    //**************************************************
-                    //** Check if current point X value is inside current group
-                    //**************************************************
-                    if (!endOfInterval && input.Points[pointIndex].XValue >= intervalTo)
-                    {
-                        // End of the group interval detected
-                        if (pointIndex == 0)
-                        {
-                            continue;
-                        }
-                        intervalLastIndex = pointIndex - 1;
-                        endOfInterval = true;
-                    }
-
-                    //**************************************************
-                    //** Process data at end of the interval
-                    //**************************************************
-                    if (endOfInterval)
-                    {
-                        // Add grouped point only if there are non empty points in the interval
-                        if (pointsNumberInInterval > emptyPointsSkipped)
-                        {
-                            // Finalize the calculation
-                            ProcessPointValues(
-                                functions,
-                                pointTempValues,
-                                inputSeries[seriesIndex],
-                                input.Points[pointIndex],
-                                pointIndex,
-                                intervalFirstIndex,
-                                intervalLastIndex,
-                                true,
-                                ref emptyPointsSkipped);
-
-                            //**************************************************
-                            //** Calculate the X values
-                            //**************************************************
-                            if (functions[0].function == GroupingFunction.Center)
-                            {
-                                pointTempValues[0] = (intervalFrom + intervalTo) / 2.0;
-                            }
-                            else if (functions[0].function == GroupingFunction.First)
-                            {
-                                pointTempValues[0] = intervalFrom;
-                            }
-                            if (functions[0].function == GroupingFunction.Last)
-                            {
-                                pointTempValues[0] = intervalTo;
-                            }
-
-                            //**************************************************
-                            //** Create new point object
-                            //**************************************************
-                            DataPoint newPoint = new();
-                            newPoint.ResizeYValueArray(outputValuesNumber - 1);
-                            newPoint.XValue = pointTempValues[0];
-                            for (int i = 1; i < pointTempValues.Length; i++)
-                            {
-                                newPoint.YValues[i - 1] = pointTempValues[i];
-                            }
-
-                            //**************************************************
-                            //** Remove grouped points if output and input
-                            //** series are the same
-                            //**************************************************
-                            int newPointIndex = output.Points.Count;
-                            if (output == input)
-                            {
-                                newPointIndex = intervalFirstIndex;
-                                pointIndex = newPointIndex + 1;
-
-                                // Remove grouped points
-                                for (int removedPoint = intervalFirstIndex; removedPoint <= intervalLastIndex; removedPoint++)
-                                {
-                                    output.Points.RemoveAt(intervalFirstIndex);
-                                }
-                            }
-
-                            //**************************************************
-                            //** Add point to the output series
-                            //**************************************************
-                            output.Points.Insert(newPointIndex, newPoint);
-                        }
-
-                        // Set new From To values of the group interval
-                        intervalFrom = intervalTo;
-                        intervalTo = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom, interval, ConvertIntervalType(intervalType));
-
-                        // Set new group interval indexes
-                        intervalFirstIndex = pointIndex;
-                        intervalLastIndex = pointIndex;
-
-                        // Reset number of points in the interval
-                        pointsNumberInInterval = 0;
-
-                        // Reset number of skipped points
-                        emptyPointsSkipped = 0;
-
-                        // Process point once again
-                        --pointIndex;
-
-                        continue;
-                    }
-
-                    //**************************************************
-                    //** Use current point values in the formula
-                    //**************************************************
-                    ProcessPointValues(
-                        functions,
-                        pointTempValues,
-                        inputSeries[seriesIndex],
-                        input.Points[pointIndex],
-                        pointIndex,
-                        intervalFirstIndex,
-                        intervalLastIndex,
-                        false,
-                        ref emptyPointsSkipped);
-
-                    // Increase number of points in the group
-                    ++pointsNumberInInterval;
+                    throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaFormatInvalid(formulaString)));
                 }
             }
+
+            // Check formula name
+            return formulaParts[^1] switch
+            {
+                "MIN" => GroupingFunction.Min,
+                "MAX" => GroupingFunction.Max,
+                "AVE" => GroupingFunction.Ave,
+                "SUM" => GroupingFunction.Sum,
+                "FIRST" => GroupingFunction.First,
+                "LAST" => GroupingFunction.Last,
+                "HILOOPCL" => GroupingFunction.HiLoOpCl,
+                "HILO" => GroupingFunction.HiLo,
+                "COUNT" => GroupingFunction.Count,
+                "DISTINCTCOUNT" => GroupingFunction.DistinctCount,
+                "VARIANCE" => GroupingFunction.Variance,
+                "DEVIATION" => GroupingFunction.Deviation,
+                "CENTER" => GroupingFunction.Center,
+                // Invalid formula name
+                _ => throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaNameInvalid(formulaString))),
+            };
         }
 
         /// <summary>
@@ -2936,212 +3110,24 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Checks the formula format and returns an array of formula types
-        /// for each X and each Y value of the input series.
+        /// Class stores information about the grouping function type and
+        /// index of output value.
         /// </summary>
-        /// <param name="inputSeries">Array of input series.</param>
-        /// <param name="formula">Formula string.</param>
-        /// <param name="outputValuesNumber">Number of values in output series.</param>
-        /// <returns>Array of functions for each Y value.</returns>
-        private GroupingFunctionInfo[] GetGroupingFunctions(Series[] inputSeries, string formula, out int outputValuesNumber)
+        private class GroupingFunctionInfo
         {
-            // Get maximum number of Y values in all series
-            int numberOfYValues = 0;
-            foreach (Series series in inputSeries)
+            // AxisName of the grouping function
+            internal GroupingFunction function = GroupingFunction.None;
+
+            // Index of the Y value for storing results
+            internal int outputIndex = 0;
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            internal GroupingFunctionInfo()
             {
-                numberOfYValues = Math.Max(numberOfYValues, series.YValuesPerPoint);
-            }
-
-            // Allocate memory for the result array for X and each Y values
-            GroupingFunctionInfo[] result = new GroupingFunctionInfo[numberOfYValues + 1];
-            for (int index = 0; index < result.Length; index++)
-            {
-                result[index] = new GroupingFunctionInfo();
-            }
-
-            // Split formula by comma
-            string[] valueFormulas = formula.Split(',');
-
-            // At least one formula must be specified
-            if (valueFormulas.Length == 0)
-            {
-                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaUndefined));
-            }
-
-            // Check each formula in the array
-            GroupingFunctionInfo defaultFormula = new();
-            foreach (string s in valueFormulas)
-            {
-                // Trim white space and make upper case
-                string formulaString = s.Trim();
-                formulaString = formulaString.ToUpper(System.Globalization.CultureInfo.InvariantCulture);
-
-                // Get value index and formula type from the string
-                GroupingFunction formulaType = ParseFormulaAndValueType(formulaString, out int valueIndex);
-
-                // Save the default (first) formula
-                if (defaultFormula.function == GroupingFunction.None)
-                {
-                    defaultFormula.function = formulaType;
-                }
-
-                // Check that value index do not exceed the max values number
-                if (valueIndex >= result.Length)
-                {
-                    throw (new ArgumentException(SR.ExceptionDataManipulatorYValuesIndexExceeded(formulaString)));
-                }
-
-                // Check if formula for this value type was already set
-                if (result[valueIndex].function != GroupingFunction.None)
-                {
-                    throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaAlreadyDefined(formulaString)));
-                }
-
-                // Set formula type
-                result[valueIndex].function = formulaType;
-            }
-
-            // Apply default formula for non set X value
-            if (result[0].function == GroupingFunction.None)
-            {
-                result[0].function = GroupingFunction.First;
-            }
-
-            // Apply default formula for all non set Y values
-            for (int funcIndex = 1; funcIndex < result.Length; funcIndex++)
-            {
-                if (result[funcIndex].function == GroupingFunction.None)
-                {
-                    result[funcIndex].function = defaultFormula.function;
-                }
-            }
-
-            // Specify output value index
-            outputValuesNumber = 0;
-            for (int funcIndex = 0; funcIndex < result.Length; funcIndex++)
-            {
-                result[funcIndex].outputIndex = outputValuesNumber;
-
-                if (result[funcIndex].function == GroupingFunction.HiLoOpCl)
-                {
-                    outputValuesNumber += 3;
-                }
-                else if (result[funcIndex].function == GroupingFunction.HiLo)
-                {
-                    outputValuesNumber += 1;
-                }
-
-                ++outputValuesNumber;
-            }
-
-            // X value formula can be FIRST, LAST and AVE
-            if (result[0].function != GroupingFunction.First &&
-                result[0].function != GroupingFunction.Last &&
-                result[0].function != GroupingFunction.Center)
-            {
-                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaUnsupported));
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Parse one formula with optional value prefix.
-        /// Example: "Y2:MAX"
-        /// </summary>
-        /// <param name="formulaString">One formula name with optional value prefix.</param>
-        /// <param name="valueIndex">Return value index.</param>
-        /// <returns>Formula type.</returns>
-        private GroupingFunction ParseFormulaAndValueType(string formulaString, out int valueIndex)
-        {
-            // Initialize value index as first Y value (default)
-            valueIndex = 1;
-
-            // Split formula by optional ':' character
-            string[] formulaParts = formulaString.Split(':');
-
-            // There must be at least one and no more than two result strings
-            if (formulaParts.Length < 1 && formulaParts.Length > 2)
-            {
-                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaFormatInvalid(formulaString)));
-            }
-
-            // Check specified value type
-            if (formulaParts.Length == 2)
-            {
-                if (formulaParts[0] == "X")
-                {
-                    valueIndex = 0;
-                }
-                else if (formulaParts[0].StartsWith("Y", StringComparison.Ordinal))
-                {
-                    formulaParts[0] = formulaParts[0].TrimStart('Y');
-
-                    if (formulaParts[0].Length == 0)
-                    {
-                        valueIndex = 1;
-                    }
-                    else
-                    {
-                        // Try to convert the rest of the string to integer
-                        try
-                        {
-                            valueIndex = Int32.Parse(formulaParts[0], System.Globalization.CultureInfo.InvariantCulture);
-                        }
-                        catch (System.Exception)
-                        {
-                            throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaFormatInvalid(formulaString)));
-                        }
-                    }
-                }
-                else
-                {
-                    throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaFormatInvalid(formulaString)));
-                }
-            }
-
-            // Check formula name
-            return formulaParts[^1] switch
-            {
-                "MIN" => GroupingFunction.Min,
-                "MAX" => GroupingFunction.Max,
-                "AVE" => GroupingFunction.Ave,
-                "SUM" => GroupingFunction.Sum,
-                "FIRST" => GroupingFunction.First,
-                "LAST" => GroupingFunction.Last,
-                "HILOOPCL" => GroupingFunction.HiLoOpCl,
-                "HILO" => GroupingFunction.HiLo,
-                "COUNT" => GroupingFunction.Count,
-                "DISTINCTCOUNT" => GroupingFunction.DistinctCount,
-                "VARIANCE" => GroupingFunction.Variance,
-                "DEVIATION" => GroupingFunction.Deviation,
-                "CENTER" => GroupingFunction.Center,
-                // Invalid formula name
-                _ => throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingFormulaNameInvalid(formulaString))),
-            };
-        }
-
-        /// <summary>
-        /// Checks if input/output series parameters are correct.
-        /// If not - fires an exception
-        /// </summary>
-        /// <param name="inputSeries">Input series array.</param>
-        /// <param name="outputSeries">Output series array.</param>
-		private static void CheckSeriesArrays(Series[] inputSeries, Series[] outputSeries)
-        {
-            // At least one series must be in the input series
-            if (inputSeries == null || inputSeries.Length == 0)
-            {
-                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingInputSeriesUndefined));
-            }
-
-            // Output series must be empty or have the same number of items
-            if (outputSeries != null && outputSeries.Length != inputSeries.Length)
-            {
-                throw (new ArgumentException(SR.ExceptionDataManipulatorGroupingInputOutputSeriesNumberMismatch));
             }
         }
-
         #endregion Grouping methods
 
         #region Grouping overloaded methods
@@ -3232,54 +3218,6 @@ namespace WebCharts.Services
                 throw new ArgumentNullException(nameof(inputSeriesName));
 
             Group(formula, interval, intervalType, intervalOffset, intervalOffsetType, inputSeriesName, "");
-        }
-
-        /// <summary>
-        /// Groups series data by axis labels using one or more formulas.
-        /// Output series are used to store the grouped data points.
-        /// </summary>
-        /// <param name="formula">Grouping formula.</param>
-        /// <param name="inputSeriesName">Comma separated list of input series names.</param>
-        /// <param name="outputSeriesName">Comma separated list of output series names.</param>
-        public void GroupByAxisLabel(string formula, string inputSeriesName, string outputSeriesName)
-        {
-            // Check arguments
-            if (inputSeriesName == null)
-                throw new ArgumentNullException(nameof(inputSeriesName));
-
-            GroupByAxisLabel(formula,
-                ConvertToSeriesArray(inputSeriesName, false),
-                ConvertToSeriesArray(outputSeriesName, true));
-        }
-
-        /// <summary>
-        /// Groups a series' data by axis labels using one or more formulas.
-        /// The series is cleared of its original data, and then used to store the new data points.
-        /// </summary>
-        /// <param name="formula">Grouping formula.</param>
-        /// <param name="inputSeries">Input data series.</param>
-        public void GroupByAxisLabel(string formula, Series inputSeries)
-        {
-            // Check arguments
-            if (inputSeries == null)
-                throw new ArgumentNullException(nameof(inputSeries));
-
-            GroupByAxisLabel(formula, inputSeries, null);
-        }
-
-        /// <summary>
-        /// Groups series data by axis labels using one or more formulas.
-        /// Each series that is grouped is cleared of its original data, and used to store the new data points.
-        /// </summary>
-        /// <param name="formula">Grouping formula.</param>
-        /// <param name="inputSeriesName">Comma separated list of input series names.</param>
-        public void GroupByAxisLabel(string formula, string inputSeriesName)
-        {
-            // Check arguments
-            if (inputSeriesName == null)
-                throw new ArgumentNullException(nameof(inputSeriesName));
-
-            GroupByAxisLabel(formula, inputSeriesName, null);
         }
 
         /// <summary>
@@ -3390,6 +3328,53 @@ namespace WebCharts.Services
                 ConvertToSeriesArray(outputSeries, false));
         }
 
+        /// <summary>
+        /// Groups series data by axis labels using one or more formulas.
+        /// Output series are used to store the grouped data points.
+        /// </summary>
+        /// <param name="formula">Grouping formula.</param>
+        /// <param name="inputSeriesName">Comma separated list of input series names.</param>
+        /// <param name="outputSeriesName">Comma separated list of output series names.</param>
+        public void GroupByAxisLabel(string formula, string inputSeriesName, string outputSeriesName)
+        {
+            // Check arguments
+            if (inputSeriesName == null)
+                throw new ArgumentNullException(nameof(inputSeriesName));
+
+            GroupByAxisLabel(formula,
+                ConvertToSeriesArray(inputSeriesName, false),
+                ConvertToSeriesArray(outputSeriesName, true));
+        }
+
+        /// <summary>
+        /// Groups a series' data by axis labels using one or more formulas.
+        /// The series is cleared of its original data, and then used to store the new data points.
+        /// </summary>
+        /// <param name="formula">Grouping formula.</param>
+        /// <param name="inputSeries">Input data series.</param>
+        public void GroupByAxisLabel(string formula, Series inputSeries)
+        {
+            // Check arguments
+            if (inputSeries == null)
+                throw new ArgumentNullException(nameof(inputSeries));
+
+            GroupByAxisLabel(formula, inputSeries, null);
+        }
+
+        /// <summary>
+        /// Groups series data by axis labels using one or more formulas.
+        /// Each series that is grouped is cleared of its original data, and used to store the new data points.
+        /// </summary>
+        /// <param name="formula">Grouping formula.</param>
+        /// <param name="inputSeriesName">Comma separated list of input series names.</param>
+        public void GroupByAxisLabel(string formula, string inputSeriesName)
+        {
+            // Check arguments
+            if (inputSeriesName == null)
+                throw new ArgumentNullException(nameof(inputSeriesName));
+
+            GroupByAxisLabel(formula, inputSeriesName, null);
+        }
         /// <summary>
         /// Groups a series' data by axis labels using one or more formulas.
         /// An output series is used to store the grouped data points.

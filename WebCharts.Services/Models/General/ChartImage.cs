@@ -286,26 +286,23 @@ namespace WebCharts.Services
                         }
                     }
                 }
-                else if (dataSource is SqlCommand command)
+                else if (dataSource is SqlCommand command && command.Connection != null)
                 {
-                    if (command.Connection != null)
+                    command.Connection.Open();
+                    SqlDataReader dataReader = command.ExecuteReader();
+                    if (dataReader.Read())
                     {
-                        command.Connection.Open();
-                        SqlDataReader dataReader = command.ExecuteReader();
-                        if (dataReader.Read())
+                        for (int fieldIndex = 0; fieldIndex < dataReader.FieldCount; fieldIndex++)
                         {
-                            for (int fieldIndex = 0; fieldIndex < dataReader.FieldCount; fieldIndex++)
+                            if (!usedForYValue || dataReader.GetFieldType(fieldIndex) != typeof(string))
                             {
-                                if (!usedForYValue || dataReader.GetFieldType(fieldIndex) != typeof(string))
-                                {
-                                    names.Add(dataReader.GetName(fieldIndex));
-                                }
+                                names.Add(dataReader.GetName(fieldIndex));
                             }
                         }
-
-                        dataReader.Close();
-                        command.Connection.Close();
                     }
+
+                    dataReader.Close();
+                    command.Connection.Close();
                 }
 
                 // Check if DataTable was set

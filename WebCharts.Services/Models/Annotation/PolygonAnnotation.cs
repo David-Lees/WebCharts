@@ -1084,14 +1084,10 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _SKPath != null)
             {
-                // Free up managed resources
-                if (_SKPath != null)
-                {
-                    _SKPath.Dispose();
-                    _SKPath = null;
-                }
+                _SKPath.Dispose();
+                _SKPath = null;
             }
             base.Dispose(disposing);
         }

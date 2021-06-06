@@ -2020,13 +2020,10 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _fontCache != null)
             {
-                if (_fontCache != null)
-                {
-                    _fontCache.Dispose();
-                    _fontCache = null;
-                }
+                _fontCache.Dispose();
+                _fontCache = null;
             }
             base.Dispose(disposing);
         }
@@ -2216,15 +2213,12 @@ namespace WebCharts.Services
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (obj is Margins margins)
-            {
-                if (Top == margins.Top &&
+            if (obj is Margins margins && Top == margins.Top &&
                     Bottom == margins.Bottom &&
                     Left == margins.Left &&
                     Right == margins.Right)
-                {
-                    return true;
-                }
+            {
+                return true;
             }
             return false;
         }

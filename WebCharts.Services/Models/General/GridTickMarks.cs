@@ -380,16 +380,13 @@ namespace WebCharts.Services
                 }
 
                 // Do not draw the very first tick mark for circular chart area
-                if (Axis != null && Axis.ChartArea != null)
+                if (Axis != null && Axis.ChartArea != null && Axis.ChartArea.chartAreaIsCurcular &&
+                        ((!Axis.IsReversed && current == Axis.ViewMinimum) ||
+                        (Axis.IsReversed && current == Axis.ViewMaximum)))
                 {
-                    if (Axis.ChartArea.chartAreaIsCurcular &&
-                        ((Axis.IsReversed == false && current == Axis.ViewMinimum) ||
-                        (Axis.IsReversed == true && current == Axis.ViewMaximum)))
-                    {
-                        current += interval;
+                    current += interval;
 
-                        continue;
-                    }
+                    continue;
                 }
 
                 if (!majorGridTick && Axis.IsLogarithmic)
@@ -1626,13 +1623,9 @@ namespace WebCharts.Services
                 intervalChanged = true;
 
                 // Enable minor elements
-                if (!majorGridTick && value != 0.0 && !Double.IsNaN(value))
+                if (!majorGridTick && value != 0.0 && !Double.IsNaN(value) && Axis != null && Axis.Chart != null && Axis.Chart.serializing)
                 {
-                    // Prevent grids enabling during the serialization
-                    if (Axis != null && Axis.Chart != null && Axis.Chart.serializing)
-                    {
-                        Enabled = true;
-                    }
+                    Enabled = true;
                 }
 
                 // Reset original property value fields

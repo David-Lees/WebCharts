@@ -2374,13 +2374,10 @@ namespace WebCharts.Services
                 if (point3D.index == index)
                 {
                     // Check if point belongs to the same series
-                    if (neighborDataPoint != null)
+                    if (neighborDataPoint != null && String.Compare(neighborDataPoint.dataPoint.series.Name, point3D.dataPoint.series.Name, StringComparison.Ordinal) != 0)
                     {
-                        if (String.Compare(neighborDataPoint.dataPoint.series.Name, point3D.dataPoint.series.Name, StringComparison.Ordinal) != 0)
-                        {
-                            ++neighborPointIndex;
-                            continue;
-                        }
+                        ++neighborPointIndex;
+                        continue;
                     }
 
                     // Point found

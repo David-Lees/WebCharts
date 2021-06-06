@@ -220,17 +220,13 @@ namespace WebCharts.Services
                 }
 
                 // Change color of the series only if valid chart area name is specified
-                if (validAreaName)
+                if (validAreaName && (dataSeries.Color == SKColor.Empty || dataSeries.tempColorIsSet))
                 {
-                    // Change color of the series only if default color is set
-                    if (dataSeries.Color == SKColor.Empty || dataSeries.tempColorIsSet)
+                    dataSeries.color = paletteColors[colorIndex++];
+                    dataSeries.tempColorIsSet = true;
+                    if (colorIndex >= paletteColors.Length)
                     {
-                        dataSeries.color = paletteColors[colorIndex++];
-                        dataSeries.tempColorIsSet = true;
-                        if (colorIndex >= paletteColors.Length)
-                        {
-                            colorIndex = 0;
-                        }
+                        colorIndex = 0;
                     }
                 }
             }
@@ -336,12 +332,9 @@ namespace WebCharts.Services
                 double doubleIndexValue = 0;
                 foreach (string seriesName in series)
                 {
-                    if (_series[seriesName].Points.Count > pointIndex)
+                    if (_series[seriesName].Points.Count > pointIndex && _series[seriesName].Points[pointIndex].XValue > 0)
                     {
-                        if (_series[seriesName].Points[pointIndex].XValue > 0)
-                        {
-                            doubleIndexValue += _series[seriesName].Points[pointIndex].XValue;
-                        }
+                        doubleIndexValue += _series[seriesName].Points[pointIndex].XValue;
                     }
                 }
                 returnValue = Math.Max(returnValue, doubleIndexValue);

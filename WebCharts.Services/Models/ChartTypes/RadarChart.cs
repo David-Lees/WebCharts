@@ -585,27 +585,24 @@ namespace WebCharts.Services
                         //************************************************************
                         //** Draw Line
                         //************************************************************
-                        if (borderColor != SKColor.Empty && borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet)
+                        if (borderColor != SKColor.Empty && borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet && secondPointIndex < ser.Points.Count)
                         {
-                            if (secondPointIndex < ser.Points.Count)
+                            if (common.ProcessModePaint)
                             {
-                                if (common.ProcessModePaint)
-                                {
-                                    graph.DrawLineAbs(
-                                        borderColor,
-                                        borderWidth,
-                                        borderDashStyle,
-                                        dataPointPos[index],
-                                        dataPointPos[secondPointIndex],
-                                        ser.ShadowColor,
-                                        (areaColor == SKColors.Transparent || areaColor == SKColor.Empty) ? ser.ShadowOffset : 0);
-                                }
+                                graph.DrawLineAbs(
+                                    borderColor,
+                                    borderWidth,
+                                    borderDashStyle,
+                                    dataPointPos[index],
+                                    dataPointPos[secondPointIndex],
+                                    ser.ShadowColor,
+                                    (areaColor == SKColors.Transparent || areaColor == SKColor.Empty) ? ser.ShadowOffset : 0);
+                            }
 
-                                if (common.ProcessModeRegions)
-                                {
-                                    // Add line to the selection path
-                                    AddSelectionPath(area, selectionPath, dataPointPos, index, secondPointIndex, SKPoint.Empty, borderWidth);
-                                }
+                            if (common.ProcessModeRegions)
+                            {
+                                // Add line to the selection path
+                                AddSelectionPath(area, selectionPath, dataPointPos, index, secondPointIndex, SKPoint.Empty, borderWidth);
                             }
                         }
 
@@ -804,12 +801,9 @@ namespace WebCharts.Services
             {
                 leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[firstPointIndex - 1]);
             }
-            else if (firstPointIndex == 0)
+            else if (firstPointIndex == 0 && area.CircularSectorsNumber == dataPointPos.Length - 1)
             {
-                if (area.CircularSectorsNumber == dataPointPos.Length - 1)
-                {
-                    leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[^2]);
-                }
+                leftSidePoint = GetMiddlePoint(dataPointPos[firstPointIndex], dataPointPos[^2]);
             }
 
             // Add area segment

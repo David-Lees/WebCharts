@@ -122,7 +122,7 @@ namespace WebCharts.Models
         public string ParCode { get; set; }
 
         /// <summary>Source of data, either INT or EXT</summary>
-        public string datasource { get; set; }
+        public string DataSource { get; set; }
 
         /// <summary>Sort order, defined in database</summary>
         public Int16 SortOrder { get; set; }
@@ -247,10 +247,10 @@ namespace WebCharts.Models
         public int? WMO { get; set; }
 
         /// <summary>Latitude</summary>
-        public double degLat { get; set; }
+        public double DegLat { get; set; }
 
         /// <summary>Longitude</summary>
-        public double degLong { get; set; }
+        public double DegLong { get; set; }
 
         /// <summary>Name of organisation responsible for providing the data</summary>
         /// <remarks>Also used to determine the logo to be displayed</remarks>

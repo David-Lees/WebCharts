@@ -1368,17 +1368,13 @@ namespace WebCharts.Services
                     Series currentSeries = common.DataManager.Series[seriesIndex];
 
                     // Check if it is a first series with non-zero Y value
-                    if (firstVisibleSeries)
-                    {
-                        // Make series has non zero vallue
-                        if (pointEx.index <= currentSeries.Points.Count &&
+                    if (firstVisibleSeries && pointEx.index <= currentSeries.Points.Count &&
                             currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                    {
+                        firstVisibleSeries = false;
+                        if (currentSeries.Name == ser.Name)
                         {
-                            firstVisibleSeries = false;
-                            if (currentSeries.Name == ser.Name)
-                            {
-                                bottomDarkening = 0f;
-                            }
+                            bottomDarkening = 0f;
                         }
                     }
 
@@ -1418,16 +1414,13 @@ namespace WebCharts.Services
                         if (StackedColumnChart.GetSeriesStackGroupName(currentSeries) == groupName)
                         {
                             // check if first seris
-                            if (firstSeries)
-                            {
-                                if (pointEx.index < currentSeries.Points.Count &&
+                            if (firstSeries && pointEx.index < currentSeries.Points.Count &&
                                     currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                            {
+                                firstSeries = false;
+                                if (seriesName == ser.Name)
                                 {
-                                    firstSeries = false;
-                                    if (seriesName == ser.Name)
-                                    {
-                                        bottomDarkening = 0f;
-                                    }
+                                    bottomDarkening = 0f;
                                 }
                             }
 

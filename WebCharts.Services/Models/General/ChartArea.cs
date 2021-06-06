@@ -1674,30 +1674,26 @@ namespace WebCharts.Services
             }
             else
             {
-                if (!Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular)
+                if ((!Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular) && BorderColor != SKColor.Empty && BorderWidth > 0)
                 {
-                    // Draw chart area border
-                    if (BorderColor != SKColor.Empty && BorderWidth > 0)
-                    {
-                        graph.FillRectangleRel(position,
-                            SKColors.Transparent,
-                            ChartHatchStyle.None,
-                            "",
-                            ChartImageWrapMode.Tile,
-                            SKColor.Empty,
-                            ChartImageAlignmentStyle.Center,
-                            GradientStyle.None,
-                            SKColor.Empty,
-                            BorderColor,
-                            BorderWidth,
-                            BorderDashStyle,
-                            SKColor.Empty,
-                            0,
-                            PenAlignment.Outset,
-                            chartAreaIsCurcular,
-                            (chartAreaIsCurcular && CircularUsePolygons) ? CircularSectorsNumber : 0,
-                            Area3DStyle.Enable3D);
-                    }
+                    graph.FillRectangleRel(position,
+                        SKColors.Transparent,
+                        ChartHatchStyle.None,
+                        "",
+                        ChartImageWrapMode.Tile,
+                        SKColor.Empty,
+                        ChartImageAlignmentStyle.Center,
+                        GradientStyle.None,
+                        SKColor.Empty,
+                        BorderColor,
+                        BorderWidth,
+                        BorderDashStyle,
+                        SKColor.Empty,
+                        0,
+                        PenAlignment.Outset,
+                        chartAreaIsCurcular,
+                        (chartAreaIsCurcular && CircularUsePolygons) ? CircularSectorsNumber : 0,
+                        Area3DStyle.Enable3D);
                 }
             }
         }
@@ -2115,12 +2111,9 @@ namespace WebCharts.Services
             // Get number of sectors in circular chart area
             foreach (Series series in Common.DataManager.Series)
             {
-                if (series.IsVisible() && series.ChartArea == Name)
+                if (series.IsVisible() && series.ChartArea == Name && Common.ChartTypeRegistry.GetChartType(series.ChartTypeName) is ICircularChartType type)
                 {
-                    if (Common.ChartTypeRegistry.GetChartType(series.ChartTypeName) is ICircularChartType type)
-                    {
-                        return type;
-                    }
+                    return type;
                 }
             }
             return null;
@@ -2343,25 +2336,21 @@ namespace WebCharts.Services
                     // Look for custom properties in series
                     foreach (Series series in Common.DataManager.Series)
                     {
-                        if (series.ChartArea == Name && series.IsVisible())
+                        if (series.ChartArea == Name && series.IsVisible() && series.IsCustomPropertySet(CustomPropertyName.AreaDrawingStyle))
                         {
-                            // Get custom attribute
-                            if (series.IsCustomPropertySet(CustomPropertyName.AreaDrawingStyle))
+                            if (String.Compare(series[CustomPropertyName.AreaDrawingStyle], "Polygon", StringComparison.OrdinalIgnoreCase) == 0)
                             {
-                                if (String.Compare(series[CustomPropertyName.AreaDrawingStyle], "Polygon", StringComparison.OrdinalIgnoreCase) == 0)
-                                {
-                                    _circularUsePolygons = 1;
-                                }
-                                else if (String.Compare(series[CustomPropertyName.AreaDrawingStyle], "Circle", StringComparison.OrdinalIgnoreCase) == 0)
-                                {
-                                    _circularUsePolygons = 0;
-                                }
-                                else
-                                {
-                                    throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(series[CustomPropertyName.AreaDrawingStyle], "AreaDrawingStyle")));
-                                }
-                                break;
+                                _circularUsePolygons = 1;
                             }
+                            else if (String.Compare(series[CustomPropertyName.AreaDrawingStyle], "Circle", StringComparison.OrdinalIgnoreCase) == 0)
+                            {
+                                _circularUsePolygons = 0;
+                            }
+                            else
+                            {
+                                throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid(series[CustomPropertyName.AreaDrawingStyle], "AreaDrawingStyle")));
+                            }
+                            break;
                         }
                     }
                 }
@@ -2484,13 +2473,10 @@ namespace WebCharts.Services
                         // Get axis title from all series
                         foreach (Series series in Common.DataManager.Series)
                         {
-                            if (series.IsVisible() && series.ChartArea == Name && sectorIndex < series.Points.Count)
+                            if (series.IsVisible() && series.ChartArea == Name && sectorIndex < series.Points.Count && series.Points[sectorIndex].AxisLabel.Length > 0)
                             {
-                                if (series.Points[sectorIndex].AxisLabel.Length > 0)
-                                {
-                                    axis.Title = series.Points[sectorIndex].AxisLabel;
-                                    break;
-                                }
+                                axis.Title = series.Points[sectorIndex].AxisLabel;
+                                break;
                             }
                         }
                     }
@@ -2549,72 +2535,68 @@ namespace WebCharts.Services
                 foreach (Series series in Common.DataManager.Series)
                 {
                     // Check if series is visible and belongs to the chart area
-                    if (series.ChartArea == Name && series.IsVisible() && series.Points.Count > 0)
+                    if (series.ChartArea == Name && series.IsVisible() && series.Points.Count > 0 && !processedChartType.Contains(series.ChartTypeName))
                     {
-                        // Check if this chart type was already processed
-                        if (!processedChartType.Contains(series.ChartTypeName))
+                        // Check if curent chart type can be individually processed
+                        bool canBeIndividuallyProcessed = false;
+                        if (series.ChartType == SeriesChartType.Point ||
+                            series.ChartType == SeriesChartType.Line ||
+                            series.ChartType == SeriesChartType.Spline ||
+                            series.ChartType == SeriesChartType.StepLine)
                         {
-                            // Check if curent chart type can be individually processed
-                            bool canBeIndividuallyProcessed = false;
-                            if (series.ChartType == SeriesChartType.Point ||
-                                series.ChartType == SeriesChartType.Line ||
-                                series.ChartType == SeriesChartType.Spline ||
-                                series.ChartType == SeriesChartType.StepLine)
+                            canBeIndividuallyProcessed = true;
+                        }
+
+                        if (!canBeIndividuallyProcessed)
+                        {
+                            // Add a record to process all series of that chart type at once
+                            resultList.Add(new ChartTypeAndSeriesInfo(series.ChartTypeName));
+                            processedChartType.Add(series.ChartTypeName);
+                        }
+                        else
+                        {
+                            // Check if curent chart type has more that 1 series and they are split
+                            // by other series
+                            bool chartTypeIsSplit = false;
+
+                            if (splitChartType.Contains(series.ChartTypeName))
                             {
-                                canBeIndividuallyProcessed = true;
+                                chartTypeIsSplit = true;
+                            }
+                            else
+                            {
+                                bool otherChartTypeFound = false;
+                                for (int curentSeriesIndex = seriesIndex + 1; curentSeriesIndex < Common.DataManager.Series.Count; curentSeriesIndex++)
+                                {
+                                    if (series.ChartTypeName == Common.DataManager.Series[curentSeriesIndex].ChartTypeName)
+                                    {
+                                        if (otherChartTypeFound)
+                                        {
+                                            chartTypeIsSplit = true;
+                                            splitChartType.Add(series.ChartTypeName);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.Area ||
+                                            Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.SplineArea)
+                                        {
+                                            otherChartTypeFound = true;
+                                        }
+                                    }
+                                }
                             }
 
-                            if (!canBeIndividuallyProcessed)
+                            if (chartTypeIsSplit)
+                            {
+                                // Add a record to process this series individually
+                                resultList.Add(new ChartTypeAndSeriesInfo(series));
+                            }
+                            else
                             {
                                 // Add a record to process all series of that chart type at once
                                 resultList.Add(new ChartTypeAndSeriesInfo(series.ChartTypeName));
                                 processedChartType.Add(series.ChartTypeName);
-                            }
-                            else
-                            {
-                                // Check if curent chart type has more that 1 series and they are split
-                                // by other series
-                                bool chartTypeIsSplit = false;
-
-                                if (splitChartType.Contains(series.ChartTypeName))
-                                {
-                                    chartTypeIsSplit = true;
-                                }
-                                else
-                                {
-                                    bool otherChartTypeFound = false;
-                                    for (int curentSeriesIndex = seriesIndex + 1; curentSeriesIndex < Common.DataManager.Series.Count; curentSeriesIndex++)
-                                    {
-                                        if (series.ChartTypeName == Common.DataManager.Series[curentSeriesIndex].ChartTypeName)
-                                        {
-                                            if (otherChartTypeFound)
-                                            {
-                                                chartTypeIsSplit = true;
-                                                splitChartType.Add(series.ChartTypeName);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.Area ||
-                                                Common.DataManager.Series[curentSeriesIndex].ChartType == SeriesChartType.SplineArea)
-                                            {
-                                                otherChartTypeFound = true;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (chartTypeIsSplit)
-                                {
-                                    // Add a record to process this series individually
-                                    resultList.Add(new ChartTypeAndSeriesInfo(series));
-                                }
-                                else
-                                {
-                                    // Add a record to process all series of that chart type at once
-                                    resultList.Add(new ChartTypeAndSeriesInfo(series.ChartTypeName));
-                                    processedChartType.Add(series.ChartTypeName);
-                                }
                             }
                         }
                     }

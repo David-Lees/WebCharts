@@ -846,26 +846,18 @@ namespace WebCharts.Services
                         }
                     }
                 }
-                else if (axisName == AxisName.Y2)
+                else if (axisName == AxisName.Y2 && ser.YAxisType == AxisType.Secondary)
                 {
-#if SUBAXES
-					if(	ser.YAxisType == AxisType.Secondary && ser.YSubAxisName == subAxisName)
-#else //SUBAXES
-                    if (ser.YAxisType == AxisType.Secondary)
-#endif //SUBAXES
-
+                    if (ser.YValueType != ChartValueType.Int32 &&
+                        ser.YValueType != ChartValueType.UInt32 &&
+                        ser.YValueType != ChartValueType.UInt64 &&
+                        ser.YValueType != ChartValueType.Int64)
                     {
-                        if (ser.YValueType != ChartValueType.Int32 &&
-                            ser.YValueType != ChartValueType.UInt32 &&
-                            ser.YValueType != ChartValueType.UInt64 &&
-                            ser.YValueType != ChartValueType.Int64)
-                        {
-                            return false;
-                        }
-                        else
-                        {
-                            return true;
-                        }
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
             }
@@ -951,25 +943,18 @@ namespace WebCharts.Services
                         }
                     }
                 }
-                else if (axisName == AxisName.Y2)
+                else if (axisName == AxisName.Y2 && ser.YAxisType == AxisType.Secondary)
                 {
-#if SUBAXES
-					if(	ser.YAxisType == AxisType.Secondary && ser.YSubAxisName == subAxisName)
-#else //SUBAXES
-                    if (ser.YAxisType == AxisType.Secondary)
-#endif //SUBAXES
+                    if (ser.YValueType != ChartValueType.Date &&
+                        ser.YValueType != ChartValueType.DateTime &&
+                        ser.YValueType != ChartValueType.Time &&
+                        ser.YValueType != ChartValueType.DateTimeOffset)
                     {
-                        if (ser.YValueType != ChartValueType.Date &&
-                            ser.YValueType != ChartValueType.DateTime &&
-                            ser.YValueType != ChartValueType.Time &&
-                            ser.YValueType != ChartValueType.DateTimeOffset)
-                        {
-                            return false;
-                        }
-                        else
-                        {
-                            return true;
-                        }
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
             }

@@ -218,15 +218,12 @@ namespace WebCharts.Services
 
 						// Check if custom properties set to use second Y value (bubble size) as label text
 						labelYValueIndex = 0;
-						if(ser.IsCustomPropertySet(CustomPropertyName.BubbleUseSKSizeorLabel))
-						{
-							if(String.Compare(ser[CustomPropertyName.BubbleUseSKSizeorLabel], "true", StringComparison.OrdinalIgnoreCase) == 0)
-							{
-								labelYValueIndex = 1;
-								break;
-							}
-						}
-					}
+                        if (ser.IsCustomPropertySet(CustomPropertyName.BubbleUseSKSizeorLabel) && String.Compare(ser[CustomPropertyName.BubbleUseSKSizeorLabel], "true", StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            labelYValueIndex = 1;
+                            break;
+                        }
+                    }
 				}
 
 				// Scale values are not specified - auto detect
@@ -344,15 +341,12 @@ namespace WebCharts.Services
 						}
 					}
 
-					// Check if custom properties set to use second Y value (bubble size) as label text
-					if(ser.IsCustomPropertySet(CustomPropertyName.BubbleUseSKSizeorLabel))
-					{
-						if(String.Compare(ser[CustomPropertyName.BubbleUseSKSizeorLabel], "true", StringComparison.OrdinalIgnoreCase) == 0)
-						{
-							break;
-						}
-					}
-				}
+                    // Check if custom properties set to use second Y value (bubble size) as label text
+                    if (ser.IsCustomPropertySet(CustomPropertyName.BubbleUseSKSizeorLabel) && String.Compare(ser[CustomPropertyName.BubbleUseSKSizeorLabel], "true", StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        break;
+                    }
+                }
 			}
 
 			// Scale values are not specified - auto detect
@@ -438,21 +432,17 @@ namespace WebCharts.Services
 			// Try to find bubble size scale in the custom series properties
 			foreach( Series ser in area.Common.DataManager.Series )
 			{
-				if( String.Compare( ser.ChartTypeName, ChartTypeNames.Bubble, StringComparison.OrdinalIgnoreCase) == 0 &&
-					ser.ChartArea == area.Name &&
-					ser.IsVisible())
-				{
-					// Check if attribute for max. size is set
-					if(ser.IsCustomPropertySet(CustomPropertyName.BubbleMaxSize))
-					{
-						maxPossibleBubbleSize = CommonElements.ParseDouble(ser[CustomPropertyName.BubbleMaxSize]);
-						if(maxPossibleBubbleSize < 0 || maxPossibleBubbleSize > 100)
-						{
-							throw(new ArgumentException(SR.ExceptionCustomAttributeIsNotInRange0to100("BubbleMaxSize")));
-						}
-					}
-				}
-			}
+                if (string.Compare(ser.ChartTypeName, ChartTypeNames.Bubble, StringComparison.OrdinalIgnoreCase) == 0 &&
+                    ser.ChartArea == area.Name &&
+                    ser.IsVisible() && ser.IsCustomPropertySet(CustomPropertyName.BubbleMaxSize))
+                {
+                    maxPossibleBubbleSize = CommonElements.ParseDouble(ser[CustomPropertyName.BubbleMaxSize]);
+                    if (maxPossibleBubbleSize < 0 || maxPossibleBubbleSize > 100)
+                    {
+                        throw (new ArgumentException(SR.ExceptionCustomAttributeIsNotInRange0to100("BubbleMaxSize")));
+                    }
+                }
+            }
 
 			return maxPossibleBubbleSize / 100;
 		}

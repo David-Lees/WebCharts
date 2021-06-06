@@ -1698,21 +1698,18 @@ namespace WebCharts.Services
         /// <returns>True if legend is enabled.</returns>
         internal bool IsEnabled()
         {
+                // Check if legend is docked to the chart area
+                    // Do not show legend when it is docked to invisible chart area
             if (Enabled)
             {
-                // Check if legend is docked to the chart area
                 if (DockedToChartArea.Length > 0 &&
                     Common != null &&
-                    Common.ChartPicture != null)
+                    Common.ChartPicture != null && Common.ChartPicture.ChartAreas.IndexOf(DockedToChartArea) >= 0)
                 {
-                    if (Common.ChartPicture.ChartAreas.IndexOf(DockedToChartArea) >= 0)
+                    ChartArea area = Common.ChartPicture.ChartAreas[DockedToChartArea];
+                    if (!area.Visible)
                     {
-                        // Do not show legend when it is docked to invisible chart area
-                        ChartArea area = Common.ChartPicture.ChartAreas[DockedToChartArea];
-                        if (!area.Visible)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
 
@@ -3003,16 +3000,14 @@ namespace WebCharts.Services
                         IChartType chartType = Common.ChartTypeRegistry.GetChartType(series.ChartTypeName);
 
                         // Check if series legend items should be reversed
-                        if (LegendItemOrder == LegendItemOrder.Auto)
-                        {
-                            if (series.ChartType == SeriesChartType.StackedArea ||
+                        if (LegendItemOrder == LegendItemOrder.Auto &&
+                            (series.ChartType == SeriesChartType.StackedArea ||
                                 series.ChartType == SeriesChartType.StackedArea100 ||
                                 series.ChartType == SeriesChartType.Pyramid ||
                                 series.ChartType == SeriesChartType.StackedColumn ||
-                                series.ChartType == SeriesChartType.StackedColumn100)
-                            {
-                                seriesWithReversedLegendItemsPresent = true;
-                            }
+                                series.ChartType == SeriesChartType.StackedColumn100))
+                        {
+                            seriesWithReversedLegendItemsPresent = true;
                         }
                         // Add item(s) based on series points label and fore color
                         if (chartType.DataPointsInLegend)
@@ -3759,18 +3754,15 @@ namespace WebCharts.Services
                                     ++numberOfRowsPerColumn[smallestColumnIndex];
 
                                     // Check if next column will be removed if it contains only 1 row
-                                    if (smallestColumnIndex < (columnNumber - 1))
+                                    if (smallestColumnIndex < (columnNumber - 1) && numberOfRowsPerColumn[smallestColumnIndex + 1] == 1)
                                     {
-                                        if (numberOfRowsPerColumn[smallestColumnIndex + 1] == 1)
+                                        // Shift number of rows per column
+                                        tempArray = numberOfRowsPerColumn;
+                                        for (int index = smallestColumnIndex + 1; index < tempArray.Length - 1; index++)
                                         {
-                                            // Shift number of rows per column
-                                            tempArray = numberOfRowsPerColumn;
-                                            for (int index = smallestColumnIndex + 1; index < tempArray.Length - 1; index++)
-                                            {
-                                                numberOfRowsPerColumn[index] = tempArray[index + 1];
-                                            }
-                                            numberOfRowsPerColumn[columnNumber - 1] = 1;
+                                            numberOfRowsPerColumn[index] = tempArray[index + 1];
                                         }
+                                        numberOfRowsPerColumn[columnNumber - 1] = 1;
                                     }
 
                                     // Check if legend items fit into the legend area

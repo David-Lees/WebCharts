@@ -791,31 +791,25 @@ namespace WebCharts.Services
 
                 using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.Color };
                 // Draw Open mark line
-                if (showOpen)
+                if (showOpen && openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
                 {
-                    if (openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
-                    {
-                        path.AddLine(point2, point1);
-                        path.AddLine(point1, point3);
-                        path.AddLine(point3, point3);
-                        graph.FillPath(brush, path);
-                    }
+                    path.AddLine(point2, point1);
+                    path.AddLine(point1, point3);
+                    path.AddLine(point3, point3);
+                    graph.FillPath(brush, path);
                 }
 
                 // Draw close mark line
-                if (showClose)
+                if (showClose && closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
                 {
-                    if (closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
-                    {
-                        path.Reset();
-                        point1 = graph.GetAbsolutePoint(new SKPoint(xPosition, close));
-                        point2 = graph.GetAbsolutePoint(new SKPoint(xPosition + width / 2f, close + height / 2f));
-                        point3 = graph.GetAbsolutePoint(new SKPoint(xPosition + width / 2f, close - height / 2f));
-                        path.AddLine(point2, point1);
-                        path.AddLine(point1, point3);
-                        path.AddLine(point3, point3);
-                        graph.FillPath(brush, path);
-                    }
+                    path.Reset();
+                    point1 = graph.GetAbsolutePoint(new SKPoint(xPosition, close));
+                    point2 = graph.GetAbsolutePoint(new SKPoint(xPosition + width / 2f, close + height / 2f));
+                    point3 = graph.GetAbsolutePoint(new SKPoint(xPosition + width / 2f, close - height / 2f));
+                    path.AddLine(point2, point1);
+                    path.AddLine(point1, point3);
+                    path.AddLine(point3, point3);
+                    graph.FillPath(brush, path);
                 }
             }
 
@@ -823,27 +817,21 @@ namespace WebCharts.Services
             else
             {
                 // Draw Open mark line
-                if (showOpen)
+                if (showOpen && openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
                 {
-                    if (openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
-                    {
-                        graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
-                            new SKPoint(xPosition - width / 2f, open),
-                            new SKPoint(xPosition, open),
-                            ser.ShadowColor, ser.ShadowOffset);
-                    }
+                    graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
+                        new SKPoint(xPosition - width / 2f, open),
+                        new SKPoint(xPosition, open),
+                        ser.ShadowColor, ser.ShadowOffset);
                 }
 
                 // Draw Close mark line
-                if (showClose)
+                if (showClose && closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
                 {
-                    if (closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
-                    {
-                        graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
-                            new SKPoint(xPosition, close),
-                            new SKPoint(xPosition + width / 2f, close),
-                            ser.ShadowColor, ser.ShadowOffset);
-                    }
+                    graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
+                        new SKPoint(xPosition, close),
+                        new SKPoint(xPosition + width / 2f, close),
+                        ser.ShadowColor, ser.ShadowOffset);
                 }
             }
 
@@ -1575,36 +1563,30 @@ namespace WebCharts.Services
 
                 using SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = point.Color };
                 // Draw Open mark line
-                if (showOpen)
+                if (showOpen && openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
                 {
-                    if (openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
-                    {
-                        path.AddLine(points[1].SKPoint, points[0].SKPoint);
-                        path.AddLine(points[0].SKPoint, points[2].SKPoint);
-                        path.AddLine(points[2].SKPoint, points[2].SKPoint);
-                        graph.FillPath(brush, path);
-                    }
+                    path.AddLine(points[1].SKPoint, points[0].SKPoint);
+                    path.AddLine(points[0].SKPoint, points[2].SKPoint);
+                    path.AddLine(points[2].SKPoint, points[2].SKPoint);
+                    graph.FillPath(brush, path);
                 }
 
                 // Draw close mark line
-                if (showClose)
+                if (showClose && closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
                 {
-                    if (closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
-                    {
-                        points[0] = new Point3D(xPosition, close, zPosition + depth / 2f);
-                        points[1] = new Point3D(xPosition + width / 2f, close + height / 2f, zPosition + depth / 2f);
-                        points[2] = new Point3D(xPosition + width / 2f, close - height / 2f, zPosition + depth / 2f);
-                        area.matrix3D.TransformPoints(points);
-                        points[0].SKPoint = graph.GetAbsolutePoint(points[0].SKPoint);
-                        points[1].SKPoint = graph.GetAbsolutePoint(points[1].SKPoint);
-                        points[2].SKPoint = graph.GetAbsolutePoint(points[2].SKPoint);
+                    points[0] = new Point3D(xPosition, close, zPosition + depth / 2f);
+                    points[1] = new Point3D(xPosition + width / 2f, close + height / 2f, zPosition + depth / 2f);
+                    points[2] = new Point3D(xPosition + width / 2f, close - height / 2f, zPosition + depth / 2f);
+                    area.matrix3D.TransformPoints(points);
+                    points[0].SKPoint = graph.GetAbsolutePoint(points[0].SKPoint);
+                    points[1].SKPoint = graph.GetAbsolutePoint(points[1].SKPoint);
+                    points[2].SKPoint = graph.GetAbsolutePoint(points[2].SKPoint);
 
-                        path.Reset();
-                        path.AddLine(points[1].SKPoint, points[0].SKPoint);
-                        path.AddLine(points[0].SKPoint, points[2].SKPoint);
-                        path.AddLine(points[2].SKPoint, points[2].SKPoint);
-                        graph.FillPath(brush, path);
-                    }
+                    path.Reset();
+                    path.AddLine(points[1].SKPoint, points[0].SKPoint);
+                    path.AddLine(points[0].SKPoint, points[2].SKPoint);
+                    path.AddLine(points[2].SKPoint, points[2].SKPoint);
+                    graph.FillPath(brush, path);
                 }
             }
 
@@ -1612,39 +1594,33 @@ namespace WebCharts.Services
             else
             {
                 // Draw Open mark line
-                if (showOpen)
+                if (showOpen && openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
                 {
-                    if (openY <= VAxis.ViewMaximum && openY >= VAxis.ViewMinimum)
-                    {
-                        // Translate coordinates
-                        Point3D[] points = new Point3D[2];
-                        points[0] = new Point3D(xPosition - width / 2f, open, zPosition + depth / 2f);
-                        points[1] = new Point3D(xPosition, open, zPosition + depth / 2f);
-                        area.matrix3D.TransformPoints(points);
+                    // Translate coordinates
+                    Point3D[] points = new Point3D[2];
+                    points[0] = new Point3D(xPosition - width / 2f, open, zPosition + depth / 2f);
+                    points[1] = new Point3D(xPosition, open, zPosition + depth / 2f);
+                    area.matrix3D.TransformPoints(points);
 
-                        graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
-                            points[0].SKPoint,
-                            points[1].SKPoint,
-                            ser.ShadowColor, ser.ShadowOffset);
-                    }
+                    graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
+                        points[0].SKPoint,
+                        points[1].SKPoint,
+                        ser.ShadowColor, ser.ShadowOffset);
                 }
 
                 // Draw Close mark line
-                if (showClose)
+                if (showClose && closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
                 {
-                    if (closeY <= VAxis.ViewMaximum && closeY >= VAxis.ViewMinimum)
-                    {
-                        // Translate coordinates
-                        Point3D[] points = new Point3D[2];
-                        points[0] = new Point3D(xPosition, close, zPosition + depth / 2f);
-                        points[1] = new Point3D(xPosition + width / 2f, close, zPosition + depth / 2f);
-                        area.matrix3D.TransformPoints(points);
+                    // Translate coordinates
+                    Point3D[] points = new Point3D[2];
+                    points[0] = new Point3D(xPosition, close, zPosition + depth / 2f);
+                    points[1] = new Point3D(xPosition + width / 2f, close, zPosition + depth / 2f);
+                    area.matrix3D.TransformPoints(points);
 
-                        graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
-                            points[0].SKPoint,
-                            points[1].SKPoint,
-                            ser.ShadowColor, ser.ShadowOffset);
-                    }
+                    graph.DrawLineRel(point.Color, point.BorderWidth, point.BorderDashStyle,
+                        points[0].SKPoint,
+                        points[1].SKPoint,
+                        ser.ShadowColor, ser.ShadowOffset);
                 }
             }
 
@@ -1767,9 +1743,8 @@ namespace WebCharts.Services
                     markerSize.Height = point.MarkerSize;
                 }
 
-                if (point.MarkerImage.Length > 0)
-                    if (common.graph != null)
-                        common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, common.graph.Graphics, ref markerSize);
+                if (point.MarkerImage.Length > 0 && common.graph != null)
+                    common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, common.graph.Graphics, ref markerSize);
 
                 // Transform marker position in 3D space
                 if (area.Area3DStyle.Enable3D)

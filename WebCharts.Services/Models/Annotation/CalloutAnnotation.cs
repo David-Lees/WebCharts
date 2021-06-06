@@ -688,43 +688,39 @@ namespace WebCharts.Services
             }
 
             // Draw perspective polygons from anchoring point
-            if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y))
+            if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y) && !rectanglePosition.Contains(anchorPoint.X, anchorPoint.Y))
             {
-                // Check if point is inside annotation position
-                if (!rectanglePosition.Contains(anchorPoint.X, anchorPoint.Y))
+                // Get absolute anchor point
+                SKPoint anchorPointAbs = graphics.GetAbsolutePoint(new SKPoint(anchorPoint.X, anchorPoint.Y));
+
+                // Flatten ellipse path
+                //ellipsePath.Flatten();
+
+                // Find point in the path closest to the anchor point
+                SKPoint[] points = ellipsePath.Points;
+                int closestPointIndex = 0;
+                int index = 0;
+                float currentDistance = float.MaxValue;
+                foreach (SKPoint point in points)
                 {
-                    // Get absolute anchor point
-                    SKPoint anchorPointAbs = graphics.GetAbsolutePoint(new SKPoint(anchorPoint.X, anchorPoint.Y));
-
-                    // Flatten ellipse path
-                    //ellipsePath.Flatten();
-
-                    // Find point in the path closest to the anchor point
-                    SKPoint[] points = ellipsePath.Points;
-                    int closestPointIndex = 0;
-                    int index = 0;
-                    float currentDistance = float.MaxValue;
-                    foreach (SKPoint point in points)
+                    float deltaX = point.X - anchorPointAbs.X;
+                    float deltaY = point.Y - anchorPointAbs.Y;
+                    float distance = deltaX * deltaX + deltaY * deltaY;
+                    if (distance < currentDistance)
                     {
-                        float deltaX = point.X - anchorPointAbs.X;
-                        float deltaY = point.Y - anchorPointAbs.Y;
-                        float distance = deltaX * deltaX + deltaY * deltaY;
-                        if (distance < currentDistance)
-                        {
-                            currentDistance = distance;
-                            closestPointIndex = index;
-                        }
-                        ++index;
+                        currentDistance = distance;
+                        closestPointIndex = index;
                     }
-
-                    // Change point to the anchor location
-                    points[closestPointIndex] = anchorPointAbs;
-
-                    // Recreate ellipse path
-                    ellipsePath.Reset();
-                    ellipsePath.AddPoly(points);
-                    ellipsePath.Close();
+                    ++index;
                 }
+
+                // Change point to the anchor location
+                points[closestPointIndex] = anchorPointAbs;
+
+                // Recreate ellipse path
+                ellipsePath.Reset();
+                ellipsePath.AddPoly(points);
+                ellipsePath.Close();
             }
 
             // Draw ellipse
@@ -957,115 +953,111 @@ namespace WebCharts.Services
             SKRect rectanglePositionAbs = graphics.GetAbsoluteRectangle(rectanglePosition);
 
             // Draw perspective polygons from anchoring point
-            if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y))
+            if (!float.IsNaN(anchorPoint.X) && !float.IsNaN(anchorPoint.Y) && !rectanglePosition.Contains(anchorPoint.X, anchorPoint.Y))
             {
-                // Check if point is inside annotation position
-                if (!rectanglePosition.Contains(anchorPoint.X, anchorPoint.Y))
+                // Get center point of the cloud
+                SKPoint cloudCenterAbs = graphics.GetAbsolutePoint(
+                    new SKPoint(
+                    rectanglePosition.Left + rectanglePosition.Width / 2f,
+                    rectanglePosition.Top + rectanglePosition.Height / 2f));
+
+                // Calculate absolute ellipse size and position
+                SKSize ellipseSize = graphics.GetAbsoluteSize(
+                    new SKSize(rectanglePosition.Width, rectanglePosition.Height));
+                ellipseSize.Width /= 10f;
+                ellipseSize.Height /= 10f;
+                SKPoint anchorPointAbs = graphics.GetAbsolutePoint(
+                    new SKPoint(anchorPoint.X, anchorPoint.Y));
+                SKPoint ellipseLocation = anchorPointAbs;
+
+                // Get distance between anchor point and center of the cloud
+                float dxAbs = anchorPointAbs.X - cloudCenterAbs.X;
+                float dyAbs = anchorPointAbs.Y - cloudCenterAbs.Y;
+
+                SKPoint point = SKPoint.Empty;
+                if (anchorPoint.Y < rectanglePosition.Top)
                 {
-                    // Get center point of the cloud
-                    SKPoint cloudCenterAbs = graphics.GetAbsolutePoint(
-                        new SKPoint(
-                        rectanglePosition.Left + rectanglePosition.Width / 2f,
-                        rectanglePosition.Top + rectanglePosition.Height / 2f));
-
-                    // Calculate absolute ellipse size and position
-                    SKSize ellipseSize = graphics.GetAbsoluteSize(
-                        new SKSize(rectanglePosition.Width, rectanglePosition.Height));
-                    ellipseSize.Width /= 10f;
-                    ellipseSize.Height /= 10f;
-                    SKPoint anchorPointAbs = graphics.GetAbsolutePoint(
-                        new SKPoint(anchorPoint.X, anchorPoint.Y));
-                    SKPoint ellipseLocation = anchorPointAbs;
-
-                    // Get distance between anchor point and center of the cloud
-                    float dxAbs = anchorPointAbs.X - cloudCenterAbs.X;
-                    float dyAbs = anchorPointAbs.Y - cloudCenterAbs.Y;
-
-                    SKPoint point = SKPoint.Empty;
-                    if (anchorPoint.Y < rectanglePosition.Top)
+                    point = GetIntersectionY(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Top);
+                    if (point.X < rectanglePositionAbs.Left)
                     {
-                        point = GetIntersectionY(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Top);
-                        if (point.X < rectanglePositionAbs.Left)
-                        {
-                            point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Left);
-                        }
-                        else if (point.X > rectanglePositionAbs.Right)
-                        {
-                            point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Right);
-                        }
+                        point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Left);
                     }
-                    else if (anchorPoint.Y > rectanglePosition.Bottom)
+                    else if (point.X > rectanglePositionAbs.Right)
                     {
-                        point = GetIntersectionY(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Bottom);
-                        if (point.X < rectanglePositionAbs.Left)
-                        {
-                            point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Left);
-                        }
-                        else if (point.X > rectanglePositionAbs.Right)
-                        {
-                            point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Right);
-                        }
+                        point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Right);
+                    }
+                }
+                else if (anchorPoint.Y > rectanglePosition.Bottom)
+                {
+                    point = GetIntersectionY(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Bottom);
+                    if (point.X < rectanglePositionAbs.Left)
+                    {
+                        point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Left);
+                    }
+                    else if (point.X > rectanglePositionAbs.Right)
+                    {
+                        point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Right);
+                    }
+                }
+                else
+                {
+                    if (anchorPoint.X < rectanglePosition.Left)
+                    {
+                        point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Left);
                     }
                     else
                     {
-                        if (anchorPoint.X < rectanglePosition.Left)
-                        {
-                            point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Left);
-                        }
-                        else
-                        {
-                            point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Right);
-                        }
+                        point = GetIntersectionX(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Right);
                     }
+                }
 
-                    SKSize size = new(Math.Abs(cloudCenterAbs.X - point.X), Math.Abs(cloudCenterAbs.Y - point.Y));
-                    if (dxAbs > 0)
-                        dxAbs -= size.Width;
-                    else
-                        dxAbs += size.Width;
+                SKSize size = new(Math.Abs(cloudCenterAbs.X - point.X), Math.Abs(cloudCenterAbs.Y - point.Y));
+                if (dxAbs > 0)
+                    dxAbs -= size.Width;
+                else
+                    dxAbs += size.Width;
 
-                    if (dyAbs > 0)
-                        dyAbs -= size.Height;
-                    else
-                        dyAbs += size.Height;
+                if (dyAbs > 0)
+                    dyAbs -= size.Height;
+                else
+                    dyAbs += size.Height;
 
-                    // Draw 3 smaller ellipses from anchor point to the cloud
-                    for (int index = 0; index < 3; index++)
-                    {
-                        using SKPath path = new();
-                        // Create ellipse path
-                        path.AddOval(new SKRect(
-                            ellipseLocation.X - ellipseSize.Width / 2f,
-                            ellipseLocation.Y - ellipseSize.Height / 2f,
-                            ellipseLocation.X + ellipseSize.Width,
-                            ellipseLocation.Y + ellipseSize.Height));
+                // Draw 3 smaller ellipses from anchor point to the cloud
+                for (int index = 0; index < 3; index++)
+                {
+                    using SKPath path = new();
+                    // Create ellipse path
+                    path.AddOval(new SKRect(
+                        ellipseLocation.X - ellipseSize.Width / 2f,
+                        ellipseLocation.Y - ellipseSize.Height / 2f,
+                        ellipseLocation.X + ellipseSize.Width,
+                        ellipseLocation.Y + ellipseSize.Height));
 
-                        // Draw ellipse
-                        graphics.DrawPathAbs(
-                            path,
-                            BackColor,
-                            BackHatchStyle,
-                            string.Empty,
-                            ChartImageWrapMode.Scaled,
-                            SKColor.Empty,
-                            ChartImageAlignmentStyle.Center,
-                            BackGradientStyle,
-                            BackSecondaryColor,
-                            LineColor,
-                            1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
-                            LineDashStyle,
-                            PenAlignment.Center,
-                            ShadowOffset,
-                            ShadowColor);
+                    // Draw ellipse
+                    graphics.DrawPathAbs(
+                        path,
+                        BackColor,
+                        BackHatchStyle,
+                        string.Empty,
+                        ChartImageWrapMode.Scaled,
+                        SKColor.Empty,
+                        ChartImageAlignmentStyle.Center,
+                        BackGradientStyle,
+                        BackSecondaryColor,
+                        LineColor,
+                        1, // this.LineWidth,	NOTE: Cloud supports only 1 pixel border
+                        LineDashStyle,
+                        PenAlignment.Center,
+                        ShadowOffset,
+                        ShadowColor);
 
-                        // Adjust ellipse size
-                        ellipseSize.Width *= 1.5f;
-                        ellipseSize.Height *= 1.5f;
+                    // Adjust ellipse size
+                    ellipseSize.Width *= 1.5f;
+                    ellipseSize.Height *= 1.5f;
 
-                        // Adjust next ellipse position
-                        ellipseLocation.X -= dxAbs / 3f + (index * (dxAbs / 10f));
-                        ellipseLocation.Y -= dyAbs / 3f + (index * (dyAbs / 10f));
-                    }
+                    // Adjust next ellipse position
+                    ellipseLocation.X -= dxAbs / 3f + (index * (dxAbs / 10f));
+                    ellipseLocation.Y -= dyAbs / 3f + (index * (dyAbs / 10f));
                 }
             }
 

@@ -107,7 +107,7 @@ namespace WebCharts.Services
             // Array of Y totals for individual series index in the current stacked group
             double[] currentGroupTotalPerPoint = null;
 
-            string currentStackedGroupName = HundredPercentStackedColumnChart.GetSeriesStackGroupName(series);
+            string currentStackedGroupName = StackedColumnChart.GetSeriesStackGroupName(series);
             if (_stackedGroupsTotalPerPoint == null)
             {
                 // Create new hashtable
@@ -117,7 +117,7 @@ namespace WebCharts.Services
                 foreach (string groupName in stackGroupNames)
                 {
                     // Get series that belong to the same group
-                    Series[] seriesArray = HundredPercentStackedColumnChart.GetSeriesByStackedGroupName(
+                    Series[] seriesArray = StackedColumnChart.GetSeriesByStackedGroupName(
                         common, groupName, series.ChartTypeName, series.ChartArea);
 
                     // Check if series are aligned
@@ -144,22 +144,19 @@ namespace WebCharts.Services
             // Find array of total Y values based on the current stacked group name
             currentGroupTotalPerPoint = (double[])_stackedGroupsTotalPerPoint[currentStackedGroupName];
 
-            if (!area.Area3DStyle.Enable3D)
+            if (!area.Area3DStyle.Enable3D && (point.YValues[0] == 0 || point.IsEmpty))
             {
-                if (point.YValues[0] == 0 || point.IsEmpty)
-                {
-                    return 0;
-                }
+                return 0;
             }
 
             // Calculate stacked column Y value for 2D chart
-            if (area.Area3DStyle.Enable3D == false || yValueIndex == -2)
+            if (!area.Area3DStyle.Enable3D || yValueIndex == -2)
             {
                 if (currentGroupTotalPerPoint[pointIndex] == 0.0)
                 {
                     return 0.0;
                 }
-                return (point.YValues[0] / currentGroupTotalPerPoint[pointIndex]) * 100.0;
+                return point.YValues[0] / currentGroupTotalPerPoint[pointIndex] * 100.0;
             }
 
             // Get point Height if pointIndex == -1
@@ -1334,17 +1331,13 @@ namespace WebCharts.Services
                         Series currentSeries = common.DataManager.Series[seriesIndex];
 
                         // Check if it is a first series with non-zero Y value
-                        if (firstVisibleSeries)
-                        {
-                            // Make series has non zero vallue
-                            if (pointEx.index <= currentSeries.Points.Count &&
+                        if (firstVisibleSeries && pointEx.index <= currentSeries.Points.Count &&
                                 currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                        {
+                            firstVisibleSeries = false;
+                            if (currentSeries.Name == ser.Name)
                             {
-                                firstVisibleSeries = false;
-                                if (currentSeries.Name == ser.Name)
-                                {
-                                    rightDarkening = 0f;
-                                }
+                                rightDarkening = 0f;
                             }
                         }
 
@@ -1384,17 +1377,13 @@ namespace WebCharts.Services
                             if (StackedColumnChart.GetSeriesStackGroupName(currentSeries) == groupName)
                             {
                                 // check if first seris
-                                if (firstSeries)
-                                {
-                                    // Make series has non zero vallue
-                                    if (pointEx.index < currentSeries.Points.Count &&
+                                if (firstSeries && pointEx.index < currentSeries.Points.Count &&
                                         currentSeries.Points[pointEx.index - 1].YValues[0] != 0.0)
+                                {
+                                    firstSeries = false;
+                                    if (seriesName == ser.Name)
                                     {
-                                        firstSeries = false;
-                                        if (seriesName == ser.Name)
-                                        {
-                                            rightDarkening = 0f;
-                                        }
+                                        rightDarkening = 0f;
                                     }
                                 }
 

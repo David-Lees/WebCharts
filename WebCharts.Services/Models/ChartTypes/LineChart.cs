@@ -2177,12 +2177,9 @@ namespace WebCharts.Services
                             }
                             else
                             {
-                                if (pointAttr.dataPoint.series.IsCustomPropertySet(CustomPropertyName.ShowMarkerLines))
+                                if (pointAttr.dataPoint.series.IsCustomPropertySet(CustomPropertyName.ShowMarkerLines) && String.Compare(pointAttr.dataPoint.series[CustomPropertyName.ShowMarkerLines], "TRUE", StringComparison.OrdinalIgnoreCase) == 0)
                                 {
-                                    if (String.Compare(pointAttr.dataPoint.series[CustomPropertyName.ShowMarkerLines], "TRUE", StringComparison.OrdinalIgnoreCase) == 0)
-                                    {
-                                        showPointLines = true;
-                                    }
+                                    showPointLines = true;
                                 }
                             }
 
@@ -2242,14 +2239,10 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _linePen != null)
             {
-                // Dispose managed resources
-                if (_linePen != null)
-                {
-                    _linePen.Dispose();
-                    _linePen = null;
-                }
+                _linePen.Dispose();
+                _linePen = null;
             }
             base.Dispose(disposing);
         }

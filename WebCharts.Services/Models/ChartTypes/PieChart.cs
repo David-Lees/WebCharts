@@ -481,17 +481,12 @@ namespace WebCharts.Services
             {
                 // Check if series is visible and belong to the current chart area
                 if (series.IsVisible() &&
-                    series.ChartArea == area.Name)
+                    series.ChartArea == area.Name && 
+                    string.Compare(series.ChartTypeName, Name, true, CultureInfo.CurrentCulture) != 0 && 
+                    !common.ChartPicture.SuppressExceptions)
                 {
-                    // Check if series chart type matches
-                    if (string.Compare(series.ChartTypeName, Name, true, CultureInfo.CurrentCulture) != 0)
-                    {
-                        if (!common.ChartPicture.SuppressExceptions)
-                        {
-                            // Pie/Doughnut chart can not be combined with other chart type
-                            throw (new InvalidOperationException(SR.ExceptionChartCanNotCombine(Name)));
-                        }
-                    }
+                    // Pie/Doughnut chart can not be combined with other chart type
+                    throw (new InvalidOperationException(SR.ExceptionChartCanNotCombine(Name)));
                 }
             }
 
@@ -2737,13 +2732,9 @@ namespace WebCharts.Services
                     else
                     {
                         // Draw Inner Arc for Doughnut
-                        if (Doughnut)
+                        if (Doughnut && BackFrontDoughnut && sweepAngle > 300)
                         {
-                            // Draw second part of doughnut curve only for very big slices > 300( Visibility issue for Big point depth ).
-                            if (BackFrontDoughnut && sweepAngle > 300)
-                            {
-                                DrawDoughnutCurves(graph, area, point, startAngle, sweepAngle, points, brush, penCurve, false, true, pointIndex);
-                            }
+                            DrawDoughnutCurves(graph, area, point, startAngle, sweepAngle, points, brush, penCurve, false, true, pointIndex);
                         }
                         DrawPieCurves(graph, area, point, startAngle, sweepAngle, points, brush, penCurve, true, true, pointIndex);
                     }
@@ -3181,11 +3172,8 @@ namespace WebCharts.Services
             float endAngle = startAngle + sweepAngle;
 
             // Very big pie slice ( > 180 degree )
-            if (sweepAngle > 180)
-            {
-                if (DrawPieCurvesBigSlice(graph, area, dataPoint, startAngle, sweepAngle, points, brush, pen, rightPosition, sameBackFront, pointIndex))
-                    return;
-            }
+            if (sweepAngle > 180 && DrawPieCurvesBigSlice(graph, area, dataPoint, startAngle, sweepAngle, points, brush, pen, rightPosition, sameBackFront, pointIndex))
+                return;
 
             // Pie slice pass throw 180 degree. Curve has to be spited.
             if (startAngle < 180 && endAngle > 180)
@@ -3684,11 +3672,8 @@ namespace WebCharts.Services
             float endAngle = startAngle + sweepAngle;
 
             // Very big pie slice ( > 180 degree )
-            if (sweepAngle > 180)
-            {
-                if (DrawDoughnutCurvesBigSlice(graph, area, dataPoint, startAngle, sweepAngle, points, brush, pen, rightPosition, sameBackFront, pointIndex))
-                    return;
-            }
+            if (sweepAngle > 180 && DrawDoughnutCurvesBigSlice(graph, area, dataPoint, startAngle, sweepAngle, points, brush, pen, rightPosition, sameBackFront, pointIndex))
+                return;
 
             // Pie slice pass throw 180 degree. Curve has to be spited.
             if (startAngle < 180 && endAngle > 180)

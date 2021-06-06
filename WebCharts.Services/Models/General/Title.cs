@@ -931,16 +931,13 @@ namespace WebCharts.Services
             {
                 // Check if title is docked to the chart area
                 if (DockedToChartArea.Length > 0 &&
-                    Chart != null)
+                    Chart != null && Chart.ChartAreas.IndexOf(DockedToChartArea) >= 0)
                 {
-                    if (Chart.ChartAreas.IndexOf(DockedToChartArea) >= 0)
+                    // Do not show title when it is docked to invisible chart area
+                    ChartArea area = Chart.ChartAreas[DockedToChartArea];
+                    if (!area.Visible)
                     {
-                        // Do not show title when it is docked to invisible chart area
-                        ChartArea area = Chart.ChartAreas[DockedToChartArea];
-                        if (!area.Visible)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
 

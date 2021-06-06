@@ -275,12 +275,9 @@ namespace WebCharts.Services
             }
 
             // Check in which order vertical & horizontal lines segments should be drawn
-            if (centerPointIndex != int.MaxValue)
+            if (centerPointIndex != int.MaxValue && pointIndex >= centerPointIndex)
             {
-                if (pointIndex >= centerPointIndex)
-                {
-                    originalDrawOrder = false;
-                }
+                originalDrawOrder = false;
             }
 
             // Draw two segments of the step line
@@ -348,18 +345,15 @@ namespace WebCharts.Services
 
             if (resultPath != null)
             {
-                if (area.Common.ProcessModeRegions)
+                if (area.Common.ProcessModeRegions && resultPathLine1 != null && resultPathLine1.PointCount > 0)
                 {
-                    if (resultPathLine1 != null && resultPathLine1.PointCount > 0)
-                    {
-                        area.Common.HotRegionsList.AddHotRegion(
-                            resultPathLine1,
-                            false,
-                            graph,
-                            prevDataPointEx.dataPoint,
-                            prevDataPointEx.dataPoint.series.Name,
-                            prevDataPointEx.index - 1);
-                    }
+                    area.Common.HotRegionsList.AddHotRegion(
+                        resultPathLine1,
+                        false,
+                        graph,
+                        prevDataPointEx.dataPoint,
+                        prevDataPointEx.dataPoint.series.Name,
+                        prevDataPointEx.index - 1);
                 }
 
                 if (resultPathLine2 != null && resultPathLine2.PointCount > 0)

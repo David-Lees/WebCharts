@@ -219,11 +219,8 @@ namespace WebCharts.Services
             }
 
             // Too many tick marks
-            if (Interval != 0)
-            {
-                if ((Axis.ViewMaximum - Axis.ViewMinimum) / ChartHelper.GetIntervalSize(currentPosition, _interval, _intervalType, axisSeries, 0, DateTimeIntervalType.Number, false) > ChartHelper.MaxNumOfGridlines)
-                    return;
-            }
+            if (Interval != 0 && (Axis.ViewMaximum - Axis.ViewMinimum) / ChartHelper.GetIntervalSize(currentPosition, _interval, _intervalType, axisSeries, 0, DateTimeIntervalType.Number, false) > ChartHelper.MaxNumOfGridlines)
+                return;
 
             DateTimeIntervalType offsetType = (IntervalOffsetType == DateTimeIntervalType.Auto) ? IntervalType : IntervalOffsetType;
             if (Interval == 0)
@@ -322,72 +319,66 @@ namespace WebCharts.Services
                             // Draw strip line title
                             PaintTitle(graph, rect);
 
-                            if (common.ProcessModeRegions)
+                            if (common.ProcessModeRegions && !Axis.ChartArea.Area3DStyle.Enable3D)
                             {
-                                if (!Axis.ChartArea.Area3DStyle.Enable3D)
-                                {
-                                    common.HotRegionsList.AddHotRegion(rect, ToolTip, string.Empty, string.Empty, string.Empty, this, ChartElementType.StripLines, null);
-                                }
+                                common.HotRegionsList.AddHotRegion(rect, ToolTip, string.Empty, string.Empty, string.Empty, this, ChartElementType.StripLines, null);
                             }
                         }
                     }
                 }
                 // Draw line
-                else if (StripWidth == 0 && drawLinesOnly)
+                else if (StripWidth == 0 && drawLinesOnly && currentPosition > Axis.ViewMinimum && currentPosition < Axis.ViewMaximum)
                 {
-                    if (currentPosition > Axis.ViewMinimum && currentPosition < Axis.ViewMaximum)
+                    // Calculate line position
+                    SKPoint point1 = SKPoint.Empty;
+                    SKPoint point2 = SKPoint.Empty;
+                    if (horizontal)
                     {
-                        // Calculate line position
-                        SKPoint point1 = SKPoint.Empty;
-                        SKPoint point2 = SKPoint.Empty;
+                        point1.X = plotAreaPosition.Left;
+                        point1.Y = (float)Axis.GetLinearPosition(currentPosition);
+                        point2.X = plotAreaPosition.Right;
+                        point2.Y = point1.Y;
+                    }
+                    else
+                    {
+                        point1.X = (float)Axis.GetLinearPosition(currentPosition);
+                        point1.Y = plotAreaPosition.Top;
+                        point2.X = point1.X;
+                        point2.Y = plotAreaPosition.Bottom;
+                    }
+
+                    // Draw Line
+                    if (!Axis.ChartArea.Area3DStyle.Enable3D)
+                    {
+                        graph.DrawLineRel(BorderColor, BorderWidth, BorderDashStyle, point1, point2);
+                    }
+                    else
+                    {
+                        graph.Draw3DGridLine(Axis.ChartArea, _borderColor, _borderWidth, _borderDashStyle, point1, point2, horizontal, Axis.Common, this);
+                    }
+
+                    // Draw strip line title
+                    PaintTitle(graph, point1, point2);
+
+                    if (common.ProcessModeRegions)
+                    {
+                        SKSize relBorderWidth = new(BorderWidth + 1, BorderWidth + 1);
+                        relBorderWidth = graph.GetRelativeSize(relBorderWidth);
+                        SKRect lineRect = SKRect.Empty;
                         if (horizontal)
                         {
-                            point1.X = plotAreaPosition.Left;
-                            point1.Y = (float)Axis.GetLinearPosition(currentPosition);
-                            point2.X = plotAreaPosition.Right;
-                            point2.Y = point1.Y;
+                            lineRect.Left = point1.X;
+                            lineRect.Top = point1.Y - relBorderWidth.Height / 2f;
+                            lineRect.Size = new(point2.X - point1.X, relBorderWidth.Height);
                         }
                         else
                         {
-                            point1.X = (float)Axis.GetLinearPosition(currentPosition);
-                            point1.Y = plotAreaPosition.Top;
-                            point2.X = point1.X;
-                            point2.Y = plotAreaPosition.Bottom;
+                            lineRect.Left = point1.X - relBorderWidth.Width / 2f;
+                            lineRect.Top = point1.Y;
+                            lineRect.Size = new(relBorderWidth.Width, point2.Y - point1.Y);
                         }
 
-                        // Draw Line
-                        if (!Axis.ChartArea.Area3DStyle.Enable3D)
-                        {
-                            graph.DrawLineRel(BorderColor, BorderWidth, BorderDashStyle, point1, point2);
-                        }
-                        else
-                        {
-                            graph.Draw3DGridLine(Axis.ChartArea, _borderColor, _borderWidth, _borderDashStyle, point1, point2, horizontal, Axis.Common, this);
-                        }
-
-                        // Draw strip line title
-                        PaintTitle(graph, point1, point2);
-
-                        if (common.ProcessModeRegions)
-                        {
-                            SKSize relBorderWidth = new(BorderWidth + 1, BorderWidth + 1);
-                            relBorderWidth = graph.GetRelativeSize(relBorderWidth);
-                            SKRect lineRect = SKRect.Empty;
-                            if (horizontal)
-                            {
-                                lineRect.Left = point1.X;
-                                lineRect.Top = point1.Y - relBorderWidth.Height / 2f;
-                                lineRect.Size = new(point2.X - point1.X, relBorderWidth.Height);
-                            }
-                            else
-                            {
-                                lineRect.Left = point1.X - relBorderWidth.Width / 2f;
-                                lineRect.Top = point1.Y;
-                                lineRect.Size = new(relBorderWidth.Width, point2.Y - point1.Y);
-                            }
-
-                            common.HotRegionsList.AddHotRegion(lineRect, ToolTip, null, null, null, this, ChartElementType.StripLines, null);
-                        }
+                        common.HotRegionsList.AddHotRegion(lineRect, ToolTip, null, null, null, this, ChartElementType.StripLines, null);
                     }
                 }
 
@@ -1224,13 +1215,10 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _fontCache != null)
             {
-                if (_fontCache != null)
-                {
-                    _fontCache.Dispose();
-                    _fontCache = null;
-                }
+                _fontCache.Dispose();
+                _fontCache = null;
             }
             base.Dispose(disposing);
         }

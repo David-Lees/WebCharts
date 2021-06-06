@@ -1666,64 +1666,60 @@ namespace WebCharts.Services
             // Draw data point value marker
             //************************************************************
             SKSize markerSize = SKSize.Empty;
-            if (point.MarkerStyle != MarkerStyle.None || point.MarkerImage.Length > 0)
+            if ((point.MarkerStyle != MarkerStyle.None || point.MarkerImage.Length > 0) && (pointEx.index % ser.MarkerStep) == 0)
             {
-                // Check if this marker should be drawn
-                if ((pointEx.index % ser.MarkerStep) == 0)
+                // Find relative marker size
+                if (point.MarkerImage.Length == 0)
                 {
-                    // Find relative marker size
-                    if (point.MarkerImage.Length == 0)
-                    {
-                        markerSize.Width = point.MarkerSize;
-                        markerSize.Height = point.MarkerSize;
-                    }
-                    else
-                        common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
-
-                    markerSize = graph.GetRelativeSize(markerSize);
-
-                    // Calculate marker position
-                    SKPoint markerPosition = SKPoint.Empty;
-                    if (barStartPosition < barSize)
-                    {
-                        markerPosition.X = rectSize.Right;
-                    }
-                    else
-                    {
-                        markerPosition.X = rectSize.Left;
-                    }
-                    markerPosition.Y = rectSize.Top + rectSize.Height / 2F;
-
-                    //************************************************************
-                    //** Transform marker position in 3D space
-                    //************************************************************
-                    // Get projection coordinates
-                    Point3D[] marker3DPosition = new Point3D[1];
-                    marker3DPosition[0] = new Point3D(markerPosition.X, markerPosition.Y, (pointEx.zPosition + pointEx.depth / 2f));
-
-                    // Transform coordinates of text size
-                    area.matrix3D.TransformPoints(marker3DPosition);
-
-                    //************************************************************
-                    //** Draw 3D marker
-                    //************************************************************
-                    graph.DrawMarker3D(
-                        area.matrix3D,
-                        area.Area3DStyle.LightStyle,
-                        pointEx.zPosition + pointEx.depth / 2f,
-                        markerPosition,
-                        point.MarkerStyle,
-                        GetAdjustedPixelSize(point.MarkerSize, graph),
-                        (point.MarkerColor == SKColor.Empty) ? point.series.Color : point.MarkerColor,
-                        point.MarkerBorderColor,
-                        point.MarkerBorderWidth,
-                        point.MarkerImage,
-                        point.MarkerImageTransparentColor,
-                        (point.series != null) ? point.series.ShadowOffset : 0,
-                        (point.series != null) ? point.series.ShadowColor : SKColor.Empty,
-                        SKRect.Empty,
-                        DrawingOperationTypes.DrawElement);
+                    markerSize.Width = point.MarkerSize;
+                    markerSize.Height = point.MarkerSize;
                 }
+                else
+                    common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+
+                markerSize = graph.GetRelativeSize(markerSize);
+
+                // Calculate marker position
+                SKPoint markerPosition = SKPoint.Empty;
+                if (barStartPosition < barSize)
+                {
+                    markerPosition.X = rectSize.Right;
+                }
+                else
+                {
+                    markerPosition.X = rectSize.Left;
+                }
+                markerPosition.Y = rectSize.Top + rectSize.Height / 2F;
+
+                //************************************************************
+                //** Transform marker position in 3D space
+                //************************************************************
+                // Get projection coordinates
+                Point3D[] marker3DPosition = new Point3D[1];
+                marker3DPosition[0] = new Point3D(markerPosition.X, markerPosition.Y, (pointEx.zPosition + pointEx.depth / 2f));
+
+                // Transform coordinates of text size
+                area.matrix3D.TransformPoints(marker3DPosition);
+
+                //************************************************************
+                //** Draw 3D marker
+                //************************************************************
+                graph.DrawMarker3D(
+                    area.matrix3D,
+                    area.Area3DStyle.LightStyle,
+                    pointEx.zPosition + pointEx.depth / 2f,
+                    markerPosition,
+                    point.MarkerStyle,
+                    GetAdjustedPixelSize(point.MarkerSize, graph),
+                    (point.MarkerColor == SKColor.Empty) ? point.series.Color : point.MarkerColor,
+                    point.MarkerBorderColor,
+                    point.MarkerBorderWidth,
+                    point.MarkerImage,
+                    point.MarkerImageTransparentColor,
+                    (point.series != null) ? point.series.ShadowOffset : 0,
+                    (point.series != null) ? point.series.ShadowColor : SKColor.Empty,
+                    SKRect.Empty,
+                    DrawingOperationTypes.DrawElement);
             }
         }
 

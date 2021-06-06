@@ -1420,20 +1420,17 @@ namespace WebCharts.Services
             }
 
             // Reset value type to Auto (if not Serializing data)
-            if (reset)
+            if (reset && (Chart == null || !Chart.serializing))
             {
-                if (Chart == null || Chart.serializing == false)
+                if (autoXValueType)
                 {
-                    if (autoXValueType)
-                    {
-                        _xValueType = ChartValueType.Auto;
-                        autoXValueType = false;
-                    }
-                    if (autoYValueType)
-                    {
-                        _yValueType = ChartValueType.Auto;
-                        autoYValueType = false;
-                    }
+                    _xValueType = ChartValueType.Auto;
+                    autoXValueType = false;
+                }
+                if (autoYValueType)
+                {
+                    _yValueType = ChartValueType.Auto;
+                    autoYValueType = false;
                 }
             }
         }
@@ -1551,14 +1548,10 @@ namespace WebCharts.Services
                 {
                     for (int yValueIndex = 0; yValueIndex < point.YValues.Length; yValueIndex++)
                     {
-                        if (axisY.IsLogarithmic)
+                        if (axisY.IsLogarithmic && point.YValues[yValueIndex] <= 0.0)
                         {
-                            // Look for Y values less or equal to Zero
-                            if (point.YValues[yValueIndex] <= 0.0)
-                            {
-                                point.YValues[yValueIndex] = 1.0;
-                                point.IsEmpty = true;
-                            }
+                            point.YValues[yValueIndex] = 1.0;
+                            point.IsEmpty = true;
                         }
 
                         // Check All Y values for NaN
@@ -2166,35 +2159,32 @@ namespace WebCharts.Services
             }
             set
             {
-                if (_chartType != value && value.Length > 0)
+                if (_chartType != value && value.Length > 0 && Common != null)
                 {
-                    if (Common != null)
+                    ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
+                    if (chartTypeRegistry != null)
                     {
-                        ChartTypeRegistry chartTypeRegistry = Common.ChartTypeRegistry;
-                        if (chartTypeRegistry != null)
+                        IChartType type = chartTypeRegistry.GetChartType(value);
+                        if (_yValuesPerPoint < type.YValuesPerPoint)
                         {
-                            IChartType type = chartTypeRegistry.GetChartType(value);
-                            if (_yValuesPerPoint < type.YValuesPerPoint)
-                            {
-                                // Set minimum Y values number for the chart type
-                                _yValuesPerPoint = type.YValuesPerPoint;
+                            // Set minimum Y values number for the chart type
+                            _yValuesPerPoint = type.YValuesPerPoint;
 
-                                // Resize Y value(s) array of data points
-                                if (_points.Count > 0)
+                            // Resize Y value(s) array of data points
+                            if (_points.Count > 0)
+                            {
+                                // Resize data points Y value(s) arrays
+                                foreach (DataPoint dp in _points)
                                 {
-                                    // Resize data points Y value(s) arrays
-                                    foreach (DataPoint dp in _points)
-                                    {
-                                        dp.ResizeYValueArray(_yValuesPerPoint);
-                                    }
+                                    dp.ResizeYValueArray(_yValuesPerPoint);
                                 }
                             }
-                            // Refresh Minimum and Maximum from data
-                            // after recalc and set data
-                            if (Chart != null && Chart.chartPicture != null)
-                            {
-                                Chart.chartPicture.ResetMinMaxFromData();
-                            }
+                        }
+                        // Refresh Minimum and Maximum from data
+                        // after recalc and set data
+                        if (Chart != null && Chart.chartPicture != null)
+                        {
+                            Chart.chartPicture.ResetMinMaxFromData();
                         }
                     }
                 }

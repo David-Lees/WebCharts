@@ -871,35 +871,31 @@ namespace WebCharts.Services
             //** If isClustered mode enabled each stack group is drawn
             //** using it's own cluster.
             //***********************************************************
-            if (smallestIntervalSeries != null && Area3DStyle.IsClustered)
+            if (smallestIntervalSeries != null && Area3DStyle.IsClustered && Common.ChartTypeRegistry.GetChartType(smallestIntervalSeries.ChartTypeName).SupportStackedGroups)
             {
-                // Check series support stack groups
-                if (Common.ChartTypeRegistry.GetChartType(smallestIntervalSeries.ChartTypeName).SupportStackedGroups)
+                // Calculate how many stack groups exsist
+                seriesNumber = 0;
+                ArrayList stackGroupNames = new();
+                foreach (string seriesName in _series)
                 {
-                    // Calculate how many stack groups exsist
-                    seriesNumber = 0;
-                    ArrayList stackGroupNames = new();
-                    foreach (string seriesName in _series)
+                    // Get series object from name
+                    Series curSeries = Common.DataManager.Series[seriesName];
+                    if (string.Compare(curSeries.ChartTypeName, smallestIntervalSeries.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        // Get series object from name
-                        Series curSeries = Common.DataManager.Series[seriesName];
-                        if (String.Compare(curSeries.ChartTypeName, smallestIntervalSeries.ChartTypeName, StringComparison.OrdinalIgnoreCase) == 0)
+                        string seriesStackGroupName = string.Empty;
+                        if (curSeries.IsCustomPropertySet(CustomPropertyName.StackedGroupName))
                         {
-                            string seriesStackGroupName = string.Empty;
-                            if (curSeries.IsCustomPropertySet(CustomPropertyName.StackedGroupName))
-                            {
-                                seriesStackGroupName = curSeries[CustomPropertyName.StackedGroupName];
-                            }
+                            seriesStackGroupName = curSeries[CustomPropertyName.StackedGroupName];
+                        }
 
-                            // Add group name if it do not already exsist
-                            if (!stackGroupNames.Contains(seriesStackGroupName))
-                            {
-                                stackGroupNames.Add(seriesStackGroupName);
-                            }
+                        // Add group name if it do not already exsist
+                        if (!stackGroupNames.Contains(seriesStackGroupName))
+                        {
+                            stackGroupNames.Add(seriesStackGroupName);
                         }
                     }
-                    seriesNumber = stackGroupNames.Count;
                 }
+                seriesNumber = stackGroupNames.Count;
             }
 
             //***********************************************************

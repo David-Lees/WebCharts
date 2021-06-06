@@ -173,14 +173,11 @@ namespace WebCharts.Services
                     _position = value;
 
                     // Align scaleView in connected areas
-                    if (axis != null && axis.ChartArea != null && axis.Common != null && axis.Common.ChartPicture != null)
+                    if (axis != null && axis.ChartArea != null && axis.Common != null && axis.Common.ChartPicture != null && !axis.ChartArea.alignmentInProcess)
                     {
-                        if (!axis.ChartArea.alignmentInProcess)
-                        {
-                            AreaAlignmentOrientations orientation = (axis.axisType == AxisName.X || axis.axisType == AxisName.X2) ?
-                                AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
-                            axis.Common.ChartPicture.AlignChartAreasAxesView(axis.ChartArea, orientation);
-                        }
+                        AreaAlignmentOrientations orientation = (axis.axisType == AxisName.X || axis.axisType == AxisName.X2) ?
+                            AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
+                        axis.Common.ChartPicture.AlignChartAreasAxesView(axis.ChartArea, orientation);
                     }
 
                     // Validate chart

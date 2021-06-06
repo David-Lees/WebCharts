@@ -101,13 +101,10 @@ namespace WebCharts.Services
             // This prevents anialiasing from completly smoothing the
             // dashed line.
             SmoothingMode oldSmoothingMode = this.SmoothingMode;
-            if (width <= 1 && style != ChartDashStyle.Solid)
+            if (width <= 1 && style != ChartDashStyle.Solid && (firstPoint.X == secondPoint.X ||
+                    firstPoint.Y == secondPoint.Y))
             {
-                if (firstPoint.X == secondPoint.X ||
-                    firstPoint.Y == secondPoint.Y)
-                {
-                    this.SmoothingMode = SmoothingMode.None;
-                }
+                this.SmoothingMode = SmoothingMode.None;
             }
 
             // Draw a line

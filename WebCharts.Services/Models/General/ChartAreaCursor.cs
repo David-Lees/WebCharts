@@ -134,14 +134,11 @@ namespace WebCharts.Services
                     _position = value;
 
                     // Align cursor in connected areas
-                    if (_chartArea != null && _chartArea.Common != null && _chartArea.Common.ChartPicture != null)
+                    if (_chartArea != null && _chartArea.Common != null && _chartArea.Common.ChartPicture != null && !_chartArea.alignmentInProcess)
                     {
-                        if (!_chartArea.alignmentInProcess)
-                        {
-                            AreaAlignmentOrientations orientation = (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
-                                AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
-                            _chartArea.Common.ChartPicture.AlignChartAreasCursor(_chartArea, orientation, false);
-                        }
+                        AreaAlignmentOrientations orientation = (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
+                            AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
+                        _chartArea.Common.ChartPicture.AlignChartAreasCursor(_chartArea, orientation, false);
                     }
 
                     if (_chartArea != null && !_chartArea.alignmentInProcess)
@@ -172,14 +169,11 @@ namespace WebCharts.Services
                     _selectionStart = value;
 
                     // Align cursor in connected areas
-                    if (_chartArea != null && _chartArea.Common != null && _chartArea.Common.ChartPicture != null)
+                    if (_chartArea != null && _chartArea.Common != null && _chartArea.Common.ChartPicture != null && !_chartArea.alignmentInProcess)
                     {
-                        if (!_chartArea.alignmentInProcess)
-                        {
-                            AreaAlignmentOrientations orientation = (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
-                                AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
-                            _chartArea.Common.ChartPicture.AlignChartAreasCursor(_chartArea, orientation, false);
-                        }
+                        AreaAlignmentOrientations orientation = (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
+                            AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
+                        _chartArea.Common.ChartPicture.AlignChartAreasCursor(_chartArea, orientation, false);
                     }
 
                     if (_chartArea != null && !_chartArea.alignmentInProcess)
@@ -210,14 +204,11 @@ namespace WebCharts.Services
                     _selectionEnd = value;
 
                     // Align cursor in connected areas
-                    if (_chartArea != null && _chartArea.Common != null && _chartArea.Common.ChartPicture != null)
+                    if (_chartArea != null && _chartArea.Common != null && _chartArea.Common.ChartPicture != null && !_chartArea.alignmentInProcess)
                     {
-                        if (!_chartArea.alignmentInProcess)
-                        {
-                            AreaAlignmentOrientations orientation = (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
-                                AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
-                            _chartArea.Common.ChartPicture.AlignChartAreasCursor(_chartArea, orientation, false);
-                        }
+                        AreaAlignmentOrientations orientation = (_attachedToXAxis == AxisName.X || _attachedToXAxis == AxisName.X2) ?
+                            AreaAlignmentOrientations.Vertical : AreaAlignmentOrientations.Horizontal;
+                        _chartArea.Common.ChartPicture.AlignChartAreasCursor(_chartArea, orientation, false);
                     }
 
                     if (_chartArea != null && !_chartArea.alignmentInProcess)
@@ -602,135 +593,131 @@ namespace WebCharts.Services
         {
             double roundedPosition = cursorPosition;
 
-            if (!double.IsNaN(roundedPosition))
-            {
-                // Check if position rounding is required
-                if (GetAxis() != null &&
+            if (!double.IsNaN(roundedPosition) && GetAxis() != null &&
                     Interval != 0 &&
                     !double.IsNaN(Interval))
+            {
+                // Get first series attached to this axis
+                Series axisSeries = null;
+                if (_axis.axisType == AxisName.X || _axis.axisType == AxisName.X2)
                 {
-                    // Get first series attached to this axis
-                    Series axisSeries = null;
-                    if (_axis.axisType == AxisName.X || _axis.axisType == AxisName.X2)
+                    List<string> seriesArray = _axis.ChartArea.GetXAxesSeries((_axis.axisType == AxisName.X) ? AxisType.Primary : AxisType.Secondary, _axis.SubAxisName);
+                    if (seriesArray.Count > 0)
                     {
-                        List<string> seriesArray = _axis.ChartArea.GetXAxesSeries((_axis.axisType == AxisName.X) ? AxisType.Primary : AxisType.Secondary, _axis.SubAxisName);
-                        if (seriesArray.Count > 0)
+                        string seriesName = seriesArray[0] as string;
+                        axisSeries = _axis.Common.DataManager.Series[seriesName];
+                        if (axisSeries != null && !axisSeries.IsXValueIndexed)
                         {
-                            string seriesName = seriesArray[0] as string;
-                            axisSeries = _axis.Common.DataManager.Series[seriesName];
-                            if (axisSeries != null && !axisSeries.IsXValueIndexed)
-                            {
-                                axisSeries = null;
-                            }
+                            axisSeries = null;
                         }
                     }
+                }
 
-                    // If interval type is not set - use number
-                    DateTimeIntervalType intervalType =
-                        (IntervalType == DateTimeIntervalType.Auto) ?
-                        DateTimeIntervalType.Number : IntervalType;
+                // If interval type is not set - use number
+                DateTimeIntervalType intervalType =
+                    (IntervalType == DateTimeIntervalType.Auto) ?
+                    DateTimeIntervalType.Number : IntervalType;
 
-                    // If interval offset type is not set - use interval type
-                    DateTimeIntervalType offsetType =
-                        (IntervalOffsetType == DateTimeIntervalType.Auto) ?
-                    intervalType : IntervalOffsetType;
+                // If interval offset type is not set - use interval type
+                DateTimeIntervalType offsetType =
+                    (IntervalOffsetType == DateTimeIntervalType.Auto) ?
+                intervalType : IntervalOffsetType;
 
-                    // Round numbers
-                    if (intervalType == DateTimeIntervalType.Number)
+                // Round numbers
+                if (intervalType == DateTimeIntervalType.Number)
+                {
+                    double newRoundedPosition = Math.Round(roundedPosition / Interval) * Interval;
+
+                    // Add offset number
+                    if (IntervalOffset != 0 &&
+                        !double.IsNaN(IntervalOffset) &&
+                        offsetType != DateTimeIntervalType.Auto)
                     {
-                        double newRoundedPosition = Math.Round(roundedPosition / Interval) * Interval;
-
-                        // Add offset number
-                        if (IntervalOffset != 0 &&
-                            !double.IsNaN(IntervalOffset) &&
-                            offsetType != DateTimeIntervalType.Auto)
+                        if (IntervalOffset > 0)
                         {
-                            if (IntervalOffset > 0)
-                            {
-                                newRoundedPosition += ChartHelper.GetIntervalSize(newRoundedPosition, IntervalOffset, offsetType);
-                            }
-                            else
-                            {
-                                newRoundedPosition -= ChartHelper.GetIntervalSize(newRoundedPosition, IntervalOffset, offsetType);
-                            }
-                        }
-
-                        // Find rounded position after/before the current
-                        double nextPosition = newRoundedPosition;
-                        if (newRoundedPosition <= cursorPosition)
-                        {
-                            nextPosition += ChartHelper.GetIntervalSize(newRoundedPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                            newRoundedPosition += ChartHelper.GetIntervalSize(newRoundedPosition, IntervalOffset, offsetType);
                         }
                         else
                         {
-                            nextPosition -= ChartHelper.GetIntervalSize(newRoundedPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
-                        }
-
-                        // Choose closest rounded position
-                        if (Math.Abs(nextPosition - cursorPosition) > Math.Abs(cursorPosition - newRoundedPosition))
-                        {
-                            roundedPosition = newRoundedPosition;
-                        }
-                        else
-                        {
-                            roundedPosition = nextPosition;
+                            newRoundedPosition -= ChartHelper.GetIntervalSize(newRoundedPosition, IntervalOffset, offsetType);
                         }
                     }
 
-                    // Round date/time
+                    // Find rounded position after/before the current
+                    double nextPosition = newRoundedPosition;
+                    if (newRoundedPosition <= cursorPosition)
+                    {
+                        nextPosition += ChartHelper.GetIntervalSize(newRoundedPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                    }
                     else
                     {
-                        // Find one rounded position prior and one after current position
-                        // Adjust start position depending on the interval and type
-                        double prevPosition = ChartHelper.AlignIntervalStart(cursorPosition, Interval, intervalType, axisSeries);
+                        nextPosition -= ChartHelper.GetIntervalSize(newRoundedPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                    }
 
-                        // Adjust start position depending on the interval offset and offset type
-                        if (IntervalOffset != 0 && axisSeries == null)
-                        {
-                            if (IntervalOffset > 0)
-                            {
-                                prevPosition += ChartHelper.GetIntervalSize(
-                                    prevPosition,
-                                    IntervalOffset,
-                                    offsetType,
-                                    axisSeries,
-                                    0,
-                                    DateTimeIntervalType.Number,
-                                    true);
-                            }
-                            else
-                            {
-                                prevPosition += ChartHelper.GetIntervalSize(
-                                    prevPosition,
-                                    -IntervalOffset,
-                                    offsetType,
-                                    axisSeries,
-                                    0,
-                                    DateTimeIntervalType.Number,
-                                    true);
-                            }
-                        }
+                    // Choose closest rounded position
+                    if (Math.Abs(nextPosition - cursorPosition) > Math.Abs(cursorPosition - newRoundedPosition))
+                    {
+                        roundedPosition = newRoundedPosition;
+                    }
+                    else
+                    {
+                        roundedPosition = nextPosition;
+                    }
+                }
 
-                        // Find rounded position after/before the current
-                        double nextPosition = prevPosition;
-                        if (prevPosition <= cursorPosition)
+                // Round date/time
+                else
+                {
+                    // Find one rounded position prior and one after current position
+                    // Adjust start position depending on the interval and type
+                    double prevPosition = ChartHelper.AlignIntervalStart(cursorPosition, Interval, intervalType, axisSeries);
+
+                    // Adjust start position depending on the interval offset and offset type
+                    if (IntervalOffset != 0 && axisSeries == null)
+                    {
+                        if (IntervalOffset > 0)
                         {
-                            nextPosition += ChartHelper.GetIntervalSize(prevPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                            prevPosition += ChartHelper.GetIntervalSize(
+                                prevPosition,
+                                IntervalOffset,
+                                offsetType,
+                                axisSeries,
+                                0,
+                                DateTimeIntervalType.Number,
+                                true);
                         }
                         else
                         {
-                            nextPosition -= ChartHelper.GetIntervalSize(prevPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                            prevPosition += ChartHelper.GetIntervalSize(
+                                prevPosition,
+                                -IntervalOffset,
+                                offsetType,
+                                axisSeries,
+                                0,
+                                DateTimeIntervalType.Number,
+                                true);
                         }
+                    }
 
-                        // Choose closest rounded position
-                        if (Math.Abs(nextPosition - cursorPosition) > Math.Abs(cursorPosition - prevPosition))
-                        {
-                            roundedPosition = prevPosition;
-                        }
-                        else
-                        {
-                            roundedPosition = nextPosition;
-                        }
+                    // Find rounded position after/before the current
+                    double nextPosition = prevPosition;
+                    if (prevPosition <= cursorPosition)
+                    {
+                        nextPosition += ChartHelper.GetIntervalSize(prevPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                    }
+                    else
+                    {
+                        nextPosition -= ChartHelper.GetIntervalSize(prevPosition, Interval, intervalType, axisSeries, 0, DateTimeIntervalType.Number, true);
+                    }
+
+                    // Choose closest rounded position
+                    if (Math.Abs(nextPosition - cursorPosition) > Math.Abs(cursorPosition - prevPosition))
+                    {
+                        roundedPosition = prevPosition;
+                    }
+                    else
+                    {
+                        roundedPosition = nextPosition;
                     }
                 }
             }

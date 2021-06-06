@@ -1475,12 +1475,9 @@ namespace WebCharts.Services
                 throw new ArgumentException(SR.ExceptionStatisticalAnalysesNotEnoughDataPoints);
             }
 
-            if (inputValues.Length > 2)
+            if (inputValues.Length > 2 && inputValues[2].Length < 2)
             {
-                if (inputValues[2].Length < 2)
-                {
-                    throw new ArgumentException(SR.ExceptionStatisticalAnalysesNotEnoughDataPoints);
-                }
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesNotEnoughDataPoints);
             }
         }
 
