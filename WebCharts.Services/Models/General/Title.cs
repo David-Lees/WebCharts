@@ -1691,7 +1691,7 @@ namespace WebCharts.Services
                     }
 
                     // Process only titles docked to specified area
-                    if (title.IsDockedInsideChartArea == false &&
+                    if (!title.IsDockedInsideChartArea &&
                         title.DockedToChartArea == area.Name &&
                         title.Position.Auto)
                     {
@@ -1808,7 +1808,7 @@ namespace WebCharts.Services
                         // Loop through all titles
                         foreach (Title title in chartPicture.Titles)
                         {
-                            if (title.IsDockedInsideChartArea == true &&
+                            if (title.IsDockedInsideChartArea &&
                                 title.DockedToChartArea == area.Name &&
                                 title.Position.Auto)
                             {

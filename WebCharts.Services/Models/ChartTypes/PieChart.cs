@@ -931,7 +931,7 @@ namespace WebCharts.Services
                     if (labels == LabelsMode.EstimateSize)
                     {
                         EstimateLabels(graph, middlePoint, rectangle.Size, startAngle, sweepAngle, point, exploded, area);
-                        if (_labelsFit == false)
+                        if (!_labelsFit)
                         {
                             return;
                         }

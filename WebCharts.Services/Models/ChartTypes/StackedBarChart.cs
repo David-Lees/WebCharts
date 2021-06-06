@@ -1160,7 +1160,7 @@ namespace WebCharts.Services
             double yValue = double.NaN;
 
             // Calculate stacked column Y value for 2D chart
-            if (area.Area3DStyle.Enable3D == false || yValueIndex == -2)
+            if (!area.Area3DStyle.Enable3D || yValueIndex == -2)
             {
                 return point.YValues[0];
             }

@@ -318,7 +318,7 @@ namespace WebCharts.Services
 
                 // Take an interval between gridlines. Interval
                 // depends on interval type.
-                if (majorGridTick || Axis.IsLogarithmic == false)
+                if (majorGridTick || !Axis.IsLogarithmic)
                 {
                     // Take an interval between tickmarks. Interval
                     // depends on interval type.
@@ -459,7 +459,7 @@ namespace WebCharts.Services
                 }
 
                 // Move position
-                if (majorGridTick || Axis.IsLogarithmic == false)
+                if (majorGridTick || !Axis.IsLogarithmic)
                 {
                     current += interval;
                 }

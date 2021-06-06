@@ -159,7 +159,7 @@ namespace WebCharts.Services
             //			}
 
             // Calculate stacked area Y value for 2D chart
-            if (area.Area3DStyle.Enable3D == false)
+            if (!area.Area3DStyle.Enable3D)
             {
                 if (_totalPerPoint[pointIndex] == 0)
                 {
@@ -1516,7 +1516,7 @@ namespace WebCharts.Services
             double yValue = double.NaN;
 
             // Calculate stacked column Y value for 2D chart
-            if (area.Area3DStyle.Enable3D == false)
+            if (!area.Area3DStyle.Enable3D)
             {
                 return point.YValues[0];
             }

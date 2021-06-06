@@ -4517,7 +4517,7 @@ namespace WebCharts.Services
                         foreach (Legend legend in this)
                         {
                             if (legend.IsEnabled() &&
-                                legend.IsDockedInsideChartArea == true &&
+                                legend.IsDockedInsideChartArea &&
                                 legend.DockedToChartArea == area.Name &&
                                 legend.Position.Auto)
                             {
@@ -4585,7 +4585,7 @@ namespace WebCharts.Services
 
                     // Process only legends docked to specified area
                     if (legend.IsEnabled() &&
-                        legend.IsDockedInsideChartArea == false &&
+                        !legend.IsDockedInsideChartArea &&
                         legend.DockedToChartArea == area.Name &&
                         legend.Position.Auto)
                     {

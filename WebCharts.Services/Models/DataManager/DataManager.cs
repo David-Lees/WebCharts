@@ -295,7 +295,7 @@ namespace WebCharts.Services
                             totalPerPoint += ser.Points[pointIndex].YValues[0];
                         }
 
-                        if (ser.Points[pointIndex].YValues[0] > 0 || supportNegative == false)
+                        if (ser.Points[pointIndex].YValues[0] > 0 || !supportNegative)
                         {
                             positiveTotalPerPoint += ser.Points[pointIndex].YValues[0];
                         }
@@ -618,7 +618,7 @@ namespace WebCharts.Services
                             totalPerPoint += ser.Points[pointIndex].YValues[0];
                         }
 
-                        if (ser.Points[pointIndex].YValues[0] < 0 || supportNegative == false)
+                        if (ser.Points[pointIndex].YValues[0] < 0 || !supportNegative)
                         {
                             negativeTotalPerPoint += ser.Points[pointIndex].YValues[0];
                         }
