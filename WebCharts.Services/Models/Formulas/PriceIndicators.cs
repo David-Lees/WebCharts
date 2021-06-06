@@ -245,7 +245,7 @@ namespace WebCharts.Services
         /// <param name="outputValues">Arrays of doubles: Exponential Moving average</param>
         /// <param name="period">Period</param>
         /// <param name="startFromFirst">Start from first value</param>
-        internal void ExponentialMovingAverage(double[] inputValues, out double[] outputValues, int period, bool startFromFirst)
+        internal static void ExponentialMovingAverage(double[] inputValues, out double[] outputValues, int period, bool startFromFirst)
         {
             double[][] tempInput = new double[2][];
             string[] parList = new string[1];
@@ -287,7 +287,7 @@ namespace WebCharts.Services
         /// <param name="outputValues">Arrays of doubles: 1. row - X values, 2. row - Moving average</param>
         /// <param name="parameterList">Array of strings: 1. Period</param>
         /// <param name="extraParameterList">Array of strings: 1. Start from zero</param>
-        private void ExponentialMovingAverage(double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList)
+        private static void ExponentialMovingAverage(double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList)
         {
             int length = inputValues.Length;
 

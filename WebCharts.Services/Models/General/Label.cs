@@ -1589,7 +1589,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="axis">Axis object.</param>
         /// <returns>Position where axis labels should be drawn.</returns>
-		private AxisPosition GetLabelsPosition(Axis axis)
+		private static AxisPosition GetLabelsPosition(Axis axis)
         {
             // Get angle between 2D axis and it's 3D projection.
             double axisAngle = axis.GetAxisProjectionAngle();

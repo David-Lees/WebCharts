@@ -4,12 +4,12 @@
 
 
 using SkiaSharp;
+using System;
 
 namespace WebCharts.Services
 {
-    internal interface IImageLoader
+    internal interface IImageLoader: IDisposable
     {
-        void Dispose();
         SKImage LoadImage(string imageURL);
         SKImage LoadImage(string imageURL, bool saveImage);
     }

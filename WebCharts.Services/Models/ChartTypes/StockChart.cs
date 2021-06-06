@@ -746,7 +746,8 @@ namespace WebCharts.Services
 
                 // Bar and border color
                 SKColor barColor = (open > close) ? priceUpColor : priceDownColor;
-                SKColor barBorderColor = (point.BorderColor == SKColor.Empty) ? (barColor == SKColor.Empty) ? point.Color : barColor : point.BorderColor;
+                var colour = (barColor == SKColor.Empty) ? point.Color : barColor;
+                SKColor barBorderColor = (point.BorderColor == SKColor.Empty) ? colour : point.BorderColor;
 
                 // Get absolute height
                 SKSize sizeOfHeight = new(rect.Height, rect.Height);
@@ -1507,7 +1508,8 @@ namespace WebCharts.Services
 
                 // Bar and border color
                 SKColor barColor = (open > close) ? priceUpColor : priceDownColor;
-                SKColor barBorderColor = (point.BorderColor == SKColor.Empty) ? (barColor == SKColor.Empty) ? point.Color : barColor : point.BorderColor;
+                var colour = (barColor == SKColor.Empty) ? point.Color : barColor;
+                SKColor barBorderColor = (point.BorderColor == SKColor.Empty) ? colour : point.BorderColor;
 
                 // Translate coordinates
                 Point3D[] points = new Point3D[2];

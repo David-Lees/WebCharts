@@ -49,7 +49,7 @@ namespace WebCharts.Services
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
         /// <param name="extraParameterList">Array of strings - Extra parameters</param>
-        private void ChaikinOscillator(double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList)
+        private static void ChaikinOscillator(double[][] inputValues, out double[][] outputValues, string[] parameterList, string[] extraParameterList)
         {
             // There is no enough input series
             if (inputValues.Length != 5)

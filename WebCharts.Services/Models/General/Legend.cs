@@ -3354,7 +3354,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="rowsPerColumn">Array that stores number of rows per column.</param>
         /// <returns>Maximum number of rows.</returns>
-        private int GetMaximumNumberOfRows(int[] rowsPerColumn)
+        private static int GetMaximumNumberOfRows(int[] rowsPerColumn)
         {
             // Find column with maximum number of rows
             int maxNumberOfColumns = 0;

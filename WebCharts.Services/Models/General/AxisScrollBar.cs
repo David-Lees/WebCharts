@@ -116,7 +116,6 @@ namespace WebCharts.Services
         // Current scroll bar drawing colors
         private readonly SKColor _buttonCurrentColor = SKColor.Empty;
 
-        private readonly SKColor _backCurrentColor = SKColor.Empty;
         private readonly SKColor _lineCurrentColor = SKColor.Empty;
 
         // Position of the scrollbar (true - edge of PlotArea, false - edge of chart area)

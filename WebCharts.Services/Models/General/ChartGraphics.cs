@@ -4002,7 +4002,7 @@ namespace WebCharts.Services
         /// <param name="position">Circle position.</param>
         /// <param name="polygonSectorsNumber">Number of sectors for the polygon.</param>
         /// <returns>Graphics path of the polygon circle.</returns>
-        internal SKPath GetPolygonCirclePath(SKRect position, int polygonSectorsNumber)
+        internal static SKPath GetPolygonCirclePath(SKRect position, int polygonSectorsNumber)
         {
             SKPoint firstPoint = new(position.Left + position.Width / 2f, position.Top);
             SKPoint centerPoint = new(position.Left + position.Width / 2f, position.Top + position.Height / 2f);
@@ -4054,7 +4054,7 @@ namespace WebCharts.Services
         /// <param name="curentSector">Sector position.</param>
         /// <param name="sectorSize">Sector size.</param>
         /// <returns>3D brush.</returns>
-        internal SKPaint GetSector3DBrush(SKPaint brush, float curentSector, float sectorSize)
+        internal static SKPaint GetSector3DBrush(SKPaint brush, float curentSector, float sectorSize)
         {
             // Get color from the brush
             SKColor brushColor = brush.Color;

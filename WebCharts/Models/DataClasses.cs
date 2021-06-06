@@ -42,7 +42,7 @@ namespace WebCharts.Models
     public class DetailPivoted
     {
         /// <summary>The ID of the telemetry header record, or 0 in the case of forecast data</summary>
-        public int id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>Date/time of the data point</summary>
         public DateTime TelTime { get; set; }
@@ -81,7 +81,7 @@ namespace WebCharts.Models
         public string Col9 { get; set; }
 
         /// <summary>Flag specifying if this is an observed value(false) or a forecast(true)</summary>
-        public bool forecast { get; set; }
+        public bool Forecast { get; set; }
     }
 
     /// <summary>Data point for a line graph.</summary>
@@ -94,10 +94,10 @@ namespace WebCharts.Models
     public class LineData
     {
         /// <summary>X value</summary>
-        public DateTime time { get; set; }
+        public DateTime Time { get; set; }
 
         /// <summary>Y value</summary>
-        public double? value { get; set; }
+        public double? Value { get; set; }
 
         /// <summary>Deployment ID</summary>
         public string DepId { get; set; }
@@ -324,7 +324,7 @@ namespace WebCharts.Models
     {
         /// <summary>Primary key, also used as sort order</summary>
         [Key]
-        public int id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>The value for the option</summary>
         [MaxLength(20)]

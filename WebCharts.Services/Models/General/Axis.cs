@@ -1517,7 +1517,7 @@ namespace WebCharts.Services
             if (ChartArea.CircularUsePolygons)
             {
                 oldRegion = graph.Clip;
-                graph.Clip = new SKRegion(graph.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber));
+                graph.Clip = new SKRegion(ChartGraphics.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber));
             }
 
             // Get center point
@@ -1630,7 +1630,7 @@ namespace WebCharts.Services
                 {
                     if (ChartArea.CircularUsePolygons)
                     {
-                        path = graph.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber);
+                        path = ChartGraphics.GetPolygonCirclePath(rect, ChartArea.CircularSectorsNumber);
                     }
                     else
                     {

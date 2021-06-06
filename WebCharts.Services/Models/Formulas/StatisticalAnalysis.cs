@@ -338,7 +338,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private void Correlation(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+		private static void Correlation(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
         {
             // There is no enough input series
             if (inputValues.Length != 3)
@@ -383,7 +383,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private void Covariance(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+		private static void Covariance(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
         {
             // There is no enough input series
             if (inputValues.Length != 3)
@@ -1069,7 +1069,7 @@ namespace WebCharts.Services
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
         /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private void FDistribution(out double[][] outputValues, string[] parameterList, out string[][] outLabels)
+		private static void FDistribution(out double[][] outputValues, string[] parameterList, out string[][] outLabels)
         {
             // F value value
             double fValue;
@@ -1532,7 +1532,7 @@ namespace WebCharts.Services
         /// <param name="arrayX">First data set from X random variable.</param>
         /// <param name="arrayY">Second data set from Y random variable.</param>
         /// <returns>Returns covariance</returns>
-        private double Covar(double[] arrayX, double[] arrayY)
+        private static double Covar(double[] arrayX, double[] arrayY)
         {
             // Check the number of data points
             if (arrayX.Length != arrayY.Length)
@@ -1738,7 +1738,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-        private void Average(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+        private static void Average(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
         {
             outLabels = null;
 

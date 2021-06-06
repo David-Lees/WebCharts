@@ -1345,7 +1345,17 @@ namespace WebCharts.Services
         /// tooltip always has a higher priority.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
-        private string GetCellUrl()
+        private static string GetCellUrl() => string.Empty;
+
+        /// <summary>
+        /// Helper function that returns cell url.
+        /// </summary>
+        /// <remarks>
+        /// Url can be set in the cell or in the legend item. Cell
+        /// tooltip always has a higher priority.
+        /// </remarks>
+        /// <returns>Returns cell text.</returns>
+        private static string GetCellMapAreaAttributes()
         {
             return string.Empty;
         }
@@ -1358,23 +1368,7 @@ namespace WebCharts.Services
         /// tooltip always has a higher priority.
         /// </remarks>
         /// <returns>Returns cell text.</returns>
-        private string GetCellMapAreaAttributes()
-        {
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Helper function that returns cell url.
-        /// </summary>
-        /// <remarks>
-        /// Url can be set in the cell or in the legend item. Cell
-        /// tooltip always has a higher priority.
-        /// </remarks>
-        /// <returns>Returns cell text.</returns>
-        private string GetCellPostBackValue()
-        {
-            return string.Empty;
-        }
+        private static string GetCellPostBackValue() => string.Empty;
 
         /// <summary>
         /// Helper function that returns the exact text presented in the cell.

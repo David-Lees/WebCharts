@@ -198,7 +198,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
-        private void EaseOfMovement(double[][] inputValues, out double[][] outputValues)
+        private static void EaseOfMovement(double[][] inputValues, out double[][] outputValues)
         {
             // There is no enough input series
             if (inputValues.Length != 4)

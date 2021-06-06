@@ -187,8 +187,6 @@ namespace WebCharts.Services
 
         // Private data members, which store properties values
 
-        private SKRect _boundingRectangle = SKRect.Empty;
-
         #endregion Fields
 
         #region Properties
@@ -207,17 +205,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Bounding Rectangle of an shape
         /// </summary>
-        internal SKRect BoundingRectangle
-        {
-            get
-            {
-                return _boundingRectangle;
-            }
-            set
-            {
-                _boundingRectangle = value;
-            }
-        }
+        internal SKRect BoundingRectangle { get; set; } = SKRect.Empty;
 
         /// <summary>
         /// Object which is presented with this region

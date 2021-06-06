@@ -785,7 +785,7 @@ namespace WebCharts.Services
         /// <param name="secondPointIndex">Second point index.</param>
         /// <param name="centerPoint">Center point for segment area.</param>
         /// <param name="borderWidth">Border width</param>
-        internal void AddSelectionPath(
+        internal static void AddSelectionPath(
             ChartArea area,
             SKPath selectionPath,
             SKPoint[] dataPointPos,
@@ -842,7 +842,7 @@ namespace WebCharts.Services
         /// <param name="p1">First line point.</param>
         /// <param name="p2">Second line point.</param>
         /// <returns></returns>
-        private SKPoint GetMiddlePoint(SKPoint p1, SKPoint p2)
+        private static SKPoint GetMiddlePoint(SKPoint p1, SKPoint p2)
         {
             SKPoint middlePoint = SKPoint.Empty;
             middlePoint.X = (p1.X + p2.X) / 2f;
@@ -1342,7 +1342,7 @@ namespace WebCharts.Services
         /// <param name="point">IsEmpty data point.</param>
         /// <param name="pointIndex">IsEmpty data point index.</param>
         /// <returns>A Value for empty data point.</returns>
-        internal double GetEmptyPointValue(DataPoint point, int pointIndex)
+        internal static double GetEmptyPointValue(DataPoint point, int pointIndex)
         {
             Series series = point.series;               // Data series
             double previousPoint = 0;                   // Previous data point value (not empty)

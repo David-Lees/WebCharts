@@ -3308,7 +3308,7 @@ namespace WebCharts.Services
         /// <param name="depth">Cube depth.</param>
         /// <param name="matrix">Coordinate transformation matrix.</param>
         /// <returns>Visible surfaces.</returns>
-        internal SurfaceNames GetVisibleSurfacesWithPerspective(
+        internal static SurfaceNames GetVisibleSurfacesWithPerspective(
             SKRect position,
             float positionZ,
             float depth,
@@ -3342,7 +3342,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="cubePoints">Array of 8 points which define the cube.</param>
         /// <returns>Visible surfaces.</returns>
-        internal SurfaceNames GetVisibleSurfacesWithPerspective(Point3D[] cubePoints)
+        internal static SurfaceNames GetVisibleSurfacesWithPerspective(Point3D[] cubePoints)
         {
             // Check imput array size
             if (cubePoints.Length != 8)

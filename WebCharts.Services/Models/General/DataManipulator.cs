@@ -590,7 +590,7 @@ namespace WebCharts.Services
         /// <param name="fromXValue">Check intervals from this X value.</param>
         /// <param name="toXValue">Check intervals until this X value.</param>
         /// <param name="series">Series array.</param>
-        private void InsertEmptyPoints(
+        private static void InsertEmptyPoints(
             double interval,
             IntervalType intervalType,
             double intervalOffset,
@@ -1483,8 +1483,6 @@ namespace WebCharts.Services
         private class PointElementFilter : IDataSKPointilter
         {
             // Private fields
-            private readonly DataManipulator _dataManipulator = null;
-
             private readonly DateRangeType _dateRange;
             private readonly int[] _rangeElements = null;
 

@@ -3142,7 +3142,7 @@ namespace WebCharts.Services
         /// <param name="rightPosition">Position of the curve of big pie slice. Big pie slice coud have to visible curves - left and right</param>
         /// <param name="sameBackFront">This is big pie slice which is in same time back and front slice.</param>
         /// <param name="pointIndex">Data Point Index</param>
-        private void DrawPieCurves(
+        private static void DrawPieCurves(
             ChartGraphics graph,
             ChartArea area,
             DataPoint dataPoint,
@@ -3355,7 +3355,7 @@ namespace WebCharts.Services
         /// <param name="sameBackFront">This is big pie slice which is in same time back and front slice.</param>
         /// <param name="pointIndex">Data Point Index</param>
         /// <returns>True if slice is special case and it is drawn as a special case.</returns>
-        private bool DrawPieCurvesBigSlice
+        private static bool DrawPieCurvesBigSlice
         (
             ChartGraphics graph,
             ChartArea area,
@@ -3641,7 +3641,7 @@ namespace WebCharts.Services
         /// <param name="rightPosition">Position of the curve of big pie slice. Big pie slice coud have to visible curves - left and right</param>
         /// <param name="sameBackFront">This is big pie slice which is in same time back and front slice.</param>
         /// <param name="pointIndex">Data Point Index</param>
-        private void DrawDoughnutCurves(
+        private static void DrawDoughnutCurves(
             ChartGraphics graph,
             ChartArea area,
             DataPoint dataPoint,
@@ -3855,7 +3855,7 @@ namespace WebCharts.Services
         /// <param name="sameBackFront">This is big pie slice which is in same time back and front slice.</param>
         /// <param name="pointIndex">Data Point Index</param>
         /// <returns>True if slice is special case and it is drawn as a special case.</returns>
-        private bool DrawDoughnutCurvesBigSlice
+        private static bool DrawDoughnutCurvesBigSlice
             (
             ChartGraphics graph,
             ChartArea area,
@@ -5344,7 +5344,7 @@ namespace WebCharts.Services
         /// <param name="points">Important pie points</param>
         /// <param name="point">Data point</param>
         /// <param name="pointIndex">Data point index</param>
-        private void Draw3DInsideLabels(ChartGraphics graph, SKPoint[] points, DataPoint point, int pointIndex)
+        private static void Draw3DInsideLabels(ChartGraphics graph, SKPoint[] points, DataPoint point, int pointIndex)
         {
             // Set String Alignment
             StringFormat format = new()
@@ -5401,9 +5401,9 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="point">The point.</param>
         /// <returns></returns>
-        private String GetPointLabel(DataPoint point)
+        private static string GetPointLabel(DataPoint point)
         {
-            String pointLabel = String.Empty;
+            string pointLabel = string.Empty;
 
             // If There is no Label take axis Label
             if (point.Label.Length == 0)
@@ -5428,7 +5428,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="point">Data point which is used.</param>
         /// <returns>Formated text</returns>
-        private string GetLabelText(DataPoint point)
+        private static string GetLabelText(DataPoint point)
         {
             string pointLabel = GetPointLabel(point);
             // Get label text

@@ -284,7 +284,8 @@ namespace WebCharts.Services
                 // Draw line shadow
                 if (!disableShadow && series.ShadowOffset != 0 && series.ShadowColor != SKColors.Empty && color != SKColor.Empty && color != SKColors.Transparent && pointBorderWidth > 0 && dashStyle != ChartDashStyle.NotSet)
                 {
-                    SKPaint shadowPen = new() { Style = SKPaintStyle.Stroke, Color = (series.ShadowColor.Alpha != 255) ? series.ShadowColor : Color.FromArgb(useBorderColor ? point.BorderColor.Alpha / 2 : point.Color.Alpha / 2, series.ShadowColor), StrokeWidth = pointBorderWidth };
+                    var alpha = useBorderColor ? point.BorderColor.Alpha / 2 : point.Color.Alpha / 2;
+                    SKPaint shadowPen = new() { Style = SKPaintStyle.Stroke, Color = (series.ShadowColor.Alpha != 255) ? series.ShadowColor : Color.FromArgb(alpha, series.ShadowColor), StrokeWidth = pointBorderWidth };
                     shadowPen.PathEffect = ChartGraphics.GetPenStyle(point.BorderDashStyle, pointBorderWidth);
                     shadowPen.StrokeCap = SKStrokeCap.Round;
 
