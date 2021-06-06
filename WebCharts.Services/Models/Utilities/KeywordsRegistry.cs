@@ -348,33 +348,33 @@ namespace WebCharts.Services
         /// <summary>
         /// Keyword full name.
         /// </summary>
-        public string Name = String.Empty;
+        public string Name;
 
         /// <summary>
         /// String that represent this keyword in the property (keyword).
         /// </summary>
-        public string Keyword = String.Empty;
+        public string Keyword;
 
         /// <summary>
         /// Comma separated strings that may alternatively represent this
         /// keyword in the property.
         /// </summary>
-        public string KeywordAliases = String.Empty;
+        public string KeywordAliases;
 
         /// <summary>
         /// Keyword description.
         /// </summary>
-        public string Description = String.Empty;
+        public string Description;
 
         /// <summary>
         /// Comma separated names of classes this keyword applies to.
         /// </summary>
-        public string AppliesToTypes = String.Empty;
+        public string AppliesToTypes;
 
         /// <summary>
         /// Comma separated names of properties this keyword applies to.
         /// </summary>
-        public string AppliesToProperties = String.Empty;
+        public string AppliesToProperties;
 
         /// <summary>
         /// True if keyword value can be formatted.

@@ -901,7 +901,7 @@ namespace WebCharts.Services
         // Private fields for properties values storage
         private readonly int x = 0;
         private readonly int y = 0;
-        private readonly HitTestResult result = new();
+        private readonly HitTestResult result;
 
         #endregion Private fields
 

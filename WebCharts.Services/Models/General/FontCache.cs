@@ -135,7 +135,7 @@ namespace WebCharts.Services
         private class KeyInfo
         {
             readonly string _familyName;
-            readonly float _size = 8;
+            readonly float _size;
             readonly SKFontStyle _style = SKFontStyle.Normal;
             readonly int _gdiCharSet = 1;
 

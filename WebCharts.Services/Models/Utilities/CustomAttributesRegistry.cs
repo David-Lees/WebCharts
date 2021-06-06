@@ -1730,12 +1730,12 @@ namespace WebCharts.Services
         /// <summary>
         /// Attribute name.
         /// </summary>
-        public string Name = string.Empty;
+        public string Name;
 
         /// <summary>
         /// Attribute value type.
         /// </summary>
-        public Type ValueType = typeof(int);
+        public Type ValueType;
 
         /// <summary>
         /// Attribute default value.
@@ -1745,7 +1745,7 @@ namespace WebCharts.Services
         /// <summary>
         /// Attribute description.
         /// </summary>
-        public string Description = string.Empty;
+        public string Description;
 
         /// <summary>
         /// Array of chart type supported by the attribute
@@ -1755,12 +1755,12 @@ namespace WebCharts.Services
         /// <summary>
         /// Indicates that attribute can be applied on series.
         /// </summary>
-        public bool AppliesToSeries = true;
+        public bool AppliesToSeries;
 
         /// <summary>
         /// Indicates that attribute can be applied on data point.
         /// </summary>
-        public bool AppliesToDataPoint = true;
+        public bool AppliesToDataPoint;
 
         /// <summary>
         /// Indicates that attribute can be applied on 3D chart type.
