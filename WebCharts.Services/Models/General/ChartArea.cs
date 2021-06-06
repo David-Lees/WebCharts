@@ -2048,7 +2048,6 @@ namespace WebCharts.Services
                 return;
             }
 
-            ChartService chart = Common.Chart;
             ChartPicture chartPicture = Common.ChartPicture;
 
             // Check if cursor should be drawn
@@ -2063,8 +2062,6 @@ namespace WebCharts.Services
                     !chartPicture.isSelectionMode)
                 {
                     chartPicture.backgroundRestored = true;
-
-                    SKRect chartPosition = new(0, 0, chartPicture.Width, chartPicture.Height);
 
                     // Get chart area position
                     SKRect absAreaPlotPosition = (graph.GetAbsoluteRectangle(PlotAreaPosition.ToSKRect())).Round();

@@ -139,30 +139,6 @@ namespace WebCharts.Services
             readonly SKFontStyle _style = SKFontStyle.Normal;
             readonly int _gdiCharSet = 1;
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="KeyInfo"/> class.
-            /// </summary>
-            /// <param name="familyName">Name of the family.</param>
-            /// <param name="size">The size.</param>
-            public KeyInfo(string familyName, float size)
-            {
-                _familyName = familyName;
-                _size = size;
-            }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="KeyInfo"/> class.
-            /// </summary>
-            /// <param name="familyName">Name of the family.</param>
-            /// <param name="size">The size.</param>
-            /// <param name="style">The style.</param>
-            public KeyInfo(string familyName, float size, SKFontStyle style)
-            {
-                _familyName = familyName;
-                _size = size;
-                _style = style;
-            }
-
-
             #region IEquatable<FontKeyInfo> Members
             /// <summary>
             /// KeyInfo equality comparer

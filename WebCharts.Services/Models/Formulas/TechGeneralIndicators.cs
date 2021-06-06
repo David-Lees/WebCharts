@@ -225,7 +225,7 @@ namespace WebCharts.Services
                 MidPointMove = (inputValues[1][index] + inputValues[2][index]) / 2 - (inputValues[1][index - 1] + inputValues[2][index - 1]) / 2;
 
                 // The Box Ratio determines the ratio between height and width of the Equivolume box:
-                BoxRattio = (inputValues[3][index]) / ((inputValues[1][index] - inputValues[2][index]));
+                BoxRattio = inputValues[3][index] / (inputValues[1][index] - inputValues[2][index]);
 
                 // Ease of Movement is then calculated as:
                 outputValues[1][index - 1] = MidPointMove / BoxRattio;

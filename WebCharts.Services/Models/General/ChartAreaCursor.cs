@@ -604,7 +604,7 @@ namespace WebCharts.Services
                     List<string> seriesArray = _axis.ChartArea.GetXAxesSeries((_axis.axisType == AxisName.X) ? AxisType.Primary : AxisType.Secondary, _axis.SubAxisName);
                     if (seriesArray.Count > 0)
                     {
-                        string seriesName = seriesArray[0] as string;
+                        string seriesName = seriesArray[0];
                         axisSeries = _axis.Common.DataManager.Series[seriesName];
                         if (axisSeries != null && !axisSeries.IsXValueIndexed)
                         {

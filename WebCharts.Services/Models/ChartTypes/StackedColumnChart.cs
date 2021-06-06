@@ -1125,9 +1125,6 @@ namespace WebCharts.Services
                     // Draw label
                     if (!labelPosition.IsEmpty)
                     {
-                        // Fix the .Net issue that text looks shifted to the left.
-                        SKPoint absPosition = graph.GetAbsolutePoint(labelPosition);
-
                         // Measure string
                         if (SKSizeont.IsEmpty)
                         {

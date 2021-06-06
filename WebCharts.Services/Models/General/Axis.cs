@@ -4552,18 +4552,11 @@ namespace WebCharts.Services
                         {
                             maxElementSize = 55 + totlaGroupingLabelsSize;
                         }
-                        if (AxisPosition == AxisPosition.Bottom || AxisPosition == AxisPosition.Top)
-                        {
-                            rect.Size = new((maxLabelSize / 100F) *
-                                (maxElementSize - totlaGroupingLabelsSize - otherElementsSize - elementSpacing),
-                                rect.Height);
-                        }
-                        else
-                        {
-                            rect.Size = new((maxLabelSize / 100F) *
-                                (maxElementSize - totlaGroupingLabelsSize - otherElementsSize - elementSpacing),
-                                rect.Height);
-                        }
+
+                        rect.Size = new((maxLabelSize / 100F) *
+                            (maxElementSize - totlaGroupingLabelsSize - otherElementsSize - elementSpacing),
+                            rect.Height);
+
 
                         // Adjust label From/To position if labels are displayed with offset
                         if (autoLabelOffset == 1)

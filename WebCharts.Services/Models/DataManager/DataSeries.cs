@@ -832,7 +832,7 @@ namespace WebCharts.Services
         internal void ApplyPaletteColors()
         {
             // Use Series or Data Manager palette
-            DataManager dataManager = (DataManager)Common.DataManager;
+            DataManager dataManager = Common.DataManager;
 
             ChartColorPalette currentPalette = (Palette == ChartColorPalette.None) ?
                                                 dataManager.Palette : Palette;

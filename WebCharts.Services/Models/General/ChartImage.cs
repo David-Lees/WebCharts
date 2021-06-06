@@ -140,12 +140,6 @@ namespace WebCharts.Services
             // Creates a new Graphics object from the
             // specified Image object.
 
-            SKImageInfo imageInfo = new(300, 250);
-            using (SKSurface surface = SKSurface.Create(imageInfo))
-            {
-                SKCanvas canvas = surface.Canvas;
-            }
-
             var offScreen = new SKCanvas(image);
 
             SKColor backGroundColor;

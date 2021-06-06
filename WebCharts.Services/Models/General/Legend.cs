@@ -4495,7 +4495,7 @@ namespace WebCharts.Services
                         }
                         catch
                         {
-                            throw (new ArgumentException(SR.ExceptionLegendDockedChartAreaIsMissing((string)legend.DockedToChartArea)));
+                            throw new ArgumentException(SR.ExceptionLegendDockedChartAreaIsMissing(legend.DockedToChartArea));
                         }
                     }
                 }
@@ -4580,7 +4580,7 @@ namespace WebCharts.Services
                     // Check if all chart area names are valid
                     if (legend.DockedToChartArea != Constants.NotSetValue && Chart.ChartAreas.IndexOf(legend.DockedToChartArea) < 0)
                     {
-                        throw (new ArgumentException(SR.ExceptionLegendDockedChartAreaIsMissing((string)legend.DockedToChartArea)));
+                        throw new ArgumentException(SR.ExceptionLegendDockedChartAreaIsMissing(legend.DockedToChartArea));
                     }
 
                     // Process only legends docked to specified area

@@ -705,9 +705,7 @@ namespace WebCharts.Services
                 outputValues[2] = new double[inputValues[1].Length];
 
                 // average
-                double[] average = new double[inputValues[1].Length];
-
-                MovingAverage(inputValues[1], out average, period, true);
+                MovingAverage(inputValues[1], out double[] average, period, true);
 
                 for (int point = 0; point < outputValues[0].Length; point++)
                 {
@@ -743,9 +741,7 @@ namespace WebCharts.Services
                 outputValues[2] = new double[inputValues[1].Length - period + 1];
 
                 // average
-                double[] average = new double[inputValues[1].Length - period + 1];
-
-                MovingAverage(inputValues[1], out average, period, false);
+                MovingAverage(inputValues[1], out double[] average, period, false);
 
                 for (int point = 0; point < outputValues[0].Length; point++)
                 {

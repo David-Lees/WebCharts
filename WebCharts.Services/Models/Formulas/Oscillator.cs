@@ -82,8 +82,6 @@ namespace WebCharts.Services
             // Starting average from the first data point or after period.
             bool startFromFirst = bool.Parse(extraParameterList[0]);
 
-            VolumeIndicators volume = new();
-
             // Accumulation Distribution
             VolumeIndicators.AccumulationDistribution(inputValues, out double[][] outputDistribution);
 

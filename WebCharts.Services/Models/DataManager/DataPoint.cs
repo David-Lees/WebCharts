@@ -1665,7 +1665,7 @@ namespace WebCharts.Services
                 throw new ArgumentOutOfRangeException(nameof(yFields), SR.ExceptionDataPointYValuesCountMismatch(series.YValuesPerPoint.ToString(CultureInfo.InvariantCulture)));
 
             // Convert comma separated field names string to array of names
-            string[] yFieldNames = yFields.Replace(",,", "\n").Split(','); ;
+            string[] yFieldNames = yFields.Replace(",,", "\n").Split(',');
             for (int index = 0; index < yFieldNames.Length; index++)
             {
                 yFieldNames[index] = yFieldNames[index].Replace("\n", ",");

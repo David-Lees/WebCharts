@@ -4601,7 +4601,7 @@ namespace WebCharts.Services
             float[] tempSweepAngles = new float[numOfPoints];
             int[] tempPointIndexList = new int[numOfPoints];
             DataPoint[] tempPoints = new DataPoint[numOfPoints];
-            int start = 0; ;
+            int start = 0;
 
             // The big pie slice (special case) is always on the beginning.
             if (sameBackFront)

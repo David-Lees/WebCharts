@@ -1595,7 +1595,7 @@ namespace WebCharts.Services
                     }
 
                     // Recalculates Height position and zero position of bars
-                    double height = pointEx.yPosition; ;
+                    double height = pointEx.yPosition;
 
                     // Set x position
                     double xValue = (pointEx.indexedSeries) ? pointEx.index : point.XValue;
