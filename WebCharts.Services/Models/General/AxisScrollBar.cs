@@ -357,31 +357,7 @@ namespace WebCharts.Services
 
         #endregion Scroll bar properties
 
-        #region Scroll bar public methods
-
-        /// <summary>
-        /// This method returns true if the scrollbar is visible.
-        /// </summary>
-        public bool IsVisible
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        #endregion Scroll bar public methods
-
         #region Scroll bar painting methods
-
-        /// <summary>
-        /// Draws axis scroll bar.
-        /// </summary>
-        /// <param name="graph">Reference to the Chart Graphics object.</param>
-        internal void Paint(ChartGraphics graph)
-        {
-            // Do nothing
-        }
 
         /// <summary>
         /// Draws 3D button in the scroll bar

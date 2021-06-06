@@ -236,8 +236,8 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal/vertical axis
-                hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                hAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                 // Get interval between points
                 double interval = (indexedSeries) ? 1 : area.GetPointsInterval(hAxis.IsLogarithmic, hAxis.logarithmBase);
@@ -801,7 +801,7 @@ namespace WebCharts.Services
                 size.Height = markerSize;
 
                 if (markerImage.Length > 0)
-                    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
+                    common.ImageLoader.GetAdjustedImageSize(markerImage, ref size);
             }
             return size;
         }
@@ -876,7 +876,7 @@ namespace WebCharts.Services
                     {
                         // Get text size
                         SKSizeont = graph.GetRelativeSize(
-                            graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                            ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
 
                         // Adjust label position using SmartLabelStyle algorithm
                         position = area.smartLabels.AdjustSmartLabelPosition(
@@ -902,7 +902,7 @@ namespace WebCharts.Services
                         if (SKSizeont.IsEmpty)
                         {
                             SKSizeont = graph.GetRelativeSize(
-                                graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                                ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
                         }
 
                         // Get label background position
@@ -1016,8 +1016,8 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal/vertical axis
-                hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                hAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                 // Get interval between points
                 double interval = (indexedSeries) ? 1 : area.GetPointsInterval(hAxis.IsLogarithmic, hAxis.logarithmBase);

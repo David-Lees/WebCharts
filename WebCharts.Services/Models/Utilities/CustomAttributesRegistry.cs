@@ -200,7 +200,7 @@ namespace WebCharts.Services
     /// Data point label alignment.
     /// </summary>
     [Flags]
-     internal enum LabelAlignments
+    internal enum LabelAlignments
     {
         /// <summary>
         /// Automatic position.
@@ -1096,27 +1096,6 @@ namespace WebCharts.Services
             chartTypes = new SeriesChartType[] {
                                                     SeriesChartType.FastLine,
                                                     SeriesChartType.FastPoint,
-                                            };
-
-            /*  NOTE: This is an internal attribute
-             *
-                        // "PermittedPixelError" attribute
-                        attrInfo = new CustomPropertyInfo(
-                            CustomPropertyName.PixelPointGapDepth,
-                            typeof(float),
-                            1f,
-                            "Gets or sets the acceptable error in pixels for the data point filtering algorithm.",
-                            chartTypes,
-                            true,
-                            false);
-                        attrInfo.MinValue = 0f;
-                        attrInfo.MaxValue = 1f;
-                        registeredCustomProperties.Add( attrInfo );
-            */
-            //***********************************************************************
-            //** Polar chart type properties
-            //***********************************************************************
-            chartTypes = new SeriesChartType[] {
                                                    SeriesChartType.Polar
                                                };
             // "AreaDrawingStyle" attribute

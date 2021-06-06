@@ -3463,11 +3463,11 @@ namespace WebCharts.Services
                 if ((axisName == AxisName.X || axisName == AxisName.X2) &&
                     !chartArea.switchValueAxes)
                 {
-                    return chartArea.GetAxis(axisName, dataPoint.series.XAxisType, dataPoint.series.XSubAxisName);
+                    return chartArea.GetAxis(axisName, dataPoint.series.XAxisType, Series.XSubAxisName);
                 }
                 else
                 {
-                    return chartArea.GetAxis(axisName, dataPoint.series.YAxisType, dataPoint.series.YSubAxisName);
+                    return chartArea.GetAxis(axisName, dataPoint.series.YAxisType, Series.YSubAxisName);
                 }
             }
             return null;

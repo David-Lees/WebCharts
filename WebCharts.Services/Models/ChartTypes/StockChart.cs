@@ -316,8 +316,8 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal/vertical axis
-                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                 // Get interval between points
                 double interval = (indexedSeries) ? 1 : area.GetPointsInterval(HAxis.IsLogarithmic, HAxis.logarithmBase);
@@ -501,7 +501,7 @@ namespace WebCharts.Services
                         markerSize.Height = point.MarkerSize;
 
                         if (point.MarkerImage.Length > 0)
-                            common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+                            common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                         // Get marker position
                         SKPoint markerPosition = SKPoint.Empty;
@@ -934,11 +934,11 @@ namespace WebCharts.Services
                         markerSize.Height = point.MarkerSize;
 
                         if (point.MarkerImage.Length > 0)
-                            common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+                            common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                         // Get point label style attribute
                         markerSize = graph.GetRelativeSize(markerSize);
-                        SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                        SKSizeont = graph.GetRelativeSize(ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
 
                         // Adjust label position using SmartLabelStyle algorithm
                         position = area.smartLabels.AdjustSmartLabelPosition(
@@ -969,7 +969,7 @@ namespace WebCharts.Services
                             // Get text size
                             if (SKSizeont.IsEmpty)
                             {
-                                SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                                SKSizeont = graph.GetRelativeSize(ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
                             }
 
                             // Adjust label y coordinate
@@ -1062,8 +1062,8 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal/vertical axis
-                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                 // Get interval between points
                 double interval = (indexedSeries) ? 1 : area.GetPointsInterval(HAxis.IsLogarithmic, HAxis.logarithmBase);
@@ -1270,7 +1270,7 @@ namespace WebCharts.Services
                         markerSize.Height = point.MarkerSize;
 
                         if (point.MarkerImage.Length > 0)
-                            common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+                            common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                         // Get marker position
                         SKPoint markerPosition = SKPoint.Empty;
@@ -1677,8 +1677,8 @@ namespace WebCharts.Services
             //************************************************************
             //** Set active horizontal/vertical axis
             //************************************************************
-            Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, series.XSubAxisName);
-            Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+            Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, Series.XSubAxisName);
+            Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
 
             //************************************************************
             //** Loop through all data points in the series
@@ -1746,7 +1746,7 @@ namespace WebCharts.Services
                 }
 
                 if (point.MarkerImage.Length > 0 && common.graph != null)
-                    common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, common.graph.Graphics, ref markerSize);
+                    common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                 // Transform marker position in 3D space
                 if (area.Area3DStyle.Enable3D)

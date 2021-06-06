@@ -24,7 +24,7 @@ namespace WebCharts.Services
         public StringAlignment Alignment { get; set; }
         public int DigitSubstitutionLanguage { get; private set; }
         public StringAlignment LineAlignment { get; set; }
-        public StringFormatFlags FormatFlags { get; set; }
+        public StringFormats FormatFlags { get; set; }
         public StringDigitSubstitute DigitSubstitutionMethod { get; set; }
         public StringTrimming Trimming { get; set; }
 
@@ -34,7 +34,7 @@ namespace WebCharts.Services
             {
                 return new StringFormat()
                 {
-                    FormatFlags = (StringFormatFlags)24580,
+                    FormatFlags = (StringFormats)24580,
                     Alignment = StringAlignment.Near,
                     LineAlignment = StringAlignment.Near,
                     Trimming = StringTrimming.None,

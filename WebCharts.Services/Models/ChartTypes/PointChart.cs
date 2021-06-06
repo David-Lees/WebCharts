@@ -297,8 +297,8 @@ namespace WebCharts.Services
                 //************************************************************
                 //** Set active horizontal/vertical axis
                 //************************************************************
-                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
                 double horizontalViewMax = HAxis.ViewMaximum;
                 double horizontalViewMin = HAxis.ViewMinimum;
                 double verticalViewMax = VAxis.ViewMaximum;
@@ -632,10 +632,10 @@ namespace WebCharts.Services
                 // Get point label style attribute
                 SKSize sizeMarker = graph.GetRelativeSize(new SKSize(markerSize, markerSize));
                 SKSize SKSizeont = graph.GetRelativeSize(
-                    graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                    ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
 
                 SKSize sizeSingleCharacter = graph.GetRelativeSize(
-                    graph.MeasureString("W", point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                    ChartGraphics.MeasureString("W", point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
 
                 // Increase label size when background is drawn
                 SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
@@ -1054,8 +1054,8 @@ namespace WebCharts.Services
             //************************************************************
             //** Set active horizontal/vertical axis
             //************************************************************
-            HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-            VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+            HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+            VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
             //************************************************************
             //** Check if point values are in the chart area
@@ -1233,7 +1233,6 @@ namespace WebCharts.Services
                     common.HotRegionsList.AddHotRegion(
                         rectPath,
                         false,
-                        graph,
                         point,
                         ser.Name,
                         pointEx.index - 1
@@ -1349,7 +1348,7 @@ namespace WebCharts.Services
                 size.Height = markerSize;
 
                 if (markerImage.Length > 0) // Get image size
-                    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
+                    common.ImageLoader.GetAdjustedImageSize(markerImage, ref size);
             }
 
             return size;
@@ -1440,7 +1439,7 @@ namespace WebCharts.Services
                 // of the empty point, so it will be visible
                 if (result == 0.0)
                 {
-                    Axis yAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                    Axis yAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                     double yViewMax = yAxis.maximum;
                     double yViewMin = yAxis.minimum;
                     if (result < yViewMin)
@@ -1576,8 +1575,8 @@ namespace WebCharts.Services
             //************************************************************
             //** Set active horizontal/vertical axis
             //************************************************************
-            Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, series.XSubAxisName);
-            Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+            Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, Series.XSubAxisName);
+            Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
 
             //************************************************************
             //** Loop through all data points in the series

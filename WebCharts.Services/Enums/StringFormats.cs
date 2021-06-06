@@ -3,7 +3,7 @@
 namespace WebCharts.Services
 {
     [Flags]
-    public enum StringFormatFlags
+    public enum StringFormats
     {
         DirectionRightToLeft = 1, // Text is displayed from right to left.
         DirectionVertical = 2, // Text is vertically aligned.

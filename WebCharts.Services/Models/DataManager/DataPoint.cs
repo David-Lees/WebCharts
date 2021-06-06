@@ -715,7 +715,7 @@ namespace WebCharts.Services
                             DateTime yTime;
                             if (yValue[i] is DateTime d2)
                                 yTime = d2;
-                            if (yValue[i] is double d3)
+                            else if (yValue[i] is double d3)
                                 yTime = DateTime.FromOADate(d3);
                             else
                                 yTime = Convert.ToDateTime(yValue[i], CultureInfo.InvariantCulture); //This will throw an exception in case when the yValue type is not compatible with the DateTime
@@ -750,7 +750,7 @@ namespace WebCharts.Services
             while ((keyStartIndex = result.IndexOf(KeywordName.CustomProperty, StringComparison.Ordinal)) >= 0)
             {
                 string attributeValue = string.Empty;
-                string attributeName = string.Empty;
+                string attributeName;
 
                 // Forward to the end of the keyword
                 int keyEndIndex = keyStartIndex + KeywordName.CustomProperty.Length;
@@ -831,7 +831,7 @@ namespace WebCharts.Services
                 result = series.ReplaceKeywords(result);
 
                 // #PERCENT - percentage of Y value from total
-                result = series.ReplaceOneKeyword(
+                result = Series.ReplaceOneKeyword(
                     Chart,
                     this,
                     Tag,
@@ -849,7 +849,7 @@ namespace WebCharts.Services
                 }
                 else
                 {
-                    result = series.ReplaceOneKeyword(
+                    result = Series.ReplaceOneKeyword(
                         Chart,
                         this,
                         Tag,
@@ -869,7 +869,7 @@ namespace WebCharts.Services
 
                 for (int index = 1; index <= YValues.Length; index++)
                 {
-                    result = series.ReplaceOneKeyword(
+                    result = Series.ReplaceOneKeyword(
                         Chart,
                         this,
                         Tag,
@@ -881,7 +881,7 @@ namespace WebCharts.Services
                         "");
                 }
 
-                result = series.ReplaceOneKeyword(
+                result = Series.ReplaceOneKeyword(
                     Chart,
                     this,
                     Tag,
@@ -892,7 +892,7 @@ namespace WebCharts.Services
                     series.YValueType,
                     "");
 
-                result = series.ReplaceOneKeyword(
+                result = Series.ReplaceOneKeyword(
                     Chart,
                     this,
                     Tag,
@@ -1544,7 +1544,6 @@ namespace WebCharts.Services
 
             // Add data points
             bool xValueExsist = false;
-            bool yValueExsist = true;
             object[] yValuesObj = new object[series.YValuesPerPoint];
             object xValueObj = null;
             bool autoDetectType = true;
@@ -1552,6 +1551,7 @@ namespace WebCharts.Services
             SuspendUpdates();
             try
             {
+                bool yValueExsist;
                 do
                 {
                     // Move to the next objects in the enumerations
@@ -4538,8 +4538,7 @@ namespace WebCharts.Services
                 {
                     if (currentIndex == index)
                     {
-                        string keyStr = key as string;
-                        if (keyStr != null)
+                        if (key is string keyStr)
                         {
                             return keyStr;
                         }
@@ -4553,7 +4552,7 @@ namespace WebCharts.Services
                 }
                 // we can't throw IndexOutOfRangeException here, it is reserved
                 // by the CLR.
-                throw (new InvalidOperationException());
+                throw new InvalidOperationException();
             }
         }
 

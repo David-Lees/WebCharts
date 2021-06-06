@@ -107,26 +107,25 @@ namespace WebCharts.Services
             // or gridlines between major gridlines and tickmarks. For date
             // type interval is calculated using CalcInterval function.
             // ****************************************************************
-            double oldInterval = this.interval;
+            double oldInterval = interval;
             DateTimeIntervalType oldIntervalType = intervalType;
             double oldIntervalOffset = intervalOffset;
             DateTimeIntervalType oldIntervalOffsetType = intervalOffsetType;
-            if (!majorGridTick && (this.interval == 0 || double.IsNaN(this.interval)))
+            if (!majorGridTick && (interval == 0 || double.IsNaN(interval)))
             {
                 // Number type
                 if (Axis.majorGrid.GetIntervalType() == DateTimeIntervalType.Auto)
                 {
-                    this.interval = Axis.majorGrid.GetInterval() / Grid.NumberOfIntervals;
+                    interval = Axis.majorGrid.GetInterval() / NumberOfIntervals;
                 }
                 // Date type
                 else
                 {
-                    DateTimeIntervalType localIntervalType = Axis.majorGrid.GetIntervalType();
-                    this.interval = Axis.CalcInterval(
+                    interval = Axis.CalcInterval(
                         Axis.ViewMinimum,
-                        Axis.ViewMinimum + (Axis.ViewMaximum - Axis.ViewMinimum) / Grid.NumberOfDateTimeIntervals,
+                        Axis.ViewMinimum + (Axis.ViewMaximum - Axis.ViewMinimum) / NumberOfDateTimeIntervals,
                         true,
-                        out localIntervalType,
+                        out DateTimeIntervalType localIntervalType,
                         ChartValueType.DateTime);
                     intervalType = localIntervalType;
                     intervalOffsetType = Axis.majorGrid.GetIntervalOffsetType();
@@ -311,11 +310,11 @@ namespace WebCharts.Services
             int counter = 0;
             int logStep = 1;
             double oldCurrent = current;
-            double interval = 0;
             while (current <= Axis.ViewMaximum)
             {
                 double logInterval = 0;
 
+                double interval;
                 // Take an interval between gridlines. Interval
                 // depends on interval type.
                 if (majorGridTick || !Axis.IsLogarithmic)
@@ -469,7 +468,7 @@ namespace WebCharts.Services
             // gridlines
             if (!majorGridTick)
             {
-                this.interval = oldInterval;
+                interval = oldInterval;
                 intervalType = oldIntervalType;
                 intervalOffset = oldIntervalOffset;
                 intervalOffsetType = oldIntervalOffsetType;
@@ -1077,9 +1076,6 @@ namespace WebCharts.Services
 
             // Set a flag if this object represent minor or major tick
             majorGridTick = major;
-
-            //		internal double							interval = 0;
-            //		internal DateTimeIntervalType			intervalType = DateTimeIntervalType.Auto;
         }
 
         #endregion
@@ -1167,12 +1163,11 @@ namespace WebCharts.Services
                 // Date type
                 else
                 {
-                    DateTimeIntervalType localIntervalType = Axis.majorGrid.GetIntervalType();
                     interval = Axis.CalcInterval(
                         Axis.minimum,
                         Axis.minimum + (Axis.maximum - Axis.minimum) / Grid.NumberOfDateTimeIntervals,
                         true,
-                        out localIntervalType,
+                        out DateTimeIntervalType localIntervalType,
                         ChartValueType.DateTime);
                     intervalType = localIntervalType;
                     intervalOffsetType = Axis.majorGrid.GetIntervalOffsetType();
@@ -1818,17 +1813,6 @@ namespace WebCharts.Services
         {
             get
             {
-                //// Never serialize this property for minor elements
-                //// "Disabled" property should be serialized instead.
-                //if(this.axis != null && this.axis.IsSerializing())
-                //{
-                //    if(!this.majorGridTick)
-                //    {
-                //        // Return default value to prevent serialization
-                //        return true;
-                //    }
-                //}
-
                 return enabled;
             }
             set

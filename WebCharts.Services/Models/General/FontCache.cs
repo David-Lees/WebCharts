@@ -139,6 +139,19 @@ namespace WebCharts.Services
             readonly SKFontStyle _style = SKFontStyle.Normal;
             readonly int _gdiCharSet = 1;
 
+            public KeyInfo(string familyName, float size)
+            {
+                _familyName = familyName;
+                _size = size;
+            }
+
+            public KeyInfo(string familyName, float size, SKFontStyle style)
+            {
+                _familyName = familyName;
+                _size = size;
+                _style = style;
+            }
+
             #region IEquatable<FontKeyInfo> Members
             /// <summary>
             /// KeyInfo equality comparer

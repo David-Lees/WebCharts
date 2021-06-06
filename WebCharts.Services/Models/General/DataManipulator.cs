@@ -224,7 +224,7 @@ namespace WebCharts.Services
     /// <summary>
     /// The IDataSKPointilter interface is used for filtering series data points.
     /// </summary>
-    public interface IDataSKPointilter
+    public interface IDataPointilter
     {
         /// <summary>
         /// Checks if the specified data point must be filtered.
@@ -275,7 +275,7 @@ namespace WebCharts.Services
 
             if (obj == null)
             {
-                return null;
+                return Array.Empty<Series>();
             }
 
             // Parameter is one series
@@ -359,7 +359,7 @@ namespace WebCharts.Services
         /// <param name="pointSortOrder">Sorting order.</param>
         /// <param name="sortBy">Value to sort by.</param>
         /// <param name="series">Series array to sort.</param>
-        private void Sort(PointSortOrder pointSortOrder, string sortBy, Series[] series)
+        private static void Sort(PointSortOrder pointSortOrder, string sortBy, Series[] series)
         {
             // Check arguments
             if (sortBy == null)
@@ -375,7 +375,7 @@ namespace WebCharts.Services
 
             // Sort series
             DataPointComparer comparer = new(series[0], pointSortOrder, sortBy);
-            this.Sort(comparer, series);
+            Sort(comparer, series);
         }
 
         /// <summary>
@@ -383,7 +383,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="comparer">Comparing interface.</param>
         /// <param name="series">Series array to sort.</param>
-        private void Sort(IComparer<DataPoint> comparer, Series[] series)
+        private static void Sort(IComparer<DataPoint> comparer, Series[] series)
         {
             // Check arguments
             if (comparer == null)
@@ -428,11 +428,10 @@ namespace WebCharts.Services
             {
                 // Sort other series (depending on the first)
                 int toIndex = 0;
-                int fromIndex = 0;
                 foreach (DataPoint point in series[0].Points)
                 {
                     // Move point from index is stored in point attribute (as index before sorting)
-                    fromIndex = int.Parse(point["_Index"], System.Globalization.CultureInfo.InvariantCulture);
+                    int fromIndex = int.Parse(point["_Index"], System.Globalization.CultureInfo.InvariantCulture);
 
                     // Move points in series
                     for (int seriesIndex = 1; seriesIndex < series.Length; seriesIndex++)
@@ -1251,7 +1250,7 @@ namespace WebCharts.Services
         /// <param name="filterInterface">Data points filtering interface.</param>
         /// <param name="inputSeries">Input series array.</param>
         /// <param name="outputSeries">Output series array.</param>
-        private void Filter(IDataSKPointilter filterInterface,
+        private void Filter(IDataPointilter filterInterface,
             Series[] inputSeries,
             Series[] outputSeries)
         {
@@ -1451,7 +1450,7 @@ namespace WebCharts.Services
             //**************************************************
             //** Sort input data
             //**************************************************
-            this.Sort((getTopValues) ? PointSortOrder.Descending : PointSortOrder.Ascending,
+            Sort((getTopValues) ? PointSortOrder.Descending : PointSortOrder.Ascending,
                 usingValue,
                 output);
 
@@ -1480,7 +1479,7 @@ namespace WebCharts.Services
         /// Data point filter.
         /// Filters points using element type and index
         /// </summary>
-        private class PointElementFilter : IDataSKPointilter
+        private class PointElementFilter : IDataPointilter
         {
             // Private fields
             private readonly DateRangeType _dateRange;
@@ -1492,9 +1491,8 @@ namespace WebCharts.Services
             /// <param name="dataManipulator">Data manipulator object.</param>
             /// <param name="dateRange">Range type.</param>
             /// <param name="rangeElements">Range elements to filter.</param>
-            public PointElementFilter(DataManipulator dataManipulator, DateRangeType dateRange, string rangeElements)
+            public PointElementFilter(DateRangeType dateRange, string rangeElements)
             {
-                _dataManipulator = dataManipulator;
                 _dateRange = dateRange;
                 _rangeElements = ConvertElementIndexesToArray(rangeElements);
             }
@@ -1523,7 +1521,7 @@ namespace WebCharts.Services
         /// Data point filter.
         /// Filters points using point values
         /// </summary>
-        private class PointValueFilter : IDataSKPointilter
+        private class PointValueFilter : IDataPointilter
         {
             // Private fields
             private readonly CompareMethod _compareMethod;
@@ -1625,7 +1623,7 @@ namespace WebCharts.Services
                 throw new ArgumentNullException(nameof(inputSeriesNames));
 
             // Filter points using filtering interface
-            Filter(new PointElementFilter(this, dateRange, rangeElements),
+            Filter(new PointElementFilter(dateRange, rangeElements),
                 ConvertToSeriesArray(inputSeriesNames, false),
                 ConvertToSeriesArray(outputSeriesNames, true));
         }
@@ -1677,7 +1675,7 @@ namespace WebCharts.Services
                 throw new ArgumentNullException(nameof(inputSeries));
 
             // Filter points using filtering interface
-            Filter(new PointElementFilter(this, dateRange, rangeElements),
+            Filter(new PointElementFilter(dateRange, rangeElements),
                 ConvertToSeriesArray(inputSeries, false),
                 ConvertToSeriesArray(outputSeries, false));
         }
@@ -1855,7 +1853,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="filterInterface">Filtering interface.</param>
         /// <param name="inputSeries">Input series.</param>
-        public void Filter(IDataSKPointilter filterInterface,
+        public void Filter(IDataPointilter filterInterface,
             Series inputSeries)
         {
             // Check arguments
@@ -1875,7 +1873,7 @@ namespace WebCharts.Services
         /// <param name="filterInterface">Filtering interface.</param>
         /// <param name="inputSeries">Input series.</param>
         /// <param name="outputSeries">Output series.</param>
-        public void Filter(IDataSKPointilter filterInterface,
+        public void Filter(IDataPointilter filterInterface,
             Series inputSeries,
             Series outputSeries)
         {
@@ -1896,7 +1894,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="filterInterface">Filtering interface.</param>
         /// <param name="inputSeriesNames">Comma separated list of input series names.</param>
-        public void Filter(IDataSKPointilter filterInterface,
+        public void Filter(IDataPointilter filterInterface,
             string inputSeriesNames)
         {
             // Check arguments
@@ -1916,7 +1914,7 @@ namespace WebCharts.Services
         /// <param name="filterInterface">Filtering interface.</param>
         /// <param name="inputSeriesNames">Comma separated list of input series names.</param>
         /// <param name="outputSeriesNames">Comma separated list of output series names.</param>
-        public void Filter(IDataSKPointilter filterInterface,
+        public void Filter(IDataPointilter filterInterface,
             string inputSeriesNames,
             string outputSeriesNames)
         {
@@ -2153,7 +2151,7 @@ namespace WebCharts.Services
         /// <param name="formula">Formula string.</param>
         /// <param name="outputValuesNumber">Number of values in output series.</param>
         /// <returns>Array of functions for each Y value.</returns>
-        private GroupingFunctionInfo[] GetGroupingFunctions(Series[] inputSeries, string formula, out int outputValuesNumber)
+        private static GroupingFunctionInfo[] GetGroupingFunctions(Series[] inputSeries, string formula, out int outputValuesNumber)
         {
             // Get maximum number of Y values in all series
             int numberOfYValues = 0;
@@ -2333,17 +2331,16 @@ namespace WebCharts.Services
                 //**************************************************
                 int intervalFirstIndex = 0;
                 int intervalLastIndex = 0;
-                double intervalFrom = 0;
-                double intervalTo = 0;
 
                 // Set interval start point
-                intervalFrom = input.Points[0].XValue;
+                double intervalFrom = input.Points[0].XValue;
 
                 // Adjust start point depending on the interval type
                 intervalFrom = ChartHelper.AlignIntervalStart(intervalFrom, interval, ConvertIntervalType(intervalType));
 
                 // Add offset to the start position
-                double offsetFrom = 0;
+                double offsetFrom;
+                double intervalTo;
                 if (intervalOffset != 0)
                 {
                     offsetFrom = intervalFrom + ChartHelper.GetIntervalSize(intervalFrom,
@@ -2781,7 +2778,7 @@ namespace WebCharts.Services
         /// <param name="formulaString">One formula name with optional value prefix.</param>
         /// <param name="valueIndex">Return value index.</param>
         /// <returns>Formula type.</returns>
-        private GroupingFunction ParseFormulaAndValueType(string formulaString, out int valueIndex)
+        private static GroupingFunction ParseFormulaAndValueType(string formulaString, out int valueIndex)
         {
             // Initialize value index as first Y value (default)
             valueIndex = 1;

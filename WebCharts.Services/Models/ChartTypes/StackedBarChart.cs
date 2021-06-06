@@ -105,7 +105,7 @@ namespace WebCharts.Services
         override public double GetYValue(CommonElements common, ChartArea area, Series series, DataPoint point, int pointIndex, int yValueIndex)
         {
             // Array of Y totals for individual series index in the current stacked group
-            double[] currentGroupTotalPerPoint = null;
+            double[] currentGroupTotalPerPoint;
 
             string currentStackedGroupName = StackedColumnChart.GetSeriesStackGroupName(series);
             if (_stackedGroupsTotalPerPoint == null)
@@ -163,7 +163,7 @@ namespace WebCharts.Services
             double yValue = double.NaN;
             if (yValueIndex == -1)
             {
-                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                 double barZeroValue = vAxis.Crossing;
                 yValue = GetYValue(common, area, series, point, pointIndex, 0);
                 if (yValue >= 0)
@@ -494,13 +494,13 @@ namespace WebCharts.Services
                 {
                     xAxisType = ser.XAxisType;
                     yAxisType = ser.YAxisType;
-                    xSubAxisName = ser.XSubAxisName;
-                    ySubAxisName = ser.YSubAxisName;
+                    xSubAxisName = Series.XSubAxisName;
+                    ySubAxisName = Series.YSubAxisName;
                 }
                 else if (xAxisType != ser.XAxisType ||
                     yAxisType != ser.YAxisType ||
-                    xSubAxisName != ser.XSubAxisName ||
-                    ySubAxisName != ser.YSubAxisName)
+                    xSubAxisName != Series.XSubAxisName ||
+                    ySubAxisName != Series.YSubAxisName)
                 {
                     differentAxesAreUsed = true;
                     break;
@@ -522,7 +522,7 @@ namespace WebCharts.Services
 
                     // Set new group name
                     string stackGroupName = StackedColumnChart.GetSeriesStackGroupName(ser);
-                    stackGroupName = "_X_" + ser.XAxisType.ToString() + ser.XSubAxisName + "_Y_" + ser.YAxisType.ToString() + ser.YSubAxisName + "__";
+                    stackGroupName = "_X_" + ser.XAxisType.ToString() + Series.XSubAxisName + "_Y_" + ser.YAxisType.ToString() + Series.YSubAxisName + "__";
                     ser[CustomPropertyName.StackedGroupName] = stackGroupName;
                 }
             }
@@ -627,8 +627,8 @@ namespace WebCharts.Services
                         point.positionRel = new SKPoint(float.NaN, float.NaN);
 
                         // Set active horizontal/vertical axis
-                        Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                        Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                        Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                        Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                         // Interval between bars
                         double interval = 1;
@@ -1010,7 +1010,7 @@ namespace WebCharts.Services
                     // Measure string
                     //************************************************************
                     SKSize SKSizeont = graph.GetRelativeSize(
-                        graph.MeasureString(
+                        ChartGraphics.MeasureString(
                         text,
                         point.Font,
                         new SKSize(1000f, 1000f),
@@ -1168,7 +1168,7 @@ namespace WebCharts.Services
             // Get point Height if pointIndex == -1
             if (yValueIndex == -1)
             {
-                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                 double barZeroValue = vAxis.Crossing;
                 yValue = GetYValue(common, area, series, point, pointIndex, 0);
                 if (yValue >= 0)
@@ -1304,8 +1304,8 @@ namespace WebCharts.Services
                     point.positionRel = new SKPoint(float.NaN, float.NaN);
 
                     // Set active horizontal/vertical axis
-                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                     // Get point bar drawing style
                     BarDrawingStyle barDrawingStyle = ChartGraphics.GetBarDrawingStyle(point);
@@ -1485,7 +1485,7 @@ namespace WebCharts.Services
                         continue;
                     }
 
-                    SKPath rectPath = null;
+                    SKPath rectPath;
 
                     // Check if column is completly out of the data scaleView
                     if (xValue < vAxis.ViewMinimum ||
@@ -1556,7 +1556,6 @@ namespace WebCharts.Services
                         common.HotRegionsList.AddHotRegion(
                             rectPath,
                             false,
-                            graph,
                             point,
                             ser.Name,
                             pointEx.index - 1
@@ -1582,8 +1581,8 @@ namespace WebCharts.Services
                     Series ser = point.series;
 
                     // Set active horizontal/vertical axis
-                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                     // Change Y value if Bar is out of plot area
                     double yValue = GetYValue(common, area, ser, pointEx.dataPoint, pointEx.index - 1, 0);
@@ -1878,7 +1877,7 @@ namespace WebCharts.Services
                 if (ser.SmartLabelStyle.Enabled)
                 {
                     SKSizeont = graph.GetRelativeSize(
-                        graph.MeasureString(
+                        ChartGraphics.MeasureString(
                         text,
                         point.Font,
                         new SKSize(1000f, 1000f),
@@ -1923,7 +1922,7 @@ namespace WebCharts.Services
                     if (SKSizeont.IsEmpty)
                     {
                         SKSizeont = graph.GetRelativeSize(
-                            graph.MeasureString(
+                            ChartGraphics.MeasureString(
                             text,
                             point.Font,
                             new SKSize(1000f, 1000f),

@@ -409,7 +409,7 @@ namespace WebCharts.Services
             // Draw strip on the back/front wall
             SKPath path = graph.Fill3DRectangle(
                 rect,
-                area.IsMainSceneWallOnFront() ? area.areaSceneDepth : 0f,
+                ChartArea.IsMainSceneWallOnFront ? area.areaSceneDepth : 0f,
                 0,
                 area.matrix3D,
                 area.Area3DStyle.LightStyle,
@@ -537,12 +537,12 @@ namespace WebCharts.Services
                 // Set vertical text for horizontal lines
                 if (angle == 90)
                 {
-                    format.FormatFlags = StringFormatFlags.DirectionVertical;
+                    format.FormatFlags = StringFormats.DirectionVertical;
                     angle = 0;
                 }
                 else if (angle == 270)
                 {
-                    format.FormatFlags = StringFormatFlags.DirectionVertical;
+                    format.FormatFlags = StringFormats.DirectionVertical;
                     angle = 180;
                 }
 
@@ -555,7 +555,7 @@ namespace WebCharts.Services
                 {
                     // Get projection coordinates
                     Point3D[] textSizeProjection = new Point3D[3];
-                    zPositon = Axis.ChartArea.IsMainSceneWallOnFront() ? Axis.ChartArea.areaSceneDepth : 0f;
+                    zPositon = ChartArea.IsMainSceneWallOnFront ? Axis.ChartArea.areaSceneDepth : 0f;
                     textSizeProjection[0] = new Point3D(0f, 0f, zPositon);
                     textSizeProjection[1] = new Point3D(size.Width, 0f, zPositon);
                     textSizeProjection[2] = new Point3D(0f, size.Height, zPositon);
@@ -564,7 +564,7 @@ namespace WebCharts.Services
                     Axis.ChartArea.matrix3D.TransformPoints(textSizeProjection);
 
                     // Adjust text size
-                    int index = Axis.ChartArea.IsMainSceneWallOnFront() ? 0 : 1;
+                    int index = ChartArea.IsMainSceneWallOnFront ? 0 : 1;
                     size.Width *= size.Width / (textSizeProjection[index].X - textSizeProjection[(index == 0) ? 1 : 0].X);
                     size.Height *= size.Height / (textSizeProjection[2].Y - textSizeProjection[0].Y);
                 }
@@ -609,7 +609,7 @@ namespace WebCharts.Services
                     // Get projection coordinates
                     Point3D[] rotationCenterProjection = new Point3D[2];
                     rotationCenterProjection[0] = new Point3D(rotationCenter.X, rotationCenter.Y, zPositon);
-                    if (format.FormatFlags == StringFormatFlags.DirectionVertical)
+                    if (format.FormatFlags == StringFormats.DirectionVertical)
                     {
                         rotationCenterProjection[1] = new Point3D(rotationCenter.X, rotationCenter.Y - 20f, zPositon);
                     }
@@ -627,7 +627,7 @@ namespace WebCharts.Services
                     // Adjust angle of the text
                     if (angle == 0 || angle == 180 || angle == 90 || angle == 270)
                     {
-                        if (format.FormatFlags == StringFormatFlags.DirectionVertical)
+                        if (format.FormatFlags == StringFormats.DirectionVertical)
                         {
                             angle += 90;
                         }

@@ -90,7 +90,7 @@ namespace WebCharts.Services
         private float _sizeCorrection = 0.95F;
 
         // True if any pie slice is exploded
-        private bool _sliceExploded = false;
+        private bool _sliceExploded;
 
         // True if labels overlap for 2D Pie and outside labels
         private bool _labelsOverlap = false;
@@ -634,7 +634,7 @@ namespace WebCharts.Services
         private void ProcessChartType(bool selection, ChartGraphics graph, CommonElements common, ChartArea area, bool shadow, LabelsMode labels)
         {
             float startAngle = 0;           // Angle in degrees measured clockwise from the x-axis to the first side of the pie section.
-            string explodedAttrib = ""; // Exploded attribute
+            string explodedAttrib; // Exploded attribute
             bool exploded;                  // Exploded pie slice
             float midAngle;                 // Angle between Start Angle and End Angle
 
@@ -1183,7 +1183,7 @@ namespace WebCharts.Services
                 format.LineAlignment = StringAlignment.Center;
 
                 SKSize SKSizeont = graph.GetRelativeSize(
-                    graph.MeasureString(
+                    ChartGraphics.MeasureString(
                     text.Replace("\\n", "\n"),
                     point.Font,
                     new SKSize(1000f, 1000f),
@@ -2040,7 +2040,7 @@ namespace WebCharts.Services
         /// <param name="startArea">Start position of chart area vertical range.</param>
         /// <param name="endArea">End position of chart area vertical range.</param>
         /// <returns>False if non overlapping positions for intervals can not be found.</returns>
-        private bool ArrangeOverlappingIntervals(double[] startOfIntervals, double[] endOfIntervals, double startArea, double endArea)
+        private static bool ArrangeOverlappingIntervals(double[] startOfIntervals, double[] endOfIntervals, double startArea, double endArea)
         {
             // Invalidation
             if (startOfIntervals.Length != endOfIntervals.Length)
@@ -2152,7 +2152,7 @@ namespace WebCharts.Services
         /// <param name="startOfIntervals">The start positions of intervals.</param>
         /// <param name="endOfIntervals">The end positions of intervals.</param>
         /// <returns>Returns true if any label overlaps before method is used.</returns>
-        private void ShiftOverlappingIntervals(double[] startOfIntervals, double[] endOfIntervals)
+        private static void ShiftOverlappingIntervals(double[] startOfIntervals, double[] endOfIntervals)
         {
             // Invalidation
             if (startOfIntervals.Length != endOfIntervals.Length)
@@ -2392,7 +2392,7 @@ namespace WebCharts.Services
             // If outside labels resize Pie size
             if (outside)
             {
-                InitPieSize(graph, area, ref plotingRectangle, ref pieWidth, points, startAngleList, sweepAngleList, dataSeries[typeSeries[0]], labelLineSize);
+                InitPieSize(graph, area, ref plotingRectangle, ref pieWidth, points, startAngleList, sweepAngleList, labelLineSize);
             }
 
             // Initialize Matrix 3D
@@ -4145,7 +4145,7 @@ namespace WebCharts.Services
         /// <param name="newPointIndexList">Data Point index list</param>
         /// <param name="sameBackFrontPoint">Beck and Fron Points are same - There is a big pie slice.</param>
         /// <returns>Sorted data point list.</returns>
-        private DataPoint[] PointOrder(Series series, ChartArea area, out float[] newStartAngleList, out float[] newSweepAngleList, out int[] newPointIndexList, out bool sameBackFrontPoint)
+        private static DataPoint[] PointOrder(Series series, ChartArea area, out float[] newStartAngleList, out float[] newSweepAngleList, out int[] newPointIndexList, out bool sameBackFrontPoint)
         {
             double startAngle;
             double sweepAngle;
@@ -4595,7 +4595,7 @@ namespace WebCharts.Services
         /// <param name="newSweepAngleList">List of sweep angles which has to be switched together with data points</param>
         /// <param name="newPointIndexList">Indexes (position) of data points in the series</param>
         /// <param name="sameBackFront">There is big pie slice which has same back and front pie slice</param>
-        private void SwitchPoints(int numOfPoints, ref DataPoint[] points, ref float[] newStartAngleList, ref float[] newSweepAngleList, ref int[] newPointIndexList, bool sameBackFront)
+        private static void SwitchPoints(int numOfPoints, ref DataPoint[] points, ref float[] newStartAngleList, ref float[] newSweepAngleList, ref int[] newPointIndexList, bool sameBackFront)
         {
             float[] tempStartAngles = new float[numOfPoints];
             float[] tempSweepAngles = new float[numOfPoints];
@@ -5085,7 +5085,6 @@ namespace WebCharts.Services
             DataPoint[] dataPoints,
             float[] startAngleList,
             float[] sweepAngleList,
-            Series series,
             float labelLineSize
             )
         {
@@ -5158,9 +5157,7 @@ namespace WebCharts.Services
             // Find maximum number of rows. Number of rows will be changed
             // but this is only recommendation, which depends on font size
             // and Height of chart area.
-            SKSize fontSize = new(1.4F * series.Font.Size, 1.4F * series.Font.Size);
-            fontSize = graph.GetRelativeSize(fontSize);
-            int maxNumOfRows = (int)(pieRectangle.Height / maxSizeVertical/*fontSize.Height*/ );
+            int maxNumOfRows = (int)(pieRectangle.Height / maxSizeVertical);
 
             // Initialize label column
             labelColumnRight.Initialize(pieRectangle, true, maxNumOfRows, labelLineSize);
@@ -5284,7 +5281,7 @@ namespace WebCharts.Services
                 labelPosition.Top = labelPoint.Y - labelVertSize / 2;
                 labelPosition.Bottom = labelPosition.Top + labelVertSize;
             }
-            format.FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.LineLimit;
+            format.FormatFlags = StringFormats.NoWrap | StringFormats.LineLimit;
             format.Trimming = StringTrimming.EllipsisWord;
 
             graph.DrawLine(pen, points[(int)PiePoints.TopLabelLineout], labelPoint);
@@ -5361,7 +5358,7 @@ namespace WebCharts.Services
 
             // Measure string
             SKSize SKSizeont = graph.GetRelativeSize(
-                graph.MeasureString(
+                ChartGraphics.MeasureString(
                 text.Replace("\\n", "\n"),
                 point.Font,
                 new SKSize(1000f, 1000f),
@@ -5403,7 +5400,7 @@ namespace WebCharts.Services
         /// <returns></returns>
         private static string GetPointLabel(DataPoint point)
         {
-            string pointLabel = string.Empty;
+            string pointLabel;
 
             // If There is no Label take axis Label
             if (point.Label.Length == 0)

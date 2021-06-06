@@ -18,7 +18,7 @@
 //  line will display the Y value and the second line displays
 //  the X value.
 //  :
-//      Chart1.Series["Series1"].Label = "Y = #VALY\nX = #VALX";
+//      Chart1.Series["Series1"].Label = "Y = #VALY\nX = #VALX"
 //  :
 //  Series label in this case will look like this:
 //  :

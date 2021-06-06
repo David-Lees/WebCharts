@@ -38,7 +38,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="inputValues">Arrays of doubles: 1. row - X values, 2. row - Y values</param>
         /// <param name="outputValues">Arrays of doubles: 1. row - X values, 2. row - Moving average</param>
-        private void RuningTotal(double[][] inputValues, out double[][] outputValues)
+        private static void RuningTotal(double[][] inputValues, out double[][] outputValues)
         {
             // There is not enough series
             if (inputValues.Length != 2)
@@ -80,7 +80,7 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="inputValues">Arrays of doubles: 1. row - X values, 2. row - Y values</param>
         /// <param name="outputValues">Arrays of doubles: 1. row - X values, 2. row - Moving average</param>
-		private void RunningAverage(double[][] inputValues, out double[][] outputValues)
+		private static void RunningAverage(double[][] inputValues, out double[][] outputValues)
         {
             // There is no enough series
             if (inputValues.Length != 2)

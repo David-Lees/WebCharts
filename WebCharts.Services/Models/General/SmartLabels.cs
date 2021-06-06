@@ -999,7 +999,7 @@ namespace WebCharts.Services
         /// <param name="point1">First line point.</param>
         /// <param name="point2">Second line point.</param>
         /// <returns>True if line intersects rectangle.</returns>
-        private bool LineIntersectRectangle(SKRect rect, SKPoint point1, SKPoint point2)
+        private static bool LineIntersectRectangle(SKRect rect, SKPoint point1, SKPoint point2)
         {
             // Check for horizontal line
             if (point1.X == point2.X)

@@ -15,14 +15,6 @@ namespace WebCharts.Services
     /// </summary>
     internal class StatisticalAnalysis : IFormula
     {
-        #region Error strings
-
-        // Error strings
-        //internal string inputArrayStart = "Formula requires";
-        //internal string inputArrayEnd = "arrays";
-
-        #endregion Error strings
-
         #region Parameters
 
         /// <summary>
@@ -157,6 +149,96 @@ namespace WebCharts.Services
         #endregion Methods
 
         #region Statistical Tests
+
+        /// <summary>
+        /// Correlation measure the relationship between two data sets that
+        /// are scaled to be independent of the unit of measurement. The
+        /// population correlation calculation returns the covariance
+        /// of two data sets divided by the product of their standard
+        /// deviations: You can use the Correlation to determine whether two
+        /// ranges of data move together — that is, whether large values of
+        /// one set are associated with large values of the other
+        /// (positive correlation), whether small values of one set are
+        /// associated with large values of the other (negative correlation),
+        /// or whether values in both sets are unrelated (correlation
+        /// near zero).
+        /// </summary>
+        /// <param name="inputValues">Arrays of doubles - Input values</param>
+        /// <param name="outputValues">Arrays of doubles - Output values</param>
+        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
+		private static void Correlation(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+        {
+            // There is no enough input series
+            if (inputValues.Length != 3)
+                throw new ArgumentException(SR.ExceptionPriceIndicatorsFormulaRequiresTwoArrays);
+
+            // Output arrays
+            outputValues = new double[2][];
+
+            // Output Labels
+            outLabels = new string[1][];
+
+            // Parameters description
+            outLabels[0] = new string[1];
+
+            // X
+            outputValues[0] = new double[1];
+
+            // Y
+            outputValues[1] = new double[1];
+
+            // Find Covariance.
+            double covar = Covar(inputValues[1], inputValues[2]);
+
+            double varianceX = Variance(inputValues[1], false);
+            double varianceY = Variance(inputValues[2], false);
+
+            // Correlation
+            double correl = covar / Math.Sqrt(varianceX * varianceY);
+
+            outLabels[0][0] = SR.LabelStatisticalCorrelation;
+            outputValues[0][0] = 1;
+            outputValues[1][0] = correl;
+        }
+
+        /// <summary>
+        /// Returns covariance, the average of the products of deviations
+        /// for each data point pair. Use covariance to determine the
+        /// relationship between two data sets. For example, you can
+        /// examine whether greater income accompanies greater
+        /// levels of education.
+        /// </summary>
+        /// <param name="inputValues">Arrays of doubles - Input values</param>
+        /// <param name="outputValues">Arrays of doubles - Output values</param>
+        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
+		private static void Covariance(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+        {
+            // There is no enough input series
+            if (inputValues.Length != 3)
+                throw new ArgumentException(SR.ExceptionPriceIndicatorsFormulaRequiresTwoArrays);
+
+            // Output arrays
+            outputValues = new double[2][];
+
+            // Output Labels
+            outLabels = new string[1][];
+
+            // Parameters description
+            outLabels[0] = new string[1];
+
+            // X
+            outputValues[0] = new double[1];
+
+            // Y
+            outputValues[1] = new double[1];
+
+            // Find Covariance.
+            double covar = Covar(inputValues[1], inputValues[2]);
+
+            outLabels[0][0] = SR.LabelStatisticalCovariance;
+            outputValues[0][0] = 1;
+            outputValues[1][0] = covar;
+        }
 
         /// <summary>
         /// Anova test
@@ -320,96 +402,6 @@ namespace WebCharts.Services
             outLabels[0][9] = SR.LabelStatisticalFCriteria;
             outputValues[0][9] = 10;
             outputValues[1][9] = FDistributionInverse(alpha, m - 1, m * (n - 1));
-        }
-
-        /// <summary>
-        /// Correlation measure the relationship between two data sets that
-        /// are scaled to be independent of the unit of measurement. The
-        /// population correlation calculation returns the covariance
-        /// of two data sets divided by the product of their standard
-        /// deviations: You can use the Correlation to determine whether two
-        /// ranges of data move together — that is, whether large values of
-        /// one set are associated with large values of the other
-        /// (positive correlation), whether small values of one set are
-        /// associated with large values of the other (negative correlation),
-        /// or whether values in both sets are unrelated (correlation
-        /// near zero).
-        /// </summary>
-        /// <param name="inputValues">Arrays of doubles - Input values</param>
-        /// <param name="outputValues">Arrays of doubles - Output values</param>
-        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private static void Correlation(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
-        {
-            // There is no enough input series
-            if (inputValues.Length != 3)
-                throw new ArgumentException(SR.ExceptionPriceIndicatorsFormulaRequiresTwoArrays);
-
-            // Output arrays
-            outputValues = new double[2][];
-
-            // Output Labels
-            outLabels = new string[1][];
-
-            // Parameters description
-            outLabels[0] = new string[1];
-
-            // X
-            outputValues[0] = new double[1];
-
-            // Y
-            outputValues[1] = new double[1];
-
-            // Find Covariance.
-            double covar = Covar(inputValues[1], inputValues[2]);
-
-            double varianceX = Variance(inputValues[1], false);
-            double varianceY = Variance(inputValues[2], false);
-
-            // Correlation
-            double correl = covar / Math.Sqrt(varianceX * varianceY);
-
-            outLabels[0][0] = SR.LabelStatisticalCorrelation;
-            outputValues[0][0] = 1;
-            outputValues[1][0] = correl;
-        }
-
-        /// <summary>
-        /// Returns covariance, the average of the products of deviations
-        /// for each data point pair. Use covariance to determine the
-        /// relationship between two data sets. For example, you can
-        /// examine whether greater income accompanies greater
-        /// levels of education.
-        /// </summary>
-        /// <param name="inputValues">Arrays of doubles - Input values</param>
-        /// <param name="outputValues">Arrays of doubles - Output values</param>
-        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private static void Covariance(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
-        {
-            // There is no enough input series
-            if (inputValues.Length != 3)
-                throw new ArgumentException(SR.ExceptionPriceIndicatorsFormulaRequiresTwoArrays);
-
-            // Output arrays
-            outputValues = new double[2][];
-
-            // Output Labels
-            outLabels = new string[1][];
-
-            // Parameters description
-            outLabels[0] = new string[1];
-
-            // X
-            outputValues[0] = new double[1];
-
-            // Y
-            outputValues[1] = new double[1];
-
-            // Find Covariance.
-            double covar = Covar(inputValues[1], inputValues[2]);
-
-            outLabels[0][0] = SR.LabelStatisticalCovariance;
-            outputValues[0][0] = 1;
-            outputValues[1][0] = covar;
         }
 
         /// <summary>
@@ -1012,51 +1004,10 @@ namespace WebCharts.Services
             outputValues[0][8] = 9;
             outputValues[1][8] = normalDistTwoInv;
         }
+
         #endregion Statistical Tests
 
         #region Public distributions
-
-        /// <summary>
-        /// Returns the inverse of the standard normal
-        /// cumulative distribution. The distribution
-        /// has a mean of zero and a standard deviation
-        /// of one.
-        /// </summary>
-        /// <param name="outputValues">Arrays of doubles - Output values</param>
-        /// <param name="parameterList">Array of strings - Parameters</param>
-        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private static void NormalDistributionInverse(out double[][] outputValues, string[] parameterList, out string[][] outLabels)
-        {
-            // Alpha value value
-            double alpha;
-            try
-            {
-                alpha = double.Parse(parameterList[0], System.Globalization.CultureInfo.InvariantCulture);
-            }
-            catch (System.Exception)
-            {
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidAlphaValue);
-            }
-
-            // Output arrays
-            outputValues = new double[2][];
-
-            // Output Labels
-            outLabels = new string[1][];
-
-            // Parameters description
-            outLabels[0] = new string[1];
-
-            // X
-            outputValues[0] = new double[1];
-
-            // Y
-            outputValues[1] = new double[1];
-
-            outLabels[0][0] = SR.LabelStatisticalProbability;
-            outputValues[0][0] = 1;
-            outputValues[1][0] = NormalDistributionInverse(alpha);
-        }
 
         /// <summary>
         /// Returns the F probability distribution. You can use
@@ -1122,6 +1073,112 @@ namespace WebCharts.Services
             outLabels[0][0] = SR.LabelStatisticalProbability;
             outputValues[0][0] = 1;
             outputValues[1][0] = FDistribution(fValue, freedom1, freedom2);
+        }
+
+        /// <summary>
+        /// Returns the inverse of the standard normal
+        /// cumulative distribution. The distribution
+        /// has a mean of zero and a standard deviation
+        /// of one.
+        /// </summary>
+        /// <param name="outputValues">Arrays of doubles - Output values</param>
+        /// <param name="parameterList">Array of strings - Parameters</param>
+        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
+		private static void NormalDistributionInverse(out double[][] outputValues, string[] parameterList, out string[][] outLabels)
+        {
+            // Alpha value value
+            double alpha;
+            try
+            {
+                alpha = double.Parse(parameterList[0], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch (System.Exception)
+            {
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidAlphaValue);
+            }
+
+            // Output arrays
+            outputValues = new double[2][];
+
+            // Output Labels
+            outLabels = new string[1][];
+
+            // Parameters description
+            outLabels[0] = new string[1];
+
+            // X
+            outputValues[0] = new double[1];
+
+            // Y
+            outputValues[1] = new double[1];
+
+            outLabels[0][0] = SR.LabelStatisticalProbability;
+            outputValues[0][0] = 1;
+            outputValues[1][0] = NormalDistributionInverse(alpha);
+        }
+
+        /// <summary>
+        /// Returns the Percentage Points (probability) for the Student
+        /// t-distribution. The t-distribution is used in the hypothesis
+        /// testing of small sample data sets. Use this function in place
+        /// of a table of critical values for the t-distribution.
+        /// </summary>
+        /// <param name="outputValues">Arrays of doubles - Output values</param>
+        /// <param name="parameterList">Array of strings - Parameters</param>
+        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
+        private static void TDistribution(out double[][] outputValues, string[] parameterList, out string[][] outLabels)
+        {
+            // T value value
+            double tValue;
+            try
+            {
+                tValue = double.Parse(parameterList[0], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch (System.Exception)
+            {
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidTValue);
+            }
+
+            // DegreeOfFreedom
+            int freedom;
+            try
+            {
+                freedom = int.Parse(parameterList[1], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch (System.Exception)
+            {
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidDegreeOfFreedom);
+            }
+
+            // One Tailed distribution
+            int oneTailed;
+            try
+            {
+                oneTailed = int.Parse(parameterList[2], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch (System.Exception)
+            {
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidTailedParameter);
+            }
+
+            // Output arrays
+            outputValues = new double[2][];
+
+            // Output Labels
+            outLabels = new string[1][];
+
+            // Parameters description
+            outLabels[0] = new string[1];
+
+            // X
+            outputValues[0] = new double[1];
+
+            // Y
+            outputValues[1] = new double[1];
+
+            outLabels[0][0] = SR.LabelStatisticalProbability;
+            outputValues[0][0] = 1;
+            outputValues[1][0] = StudentsDistribution(tValue, freedom, oneTailed == 1);
         }
 
         /// <summary>
@@ -1229,69 +1286,6 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Returns the Percentage Points (probability) for the Student
-        /// t-distribution. The t-distribution is used in the hypothesis
-        /// testing of small sample data sets. Use this function in place
-        /// of a table of critical values for the t-distribution.
-        /// </summary>
-        /// <param name="outputValues">Arrays of doubles - Output values</param>
-        /// <param name="parameterList">Array of strings - Parameters</param>
-        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-        private void TDistribution(out double[][] outputValues, string[] parameterList, out string[][] outLabels)
-        {
-            // T value value
-            double tValue;
-            try
-            {
-                tValue = double.Parse(parameterList[0], System.Globalization.CultureInfo.InvariantCulture);
-            }
-            catch (System.Exception)
-            {
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidTValue);
-            }
-
-            // DegreeOfFreedom
-            int freedom;
-            try
-            {
-                freedom = int.Parse(parameterList[1], System.Globalization.CultureInfo.InvariantCulture);
-            }
-            catch (System.Exception)
-            {
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidDegreeOfFreedom);
-            }
-
-            // One Tailed distribution
-            int oneTailed;
-            try
-            {
-                oneTailed = int.Parse(parameterList[2], System.Globalization.CultureInfo.InvariantCulture);
-            }
-            catch (System.Exception)
-            {
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidTailedParameter);
-            }
-
-            // Output arrays
-            outputValues = new double[2][];
-
-            // Output Labels
-            outLabels = new string[1][];
-
-            // Parameters description
-            outLabels[0] = new string[1];
-
-            // X
-            outputValues[0] = new double[1];
-
-            // Y
-            outputValues[1] = new double[1];
-
-            outLabels[0][0] = SR.LabelStatisticalProbability;
-            outputValues[0][0] = 1;
-            outputValues[1][0] = StudentsDistribution(tValue, freedom, oneTailed == 1);
-        }
-        /// <summary>
         /// Returns the t-value of the Student's t-distribution
         /// as a function of the probability and the degrees
         /// of freedom.
@@ -1342,6 +1336,7 @@ namespace WebCharts.Services
             outputValues[0][0] = 1;
             outputValues[1][0] = StudentsDistributionInverse(probability, freedom);
         }
+
         #endregion Public distributions
 
         #region Utility Statistical Functions
@@ -1482,6 +1477,41 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// Returns covariance, the average of the products of deviations
+        /// for each data point pair. Use covariance to determine the
+        /// relationship between two data sets. For example, you can
+        /// examine whether greater income accompanies greater
+        /// levels of education.
+        /// </summary>
+        /// <param name="arrayX">First data set from X random variable.</param>
+        /// <param name="arrayY">Second data set from Y random variable.</param>
+        /// <returns>Returns covariance</returns>
+        private static double Covar(double[] arrayX, double[] arrayY)
+        {
+            // Check the number of data points
+            if (arrayX.Length != arrayY.Length)
+            {
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesCovariance);
+            }
+
+            double[] arrayXY = new double[arrayX.Length];
+
+            // Find XY
+            for (int index = 0; index < arrayX.Length; index++)
+            {
+                arrayXY[index] = arrayX[index] * arrayY[index];
+            }
+
+            // Find means
+            double meanXY = Mean(arrayXY);
+            double meanX = Mean(arrayX);
+            double meanY = Mean(arrayY);
+
+            // return covariance
+            return meanXY - meanX * meanY;
+        }
+
+        /// <summary>
         /// Returns the natural logarithm of the gamma function, G(x).
         /// </summary>
         /// <param name="n">The value for which you want to calculate gamma function.</param>
@@ -1522,43 +1552,43 @@ namespace WebCharts.Services
             return 0.398942280401433 * Math.Exp(-t * t / 2);
         }
 
-        /// <summary>
-        /// Returns covariance, the average of the products of deviations
-        /// for each data point pair. Use covariance to determine the
-        /// relationship between two data sets. For example, you can
-        /// examine whether greater income accompanies greater
-        /// levels of education.
-        /// </summary>
-        /// <param name="arrayX">First data set from X random variable.</param>
-        /// <param name="arrayY">Second data set from Y random variable.</param>
-        /// <returns>Returns covariance</returns>
-        private static double Covar(double[] arrayX, double[] arrayY)
-        {
-            // Check the number of data points
-            if (arrayX.Length != arrayY.Length)
-            {
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesCovariance);
-            }
-
-            double[] arrayXY = new double[arrayX.Length];
-
-            // Find XY
-            for (int index = 0; index < arrayX.Length; index++)
-            {
-                arrayXY[index] = arrayX[index] * arrayY[index];
-            }
-
-            // Find means
-            double meanXY = Mean(arrayXY);
-            double meanX = Mean(arrayX);
-            double meanY = Mean(arrayY);
-
-            // return covariance
-            return meanXY - meanX * meanY;
-        }
         #endregion Utility Statistical Functions
 
         #region Statistical Parameters
+
+        /// <summary>
+        /// Returns the average (arithmetic mean) of the arguments.
+        /// </summary>
+        /// <param name="inputValues">Arrays of doubles - Input values</param>
+        /// <param name="outputValues">Arrays of doubles - Output values</param>
+        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
+        private static void Average(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+        {
+            outLabels = null;
+
+            // Invalid number of data series
+            if (inputValues.Length != 2)
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidSeriesNumber);
+
+            // Output arrays
+            outputValues = new double[2][];
+
+            // Output Labels
+            outLabels = new string[1][];
+
+            // Parameters description
+            outLabels[0] = new string[1];
+
+            // X
+            outputValues[0] = new double[1];
+
+            // Y
+            outputValues[1] = new double[1];
+
+            outLabels[0][0] = SR.LabelStatisticalAverage;
+            outputValues[0][0] = 1;
+            outputValues[1][0] = Mean(inputValues[1]);
+        }
 
         /// <summary>
         /// Calculates Beta Function
@@ -1679,6 +1709,69 @@ namespace WebCharts.Services
         }
 
         /// <summary>
+        /// Calculates Median
+        /// </summary>
+        /// <param name="inputValues">Arrays of doubles - Input values</param>
+        /// <param name="outputValues">Arrays of doubles - Output values</param>
+        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
+		private static void Median(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
+        {
+            outLabels = null;
+
+            // Invalid number of data series
+            if (inputValues.Length != 2)
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidSeriesNumber);
+
+            // Output arrays
+            outputValues = new double[2][];
+
+            // Output Labels
+            outLabels = new string[1][];
+
+            // Parameters description
+            outLabels[0] = new string[1];
+
+            // X
+            outputValues[0] = new double[1];
+
+            // Y
+            outputValues[1] = new double[1];
+
+            outLabels[0][0] = SR.LabelStatisticalMedian;
+            outputValues[0][0] = 1;
+            outputValues[1][0] = Median(inputValues[1]);
+        }
+
+        /// <summary>
+        /// Returns the median of the given numbers
+        /// </summary>
+        /// <param name="values">Array of double numbers</param>
+        /// <returns>Median</returns>
+        private static double Median(double[] values)
+        {
+            // Exception for zero lenght of series.
+            if (values.Length == 0)
+            {
+                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidMedianConditions);
+            }
+
+            // Sort array
+            Sort(ref values);
+
+            int position = values.Length / 2;
+
+            // if number of points is even
+            if (values.Length % 2 == 0)
+            {
+                return (values[position - 1] + values[position]) / 2.0;
+            }
+            else
+            {
+                return values[position];
+            }
+        }
+
+        /// <summary>
         /// Sort array of double values.
         /// </summary>
         /// <param name="values">Array of doubles which should be sorted.</param>
@@ -1733,108 +1826,13 @@ namespace WebCharts.Services
         }
 
         /// <summary>
-        /// Returns the average (arithmetic mean) of the arguments.
-        /// </summary>
-        /// <param name="inputValues">Arrays of doubles - Input values</param>
-        /// <param name="outputValues">Arrays of doubles - Output values</param>
-        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-        private static void Average(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
-        {
-            outLabels = null;
-
-            // Invalid number of data series
-            if (inputValues.Length != 2)
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidSeriesNumber);
-
-            // Output arrays
-            outputValues = new double[2][];
-
-            // Output Labels
-            outLabels = new string[1][];
-
-            // Parameters description
-            outLabels[0] = new string[1];
-
-            // X
-            outputValues[0] = new double[1];
-
-            // Y
-            outputValues[1] = new double[1];
-
-            outLabels[0][0] = SR.LabelStatisticalAverage;
-            outputValues[0][0] = 1;
-            outputValues[1][0] = Mean(inputValues[1]);
-        }
-        /// <summary>
-        /// Calculates Median
-        /// </summary>
-        /// <param name="inputValues">Arrays of doubles - Input values</param>
-        /// <param name="outputValues">Arrays of doubles - Output values</param>
-        /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private void Median(double[][] inputValues, out double[][] outputValues, out string[][] outLabels)
-        {
-            outLabels = null;
-
-            // Invalid number of data series
-            if (inputValues.Length != 2)
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidSeriesNumber);
-
-            // Output arrays
-            outputValues = new double[2][];
-
-            // Output Labels
-            outLabels = new string[1][];
-
-            // Parameters description
-            outLabels[0] = new string[1];
-
-            // X
-            outputValues[0] = new double[1];
-
-            // Y
-            outputValues[1] = new double[1];
-
-            outLabels[0][0] = SR.LabelStatisticalMedian;
-            outputValues[0][0] = 1;
-            outputValues[1][0] = Median(inputValues[1]);
-        }
-
-        /// <summary>
-        /// Returns the median of the given numbers
-        /// </summary>
-        /// <param name="values">Array of double numbers</param>
-        /// <returns>Median</returns>
-        private double Median(double[] values)
-        {
-            // Exception for zero lenght of series.
-            if (values.Length == 0)
-            {
-                throw new ArgumentException(SR.ExceptionStatisticalAnalysesInvalidMedianConditions);
-            }
-
-            // Sort array
-            Sort(ref values);
-
-            int position = values.Length / 2;
-
-            // if number of points is even
-            if (values.Length % 2 == 0)
-            {
-                return (values[position - 1] + values[position]) / 2.0;
-            }
-            else
-            {
-                return values[position];
-            }
-        }
-        /// <summary>
         /// Calculates variance
         /// </summary>
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
         /// <param name="outLabels">Array of strings - Used for Labels. Description for output results.</param>
-		private void Variance(double[][] inputValues, out double[][] outputValues, string[] parameterList, out string[][] outLabels)
+		private static void Variance(double[][] inputValues, out double[][] outputValues, string[] parameterList, out string[][] outLabels)
         {
             // Sample Variance value
             bool sampleVariance;
@@ -1872,6 +1870,7 @@ namespace WebCharts.Services
             outputValues[0][0] = 1;
             outputValues[1][0] = Variance(inputValues[1], sampleVariance);
         }
+
         #endregion Statistical Parameters
 
         #region Distributions
@@ -1890,6 +1889,38 @@ namespace WebCharts.Services
                 return 0;
 
             return BetaIncomplete(freedom2 / 2.0, freedom1 / 2.0, freedom2 / (freedom2 + freedom1 * x));
+        }
+
+        /// <summary>
+        /// Calculates the Percentage Points (probability) for the Student
+        /// t-distribution. The t-distribution is used in the hypothesis
+        /// testing of small sample data sets. Use this function in place
+        /// of a table of critical values for the t-distribution.
+        /// </summary>
+        /// <param name="tValue">The numeric value at which to evaluate the distribution.</param>
+        /// <param name="n">An integer indicating the number of degrees of freedom.</param>
+        /// <param name="oneTailed">Specifies the number of distribution tails to return.</param>
+        /// <returns>Returns the Percentage Points (probability) for the Student t-distribution.</returns>
+        private static double StudentsDistribution(double tValue, int n, bool oneTailed)
+        {
+            // Validation
+            tValue = Math.Abs(tValue);
+            if (n > 300)
+            {
+                n = 300;
+            }
+
+            if (n < 1)
+            {
+                throw new ArgumentOutOfRangeException(SR.ExceptionStatisticalAnalysesStudentsNegativeFreedomDegree);
+            }
+
+            double result = 1 - BetaIncomplete(n / 2.0, 0.5, n / (n + tValue * tValue));
+
+            if (oneTailed)
+                return (1.0 - result) / 2.0;
+            else
+                return 1.0 - result;
         }
 
         /// <summary>
@@ -1923,37 +1954,6 @@ namespace WebCharts.Services
             return result;
         }
 
-        /// <summary>
-        /// Calculates the Percentage Points (probability) for the Student
-        /// t-distribution. The t-distribution is used in the hypothesis
-        /// testing of small sample data sets. Use this function in place
-        /// of a table of critical values for the t-distribution.
-        /// </summary>
-        /// <param name="tValue">The numeric value at which to evaluate the distribution.</param>
-        /// <param name="n">An integer indicating the number of degrees of freedom.</param>
-        /// <param name="oneTailed">Specifies the number of distribution tails to return.</param>
-        /// <returns>Returns the Percentage Points (probability) for the Student t-distribution.</returns>
-        private double StudentsDistribution(double tValue, int n, bool oneTailed)
-        {
-            // Validation
-            tValue = Math.Abs(tValue);
-            if (n > 300)
-            {
-                n = 300;
-            }
-
-            if (n < 1)
-            {
-                throw new ArgumentOutOfRangeException(SR.ExceptionStatisticalAnalysesStudentsNegativeFreedomDegree);
-            }
-
-            double result = 1 - BetaIncomplete(n / 2.0, 0.5, n / (n + tValue * tValue));
-
-            if (oneTailed)
-                return (1.0 - result) / 2.0;
-            else
-                return 1.0 - result;
-        }
         #endregion Distributions
 
         #region Inverse Distributions
@@ -2117,6 +2117,7 @@ namespace WebCharts.Services
 
             return resultX;
         }
+
         #endregion Inverse Distributions
     }
 }

@@ -1796,7 +1796,7 @@ namespace WebCharts.Services
             }
 
             // Draw Axis Striplines (only when StripWidth > 0)
-            bool useScaleSegments = false;
+            bool useScaleSegments;
             Axis[] axesArray = new Axis[] { axisY, axisY2, axisX, axisX2 };
             foreach (Axis currentAxis in axesArray)
             {

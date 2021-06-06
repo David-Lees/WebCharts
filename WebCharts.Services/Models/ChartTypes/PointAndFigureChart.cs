@@ -144,7 +144,7 @@ namespace WebCharts.Services
                 series.IsXValueDateTime())
             {
                 // Get X axis connected to the series
-                Axis xAxis = area.GetAxis(AxisName.X, series.XAxisType, series.XSubAxisName);
+                Axis xAxis = area.GetAxis(AxisName.X, series.XAxisType, Series.XSubAxisName);
 
                 // Change interval for auto-calculated interval only
                 if (xAxis.Interval == 0 && xAxis.IntervalType == DateTimeIntervalType.Auto)
@@ -253,7 +253,7 @@ namespace WebCharts.Services
                     {
                         // Get X axis connected to the series
                         ChartArea area = chart.ChartAreas[pointAndFigureSeries.ChartArea];
-                        Axis xAxis = area.GetAxis(AxisName.X, pointAndFigureSeries.XAxisType, pointAndFigureSeries.XSubAxisName);
+                        Axis xAxis = area.GetAxis(AxisName.X, pointAndFigureSeries.XAxisType, Series.XSubAxisName);
 
                         xAxis.interval = 0.0;
                         xAxis.intervalType = DateTimeIntervalType.Auto;
@@ -681,8 +681,8 @@ namespace WebCharts.Services
 
                         // Find series chart area, X & Y axes
                         ChartArea chartArea = chart.ChartAreas[pointAndFigureSeries.ChartArea];
-                        Axis axisX = chartArea.GetAxis(AxisName.X, pointAndFigureSeries.XAxisType, pointAndFigureSeries.XSubAxisName);
-                        Axis axisY = chartArea.GetAxis(AxisName.Y, pointAndFigureSeries.YAxisType, pointAndFigureSeries.YSubAxisName);
+                        Axis axisX = chartArea.GetAxis(AxisName.X, pointAndFigureSeries.XAxisType, Series.XSubAxisName);
+                        Axis axisY = chartArea.GetAxis(AxisName.Y, pointAndFigureSeries.YAxisType, Series.YSubAxisName);
 
                         // Symbols are drawn only in 2D mode
                         if (!chartArea.Area3DStyle.Enable3D)

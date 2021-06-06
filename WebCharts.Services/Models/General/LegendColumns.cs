@@ -1139,7 +1139,7 @@ namespace WebCharts.Services
                     SKSize imageSize = new();
 
                     // Use original image size
-                    if (Common.ImageLoader.GetAdjustedImageSize(Image, graph.Graphics, ref imageSize))
+                    if (Common.ImageLoader.GetAdjustedImageSize(Image, ref imageSize))
                     {
                         cellSize.Width = (int)imageSize.Width;
                         cellSize.Height = (int)imageSize.Height;
@@ -1181,7 +1181,6 @@ namespace WebCharts.Services
             if (disposeFont)
             {
                 cellFont.Dispose();
-                cellFont = null;
             }
 
             // Save calculated size
@@ -1584,7 +1583,7 @@ namespace WebCharts.Services
             {
                 // Create cell text format
                 using StringFormat format = new(StringFormat.GenericDefault);
-                format.FormatFlags = StringFormatFlags.LineLimit;
+                format.FormatFlags = StringFormats.LineLimit;
                 format.Trimming = StringTrimming.EllipsisCharacter;
                 format.Alignment = StringAlignment.Center;
                 if (Alignment == ContentAlignment.BottomLeft ||
@@ -1614,16 +1613,16 @@ namespace WebCharts.Services
                 }
 
                 // Measure string height out of one character
-                SKSize charSize = chartGraph.MeasureStringAbs(GetCellText(), cellFont, new SKSize(10000f, 10000f), format);
+                SKSize charSize = ChartGraphics.MeasureStringAbs(GetCellText(), cellFont, new SKSize(10000f, 10000f), format);
 
                 // If height of one characte is more than rectangle heigjt - remove LineLimit flag
-                if (charSize.Height > cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) != 0)
+                if (charSize.Height > cellPosition.Height && (format.FormatFlags & StringFormats.LineLimit) != 0)
                 {
-                    format.FormatFlags ^= StringFormatFlags.LineLimit;
+                    format.FormatFlags ^= StringFormats.LineLimit;
                 }
-                else if (charSize.Height < cellPosition.Height && (format.FormatFlags & StringFormatFlags.LineLimit) == 0)
+                else if (charSize.Height < cellPosition.Height && (format.FormatFlags & StringFormats.LineLimit) == 0)
                 {
-                    format.FormatFlags |= StringFormatFlags.LineLimit;
+                    format.FormatFlags |= StringFormats.LineLimit;
                 }
 
                 // Draw text
@@ -1659,7 +1658,7 @@ namespace WebCharts.Services
 
                 SKSize imageSize = new();
 
-                ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
+                ImageLoader.GetAdjustedImageSize(image, ref imageSize);
 
                 imagePosition.Size = new((int)imageSize.Width, (int)imageSize.Height);
 
@@ -1829,7 +1828,7 @@ namespace WebCharts.Services
                 {
                     SKSize imageSize = new();
 
-                    ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
+                    ImageLoader.GetAdjustedImageSize(image, ref imageSize);
 
                     imageScale.Size = new((int)imageSize.Width, (int)imageSize.Height);
 
@@ -1959,7 +1958,7 @@ namespace WebCharts.Services
 
                             SKSize imageSize = new();
 
-                            ImageLoader.GetAdjustedImageSize(image, chartGraph.Graphics, ref imageSize);
+                            ImageLoader.GetAdjustedImageSize(image, ref imageSize);
                             imageScale.Size = new((int)imageSize.Width, (int)imageSize.Height);
 
                             // Make sure image size fits into the drawing rectangle

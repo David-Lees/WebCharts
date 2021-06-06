@@ -1279,7 +1279,7 @@ namespace WebCharts.Services
                 {
                     // IMPORTANT !
                     // Right to Left flag has to be used because of bug with .net with multi line vertical text. As soon as .net bug is fixed this flag HAS TO be removed. Bug number 1870.
-                    format.FormatFlags |= StringFormatFlags.DirectionVertical | StringFormatFlags.DirectionRightToLeft;
+                    format.FormatFlags |= StringFormats.DirectionVertical | StringFormats.DirectionRightToLeft;
 
                     // Save old graphics transformation
                     oldTransform = chartGraph.Transform;
@@ -1299,7 +1299,7 @@ namespace WebCharts.Services
                 {
                     // IMPORTANT !
                     // Right to Left flag has to be used because of bug with .net with multi line vertical text. As soon as .net bug is fixed this flag HAS TO be removed. Bug number 1870.
-                    format.FormatFlags |= StringFormatFlags.DirectionVertical | StringFormatFlags.DirectionRightToLeft;
+                    format.FormatFlags |= StringFormats.DirectionVertical | StringFormats.DirectionRightToLeft;
                 }
             }
             try
@@ -1687,7 +1687,7 @@ namespace WebCharts.Services
                     // Check if all chart area names are valid
                     if (title.DockedToChartArea != Constants.NotSetValue && chartPicture.ChartAreas.IndexOf(title.DockedToChartArea) < 0)
                     {
-                        throw (new ArgumentException(SR.ExceptionChartTitleDockedChartAreaIsMissing((string)title.DockedToChartArea)));
+                        throw (new ArgumentException(SR.ExceptionChartTitleDockedChartAreaIsMissing(title.DockedToChartArea)));
                     }
 
                     // Process only titles docked to specified area
@@ -1783,11 +1783,11 @@ namespace WebCharts.Services
                     {
                         try
                         {
-                            ChartArea area = chartPicture.ChartAreas[title.DockedToChartArea];
+                            _ = chartPicture.ChartAreas[title.DockedToChartArea];
                         }
                         catch
                         {
-                            throw (new ArgumentException(SR.ExceptionChartTitleDockedChartAreaIsMissing((string)title.DockedToChartArea)));
+                            throw (new ArgumentException(SR.ExceptionChartTitleDockedChartAreaIsMissing(title.DockedToChartArea)));
                         }
                     }
                 }

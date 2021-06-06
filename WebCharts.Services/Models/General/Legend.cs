@@ -1698,8 +1698,8 @@ namespace WebCharts.Services
         /// <returns>True if legend is enabled.</returns>
         internal bool IsEnabled()
         {
-                // Check if legend is docked to the chart area
-                    // Do not show legend when it is docked to invisible chart area
+            // Check if legend is docked to the chart area
+            // Do not show legend when it is docked to invisible chart area
             if (Enabled)
             {
                 if (DockedToChartArea.Length > 0 &&
@@ -2056,10 +2056,6 @@ namespace WebCharts.Services
             out int verticalSpaceLeft)
         {
             bool fitFlag = true;
-
-            // Initialize output values
-            horizontalSpaceLeft = 0;
-            verticalSpaceLeft = 0;
 
             // Use current legend item count if number of items to check is not specified
             if (numberOfItemsToCheck < 0)
@@ -2547,7 +2543,7 @@ namespace WebCharts.Services
                                 using StringFormat format = new();
                                 format.Alignment = legendColumn.HeaderAlignment;
                                 format.LineAlignment = StringAlignment.Center;
-                                format.FormatFlags = StringFormatFlags.LineLimit;
+                                format.FormatFlags = StringFormats.LineLimit;
                                 format.Trimming = StringTrimming.EllipsisCharacter;
 
                                 // Draw string using relative coordinates
@@ -3496,13 +3492,8 @@ namespace WebCharts.Services
 
                         // Check if we fit or if we have just one column that do not fit
                         // horizontally but still have vertical space.
-                        if (autoFitDone ||
-                            ((columnNumber == 1 || horSpaceLeft < 0) && vertSpaceLeft > 0))
-                        {
-                            // Continue adding rows to the current column
-                            continue;
-                        }
-                        else
+                        if (!autoFitDone &&
+                            (columnNumber != 1 && horSpaceLeft >= 0 || vertSpaceLeft <= 0))
                         {
                             // Reduce number of rows in the current column
                             if (numberOfRowsPerColumn[columnNumber - 1] > 1)
@@ -3545,8 +3536,8 @@ namespace WebCharts.Services
                                         numberOfRowsPerColumn,
                                         out _subColumnSizes,
                                         out _cellHeights,
-                                        out horSpaceLeft,
-                                        out vertSpaceLeft);
+                                        out _,
+                                        out _);
                                 }
                             }
                             else
@@ -3647,7 +3638,7 @@ namespace WebCharts.Services
                 {
                     // Iterate from second item trying to add them and check if they fit
                     bool exitLoop = false;
-                    int legendItemIndex = 1;
+                    int legendItemIndex;
                     for (legendItemIndex = 1; !exitLoop && legendItemIndex < numberOfItemsToCheck; legendItemIndex++)
                     {
                         // Try to increase number of columns
@@ -3677,13 +3668,8 @@ namespace WebCharts.Services
 
                         // Check if we fit or if we have just one row that do not fit
                         // vertically but still have horizontal space.
-                        if (autoFitDone ||
-                            ((GetMaximumNumberOfRows(numberOfRowsPerColumn) == 1 || vertSpaceLeft < 0) && horSpaceLeft > 0))
-                        {
-                            // Continue adding columns
-                            continue;
-                        }
-                        else
+                        if (!autoFitDone &&
+                            (GetMaximumNumberOfRows(numberOfRowsPerColumn) != 1 && vertSpaceLeft >= 0 || horSpaceLeft <= 0))
                         {
                             // Remove columns and increase number of rows
                             bool columnFitting = true;
@@ -3776,7 +3762,7 @@ namespace WebCharts.Services
                                         out _subColumnSizes,
                                         out _cellHeights,
                                         out horSpaceLeft,
-                                        out vertSpaceLeft);
+                                        out _);
                                 }
 
                                 // If there is more than 1 column and items do not fit
@@ -3789,6 +3775,7 @@ namespace WebCharts.Services
                                 }
                             }
                         }
+
                     }
                 }
             }
@@ -3914,10 +3901,10 @@ namespace WebCharts.Services
                     _autoFitFontSizeAdjustment = 0;
 
                     autofitFont = Font;
-                    int vertSpaceLeft = 0;
-                    int horizSpaceLeft = 0;
+                    int vertSpaceLeft;
+                    int horizSpaceLeft;
                     bool reduceFont = IsTextAutoFit;
-                    bool autoFit = false;
+                    bool autoFit;
                     do
                     {
                         // Get number of columns and rows that we can fit in the legend
@@ -4029,7 +4016,7 @@ namespace WebCharts.Services
                 titleMaxSize.Width -= GetBorderSize() * 2 + _offset.Width;
 
                 // Measure title text size
-                titleSize = chartGraph.MeasureStringAbs(
+                titleSize = ChartGraphics.MeasureStringAbs(
                     Title.Replace("\\n", "\n"),
                     TitleFont,
                     titleMaxSize,
@@ -4491,7 +4478,7 @@ namespace WebCharts.Services
                     {
                         try
                         {
-                            ChartArea area = Common.ChartPicture.ChartAreas[legend.DockedToChartArea];
+                            _ = Common.ChartPicture.ChartAreas[legend.DockedToChartArea];
                         }
                         catch
                         {

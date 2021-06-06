@@ -395,7 +395,7 @@ namespace WebCharts.Services
             }
 
             // Get annotation position in relative coordinates
-            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out SKPoint anchorPoint);
+            GetRelativePosition(out SKPoint firstPoint, out SKSize size, out _);
             SKPoint secondPoint = new(firstPoint.X + size.Width, firstPoint.Y + size.Height);
 
             // Create selection rectangle
@@ -490,10 +490,10 @@ namespace WebCharts.Services
 
             if (Common.ProcessModeRegions)
             {
-                // Create line graphics path
-                SKPath selectionPath = null;
                 SKPath newPath = null;
 
+                // Create line graphics path
+                SKPath selectionPath;
                 if (isPolygon)
                 {
                     selectionPath = pathAbs;
@@ -1203,13 +1203,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeMisc"),
         SRDescription("DescriptionAttributeAnnotationPathPoint_Name"),
         ]
-        public string Name
-        {
-            get
-            {
-                return "PathPoint";
-            }
-        }
+        public static string Name => "PathPoint";
 
         #endregion Properties
     }

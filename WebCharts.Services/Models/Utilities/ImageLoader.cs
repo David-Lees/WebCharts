@@ -25,7 +25,7 @@ namespace WebCharts.Services
     /// allows to improve performance if image need to be used
     /// several times.
     /// </summary>
-    internal class ImageLoader : IDisposable, IImageLoader
+    internal class ImageLoader : IImageLoader
     {
         #region Fields
 
@@ -263,14 +263,14 @@ namespace WebCharts.Services
         /// <param name="graphics">Graphics used to calculate the image size.</param>
         /// <param name="size">Calculated size.</param>
         /// <returns>false if it fails to calculate the size, otherwise true.</returns>
-        internal bool GetAdjustedImageSize(string name, SKCanvas graphics, ref SKSize size)
+        internal bool GetAdjustedImageSize(string name, ref SKSize size)
         {
             SKImage image = LoadImage(name);
 
             if (image == null)
                 return false;
 
-            GetAdjustedImageSize(image, graphics, ref size);
+            GetAdjustedImageSize(image, ref size);
 
             return true;
         }
@@ -281,7 +281,7 @@ namespace WebCharts.Services
         /// <param name="image">Image for whcih to calculate the size.</param>
         /// <param name="graphics">Graphics used to calculate the image size.</param>
         /// <param name="size">Calculated size.</param>
-        internal static void GetAdjustedImageSize(SKImage image, SKCanvas graphics, ref SKSize size)
+        internal static void GetAdjustedImageSize(SKImage image, ref SKSize size)
         {
             size.Width = image.Width;
             size.Height = image.Height;

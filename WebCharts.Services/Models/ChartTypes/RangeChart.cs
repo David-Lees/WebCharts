@@ -1034,7 +1034,7 @@ namespace WebCharts.Services
             float maxY = (float)Math.Max(firstPoint.yPosition, secondPoint.yPosition);
             maxY = Math.Max(maxY, axisPosition);
             SKRect position = new(minX, minY, maxX - minX, maxY - minY);
-            SurfaceNames visibleSurfaces = graph.GetVisibleSurfaces(position, positionZ, depth, matrix);
+            SurfaceNames visibleSurfaces = ChartGraphics.GetVisibleSurfaces(position, positionZ, depth, matrix);
 
             // Check if area point is drawn upside down.
             bool upSideDown = false;
@@ -1519,7 +1519,7 @@ namespace WebCharts.Services
             out SKPoint fourthPoint)
         {
             // Set active vertical axis
-            Axis vAxis = area.GetAxis(AxisName.Y, firstPoint.dataPoint.series.YAxisType, firstPoint.dataPoint.series.YSubAxisName);
+            Axis vAxis = area.GetAxis(AxisName.Y, firstPoint.dataPoint.series.YAxisType, Series.YSubAxisName);
 
             // Initialize points using second Y value
             float secondYValue = (float)vAxis.GetPosition(firstPoint.dataPoint.YValues[1]);

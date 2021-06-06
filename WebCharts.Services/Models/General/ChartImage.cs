@@ -606,7 +606,7 @@ namespace WebCharts.Services
                     foreach (Series series in Common.Chart.Series)
                     {
                         // Check if series belongs to the chart area
-                        if (series.ChartArea == chartArea.Name && series.XSubAxisName.Length == 0)
+                        if (series.ChartArea == chartArea.Name && Series.XSubAxisName.Length == 0)
                         {
                             if (series.XAxisType == AxisType.Primary)
                             {

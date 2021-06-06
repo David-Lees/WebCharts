@@ -588,7 +588,7 @@ namespace WebCharts.Services
             //***********************************************************
             //** Find chart area visible surfaces
             //***********************************************************
-            _visibleSurfaces = graph.GetVisibleSurfaces(
+            _visibleSurfaces = ChartGraphics.GetVisibleSurfaces(
                 position,
                 0,
                 areaSceneDepth,
@@ -640,7 +640,7 @@ namespace WebCharts.Services
             float wallZPosition = -wallDepth;
 
             // For isometric projection Front wall should be visible sometimes
-            if (IsMainSceneWallOnFront())
+            if (IsMainSceneWallOnFront)
             {
                 wallZPosition = areaSceneDepth;
             }
@@ -719,11 +719,8 @@ namespace WebCharts.Services
         /// chart area scene is displayed on the front side.
         /// </summary>
         /// <returns>True if front wall is visible.</returns>
-		internal bool IsMainSceneWallOnFront()
-        {
-            // Note: Not used in this version!
-            return false;
-        }
+        /// <remarks>Note: Not used in this version!</remarks>
+		internal static bool IsMainSceneWallOnFront => false;
 
         /// <summary>
         /// Helper method which return True if side wall of the
@@ -797,7 +794,7 @@ namespace WebCharts.Services
             double clusteredInterval = 1;
             if (!indexedSeries)
             {
-                clusteredInterval = GetPointsInterval(_series, xAxis.IsLogarithmic, xAxis.logarithmBase, false, out bool sameInterval, out smallestIntervalSeries);
+                clusteredInterval = GetPointsInterval(_series, xAxis.IsLogarithmic, xAxis.logarithmBase, false, out _, out smallestIntervalSeries);
             }
 
             //***********************************************************
@@ -874,7 +871,6 @@ namespace WebCharts.Services
             if (smallestIntervalSeries != null && Area3DStyle.IsClustered && Common.ChartTypeRegistry.GetChartType(smallestIntervalSeries.ChartTypeName).SupportStackedGroups)
             {
                 // Calculate how many stack groups exsist
-                seriesNumber = 0;
                 ArrayList stackGroupNames = new();
                 foreach (string seriesName in _series)
                 {
@@ -1182,7 +1178,7 @@ namespace WebCharts.Services
                 yAngle,
                 Area3DStyle.Perspective,
                 Area3DStyle.IsRightAngleAxes);
-            
+
             float zPosition;
             double size;
 
@@ -1362,40 +1358,30 @@ namespace WebCharts.Services
 		internal bool DrawPointsToCenter(ref COPCoordinates coord)
         {
             bool result = false;
-            COPCoordinates resultCoordinates = 0;
 
             // Check only if perspective is set
             if (Area3DStyle.Perspective != 0)
             {
-                if ((coord & COPCoordinates.X) == COPCoordinates.X)
-                {
-                    // Only when Left & Right sides of plotting area are invisible
-                    if ((_visibleSurfaces & SurfaceNames.Left) == 0 &&
+                // Only when Left & Right sides of plotting area are invisible
+                if ((coord & COPCoordinates.X) == COPCoordinates.X &&
+                    (_visibleSurfaces & SurfaceNames.Left) == 0 &&
                         (_visibleSurfaces & SurfaceNames.Right) == 0)
-                    {
-                        result = true;
-                    }
-                    resultCoordinates |= COPCoordinates.X;
-                }
-                if ((coord & COPCoordinates.Y) == COPCoordinates.Y)
                 {
-                    // Only when Top & Bottom sides of plotting area are invisible
-                    if ((_visibleSurfaces & SurfaceNames.Top) == 0 &&
+                    result = true;
+                }
+                // Only when Top & Bottom sides of plotting area are invisible
+                if ((coord & COPCoordinates.Y) == COPCoordinates.Y &&
+                    (_visibleSurfaces & SurfaceNames.Top) == 0 &&
                         (_visibleSurfaces & SurfaceNames.Bottom) == 0)
-                    {
-                        result = true;
-                    }
-                    resultCoordinates |= COPCoordinates.Y;
-                }
-                if ((coord & COPCoordinates.Z) == COPCoordinates.Z)
                 {
-                    // Only when Front & Back sides of plotting area are invisible
-                    if ((_visibleSurfaces & SurfaceNames.Front) == 0 &&
+                    result = true;
+                }
+                // Only when Front & Back sides of plotting area are invisible
+                if ((coord & COPCoordinates.Z) == COPCoordinates.Z &&
+                    (_visibleSurfaces & SurfaceNames.Front) == 0 &&
                         (_visibleSurfaces & SurfaceNames.Back) == 0)
-                    {
-                        result = true;
-                    }
-                    resultCoordinates |= COPCoordinates.Z;
+                {
+                    result = true;
                 }
             }
 

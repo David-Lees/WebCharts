@@ -174,7 +174,7 @@ namespace WebCharts.Services
             double yValue = double.NaN;
             if (yValueIndex == -1)
             {
-                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                 double areaZeroValue = vAxis.Crossing;
                 yValue = GetYValue(common, area, series, point, pointIndex, 0);
                 if (area.Area3DStyle.Enable3D && yValue < 0.0)
@@ -447,8 +447,8 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal/vertical axis
-                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
                 hAxisMin = HAxis.ViewMinimum;
                 hAxisMax = HAxis.ViewMaximum;
                 vAxisMin = VAxis.ViewMinimum;
@@ -762,8 +762,8 @@ namespace WebCharts.Services
                     }
 
                     // Set active horizontal/vertical axis
-                    HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                    VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                    HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                    VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                     // Get axis position
                     axisPos.X = (float)VAxis.GetPosition(VAxis.Crossing);
@@ -867,8 +867,8 @@ namespace WebCharts.Services
                     }
 
                     // Set active horizontal/vertical axis
-                    HAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                    VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                    HAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                    VAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                     // Get axis position
                     axisPos.X = (float)VAxis.GetPosition(VAxis.Crossing);
@@ -978,7 +978,7 @@ namespace WebCharts.Services
 
                             // Measure string
                             SKSize SKSizeont = graph.GetRelativeSize(
-                                graph.MeasureString(
+                                ChartGraphics.MeasureString(
                                 text,
                                 point.Font,
                                 new SKSize(1000f, 1000f),
@@ -1247,8 +1247,8 @@ namespace WebCharts.Services
             out SKPoint fourthPoint)
         {
             // Set active vertical/horizontal axis
-            Axis vAxis = area.GetAxis(AxisName.Y, firstPoint.dataPoint.series.YAxisType, firstPoint.dataPoint.series.YSubAxisName);
-            Axis hAxis = area.GetAxis(AxisName.X, firstPoint.dataPoint.series.XAxisType, firstPoint.dataPoint.series.XSubAxisName);
+            Axis vAxis = area.GetAxis(AxisName.Y, firstPoint.dataPoint.series.YAxisType, Series.YSubAxisName);
+            Axis hAxis = area.GetAxis(AxisName.X, firstPoint.dataPoint.series.XAxisType, Series.XSubAxisName);
 
             // Find bottom points position
             double yValue = GetYValue(area.Common, area, firstPoint.dataPoint.series, firstPoint.dataPoint, firstPoint.index - 1, 0);
@@ -1453,7 +1453,7 @@ namespace WebCharts.Services
 
                 // Measure string
                 SKSize SKSizeont = graph.GetRelativeSize(
-                    graph.MeasureString(
+                    ChartGraphics.MeasureString(
                     text,
                     pointEx.dataPoint.Font,
                     new SKSize(1000f, 1000f),
@@ -1524,7 +1524,7 @@ namespace WebCharts.Services
             // Get point Height if pointIndex == -1
             if (yValueIndex == -1)
             {
-                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                 double areaZeroValue = vAxis.Crossing;
                 yValue = GetYValue(common, area, series, point, pointIndex, 0);
                 if (area.Area3DStyle.Enable3D && yValue < 0.0)

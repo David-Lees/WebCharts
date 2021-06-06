@@ -129,7 +129,7 @@ namespace WebCharts.Services
                 series.IsXValueDateTime())
             {
                 // Get X axis connected to the series
-                Axis xAxis = area.GetAxis(AxisName.X, series.XAxisType, series.XSubAxisName);
+                Axis xAxis = area.GetAxis(AxisName.X, series.XAxisType, Series.XSubAxisName);
 
                 // Change interval for auto-calculated interval only
                 if (xAxis.Interval == 0 && xAxis.IntervalType == DateTimeIntervalType.Auto)
@@ -229,7 +229,7 @@ namespace WebCharts.Services
                     {
                         // Get X axis connected to the series
                         ChartArea area = chart.ChartAreas[threeLineBreakSeries.ChartArea];
-                        Axis xAxis = area.GetAxis(AxisName.X, threeLineBreakSeries.XAxisType, threeLineBreakSeries.XSubAxisName);
+                        Axis xAxis = area.GetAxis(AxisName.X, threeLineBreakSeries.XAxisType, Series.XSubAxisName);
 
                         xAxis.interval = 0.0;
                         xAxis.intervalType = DateTimeIntervalType.Auto;
@@ -649,6 +649,7 @@ namespace WebCharts.Services
         /// <param name="list">List to add to.</param>
         public void AddSmartLabelMarkerPositions(CommonElements common, ChartArea area, Series series, ArrayList list)
         {
+            // Not applicable to this chart type
         }
 
         #endregion SmartLabelStyle methods

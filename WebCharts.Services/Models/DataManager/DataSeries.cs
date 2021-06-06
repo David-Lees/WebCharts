@@ -602,7 +602,6 @@ namespace WebCharts.Services
             double defaultWidth)
         {
             double pointPercentageWidth = defaultWidth;
-            double pointWidth = 0.0;
 
             // Check if series provide custom value for point width in percentage of interval
             string strWidth = this[CustomPropertyName.PointWidth];
@@ -612,7 +611,7 @@ namespace WebCharts.Services
             }
 
             // Get column width in relative and pixel coordinates
-            pointWidth = axis.GetPixelInterval(interval * pointPercentageWidth);
+            double pointWidth = axis.GetPixelInterval(interval * pointPercentageWidth);
             SKSize pointSize = graph.GetAbsoluteSize(new SKSize((float)pointWidth, (float)pointWidth));
             double pixelPointWidth = pointSize.Width;
             if (axis.AxisPosition == AxisPosition.Left || axis.AxisPosition == AxisPosition.Right)
@@ -625,7 +624,7 @@ namespace WebCharts.Services
             string attribValue = this[CustomPropertyName.MinPixelPointWidth];
             if (attribValue != null)
             {
-                double minPixelPointWidth = 0.0;
+                double minPixelPointWidth;
                 try
                 {
                     minPixelPointWidth = CommonElements.ParseDouble(attribValue);
@@ -654,7 +653,7 @@ namespace WebCharts.Services
             attribValue = this[CustomPropertyName.MaxPixelPointWidth];
             if (attribValue != null)
             {
-                double maxPixelPointWidth = 0.0;
+                double maxPixelPointWidth;
                 try
                 {
                     maxPixelPointWidth = CommonElements.ParseDouble(attribValue);
@@ -680,22 +679,21 @@ namespace WebCharts.Services
             if (attribValue != null)
             {
                 usePixelWidth = true;
-                pixelPointWidth = 0.0;
                 try
                 {
                     pixelPointWidth = CommonElements.ParseDouble(attribValue);
                 }
                 catch
                 {
-                    throw (new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid2("PixelPointWidth")));
+                    throw new InvalidOperationException(SR.ExceptionCustomAttributeValueInvalid2("PixelPointWidth"));
                 }
                 if (pixelPointWidth <= 0)
                 {
-                    throw (new InvalidOperationException(SR.ExceptionCustomAttributeIsNotLargerThenZiro("PixelPointWidth")));
+                    throw new InvalidOperationException(SR.ExceptionCustomAttributeIsNotLargerThenZiro("PixelPointWidth"));
                 }
                 if (pixelPointWidth > CustomPropertyRegistry.MaxValueOfPixelAttribute)
                 {
-                    throw (new InvalidOperationException(SR.ExceptionCustomAttributeMustBeInRange("PixelPointWidth", (0).ToString(CultureInfo.CurrentCulture), CustomPropertyRegistry.MaxValueOfPixelAttribute.ToString(CultureInfo.CurrentCulture))));
+                    throw new InvalidOperationException(SR.ExceptionCustomAttributeMustBeInRange("PixelPointWidth", 0.ToString(CultureInfo.CurrentCulture), CustomPropertyRegistry.MaxValueOfPixelAttribute.ToString(CultureInfo.CurrentCulture)));
                 }
             }
 
@@ -1202,7 +1200,7 @@ namespace WebCharts.Services
         /// <param name="valueType">AxisName of value.</param>
         /// <param name="defaultFormat">Default format string.</param>
         /// <returns>Result string.</returns>
-		internal string ReplaceOneKeyword(ChartService chart, object obj, object objTag, ChartElementType elementType, string strOriginal, string keyword, double value, ChartValueType valueType, string defaultFormat)
+		internal static string ReplaceOneKeyword(ChartService chart, object obj, object objTag, ChartElementType elementType, string strOriginal, string keyword, double value, ChartValueType valueType, string defaultFormat)
 
         {
             string result = strOriginal;
@@ -2015,13 +2013,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeAxes"),
         SRDescription("DescriptionAttributeSeries_YSubAxisName")
         ]
-        internal string YSubAxisName
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
+        internal static string YSubAxisName => string.Empty;
 
         /// <summary>
         /// Name of the X sub-axis this series is attached to.
@@ -2030,13 +2022,7 @@ namespace WebCharts.Services
         SRCategory("CategoryAttributeAxes"),
         SRDescription("DescriptionAttributeSeries_XSubAxisName"),
         ]
-        internal string XSubAxisName
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
+        internal static string XSubAxisName => string.Empty;
 
 #endif // SUBAXES
 

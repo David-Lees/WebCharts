@@ -142,7 +142,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
-        private void DetrendedPriceOscillator(double[][] inputValues, out double[][] outputValues, string[] parameterList)
+        private static void DetrendedPriceOscillator(double[][] inputValues, out double[][] outputValues, string[] parameterList)
         {
             // There is no enough input series
             if (inputValues.Length != 2)
@@ -219,7 +219,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
-        private void VolatilityChaikins(double[][] inputValues, out double[][] outputValues, string[] parameterList)
+        private static void VolatilityChaikins(double[][] inputValues, out double[][] outputValues, string[] parameterList)
         {
             // There is no enough input series
             if (inputValues.Length != 3)
@@ -307,7 +307,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
-        private void VolumeOscillator(double[][] inputValues, out double[][] outputValues, string[] parameterList)
+        private static void VolumeOscillator(double[][] inputValues, out double[][] outputValues, string[] parameterList)
         {
             // There is no enough input series
             if (inputValues.Length != 2)
@@ -409,7 +409,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
-        internal void StochasticIndicator(double[][] inputValues, out double[][] outputValues, string[] parameterList)
+        internal static void StochasticIndicator(double[][] inputValues, out double[][] outputValues, string[] parameterList)
         {
             // There is no enough input series
             if (inputValues.Length != 4)
@@ -520,7 +520,7 @@ namespace WebCharts.Services
         /// <param name="inputValues">Arrays of doubles - Input values</param>
         /// <param name="outputValues">Arrays of doubles - Output values</param>
         /// <param name="parameterList">Array of strings - Parameters</param>
-        internal void WilliamsR(double[][] inputValues, out double[][] outputValues, string[] parameterList)
+        internal static void WilliamsR(double[][] inputValues, out double[][] outputValues, string[] parameterList)
         {
             // There is no enough input series
             if (inputValues.Length != 4)

@@ -238,8 +238,8 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal/vertical axis
-                Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : series.XSubAxisName);
-                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : series.YSubAxisName);
+                Axis hAxis = area.GetAxis(AxisName.X, series.XAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : Series.XSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, series.YAxisType, (area.Area3DStyle.Enable3D) ? string.Empty : Series.YSubAxisName);
                 double hAxisMin = hAxis.ViewMinimum;
                 double hAxisMax = hAxis.ViewMaximum;
                 double vAxisMin = vAxis.ViewMinimum;
@@ -603,7 +603,6 @@ namespace WebCharts.Services
                     Common.HotRegionsList.AddHotRegion(
                         path,
                         false,
-                        Graph,
                         point,
                         point.series.Name,
                         pointIndex);

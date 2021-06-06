@@ -356,7 +356,7 @@ namespace WebCharts.Services
                 //}
 
                 // Set active vertical axis and scaleView boundary
-                Axis vAxis = area.GetAxis(AxisName.Y, AxisType.Primary, ser.YSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, AxisType.Primary, Series.YSubAxisName);
                 double vAxisMin = vAxis.ViewMinimum;
                 double vAxisMax = vAxis.ViewMaximum;
 
@@ -530,15 +530,10 @@ namespace WebCharts.Services
                                 // Add area to the selection path
                                 AddSelectionPath(area, selectionPath, dataPointPos, index, secondPointIndex, graph.GetAbsolutePoint(area.circularCenter), 0);
 
-                                // Insert area just after the last custom area
-                                int insertIndex = HotRegionsList.FindInsertIndex();
-
                                 // Insert area
                                 common.HotRegionsList.AddHotRegion(
-                                    insertIndex,
                                     selectionPath,
                                     false,
-                                    graph,
                                     point,
                                     ser.Name,
                                     index);
@@ -611,15 +606,10 @@ namespace WebCharts.Services
                         //************************************************************
                         if (common.ProcessModeRegions)
                         {
-                            // Insert area just after the last custom area
-                            int insertIndex = HotRegionsList.FindInsertIndex();
-
                             // Insert area
                             common.HotRegionsList.AddHotRegion(
-                                insertIndex,
                                 selectionPath,
                                 false,
-                                graph,
                                 point,
                                 ser.Name,
                                 index);
@@ -876,7 +866,7 @@ namespace WebCharts.Services
                 size.Height = markerSize;
 
                 if (markerImage.Length > 0)
-                    common.ImageLoader.GetAdjustedImageSize(markerImage, graph.Graphics, ref size);
+                    common.ImageLoader.GetAdjustedImageSize(markerImage, ref size);
             }
             return size;
         }
@@ -978,7 +968,7 @@ namespace WebCharts.Services
 
                 // Get point label style attribute
                 SKSize sizeMarker = new(markerSize, markerSize);
-                SKSize SKSizeont = graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic);
+                SKSize SKSizeont = ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic);
 
                 // Increase label size when background is drawn
                 SKSize sizeLabel = new(SKSizeont.Width, SKSizeont.Height);
@@ -1315,7 +1305,7 @@ namespace WebCharts.Services
                 // of the empty point, so it will be visible
                 if (result == 0.0)
                 {
-                    Axis yAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                    Axis yAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                     double yViewMax = yAxis.maximum;
                     double yViewMin = yAxis.minimum;
                     if (result < yViewMin)

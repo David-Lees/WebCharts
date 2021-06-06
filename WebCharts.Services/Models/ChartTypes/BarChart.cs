@@ -369,12 +369,12 @@ namespace WebCharts.Services
                 }
 
                 // Set active horizontal axis
-                Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
                 double vertViewMax = vAxis.ViewMaximum;
                 double vertViewMin = vAxis.ViewMinimum;
 
                 // Set active vertical axis
-                Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
                 double horizViewMax = hAxis.ViewMaximum;
                 double horizViewMin = hAxis.ViewMinimum;
 
@@ -716,7 +716,7 @@ namespace WebCharts.Services
                         markerSize.Height = point.MarkerSize;
                     }
                     else
-                        common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+                        common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                     markerSize = graph.GetRelativeSize(markerSize);
 
@@ -1109,7 +1109,7 @@ namespace WebCharts.Services
                 // of the empty point, so it will be visible
                 if (result == 0.0)
                 {
-                    Axis yAxis = area.GetAxis(AxisName.Y, series.YAxisType, series.YSubAxisName);
+                    Axis yAxis = area.GetAxis(AxisName.Y, series.YAxisType, Series.YSubAxisName);
                     double yViewMax = yAxis.maximum;
                     double yViewMin = yAxis.minimum;
                     if (result < yViewMin)
@@ -1332,8 +1332,8 @@ namespace WebCharts.Services
                 point.positionRel = new SKPoint(float.NaN, float.NaN);
 
                 // Set active vertical/horizontal axis
-                Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                 // Get point bar drawing style
                 BarDrawingStyle barDrawingStyle = ChartGraphics.GetBarDrawingStyle(point);
@@ -1520,7 +1520,6 @@ namespace WebCharts.Services
                     common.HotRegionsList.AddHotRegion(
                         rectPath,
                         false,
-                        graph,
                         point,
                         ser.Name,
                         pointEx.index - 1);
@@ -1544,8 +1543,8 @@ namespace WebCharts.Services
                     Series ser = point.series;
 
                     // Set active vertical/horizontal axis
-                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
-                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
+                    Axis vAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
+                    Axis hAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
 
                     // Get Y value and make sure it fits the chart area.
                     // If chart type uses 2 Y values (RangeBar) use second Y value for size.
@@ -1675,7 +1674,7 @@ namespace WebCharts.Services
                     markerSize.Height = point.MarkerSize;
                 }
                 else
-                    common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+                    common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                 markerSize = graph.GetRelativeSize(markerSize);
 
@@ -1793,7 +1792,7 @@ namespace WebCharts.Services
                         markerSize.Height = point.MarkerSize;
                     }
                     else
-                        common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, graph.Graphics, ref markerSize);
+                        common.ImageLoader.GetAdjustedImageSize(point.MarkerImage, ref markerSize);
 
                     markerSize = graph.GetRelativeSize(markerSize);
                 }

@@ -701,7 +701,6 @@ namespace WebCharts.Services
                 Common.HotRegionsList.AddHotRegion(
                     segmentPath,
                     false,
-                    Graph,
                     point,
                     point.series.Name,
                     pointIndex);
@@ -763,7 +762,6 @@ namespace WebCharts.Services
                 Common.HotRegionsList.AddHotRegion(
                     segmentPath,
                     false,
-                    Graph,
                     point,
                     point.series.Name,
                     pointIndex);
@@ -809,7 +807,6 @@ namespace WebCharts.Services
                     Common.HotRegionsList.AddHotRegion(
                         topCurve,
                         false,
-                        Graph,
                         point,
                         point.series.Name,
                         pointIndex);
@@ -856,7 +853,6 @@ namespace WebCharts.Services
                     Common.HotRegionsList.AddHotRegion(
                         topCurve,
                         false,
-                        Graph,
                         point,
                         point.series.Name,
                         pointIndex);
@@ -1153,7 +1149,6 @@ namespace WebCharts.Services
                 Common.HotRegionsList.AddHotRegion(
                     segmentPath,
                     false,
-                    Graph,
                     point,
                     point.series.Name,
                     pointIndex);
@@ -1198,7 +1193,6 @@ namespace WebCharts.Services
                     Common.HotRegionsList.AddHotRegion(
                         topCurve,
                         false,
-                        Graph,
                         point,
                         point.series.Name,
                         pointIndex);
@@ -1244,7 +1238,6 @@ namespace WebCharts.Services
                     Common.HotRegionsList.AddHotRegion(
                         topCurve,
                         false,
-                        Graph,
                         point,
                         point.series.Name,
                         pointIndex);
@@ -1413,7 +1406,7 @@ namespace WebCharts.Services
                     !float.IsNaN(labelInfo.Position.Height))
                 {
                     // Get size of a single character used for spacing
-                    SKSize spacing = Graph.MeasureString(
+                    SKSize spacing = ChartGraphics.MeasureString(
                         "W",
                         labelInfo.Point.Font,
                         new SKSize(1000f, 1000F),
@@ -1555,7 +1548,7 @@ namespace WebCharts.Services
                             }
 
                             // Measure string size
-                            labelInfo.Size = Graph.MeasureString(
+                            labelInfo.Size = ChartGraphics.MeasureString(
                                 labelInfo.Text,
                                 point.Font,
                                 plotAreaPositionAbs.Size,

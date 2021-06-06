@@ -454,7 +454,7 @@ namespace WebCharts.Services
                 //***************************************************************
                 //** Set text format
                 //***************************************************************
-                format.FormatFlags ^= StringFormatFlags.LineLimit;
+                format.FormatFlags ^= StringFormats.LineLimit;
                 format.Trimming = StringTrimming.EllipsisCharacter;
                 if (Alignment == ContentAlignment.BottomRight ||
                     Alignment == ContentAlignment.MiddleRight ||

@@ -905,7 +905,7 @@ namespace WebCharts.Services
             float maxY = (float)Math.Max(firstPoint.yPosition, secondPoint.yPosition);
             maxY = Math.Max(maxY, axisPosition);
             SKRect position = new(minX, minY, maxX - minX, maxY - minY);
-            SurfaceNames visibleSurfaces = graph.GetVisibleSurfaces(position, positionZ, depth, matrix);
+            SurfaceNames visibleSurfaces = ChartGraphics.GetVisibleSurfaces(position, positionZ, depth, matrix);
 
             // Check if area point is drawn upside down.
             bool upSideDown = false;

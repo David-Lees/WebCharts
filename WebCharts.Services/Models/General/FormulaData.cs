@@ -835,14 +835,13 @@ namespace WebCharts.Services
         /// </summary>
         /// <param name="input">Input matrix with empty values</param>
         /// <param name="output">Output matrix without empty values</param>
-        private void RemoveEmptyValues(double[][] input, out double[][] output)
+        private static void RemoveEmptyValues(double[][] input, out double[][] output)
         {
             // Allocate memory
             output = new double[input.Length][];
-            int seriesIndex = 0;
-
             int numberOfRows = 0;
 
+            int seriesIndex;
             // Set Nan for all data points with same index in input array
             // Data point loop
             for (int pointIndex = 0; pointIndex < input[0].Length; pointIndex++)
@@ -854,7 +853,7 @@ namespace WebCharts.Services
                 {
                     if (seriesIndex >= input[seriesIndex].Length)
                         continue;
-                    if (Double.IsNaN(input[seriesIndex][pointIndex]))
+                    if (double.IsNaN(input[seriesIndex][pointIndex]))
                         isEmpty = true;
                 }
 

@@ -1144,13 +1144,6 @@ namespace WebCharts.Services
 
                 // Paint Labels
                 labelStyle.Paint(graph, false);
-
-                // Scroll bar is supoorted only in 2D charts
-                if (ChartArea != null && !ChartArea.Area3DStyle.Enable3D)
-                {
-                    // Draw axis scroll bar
-                    ScrollBar.Paint(graph);
-                }
             }
 
             // Draw axis title
@@ -1279,7 +1272,7 @@ namespace WebCharts.Services
                     // We need to have the StringFormatFlags set to FitBlackBox as othwerwise axis titles using Fonts like
                     // "Algerian" or "Forte" are completly clipped (= not drawn) due to the fact that MeasureString returns
                     // a bounding rectangle that is too small.
-                    format.FormatFlags |= StringFormatFlags.FitBlackBox;
+                    format.FormatFlags |= StringFormats.FitBlackBox;
 
                     // Calculate title rectangle
                     _titlePosition = ChartArea.PlotAreaPosition.ToSKRect();
@@ -1679,7 +1672,7 @@ namespace WebCharts.Services
             using StringFormat format = new();
             format.Alignment = TitleAlignment;
             format.Trimming = StringTrimming.EllipsisCharacter;
-            format.FormatFlags |= StringFormatFlags.LineLimit;
+            format.FormatFlags |= StringFormats.LineLimit;
 
             // Measure title size for non-centered aligment
             SKSize realTitleSize = ChartGraphics.MeasureString(axisTitle.Replace("\\n", "\n"), TitleFont, new SKSize(10000f, 10000f), format, GetTextOrientation());
@@ -2152,8 +2145,8 @@ namespace WebCharts.Services
             }
 
             // Check if the front/back wall is on the top drawing layer
-            float zPositon = ChartArea.IsMainSceneWallOnFront() ? ChartArea.areaSceneDepth : 0f;
-            _ = ChartArea.IsMainSceneWallOnFront() ? SurfaceNames.Front : SurfaceNames.Back;
+            float zPositon = ChartArea.IsMainSceneWallOnFront ? ChartArea.areaSceneDepth : 0f;
+            _ = ChartArea.IsMainSceneWallOnFront ? SurfaceNames.Front : SurfaceNames.Back;
             if (ChartArea.ShouldDrawOnSurface(SurfaceNames.Back, backElements, tickMarksOnEdge))
             {
                 // Draw axis line on the back/front wall
@@ -2169,8 +2162,8 @@ namespace WebCharts.Services
             }
 
             // Check if the back wall is on the top drawing layer
-            zPositon = ChartArea.IsMainSceneWallOnFront() ? 0f : ChartArea.areaSceneDepth;
-            SurfaceNames surfName = ChartArea.IsMainSceneWallOnFront() ? SurfaceNames.Back : SurfaceNames.Front;
+            zPositon = ChartArea.IsMainSceneWallOnFront ? 0f : ChartArea.areaSceneDepth;
+            SurfaceNames surfName = ChartArea.IsMainSceneWallOnFront ? SurfaceNames.Back : SurfaceNames.Front;
             // Draw axis line on the front wall
             if (ChartArea.ShouldDrawOnSurface(surfName, backElements, tickMarksOnEdge) && (!onEdge ||
                     (AxisPosition == AxisPosition.Bottom && ChartArea.IsBottomSceneWallVisible()) ||
@@ -2262,7 +2255,7 @@ namespace WebCharts.Services
             }
 
             // Check if front wall is shown
-            if (ChartArea.IsMainSceneWallOnFront())
+            if (ChartArea.IsMainSceneWallOnFront)
             {
                 // Switch Z position of tick mark
                 wallZPosition = (wallZPosition == 0f) ? ChartArea.areaSceneDepth : 0f;
@@ -3173,7 +3166,7 @@ namespace WebCharts.Services
                 labelSize = (maxAxisElementsSize) - markSize - scrollBarSize - titleSize;
                 if (labelSize > 0)
                 {
-                    groupingLabelSizes = GetRequiredGroupLabelSize(chartGraph, (maxLabelSize / 100F) * maxAxisLabelRow2Size);
+                    groupingLabelSizes = GetRequiredGroupLabelSize(chartGraph);
                     totlaGroupingLabelsSize = GetGroupLablesToatalSize();
                 }
 
@@ -4359,7 +4352,7 @@ namespace WebCharts.Services
             // Label string drawing format
             using (StringFormat format = new())
             {
-                format.FormatFlags |= StringFormatFlags.LineLimit;
+                format.FormatFlags |= StringFormats.LineLimit;
                 format.Trimming = StringTrimming.EllipsisCharacter;
 
                 // Initialize all labels position rectangle
@@ -4458,7 +4451,7 @@ namespace WebCharts.Services
                                 {
                                     SKSize imageAbsSize = new();
 
-                                    if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                                    if (Common.ImageLoader.GetAdjustedImageSize(label.Image, ref imageAbsSize))
                                     {
                                         SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
                                         axisLabelSize.Width += imageRelSize.Width;
@@ -4574,7 +4567,7 @@ namespace WebCharts.Services
                             // Set vertical font for measuring
                             if (angle != 0)
                             {
-                                format.FormatFlags |= StringFormatFlags.DirectionVertical;
+                                format.FormatFlags |= StringFormats.DirectionVertical;
                             }
                         }
                         else
@@ -4583,7 +4576,7 @@ namespace WebCharts.Services
                             if (angle == 90 || angle == -90)
                             {
                                 angle = 0;
-                                format.FormatFlags |= StringFormatFlags.DirectionVertical;
+                                format.FormatFlags |= StringFormats.DirectionVertical;
                             }
                         }
 
@@ -4601,13 +4594,13 @@ namespace WebCharts.Services
                             axisLabelSize.Height == 0f))
                         {
                             // Measure string without the LineLimit flag
-                            format.FormatFlags ^= StringFormatFlags.LineLimit;
+                            format.FormatFlags ^= StringFormats.LineLimit;
                             axisLabelSize = chartGraph.MeasureStringRel(
                                 label.Text.Replace("\\n", "\n"),
                                 autoLabelFont,
                                 (secondPass) ? rect.Size : ChartArea.Position.ToSKRect().Size,
                                 format);
-                            format.FormatFlags |= StringFormatFlags.LineLimit;
+                            format.FormatFlags |= StringFormats.LineLimit;
                         }
 
                         // Add image size
@@ -4615,10 +4608,10 @@ namespace WebCharts.Services
                         {
                             SKSize imageAbsSize = new();
 
-                            if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                            if (Common.ImageLoader.GetAdjustedImageSize(label.Image, ref imageAbsSize))
                             {
                                 SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
-                                if ((format.FormatFlags & StringFormatFlags.DirectionVertical) == StringFormatFlags.DirectionVertical)
+                                if ((format.FormatFlags & StringFormats.DirectionVertical) == StringFormats.DirectionVertical)
                                 {
                                     axisLabelSize.Height += imageRelSize.Height;
                                     axisLabelSize.Width = Math.Max(axisLabelSize.Width, imageRelSize.Width);
@@ -4746,7 +4739,7 @@ namespace WebCharts.Services
             // Label string drawing format
             using (StringFormat format = new())
             {
-                format.FormatFlags |= StringFormatFlags.LineLimit;
+                format.FormatFlags |= StringFormats.LineLimit;
                 format.Trimming = StringTrimming.EllipsisCharacter;
 
                 // Initialize all labels position rectangle
@@ -4793,7 +4786,7 @@ namespace WebCharts.Services
                             // Set vertical font for measuring
                             if (angle != 0)
                             {
-                                format.FormatFlags |= StringFormatFlags.DirectionVertical;
+                                format.FormatFlags |= StringFormats.DirectionVertical;
                             }
                         }
                         else
@@ -4802,7 +4795,7 @@ namespace WebCharts.Services
                             if (angle == 90 || angle == -90)
                             {
                                 angle = 0;
-                                format.FormatFlags |= StringFormatFlags.DirectionVertical;
+                                format.FormatFlags |= StringFormats.DirectionVertical;
                             }
                         }
 
@@ -4818,12 +4811,12 @@ namespace WebCharts.Services
                         if (axisLabelSize.Width == 0f || axisLabelSize.Height == 0f)
                         {
                             // Measure string without the LineLimit flag
-                            format.FormatFlags ^= StringFormatFlags.LineLimit;
+                            format.FormatFlags ^= StringFormats.LineLimit;
                             axisLabelSize = chartGraph.MeasureStringRel(label.Text.Replace("\\n", "\n"),
                                 autoLabelFont ?? LabelStyle.Font,
                                 rect.Size,
                                 format);
-                            format.FormatFlags |= StringFormatFlags.LineLimit;
+                            format.FormatFlags |= StringFormats.LineLimit;
                         }
 
                         // Add image size
@@ -4831,11 +4824,11 @@ namespace WebCharts.Services
                         {
                             SKSize imageAbsSize = new();
 
-                            if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                            if (Common.ImageLoader.GetAdjustedImageSize(label.Image, ref imageAbsSize))
                             {
                                 SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
 
-                                if ((format.FormatFlags & StringFormatFlags.DirectionVertical) == StringFormatFlags.DirectionVertical)
+                                if ((format.FormatFlags & StringFormats.DirectionVertical) == StringFormats.DirectionVertical)
                                 {
                                     axisLabelSize.Height += imageRelSize.Height;
                                     axisLabelSize.Width = Math.Max(axisLabelSize.Width, imageRelSize.Width);
@@ -5005,9 +4998,8 @@ namespace WebCharts.Services
         /// Calculates the best size for axis labels for all rows except first one (grouping labels).
         /// </summary>
         /// <param name="chartGraph">Chart graphics object.</param>
-        /// <param name="maxLabelSize">Maximum labels area size.</param>
         /// <returns>Array of grouping label sizes for each level.</returns>
-        private float[] GetRequiredGroupLabelSize(ChartGraphics chartGraph, float maxLabelSize)
+        private float[] GetRequiredGroupLabelSize(ChartGraphics chartGraph)
         {
             float[] resultSize = null;
 
@@ -5050,7 +5042,7 @@ namespace WebCharts.Services
                             {
                                 SKSize imageAbsSize = new();
 
-                                if (Common.ImageLoader.GetAdjustedImageSize(label.Image, chartGraph.Graphics, ref imageAbsSize))
+                                if (Common.ImageLoader.GetAdjustedImageSize(label.Image, ref imageAbsSize))
                                 {
                                     SKSize imageRelSize = chartGraph.GetRelativeSize(imageAbsSize);
                                     axisLabelSize.Width += imageRelSize.Width;

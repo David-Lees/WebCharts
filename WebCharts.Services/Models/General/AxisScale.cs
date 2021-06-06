@@ -1589,9 +1589,9 @@ namespace WebCharts.Services
                         oppositeAxis = ChartArea.AxisY;
                     // Take opposite axis from the first series from chart area
                     else if (Common.DataManager.Series[list[0]].YAxisType == AxisType.Primary)
-                        oppositeAxis = ChartArea.AxisY.GetSubAxis(Common.DataManager.Series[list[0]].YSubAxisName);
+                        oppositeAxis = ChartArea.AxisY.GetSubAxis(Series.YSubAxisName);
                     else
-                        oppositeAxis = ChartArea.AxisY2.GetSubAxis(Common.DataManager.Series[list[0]].YSubAxisName);
+                        oppositeAxis = ChartArea.AxisY2.GetSubAxis(Series.YSubAxisName);
                     break;
                 // X2 Axis
                 case AxisName.X2:
@@ -1601,9 +1601,9 @@ namespace WebCharts.Services
                         oppositeAxis = ChartArea.AxisY2;
                     // Take opposite axis from the first series from chart area
                     else if (Common.DataManager.Series[list[0]].YAxisType == AxisType.Primary)
-                        oppositeAxis = ChartArea.AxisY.GetSubAxis(Common.DataManager.Series[list[0]].YSubAxisName);
+                        oppositeAxis = ChartArea.AxisY.GetSubAxis(Series.YSubAxisName);
                     else
-                        oppositeAxis = ChartArea.AxisY2.GetSubAxis(Common.DataManager.Series[list[0]].YSubAxisName);
+                        oppositeAxis = ChartArea.AxisY2.GetSubAxis(Series.YSubAxisName);
                     break;
                 // Y Axis
                 case AxisName.Y:
@@ -1613,9 +1613,9 @@ namespace WebCharts.Services
                         oppositeAxis = ChartArea.AxisX;
                     // Take opposite axis from the first series from chart area
                     else if (Common.DataManager.Series[list[0]].XAxisType == AxisType.Primary)
-                        oppositeAxis = ChartArea.AxisX.GetSubAxis(Common.DataManager.Series[list[0]].XSubAxisName);
+                        oppositeAxis = ChartArea.AxisX.GetSubAxis(Series.XSubAxisName);
                     else
-                        oppositeAxis = ChartArea.AxisX2.GetSubAxis(Common.DataManager.Series[list[0]].XSubAxisName);
+                        oppositeAxis = ChartArea.AxisX2.GetSubAxis(Series.XSubAxisName);
                     break;
                 // Y2 Axis
                 case AxisName.Y2:
@@ -1625,9 +1625,9 @@ namespace WebCharts.Services
                         oppositeAxis = ChartArea.AxisX2;
                     // Take opposite axis from the first series from chart area
                     else if (Common.DataManager.Series[list[0]].XAxisType == AxisType.Primary)
-                        oppositeAxis = ChartArea.AxisX.GetSubAxis(Common.DataManager.Series[list[0]].XSubAxisName);
+                        oppositeAxis = ChartArea.AxisX.GetSubAxis(Series.XSubAxisName);
                     else
-                        oppositeAxis = ChartArea.AxisX2.GetSubAxis(Common.DataManager.Series[list[0]].XSubAxisName);
+                        oppositeAxis = ChartArea.AxisX2.GetSubAxis(Series.XSubAxisName);
                     break;
             }
             return oppositeAxis;

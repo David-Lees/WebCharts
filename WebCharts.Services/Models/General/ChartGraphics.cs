@@ -384,9 +384,19 @@ namespace WebCharts.Services
             // Load a image
             var image = _common.ImageLoader.LoadImage(name);
 
+            var shader = mode switch
+            {
+                ChartImageWrapMode.Scaled => SKShader.CreateImage(image, SKShaderTileMode.Decal, SKShaderTileMode.Decal),
+                ChartImageWrapMode.Tile => SKShader.CreateImage(image, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat),
+                ChartImageWrapMode.TileFlipX => SKShader.CreateImage(image, SKShaderTileMode.Mirror, SKShaderTileMode.Repeat),
+                ChartImageWrapMode.TileFlipXY => SKShader.CreateImage(image, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat),
+                ChartImageWrapMode.TileFlipY => SKShader.CreateImage(image, SKShaderTileMode.Repeat, SKShaderTileMode.Mirror),
+                _ => SKShader.CreateImage(image),
+            };
+
             return new SKPaint()
             {
-                Shader = SKShader.CreateImage(image),
+                Shader = shader,
                 Style = SKPaintStyle.Fill,
             };
         }
@@ -473,7 +483,7 @@ namespace WebCharts.Services
                     if (imageScaleRect == SKRect.Empty)
                     {
                         SKSize size = new();
-                        ImageLoader.GetAdjustedImageSize(image, Graphics, ref size);
+                        ImageLoader.GetAdjustedImageSize(image, ref size);
                         imageScaleRect.Size = new(size.Width, size.Height);
                     }
 
@@ -1111,7 +1121,7 @@ namespace WebCharts.Services
                 float offsetX = 0f;
 
                 // Measure text size
-                labelSize = this.MeasureString(text.Replace("\\n", "\n"), font, absPosition.Size, drawingFormat);
+                labelSize = MeasureString(text.Replace("\\n", "\n"), font, absPosition.Size, drawingFormat);
 
                 // Calculate text rectangle
                 labelRect.Size = new(labelSize.Width, labelSize.Height);
@@ -1264,7 +1274,7 @@ namespace WebCharts.Services
 
                     if (labelImage != null)
                     {
-                        ImageLoader.GetAdjustedImageSize(labelImage, Graphics, ref imageAbsSize);
+                        ImageLoader.GetAdjustedImageSize(labelImage, ref imageAbsSize);
 
                         // Adjust label position using image size
                         absPositionWithoutImage.Right -= imageAbsSize.Width;
@@ -1283,7 +1293,7 @@ namespace WebCharts.Services
                 if (labelRowIndex > 0 && labelMark != LabelMarkStyle.None)
                 {
                     // Make sure that me know the exact size of the text
-                    labelSize = this.MeasureString(
+                    labelSize = MeasureString(
                         text.Replace("\\n", "\n"),
                         font,
                         absPositionWithoutImage.Size,
@@ -1312,31 +1322,31 @@ namespace WebCharts.Services
                 //** Make sure that one line label will not disapear with LineLimit
                 //** flag on.
                 //********************************************************************
-                if ((drawingFormat.FormatFlags & StringFormatFlags.LineLimit) != 0)
+                if ((drawingFormat.FormatFlags & StringFormats.LineLimit) != 0)
                 {
                     // Measure string height out of one character
-                    drawingFormat.FormatFlags ^= StringFormatFlags.LineLimit;
-                    SKSize size = this.MeasureString("I", font, absPosition.Size, drawingFormat);
+                    drawingFormat.FormatFlags ^= StringFormats.LineLimit;
+                    SKSize size = MeasureString("I", font, absPosition.Size, drawingFormat);
 
                     // If height of one characte is more than rectangle heigjt - remove LineLimit flag
                     if (size.Height < absPosition.Height)
                     {
-                        drawingFormat.FormatFlags |= StringFormatFlags.LineLimit;
+                        drawingFormat.FormatFlags |= StringFormats.LineLimit;
                     }
                 }
                 else
                 {
                     // Set NoClip flag
-                    if ((drawingFormat.FormatFlags & StringFormatFlags.NoClip) != 0)
+                    if ((drawingFormat.FormatFlags & StringFormats.NoClip) != 0)
                     {
-                        drawingFormat.FormatFlags ^= StringFormatFlags.NoClip;
+                        drawingFormat.FormatFlags ^= StringFormats.NoClip;
                     }
 
                     // Measure string height out of one character without clipping
-                    SKSize size = this.MeasureString("I", font, absPosition.Size, drawingFormat);
+                    SKSize size = MeasureString("I", font, absPosition.Size, drawingFormat);
 
                     // Clear NoClip flag
-                    drawingFormat.FormatFlags ^= StringFormatFlags.NoClip;
+                    drawingFormat.FormatFlags ^= StringFormats.NoClip;
 
                     // If height of one characte is more than rectangle heigt - set NoClip flag
                     if (size.Height > absPosition.Height)
@@ -1384,7 +1394,7 @@ namespace WebCharts.Services
                     // Make sure we no the text size
                     if (labelSize.IsEmpty)
                     {
-                        labelSize = this.MeasureString(
+                        labelSize = MeasureString(
                             text.Replace("\\n", "\n"),
                             font,
                             absPositionWithoutImage.Size,
@@ -1622,7 +1632,7 @@ namespace WebCharts.Services
             Transform = _myMatrix;
 
             // Draw a string
-            this.DrawString(text, font, brush, absPosition);
+            DrawString(text, font, brush, absPosition);
         }
 
         /// <summary>
@@ -1751,7 +1761,7 @@ namespace WebCharts.Services
                 SmoothingMode = SmoothingMode.HighSpeed;
             }
 
-            this.DrawString(text, font, brush, rect, format, TextOrientation.Auto);
+            DrawString(text, font, brush, rect, format, TextOrientation.Auto);
             SmoothingMode = sm;
         }
 
@@ -1789,7 +1799,7 @@ namespace WebCharts.Services
             // Get absolute coordinates
             rect = GetAbsoluteRectangle(layoutRectangle);
 
-            size = this.MeasureString(text, font, rect.Size, format);
+            size = MeasureString(text, font, rect.Size, format);
 
             // Find the center of rotation
             if (format.Alignment == StringAlignment.Near)
@@ -1858,7 +1868,7 @@ namespace WebCharts.Services
         /// <param name="stringFormat">StringFormat object that represents formatting information, such as line spacing, for the string.</param>
         /// <param name="textOrientation">Text orientation.</param>
         /// <returns>This method returns a SKSize structure that represents the size, in pixels, of the string specified in the text parameter as drawn with the font parameter and the stringFormat parameter.</returns>
-        internal SKSize MeasureString(
+        internal static SKSize MeasureString(
             string text,
             SKFont font,
             SKSize layoutArea,
@@ -1924,9 +1934,9 @@ namespace WebCharts.Services
         /// <param name="layoutArea">A SKSize structure that specifies the layout rectangle for the text. </param>
         /// <param name="stringFormat">A StringFormat object that represents formatting information, such as line spacing, for the text string. </param>
         /// <returns>A SKSize structure that represents the size of text as drawn with font.</returns>
-        internal SKSize MeasureStringAbs(string text, SKFont font, SKSize layoutArea, StringFormat stringFormat)
+        internal static SKSize MeasureStringAbs(string text, SKFont font, SKSize layoutArea, StringFormat stringFormat)
         {
-            SKSize size = this.MeasureString(text, font, layoutArea, stringFormat);
+            SKSize size = MeasureString(text, font, layoutArea, stringFormat);
             return new SKSize((int)Math.Ceiling(size.Width), (int)Math.Ceiling(size.Height));
         }
 
@@ -1966,7 +1976,7 @@ namespace WebCharts.Services
             // Get absolute coordinates
             size = GetAbsoluteSize(layoutArea);
 
-            newSize = this.MeasureString(text, font, size, stringFormat);
+            newSize = MeasureString(text, font, size, stringFormat);
 
             // Convert to relative Coordinates
             return GetRelativeSize(newSize);
@@ -2028,7 +2038,7 @@ namespace WebCharts.Services
                     // Fill box around the label
                     using (SKPaint brush = new() { Style = SKPaintStyle.Fill, Color = backColor })
                     {
-                        this.FillRectangle(brush, backPositionAbs);
+                        FillRectangle(brush, backPositionAbs);
                     }
 
                     // deliant: Fix VSTS #156433	(2)	Data Label Border in core always shows when the style is set to NotSet
@@ -2042,7 +2052,7 @@ namespace WebCharts.Services
                             AntiAliasing = AntiAliasingStyles.None;
                             using SKPaint pen = new() { Color = borderColor, StrokeWidth = borderWidth, Style = SKPaintStyle.Stroke };
                             pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
-                            this.DrawRectangle(
+                            DrawRectangle(
                                 pen,
                                 backPositionAbs.Left,
                                 backPositionAbs.Top,
@@ -2086,7 +2096,6 @@ namespace WebCharts.Services
                         common.HotRegionsList.AddHotRegion(
                             path,
                             false,
-                            this,
                             point,
                             series.Name,
                             pointIndex);
@@ -2164,13 +2173,13 @@ namespace WebCharts.Services
             // Draw top/bottom lines
             if (axis.AxisPosition == AxisPosition.Left || axis.AxisPosition == AxisPosition.Right)
             {
-                this.DrawLine(markPen, absPositionRounded.Left, absPositionRounded.Top, absPositionRounded.Left, absPositionRounded.Bottom);
-                this.DrawLine(markPen, absPositionRounded.Right, absPositionRounded.Top, absPositionRounded.Right, absPositionRounded.Bottom);
+                DrawLine(markPen, absPositionRounded.Left, absPositionRounded.Top, absPositionRounded.Left, absPositionRounded.Bottom);
+                DrawLine(markPen, absPositionRounded.Right, absPositionRounded.Top, absPositionRounded.Right, absPositionRounded.Bottom);
             }
             else
             {
-                this.DrawLine(markPen, absPositionRounded.Left, absPositionRounded.Top, absPositionRounded.Right, absPositionRounded.Top);
-                this.DrawLine(markPen, absPositionRounded.Left, absPositionRounded.Bottom, absPositionRounded.Right, absPositionRounded.Bottom);
+                DrawLine(markPen, absPositionRounded.Left, absPositionRounded.Top, absPositionRounded.Right, absPositionRounded.Top);
+                DrawLine(markPen, absPositionRounded.Left, absPositionRounded.Bottom, absPositionRounded.Right, absPositionRounded.Bottom);
             }
 
             // Draw left line
@@ -2178,7 +2187,7 @@ namespace WebCharts.Services
             {
                 if (axis.AxisPosition == AxisPosition.Left || axis.AxisPosition == AxisPosition.Right)
                 {
-                    this.DrawLine(
+                    DrawLine(
                         markPen,
                         (axis.AxisPosition == AxisPosition.Left) ? absPositionRounded.Left : absPositionRounded.Right,
                         absPositionRounded.Bottom,
@@ -2187,7 +2196,7 @@ namespace WebCharts.Services
                 }
                 else
                 {
-                    this.DrawLine(
+                    DrawLine(
                         markPen,
                         absPositionRounded.Left,
                         (axis.AxisPosition == AxisPosition.Top) ? absPositionRounded.Top : absPositionRounded.Bottom,
@@ -2201,7 +2210,7 @@ namespace WebCharts.Services
             {
                 if (axis.AxisPosition == AxisPosition.Left || axis.AxisPosition == AxisPosition.Right)
                 {
-                    this.DrawLine(
+                    DrawLine(
                         markPen,
                         (axis.AxisPosition == AxisPosition.Left) ? absPositionRounded.Left : absPositionRounded.Right,
                         absPositionRounded.Top,
@@ -2210,7 +2219,7 @@ namespace WebCharts.Services
                 }
                 else
                 {
-                    this.DrawLine(
+                    DrawLine(
                         markPen,
                         absPositionRounded.Right,
                         (axis.AxisPosition == AxisPosition.Top) ? absPositionRounded.Top : absPositionRounded.Bottom,
@@ -2345,8 +2354,8 @@ namespace WebCharts.Services
                 markPen.PathEffect = GetPenStyle(axis.MajorTickMark.LineDashStyle, axis.MajorTickMark.LineWidth);
 
                 // Draw marking lines
-                this.DrawLines(markPen, leftLine);
-                this.DrawLines(markPen, rightLine);
+                DrawLines(markPen, leftLine);
+                DrawLines(markPen, rightLine);
 
                 // Dispose Pen
                 if (markPen != null)
@@ -2457,9 +2466,8 @@ namespace WebCharts.Services
             {
                 SKPoint firstPoint = new(position.Left + position.Width / 2f, position.Top);
                 SKPoint centerPoint = new(position.Left + position.Width / 2f, position.Left + position.Height / 2f);
-                float sectorSize = 0f;
                 SKPoint prevPoint = SKPoint.Empty;
-                float curentSector = 0f;
+                float curentSector;
 
                 using SKPath path = new();
                 // Remember current smoothing mode
@@ -2469,6 +2477,7 @@ namespace WebCharts.Services
                     SmoothingMode = SmoothingMode.None;
                 }
 
+                float sectorSize;
                 // Get sector size
                 if (polygonSectorsNumber <= 2)
                 {
@@ -2503,7 +2512,7 @@ namespace WebCharts.Services
                             path.AddLine(centerPoint, prevPoint);
                             using (SKPaint sectorBrush = GetSector3DBrush(brush, curentSector, sectorSize))
                             {
-                                this.FillPath(sectorBrush, path);
+                                FillPath(sectorBrush, path);
                             }
                             path.Reset();
                         }
@@ -2523,7 +2532,7 @@ namespace WebCharts.Services
                     path.AddLine(centerPoint, prevPoint);
                     using (var sectorBrush = GetSector3DBrush(brush, curentSector, sectorSize))
                     {
-                        this.FillPath(sectorBrush, path);
+                        FillPath(sectorBrush, path);
                     }
                     path.Reset();
                 }
@@ -2766,7 +2775,7 @@ namespace WebCharts.Services
                 {
                     SKSize imageSize = new();
 
-                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageSize);
+                    ImageLoader.GetAdjustedImageSize(image, ref imageSize);
 
                     // Calculate image position
                     imageRect.Size = new(imageSize.Width, imageSize.Height);
@@ -2805,12 +2814,12 @@ namespace WebCharts.Services
                 }
 
                 // Fill background with brush
-                this.FillPath(brush, path);
+                FillPath(brush, path);
 
                 // Draw image
                 SKRegion oldClipRegion = Clip;
                 Clip = new SKRegion(path);
-                this.DrawImage(image,
+                DrawImage(image,
                     new SKRect((int)Math.Round(imageRect.Left), (int)Math.Round(imageRect.Top), (int)Math.Round(imageRect.Width), (int)Math.Round(imageRect.Height)),
                     0, 0, image.Width, image.Height, null);
                 Clip = oldClipRegion;
@@ -2822,9 +2831,9 @@ namespace WebCharts.Services
                 if (backBrush != null && backImageTransparentColor != SKColor.Empty)
                 {
                     // Fill background with brush
-                    this.FillPath(backBrush, path);
+                    FillPath(backBrush, path);
                 }
-                this.FillPath(brush, path);
+                FillPath(brush, path);
             }
 
             // Draw border
@@ -2860,7 +2869,7 @@ namespace WebCharts.Services
                     }
                     if (gradientRect.Width > 0 && gradientRect.Height > 0)
                     {
-                        this.FillRectangleAbs(
+                        FillRectangleAbs(
                             gradientRect,
                             SKColors.Transparent,
                             ChartHatchStyle.None,
@@ -2886,7 +2895,7 @@ namespace WebCharts.Services
                             gradientRect.Bottom = rect.Bottom - gradientRect.Top;
                         }
 
-                        this.FillRectangleAbs(
+                        FillRectangleAbs(
                             gradientRect,
                             Color.FromArgb(120, SKColors.White),
                             ChartHatchStyle.None,
@@ -2950,7 +2959,7 @@ namespace WebCharts.Services
                         // Create brush
                         using SKPaint bottomRightBrush = new() { Color = Color.FromArgb(80, SKColors.Black), Style = SKPaintStyle.Fill };
                         // Fill shadow path on the left-bottom side of the bar
-                        this.FillPath(bottomRightBrush, path);
+                        FillPath(bottomRightBrush, path);
                     }
                 }
                 else if (barDrawingStyle == BarDrawingStyle.LightToDark)
@@ -2980,7 +2989,7 @@ namespace WebCharts.Services
                     }
                     if (gradientRect.Width > 0 && gradientRect.Height > 0)
                     {
-                        this.FillRectangleAbs(
+                        FillRectangleAbs(
                             gradientRect,
                             (isVertical) ? Color.FromArgb(120, SKColors.White) : SKColors.Transparent,
                             ChartHatchStyle.None,
@@ -3076,15 +3085,15 @@ namespace WebCharts.Services
                         // Create brush and fill path
                         using SKPaint brush = new() { Color = Color.FromArgb(50, SKColors.Black), Style = SKPaintStyle.Fill };
                         // Fill shadow path on the left-bottom side of the bar
-                        this.FillPath(brush, path);
+                        FillPath(brush, path);
 
                         // Draw Lines
                         using (SKPaint penDark = new() { Color = Color.FromArgb(20, SKColors.Black), StrokeWidth = 1, Style = SKPaintStyle.Stroke })
                         {
-                            this.DrawPath(penDark, path);
+                            DrawPath(penDark, path);
                             if (isVertical)
                             {
-                                this.DrawLine(
+                                DrawLine(
                                     penDark,
                                     rect.Left + rect.Width / 2f,
                                     rect.Top + size,
@@ -3093,7 +3102,7 @@ namespace WebCharts.Services
                             }
                             else
                             {
-                                this.DrawLine(
+                                DrawLine(
                                     penDark,
                                     rect.Left + size,
                                     rect.Top + rect.Height / 2f,
@@ -3104,10 +3113,10 @@ namespace WebCharts.Services
 
                         // Draw Lines
                         using SKPaint pen = new() { Color = Color.FromArgb(40, SKColors.White), StrokeWidth = 1, Style = SKPaintStyle.Stroke };
-                        this.DrawPath(pen, path);
+                        DrawPath(pen, path);
                         if (isVertical)
                         {
-                            this.DrawLine(
+                            DrawLine(
                                 pen,
                                 rect.Left + rect.Width / 2f,
                                 rect.Top + size,
@@ -3116,7 +3125,7 @@ namespace WebCharts.Services
                         }
                         else
                         {
-                            this.DrawLine(
+                            DrawLine(
                                 pen,
                                 rect.Left + size,
                                 rect.Top + rect.Height / 2f,
@@ -3184,7 +3193,6 @@ namespace WebCharts.Services
             ChartDashStyle borderDashStyle,
             PenAlignment penAlignment)
         {
-            SKPaint brush = null;
             SKPaint backBrush = null;
 
             // Turn off Antialias
@@ -3216,6 +3224,7 @@ namespace WebCharts.Services
             // Set a border line style
             _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
 
+            SKPaint brush;
             if (backGradientStyle == GradientStyle.None)
             {
                 // Set a bar color.
@@ -3291,7 +3300,7 @@ namespace WebCharts.Services
                 {
                     SKSize imageAbsSize = new();
 
-                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageAbsSize);
+                    ImageLoader.GetAdjustedImageSize(image, ref imageAbsSize);
 
                     // Calculate image position
                     imageRect.Size = new(imageAbsSize.Width, imageAbsSize.Height);
@@ -3330,7 +3339,7 @@ namespace WebCharts.Services
                 }
 
                 // Fill background with brush
-                this.FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+                FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
 
                 // Draw image
                 DrawImage(image,
@@ -3343,18 +3352,18 @@ namespace WebCharts.Services
                 if (backBrush != null && backImageTransparentColor != SKColor.Empty)
                 {
                     // Fill background with brush
-                    this.FillRectangle(backBrush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+                    FillRectangle(backBrush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
                 }
-                this.FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+                FillRectangle(brush, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
             }
 
             // Set pen alignment
             if (borderDashStyle != ChartDashStyle.NotSet)
             {
                 if (borderWidth > 1)
-                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
+                    DrawRectangle(_pen, rect.Left, rect.Top, rect.Width + 1, rect.Height + 1);
                 else if (borderWidth == 1)
-                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width, rect.Height);
+                    DrawRectangle(_pen, rect.Left, rect.Top, rect.Width, rect.Height);
             }
 
             // Dispose Image and Gradient
@@ -3730,7 +3739,7 @@ namespace WebCharts.Services
                 // Calculate unscaled image position
                 if (backImageWrapMode == ChartImageWrapMode.Unscaled)
                 {
-                    ImageLoader.GetAdjustedImageSize(image, Graphics, ref imageAbsSize);
+                    ImageLoader.GetAdjustedImageSize(image, ref imageAbsSize);
 
                     // Calculate image position
                     imageRect.Size = new SKSize(Math.Min(fillRect.Width, imageAbsSize.Width), Math.Min(fillRect.Height, imageAbsSize.Height));
@@ -3772,13 +3781,13 @@ namespace WebCharts.Services
                 if (brush != null)
                 {
                     if (circular)
-                        this.DrawCircleAbs(null, brush, fillRect, circularSectorsCount, circle3D);
+                        DrawCircleAbs(null, brush, fillRect, circularSectorsCount, circle3D);
                     else
-                        this.FillRectangle(brush, fillRect);
+                        FillRectangle(brush, fillRect);
                 }
 
                 // Draw image
-                this.DrawImage(image,
+                DrawImage(image,
                     new SKRect((int)Math.Round(imageRect.Left), (int)Math.Round(imageRect.Top), (int)Math.Round(imageRect.Right), (int)Math.Round(imageRect.Bottom)),
                     0, 0,
                     (backImageWrapMode == ChartImageWrapMode.Unscaled) ? imageRect.Width * image.Width / imageAbsSize.Width : image.Width,
@@ -3792,17 +3801,17 @@ namespace WebCharts.Services
                 {
                     // Fill background with brush
                     if (circular)
-                        this.DrawCircleAbs(null, backBrush, fillRect, circularSectorsCount, circle3D);
+                        DrawCircleAbs(null, backBrush, fillRect, circularSectorsCount, circle3D);
                     else
-                        this.FillRectangle(backBrush, fillRect);
+                        FillRectangle(backBrush, fillRect);
                 }
 
                 if (brush != null)
                 {
                     if (circular)
-                        this.DrawCircleAbs(null, brush, fillRect, circularSectorsCount, circle3D);
+                        DrawCircleAbs(null, brush, fillRect, circularSectorsCount, circle3D);
                     else
-                        this.FillRectangle(brush, fillRect);
+                        FillRectangle(brush, fillRect);
                 }
             }
 
@@ -3838,7 +3847,7 @@ namespace WebCharts.Services
                 else
                 {
                     // Draw rectangle
-                    this.DrawRectangle(_pen, rect.Left, rect.Top, rect.Width, rect.Height);
+                    DrawRectangle(_pen, rect.Left, rect.Top, rect.Width, rect.Height);
                 }
             }
 
@@ -3982,7 +3991,7 @@ namespace WebCharts.Services
                     shadowColor);
 
                 // Draw rectangle
-                this.FillPath(shadowBrush, path);
+                FillPath(shadowBrush, path);
             }
         }
 
@@ -3996,11 +4005,11 @@ namespace WebCharts.Services
         {
             SKPoint firstPoint = new(position.Left + position.Width / 2f, position.Top);
             SKPoint centerPoint = new(position.Left + position.Width / 2f, position.Top + position.Height / 2f);
-            float sectorSize = 0f;
             SKPath path = new();
             SKPoint prevPoint = SKPoint.Empty;
-            float curentSector = 0f;
+            float curentSector;
 
+            float sectorSize;
             // Get sector size
             if (polygonSectorsNumber <= 2)
             {
@@ -4010,7 +4019,7 @@ namespace WebCharts.Services
             else
             {
                 // Polygon sector size
-                sectorSize = 360f / ((float)polygonSectorsNumber);
+                sectorSize = 360f / polygonSectorsNumber;
             }
 
             // Loop throug all sectors
@@ -4422,7 +4431,6 @@ namespace WebCharts.Services
             PieDrawingStyle pieDrawingStyle
             )
         {
-            SKPaint borderPen = null;   // Pen
             SKPaint fillBrush;        // Brush
 
             // Get absolute rectangle
@@ -4470,7 +4478,7 @@ namespace WebCharts.Services
             }
 
             // Create border Pen
-            borderPen = new() { Color = borderColor, Style = SKPaintStyle.Stroke, StrokeWidth = borderWidth };
+            SKPaint borderPen = new() { Color = borderColor, Style = SKPaintStyle.Stroke, StrokeWidth = borderWidth };
 
             // Set a border line style
             borderPen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
@@ -4493,7 +4501,7 @@ namespace WebCharts.Services
 
                 path.Close();
 
-                this.FillPath(fillBrush, path);
+                FillPath(fillBrush, path);
 
                 // Draw Pie gradien effects
                 DrawPieGradientEffects(pieDrawingStyle, absRect, startAngle, sweepAngle, doughnutRadius);
@@ -4503,7 +4511,7 @@ namespace WebCharts.Services
                     borderWidth > 0 &&
                     borderDashStyle != ChartDashStyle.NotSet)
                 {
-                    this.DrawPath(borderPen, path);
+                    DrawPath(borderPen, path);
                 }
             }
             else // Draw Pie
@@ -4516,7 +4524,7 @@ namespace WebCharts.Services
                 else
                 {
                     // Fill Pie for normal shadow or colored pie slice
-                    this.FillPie(fillBrush, absRect.Left, absRect.Top, absRect.Width, absRect.Height, startAngle, sweepAngle);
+                    FillPie(fillBrush, absRect.Left, absRect.Top, absRect.Width, absRect.Height, startAngle, sweepAngle);
 
                     // Draw Pie gradien effects
                     DrawPieGradientEffects(pieDrawingStyle, absRect, startAngle, sweepAngle, -1f);
@@ -4527,7 +4535,7 @@ namespace WebCharts.Services
                     borderWidth > 0 &&
                     borderDashStyle != ChartDashStyle.NotSet)
                 {
-                    this.DrawPie(borderPen, absRect.Left, absRect.Top, absRect.Width, absRect.Height, startAngle, sweepAngle);
+                    DrawPie(borderPen, absRect.Left, absRect.Top, absRect.Width, absRect.Height, startAngle, sweepAngle);
                 }
             }
 
@@ -4591,7 +4599,7 @@ namespace WebCharts.Services
                     );
 
                 // Fill shadow
-                this.FillPath(brush, path);
+                FillPath(brush, path);
             }
             else if (pieDrawingStyle == PieDrawingStyle.SoftEdge)
             {
@@ -4624,7 +4632,7 @@ namespace WebCharts.Services
                         );
 
                     // Fill shadow
-                    this.FillPath(brush, path);
+                    FillPath(brush, path);
                 }
 
                 // Draw inner shadow for the doughnut chart

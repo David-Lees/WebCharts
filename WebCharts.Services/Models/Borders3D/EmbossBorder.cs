@@ -130,7 +130,6 @@ namespace WebCharts.Services
             ChartDashStyle borderDashStyle)
         {
             SKRect absolute = ChartGraphics.Round(rect);
-            SKRect shadowRect = absolute;
 
             // Calculate shadow colors (0.2 - 0.6)
             float colorDarkeningIndex = 0.2f + (0.4f * (borderSkin.PageColor.Red + borderSkin.PageColor.Green + borderSkin.PageColor.Blue) / 765f);
@@ -163,7 +162,7 @@ namespace WebCharts.Services
             }
 
             // Top/Left shadow
-            shadowRect = absolute;
+            SKRect shadowRect = absolute;
             shadowRect.Right -= radius * .3f;
             shadowRect.Bottom -= radius * .3f;
             graph.DrawRoundedRectShadowAbs(shadowRect, cornerRadius, radius + 1 * resolution / 96.0f, shadowLightColor, borderSkin.PageColor, 1.4f);

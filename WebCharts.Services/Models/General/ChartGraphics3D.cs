@@ -81,7 +81,7 @@ namespace WebCharts.Services
             object obj
             )
         {
-            float zPositon = area.IsMainSceneWallOnFront() ? area.areaSceneDepth : 0f;
+            float zPositon = ChartArea.IsMainSceneWallOnFront ? area.areaSceneDepth : 0f;
 
             ChartElementType chartElementType = obj is StripLine ? ChartElementType.StripLines : ChartElementType.Gridlines;
 
@@ -528,7 +528,6 @@ namespace WebCharts.Services
                 common.HotRegionsList.AddHotRegion(
                     path,
                     false,
-                    this,
                     point,
                     point.series.Name,
                     pointIndex);
@@ -638,7 +637,7 @@ namespace WebCharts.Services
                     return;
                 }
 
-                common.HotRegionsList.AddHotRegion(path, false, this, point, point.series.Name, pointIndex);
+                common.HotRegionsList.AddHotRegion(path, false, point, point.series.Name, pointIndex);
             }
         }
 
@@ -765,7 +764,6 @@ namespace WebCharts.Services
                 common.HotRegionsList.AddHotRegion(
                     path,
                     false,
-                    this,
                     point,
                     point.series.Name,
                     pointIndex);
@@ -2189,17 +2187,18 @@ namespace WebCharts.Services
             // Find Right point
             if (surfaceName == SurfaceNames.Right)
             {
-                DataPoint3D rightPoint = null, rightPointAttr = null;
                 int pointArrayIndex = int.MinValue;
+                DataPoint3D rightPoint;
+                DataPoint3D rightPointAttr;
                 if (!reversedSeriesOrder)
                 {
-                    rightPoint = ChartGraphics.FindPointByIndex(points, Math.Max(firstPoint.index, secondPoint.index) + 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
+                    rightPoint = FindPointByIndex(points, Math.Max(firstPoint.index, secondPoint.index) + 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
                     rightPointAttr = rightPoint;
                 }
                 else
                 {
-                    rightPoint = ChartGraphics.FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index) - 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
-                    rightPointAttr = ChartGraphics.FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index), (multiSeries) ? secondPoint : null, ref pointArrayIndex);
+                    rightPoint = FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index) - 1, (multiSeries) ? secondPoint : null, ref pointArrayIndex);
+                    rightPointAttr = FindPointByIndex(points, Math.Min(firstPoint.index, secondPoint.index), (multiSeries) ? secondPoint : null, ref pointArrayIndex);
                 }
                 if (rightPoint != null)
                 {
@@ -2224,7 +2223,7 @@ namespace WebCharts.Services
                     double xValue = (rightPoint.indexedSeries) ? rightPoint.index : rightPoint.dataPoint.XValue;
                     if (xValue > hAxisMax || xValue < hAxisMin)
                     {
-                        DataPoint3D currentPoint = null;
+                        DataPoint3D currentPoint;
                         if (reversedSeriesOrder)
                         {
                             currentPoint = (firstPoint.index > secondPoint.index) ? firstPoint : secondPoint;
@@ -3259,7 +3258,7 @@ namespace WebCharts.Services
         /// <param name="depth">Cube depth.</param>
         /// <param name="matrix">Coordinate transformation matrix.</param>
         /// <returns>Visible surfaces.</returns>
-        internal SurfaceNames GetVisibleSurfaces(
+        internal static SurfaceNames GetVisibleSurfaces(
             SKRect position,
             float positionZ,
             float depth,
@@ -3606,7 +3605,7 @@ namespace WebCharts.Services
             }
 
             // Get surface colors
-            matrix.GetLight(backColor, out SKColor frontLightColor, out SKColor backLightColor, out SKColor leftLightColor, out SKColor rightLightColor, out SKColor topLightColor, out SKColor bottomLightColor);
+            matrix.GetLight(backColor, out _, out _, out SKColor leftLightColor, out SKColor rightLightColor, out SKColor topLightColor, out SKColor bottomLightColor);
 
             // Darken colors by specified values
             if (topRightDarkening != 0f)
@@ -3712,16 +3711,14 @@ namespace WebCharts.Services
 
                                     // Add ellipse segment of the cylinder on top/rigth (reversed)
                                     pathToDraw = new SKPath();
-                                    SKPoint leftSideLinePoint = SKPoint.Empty;
-                                    SKPoint rightSideLinePoint = SKPoint.Empty;
                                     AddEllipseSegment(
                                         pathToDraw,
                                         topRigthSide,
                                         bottomLeftSide,
                                         (matrix.Perspective == 0) && veticalOrientation,
                                         cylinderAngle,
-                                        out leftSideLinePoint,
-                                        out rightSideLinePoint);
+                                        out SKPoint leftSideLinePoint,
+                                        out SKPoint rightSideLinePoint);
                                     pathToDraw.Reverse();
 
                                     // Add ellipse segment of the cylinder on bottom/left

@@ -125,7 +125,7 @@ namespace WebCharts.Services
                 series.IsXValueDateTime())
             {
                 // Get X axis connected to the series
-                Axis xAxis = area.GetAxis(AxisName.X, series.XAxisType, series.XSubAxisName);
+                Axis xAxis = area.GetAxis(AxisName.X, series.XAxisType, Series.XSubAxisName);
 
                 // Change interval for auto-calculated interval only
                 if (xAxis.Interval == 0 && xAxis.IntervalType == DateTimeIntervalType.Auto)
@@ -225,7 +225,7 @@ namespace WebCharts.Services
                     {
                         // Get X axis connected to the series
                         ChartArea area = chart.ChartAreas[renkoSeries.ChartArea];
-                        Axis xAxis = area.GetAxis(AxisName.X, renkoSeries.XAxisType, renkoSeries.XSubAxisName);
+                        Axis xAxis = area.GetAxis(AxisName.X, renkoSeries.XAxisType, Series.XSubAxisName);
 
                         xAxis.interval = 0.0;
                         xAxis.intervalType = DateTimeIntervalType.Auto;

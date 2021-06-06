@@ -974,7 +974,7 @@ namespace WebCharts.Services
                 float dxAbs = anchorPointAbs.X - cloudCenterAbs.X;
                 float dyAbs = anchorPointAbs.Y - cloudCenterAbs.Y;
 
-                SKPoint point = SKPoint.Empty;
+                SKPoint point;
                 if (anchorPoint.Y < rectanglePosition.Top)
                 {
                     point = GetIntersectionY(cloudCenterAbs, anchorPointAbs, rectanglePositionAbs.Top);
@@ -1663,7 +1663,7 @@ namespace WebCharts.Services
         /// <param name="x2">Second point X coordinate.</param>
         /// <param name="y2">Second point Y coordinate.</param>
         /// <param name="segments">Number of segments to add.</param>
-        private void PathAddLineAsSegments(SKPath path, float x1, float y1, float x2, float y2, int segments)
+        private static void PathAddLineAsSegments(SKPath path, float x1, float y1, float x2, float y2, int segments)
         {
             if (x1 == x2)
             {
@@ -1696,7 +1696,7 @@ namespace WebCharts.Services
         /// <param name="rect">Rectangle coordinates.</param>
         /// <param name="cornerRadius">Corner radius.</param>
         /// <returns>Graphics path object.</returns>
-        private SKPath CreateRoundedRectPath(SKRect rect, float cornerRadius)
+        private static SKPath CreateRoundedRectPath(SKRect rect, float cornerRadius)
         {
             // Create rounded rectangle path
             SKPath path = new();

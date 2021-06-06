@@ -468,7 +468,7 @@ namespace WebCharts.Services
                     using StringFormat format = new(StringFormat.GenericTypographic);
                     format.Alignment = StringAlignment.Center;
                     format.LineAlignment = StringAlignment.Center;
-                    format.FormatFlags = StringFormatFlags.LineLimit;
+                    format.FormatFlags = StringFormats.LineLimit;
                     format.Trimming = StringTrimming.EllipsisCharacter;
                     graphics.DrawStringRel(
                         "(no image)",
@@ -587,7 +587,7 @@ namespace WebCharts.Services
                             {
                                 SKSize absSize = new();
 
-                                if (imageLoader.GetAdjustedImageSize(Image, chartGraphics.Graphics, ref absSize))
+                                if (imageLoader.GetAdjustedImageSize(Image, ref absSize))
                                 {
                                     SKSize imageSize = chartGraphics.GetRelativeSize(absSize);
                                     return new SKRect(float.NaN, float.NaN, imageSize.Width, imageSize.Height);

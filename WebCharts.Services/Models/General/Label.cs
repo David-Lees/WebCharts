@@ -803,7 +803,7 @@ namespace WebCharts.Services
         {
             // Label string drawing format
             using StringFormat format = new();
-            format.FormatFlags |= StringFormatFlags.LineLimit;
+            format.FormatFlags |= StringFormats.LineLimit;
             format.Trimming = StringTrimming.EllipsisCharacter;
 
             // Labels are disabled for this axis
@@ -1030,7 +1030,7 @@ namespace WebCharts.Services
         {
             // Label string drawing format
             using StringFormat format = new();
-            format.FormatFlags |= StringFormatFlags.LineLimit;
+            format.FormatFlags |= StringFormats.LineLimit;
             format.Trimming = StringTrimming.EllipsisCharacter;
 
             // Labels are disabled for this axis
@@ -2099,7 +2099,7 @@ namespace WebCharts.Services
                     //** labels in the rows below. The solution only apply to the limited
                     //** use cases defined by the condition below.
                     //********************************************************************
-                    StringFormatFlags oldFormatFlags = format.FormatFlags;
+                    StringFormats oldFormatFlags = format.FormatFlags;
 
                     if (label.RowIndex == 0 &&
                         labelsFontAngle == 0 &&
@@ -2126,9 +2126,9 @@ namespace WebCharts.Services
 
                         // Change current string format to prevent strings to go out of the
                         // specified bounding rectangle
-                        if ((format.FormatFlags & StringFormatFlags.LineLimit) == 0)
+                        if ((format.FormatFlags & StringFormats.LineLimit) == 0)
                         {
-                            format.FormatFlags |= StringFormatFlags.LineLimit;
+                            format.FormatFlags |= StringFormats.LineLimit;
                         }
                     }
 

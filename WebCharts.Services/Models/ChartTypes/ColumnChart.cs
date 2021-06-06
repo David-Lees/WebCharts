@@ -263,8 +263,8 @@ namespace WebCharts.Services
                 ShiftedSerName = ser.Name;
 
                 // Set active vertical/horizontal axis
-                Axis vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
-                Axis hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
+                Axis hAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
                 double horizontalViewMax = hAxis.ViewMaximum;
                 double horizontalViewMin = hAxis.ViewMinimum;
                 double verticalViewMax = vAxis.ViewMaximum;
@@ -652,8 +652,8 @@ namespace WebCharts.Services
                 BarDrawingStyle barDrawingStyle = ChartGraphics.GetBarDrawingStyle(point);
 
                 // Set active vertical/horizontal axis
-                Axis vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, ser.YSubAxisName);
-                Axis hAxis = area.GetAxis(AxisName.X, ser.XAxisType, ser.XSubAxisName);
+                Axis vAxis = area.GetAxis(AxisName.Y, ser.YAxisType, Series.YSubAxisName);
+                Axis hAxis = area.GetAxis(AxisName.X, ser.XAxisType, Series.XSubAxisName);
 
                 // Change Y value if Column is out of plot area
                 float topDarkening = 0f;
@@ -675,7 +675,7 @@ namespace WebCharts.Services
                 double height = vAxis.GetLinearPosition(yValue);
 
                 // Set start position for a column
-                double columnStartPosition = 0;
+                double columnStartPosition;
                 if (useTwoValues)
                 {
                     // Point Y value (first) is used to determine the column starting position
@@ -753,7 +753,7 @@ namespace WebCharts.Services
                 //** Painting mode
                 //************************************************************
                 // Path projection of 3D rect.
-                SKPath rectPath = null;
+                SKPath rectPath;
 
                 // Check if column is completly out of the data scaleView
                 double xValue = (pointEx.indexedSeries) ? pointEx.index : point.XValue;
@@ -821,7 +821,6 @@ namespace WebCharts.Services
                         common.HotRegionsList.AddHotRegion(
                             rectPath,
                             false,
-                            graph,
                             point,
                             ser.Name,
                             pointEx.index - 1
@@ -1008,7 +1007,7 @@ namespace WebCharts.Services
         /// <param name="area">Chart area for this chart</param>
         /// <param name="columnPosition">Column position</param>
         /// <param name="point">Data point</param>
-        /// <param name="series">Data series</param>
+        /// <param name="ser">Data series</param>
         /// <param name="pointIndex">Data point index.</param>
         protected override void DrawLabel(
             ChartArea area,
@@ -1016,7 +1015,7 @@ namespace WebCharts.Services
             CommonElements common,
             SKRect columnPosition,
             DataPoint point,
-            Series series,
+            Series ser,
             int pointIndex)
         {
             //************************************************************
@@ -1101,7 +1100,7 @@ namespace WebCharts.Services
                             circCoord[1],
                             circCoord[2],
                             point,
-                            series.Name,
+                            ser.Name,
                             pointIndex - 1);
                     }
                     // All other markers represented as rectangles
@@ -1110,7 +1109,7 @@ namespace WebCharts.Services
                         common.HotRegionsList.AddHotRegion(
                             new SKRect(markerPosition.X - relativeMarkerSize.Width / 2f, markerPosition.Y - relativeMarkerSize.Height / 2f, relativeMarkerSize.Width, relativeMarkerSize.Height),
                             point,
-                            series.Name,
+                            ser.Name,
                             pointIndex - 1);
                     }
                 }
@@ -1136,15 +1135,15 @@ namespace WebCharts.Services
                 if (point.Label.Length == 0)
                 {
                     // Round Y values for 100% stacked area
-                    double pointLabelValue = GetYValue(common, area, series, point, pointIndex, 0);
+                    double pointLabelValue = GetYValue(common, area, ser, point, pointIndex, 0);
 
                     text = ValueConverter.FormatValue(
-                        series.Chart,
+                        ser.Chart,
                         point,
                         point.Tag,
                         pointLabelValue,
                         point.LabelFormat,
-                        series.YValueType,
+                        ser.YValueType,
                         ChartElementType.DataPoint);
                 }
                 else
@@ -1158,7 +1157,7 @@ namespace WebCharts.Services
                 labelPosition.Y = intersection.Top + intersection.Height / 2f;
 
                 // Get string size
-                SKSize SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                SKSize SKSizeont = graph.GetRelativeSize(ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
 
                 // Get label background position
                 SKRect labelBackPosition = SKRect.Empty;
@@ -1187,7 +1186,7 @@ namespace WebCharts.Services
                     point.LabelBorderColor,
                     point.LabelBorderWidth,
                     point.LabelBorderDashStyle,
-                    series,
+                    ser,
                     point,
                     pointIndex - 1);
             }
@@ -1269,7 +1268,7 @@ namespace WebCharts.Services
                 labelPosition.Y = marker3DPosition[0].Y;
 
                 // Get string size
-                SKSize SKSizeont = graph.GetRelativeSize(graph.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
+                SKSize SKSizeont = graph.GetRelativeSize(ChartGraphics.MeasureString(text, point.Font, new SKSize(1000f, 1000f), StringFormat.GenericTypographic));
 
                 // Get label background position
                 SKRect labelBackPosition = SKRect.Empty;
