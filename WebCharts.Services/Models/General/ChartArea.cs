@@ -1676,6 +1676,8 @@ namespace WebCharts.Services
             {
                 if ((!Area3DStyle.Enable3D || !requireAxes || chartAreaIsCurcular) && BorderColor != SKColor.Empty && BorderWidth > 0)
                 {
+
+
                     graph.FillRectangleRel(position,
                         SKColors.Transparent,
                         ChartHatchStyle.None,
@@ -1915,7 +1917,7 @@ namespace WebCharts.Services
                     IChartType type = Common.ChartTypeRegistry.GetChartType(chartTypeInfo.ChartType);
 
                     // If 'chartTypeInfo.Series' set to NULL all series of that chart type are drawn at once
-                    type.Paint(graph, Common, this, chartTypeInfo.Series);
+                    // TODO Reenable: type.Paint(graph, Common, this, chartTypeInfo.Series);
                 }
             }
             else
@@ -1927,6 +1929,7 @@ namespace WebCharts.Services
             // Draw area border if it wasn't drawn prior to the series
             if (!borderDrawn)
             {
+                // TODO: This is drawing a rectangle that is too small
                 PaintAreaBack(graph, backgroundPosition, true);
             }
 

@@ -398,7 +398,7 @@ namespace WebCharts.Services
                         if (area.Visible)
 
                         {
-                            area.Paint(ChartGraph);
+                           area.Paint(ChartGraph);
                         }
                     }
 

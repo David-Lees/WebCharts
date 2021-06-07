@@ -3622,12 +3622,14 @@ namespace WebCharts.Services
             // Color is empty
             if (backColor == SKColor.Empty)
             {
-                backColor = SKColors.White;
+                // TODO: debug - backColor = SKColors.White;
+                backColor = SKColors.Transparent;
             }
 
             if (backSecondaryColor == SKColor.Empty)
             {
-                backSecondaryColor = SKColors.White;
+                //backSecondaryColor = SKColors.White;
+                backSecondaryColor = SKColors.Transparent;
             }
 
             if (borderColor == SKColor.Empty || borderDashStyle == ChartDashStyle.NotSet)
@@ -3688,14 +3690,7 @@ namespace WebCharts.Services
             else
             {
                 // Set a bar color.
-                if (backColor == SKColor.Empty || backColor == SKColors.Transparent)
-                {
-                    brush = null;
-                }
-                else
-                {
-                    brush = new SKPaint() { Color = backColor, Style = SKPaintStyle.Fill };
-                }
+                brush = new SKPaint() { Color = backColor, Style = SKPaintStyle.Fill };                
             }
 
             // Draw shadow
@@ -5021,7 +5016,7 @@ namespace WebCharts.Services
             float top = (float)Math.Round(rect.Top);
             float bottom = (float)Math.Round(rect.Bottom);
 
-            return new SKRect(left, top, right - left, bottom - top);
+            return new SKRect(left, top, right, bottom);
         }
         /// <summary>
         /// Sets the clipping region of this Graphics object
