@@ -55,7 +55,7 @@ namespace WebCharts.Services
         private readonly RenderingType _activeRenderingType = RenderingType.Gdi;
 
         // GDI+ rendering engine
-        private readonly GdiGraphics _gdiGraphics = new();
+        private readonly SkiaGraphics _gdiGraphics = new();
         #endregion Fields
 
         #region Drawing Methods

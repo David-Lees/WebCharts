@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 //
-//  Purpose:	GdiGraphics class is chart GDI+ rendering engine. It
+//  Purpose:	SkiaGraphics class is chart SkiaSharp rendering engine. It
 //              implements IChartRenderingEngine interface by mapping
-//              its methods to the drawing methods of GDI+. This
+//              its methods to the drawing methods of SkiaSharp. This
 //              rendering engine do not support animation.
 //
 
@@ -16,14 +16,14 @@ namespace WebCharts.Services
     /// <summary>
     /// GdiGraphics class is chart GDI+ rendering engine.
     /// </summary>
-    internal class GdiGraphics : IChartRenderingEngine
+    internal class SkiaGraphics : IChartRenderingEngine
     {
         #region Constructors
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        public GdiGraphics()
+        public SkiaGraphics()
         {
         }
 
