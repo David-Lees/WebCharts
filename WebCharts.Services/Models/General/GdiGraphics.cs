@@ -510,17 +510,16 @@ namespace WebCharts.Services
         /// </summary>
         public void ResetClip()
         {
-            Graphics.ClipRect(SKRect.Empty);
+            Graphics.Restore();
         }
 
         /// <summary>
         /// Sets the clipping region of this Graphics object to the rectangle specified by a SKRect structure.
         /// </summary>
         /// <param name="rect">SKRect structure that represents the new clip region.</param>
-        public void SetClip(
-            SKRect rect
-            )
+        public void SetClip(SKRect rect)
         {
+            Graphics.Save();
             Graphics.ClipRect(rect);
         }
 
