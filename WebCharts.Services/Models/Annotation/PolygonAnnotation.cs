@@ -503,9 +503,6 @@ namespace WebCharts.Services
                     newPath = new SKPath();
                     selectionPath = newPath;
                     selectionPath.AddPath(pathAbs);
-                    using var pen = graphics.Pen.Clone();
-                    // Increase pen size by 2 pixels
-                    pen.StrokeWidth += 2;
                 }
 
                 // Add hot region

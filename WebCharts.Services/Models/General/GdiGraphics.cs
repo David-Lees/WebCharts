@@ -120,9 +120,17 @@ namespace WebCharts.Services
         {
             brush.IsAntialias = true;
             brush.Style = SKPaintStyle.StrokeAndFill;
-            font.Hinting = SKFontHinting.Normal;
-            Graphics.DrawRect(layoutRectangle, new SKPaint() { Style = SKPaintStyle.Stroke, Color = SKColors.Red, StrokeWidth = 1 });
-            Graphics.DrawText(s, layoutRectangle.Location.X, layoutRectangle.Location.Y, font, brush);
+            font.Hinting = SKFontHinting.Normal;            
+
+            // Not sure why -1 is needed, but lines up better with it
+            var p = new SKPoint(layoutRectangle.MidX, layoutRectangle.MidY - 1);
+
+            var size = MeasureString(s, font);
+
+            p.X -= size.Width / 2.0f;
+            p.Y += size.Height / 2.0f;
+
+            Graphics.DrawText(s, p.X, p.Y, font, brush);
         }
 
         /// <summary>

@@ -223,7 +223,7 @@ namespace WebCharts.Services
             foreach (Series series in common.DataManager.Series)
             {
                 // Process non empty series of the area with FastLine chart type
-                if (String.Compare(series.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) != 0
+                if (string.Compare(series.ChartTypeName, Name, true, System.Globalization.CultureInfo.CurrentCulture) != 0
                     || series.ChartArea != area.Name ||
                     !series.IsVisible())
                 {
@@ -504,7 +504,7 @@ namespace WebCharts.Services
             // Reset Clip Region
             if (clipRegionSet)
             {
-                graph.ResetClip();
+               graph.ResetClip();
             }
         }
 

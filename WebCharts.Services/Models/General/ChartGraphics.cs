@@ -46,10 +46,6 @@ namespace WebCharts.Services
 
         private SKMatrix _myMatrix;
 
-        // Reusable objects
-        private SKPaint _pen;
-
-        private SKPaint _solidBrush;
         // Private fields which represents picture size
         private int _width;
         #endregion Fields
@@ -78,24 +74,13 @@ namespace WebCharts.Services
                 return;
             }
 
-            // Set a line color
-            if (_pen.Color != color)
-            {
-                _pen.Color = color;
-            }
-
-            // Set a line width
-            if (_pen.StrokeWidth != width)
-            {
-                _pen.StrokeWidth = width;
-            }
-
-            // Set a line style
-            if (_pen.PathEffect != GetPenStyle(style, width))
-            {
-                _pen.PathEffect = GetPenStyle(style, width);
-            }
-
+            using SKPaint _pen = new() { 
+                Style = SKPaintStyle.Stroke, 
+                Color = color, 
+                StrokeWidth = width,
+                PathEffect = GetPenStyle(style, width)
+            };
+         
             // Remember SmoothingMode and turn off anti aliasing for
             // vertical or horizontal lines usinig 1 pixel dashed pen.
             // This prevents anialiasing from completly smoothing the
@@ -2695,17 +2680,19 @@ namespace WebCharts.Services
             }
 
             // Set pen properties
-            _pen.Color = borderColor;
-            _pen.StrokeWidth = borderWidth;
-            // _pen.Alignment = penAlignment;
-            _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
+            using SKPaint _pen = new()
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = borderColor,
+                StrokeWidth = borderWidth,
+                PathEffect = GetPenStyle(borderDashStyle, borderWidth)
+            };
 
             SKPaint brush;
             if (backGradientStyle == GradientStyle.None)
             {
                 // Set solid brush color.
-                _solidBrush.Color = backColor;
-                brush = _solidBrush;
+                brush = new SKPaint() { Style = SKPaintStyle.Fill, Color = backColor };
             }
             else
             {
@@ -3212,24 +3199,19 @@ namespace WebCharts.Services
                 borderWidth = 0;
             }
 
-            // Set a border line color
-            _pen.Color = borderColor;
-
-            // Set a border line width
-            _pen.StrokeWidth = borderWidth;
-
-            // Set pen alignment
-            //_pen.Alignment = penAlignment;
-
-            // Set a border line style
-            _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
+            using SKPaint _pen = new()
+            {
+                Style = SKPaintStyle.Stroke,
+                Color = borderColor,
+                StrokeWidth = borderWidth,
+                PathEffect = GetPenStyle(borderDashStyle, borderWidth)
+            };
 
             SKPaint brush;
             if (backGradientStyle == GradientStyle.None)
             {
                 // Set a bar color.
-                _solidBrush.Color = backColor;
-                brush = _solidBrush;
+                brush = new SKPaint() { Style = SKPaintStyle.Fill, Color = backColor };
             }
             else
             {
@@ -3622,14 +3604,12 @@ namespace WebCharts.Services
             // Color is empty
             if (backColor == SKColor.Empty)
             {
-                // TODO: debug - backColor = SKColors.White;
-                backColor = SKColors.Transparent;
+                backColor = SKColors.White;
             }
 
             if (backSecondaryColor == SKColor.Empty)
             {
-                //backSecondaryColor = SKColors.White;
-                backSecondaryColor = SKColors.Transparent;
+                backSecondaryColor = SKColors.White;
             }
 
             if (borderColor == SKColor.Empty || borderDashStyle == ChartDashStyle.NotSet)
@@ -3816,23 +3796,13 @@ namespace WebCharts.Services
             // Draw border
             if (borderWidth > 0 && borderDashStyle != ChartDashStyle.NotSet)
             {
-                // Set a border line color
-                if (_pen.Color != borderColor)
+                using SKPaint _pen = new()
                 {
-                    _pen.Color = borderColor;
-                }
-
-                // Set a border line width
-                if (_pen.StrokeWidth != borderWidth)
-                {
-                    _pen.StrokeWidth = borderWidth;
-                }
-
-                // Set a border line style
-                if (_pen.PathEffect != GetPenStyle(borderDashStyle, borderWidth))
-                {
-                    _pen.PathEffect = GetPenStyle(borderDashStyle, borderWidth);
-                }
+                    Style = SKPaintStyle.Stroke,
+                    Color = borderColor,
+                    StrokeWidth = borderWidth,
+                    PathEffect = GetPenStyle(borderDashStyle, borderWidth)
+                };
 
                 // Draw border
                 if (circular)
@@ -4896,11 +4866,6 @@ namespace WebCharts.Services
             // Set Common elements
             _common = common;
             base.Common = common;
-            // Create a pen object
-            _pen = new() { Color = SKColors.Black, Style = SKPaintStyle.Stroke, StrokeWidth = 1 };
-
-            // Create a brush object
-            _solidBrush = new() { Color = SKColors.Black, Style = SKPaintStyle.Fill };
         }
 
         /// <summary>
@@ -4930,14 +4895,6 @@ namespace WebCharts.Services
                     SmoothingMode = SmoothingMode.None;
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets reusable pen.
-        /// </summary>
-        internal SKPaint Pen
-        {
-            get { return _pen; }
         }
 
         /// <summary>
@@ -5100,20 +5057,6 @@ namespace WebCharts.Services
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                // Free up managed resources
-                if (_pen != null)
-                {
-                    _pen.Dispose();
-                    _pen = null;
-                }
-                if (_solidBrush != null)
-                {
-                    _solidBrush.Dispose();
-                    _solidBrush = null;
-                }
-            }
             base.Dispose(disposing);
         }
 
